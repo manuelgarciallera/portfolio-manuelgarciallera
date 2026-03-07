@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "portfolio-manuelgarciallera",
   "version": "0.1.0",
   "private": true,
@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ship": "bash ./scripts/ship.sh"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
