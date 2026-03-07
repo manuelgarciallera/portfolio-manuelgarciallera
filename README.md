@@ -15,7 +15,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 One-command flow (lint + commit + push to `main`) from Git Bash:
 
 ```bash
-npm run ship -- "tu mensaje de commit"
+npm run ship -- "feat: refine portfolio visual parity"
 ```
 
-If there are no changes, it exits safely without committing.
+You can also run it without message and it will auto-generate one based on changed files:
+
+```bash
+npm run ship
+```
