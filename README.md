@@ -36,3 +36,7 @@ GitHub Actions runs on every push/PR to `main`:
 - lint
 - typecheck
 - build
+
+## VS Code
+
+The repository includes recommended extensions and workspace settings in `.vscode/`.
