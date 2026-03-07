@@ -76,32 +76,17 @@ export function Navbar() {
           Manuel Garcia
         </Link>
 
-        <ul
-          role="list"
-          style={{
-            display: 'flex',
-            gap: '24px',
-            listStyle: 'none',
-            alignItems: 'center',
-          }}
-        >
+        <ul role="list" style={{ display: 'flex', gap: '24px', listStyle: 'none', alignItems: 'center' }}>
           {navItems.map((item) => {
             const isHash = item.href.startsWith('#')
             const isActive = isHash && activeSection === item.href.replace('#', '')
+            const baseClass = `nl ${isDark ? 'nl-dk' : 'nl-lt'} ${isActive ? 'active' : ''}`
 
             return (
               <li key={item.href} className="hide-m">
-                <Link
-                  href={item.href}
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? 'var(--text)' : 'var(--text-sec)',
-                    textDecoration: 'none',
-                    transition: 'color 0.15s ease',
-                  }}
-                >
+                <Link href={item.href} className={baseClass}>
                   {item.label}
+                  <span className="nl-bar" style={{ background: isDark ? '#fff' : '#1d1d1f' }} />
                 </Link>
               </li>
             )

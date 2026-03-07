@@ -1,11 +1,13 @@
-﻿// ============================================================
-// HOMEPAGE — importa secciones en orden narrativo
-// Cada sección es independiente y editable por separado
 // ============================================================
-import { Navbar }          from '@/components/layout/Navbar'
-import { HeroSection }     from '@/components/sections/HeroSection'
+// HOMEPAGE — importa secciones en orden narrativo
+// ============================================================
+import { Navbar } from '@/components/layout/Navbar'
+import { HeroSection } from '@/components/sections/HeroSection'
 import { FeaturedSection } from '@/components/sections/FeaturedSection'
-import { Footer }          from '@/components/layout/Footer'
+import { ThreeDSection } from '@/components/sections/ThreeDSection'
+import { AboutSection } from '@/components/sections/AboutSection'
+import { ContactSection } from '@/components/sections/ContactSection'
+import { Footer } from '@/components/layout/Footer'
 
 export default function Home() {
   return (
@@ -14,7 +16,9 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeaturedSection />
-        {/* Las demás secciones se irán añadiendo aquí en orden */}
+        <ThreeDSection />
+        <AboutSection />
+        <ContactSection />
       </main>
       <Footer />
     </>

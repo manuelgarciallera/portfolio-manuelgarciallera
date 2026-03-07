@@ -238,3 +238,57 @@ body {
     display: none !important;
   }
 }
+
+/* ── Navbar parity (Apple-like) ───────────────────────── */
+.nl {
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  position: relative;
+  padding: 0;
+  margin-right: 24px;
+  cursor: pointer;
+  transition: color 0.1s ease;
+}
+
+.nl .nl-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  border-radius: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s cubic-bezier(.16,1,.3,1);
+}
+
+.nl.active .nl-bar {
+  transform: scaleX(1);
+}
+
+.nl-dk {
+  color: #6e6e73;
+}
+.nl-dk.active {
+  color: #fff !important;
+  font-weight: 600;
+}
+.nl-dk:not(.active):hover {
+  color: rgba(255,255,255,0.85) !important;
+}
+
+.nl-lt {
+  color: #6e6e73;
+}
+.nl-lt.active {
+  color: #1d1d1f !important;
+  font-weight: 600;
+}
+.nl-lt:not(.active):hover {
+  color: #0d2a4a !important;
+}
