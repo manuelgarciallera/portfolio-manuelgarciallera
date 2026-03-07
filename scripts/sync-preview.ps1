@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$Source = "C:\Users\manue\Downloads\portfolio-preview.jsx",
   [string]$Destination = "src\components\PortfolioPreview.jsx"
 )
@@ -9,7 +9,14 @@ if (-not (Test-Path -LiteralPath $Source)) {
   throw "No existe el archivo fuente: $Source"
 }
 
-$sourceText = Get-Content -Raw -LiteralPath $Source
+$bytes = [System.IO.File]::ReadAllBytes($Source)
+try {
+  $utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
+  $sourceText = $utf8Strict.GetString($bytes)
+} catch {
+  $latin1 = [System.Text.Encoding]::GetEncoding(1252)
+  $sourceText = $latin1.GetString($bytes)
+}
 
 if (-not $sourceText.StartsWith("'use client';")) {
   $sourceText = "'use client';`r`n`r`n" + $sourceText
