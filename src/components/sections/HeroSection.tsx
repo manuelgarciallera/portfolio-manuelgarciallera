@@ -1,12 +1,13 @@
-﻿'use client'
+'use client'
+
 import { useEffect, useRef } from 'react'
+import { DeviceMockup, Button, GradientText, SectionReveal } from '@/components/ui'
 import { useTheme } from '@/hooks/useTheme'
 
 export function HeroSection() {
   const { isDark } = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Canvas de partículas provisional (se sustituirá por R3F)
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -14,31 +15,32 @@ export function HeroSection() {
     if (!ctx) return
 
     const resize = () => {
-      canvas.width  = window.innerWidth
+      canvas.width = window.innerWidth
       canvas.height = window.innerHeight
     }
+
     resize()
     window.addEventListener('resize', resize)
 
     const particles: { x: number; y: number; vx: number; vy: number; r: number; o: number }[] = []
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 90; i += 1) {
       particles.push({
-        x:  Math.random() * canvas.width,
-        y:  Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r:  Math.random() * 1.5 + 0.5,
-        o:  Math.random() * 0.4 + 0.1,
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.8 + 0.5,
+        o: Math.random() * 0.35 + 0.1,
       })
     }
 
-    let raf: number
+    let raf = 0
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       particles.forEach((p) => {
         p.x += p.vx
         p.y += p.vy
-        if (p.x < 0 || p.x > canvas.width)  p.vx *= -1
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
@@ -47,8 +49,8 @@ export function HeroSection() {
       })
       raf = requestAnimationFrame(draw)
     }
-    draw()
 
+    draw()
     return () => {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(raf)
@@ -59,154 +61,64 @@ export function HeroSection() {
     <section
       id="hero"
       style={{
-        position:       'relative',
-        height:         '100svh',
-        minHeight:      '600px',
-        display:        'flex',
-        flexDirection:  'column',
-        alignItems:     'center',
-        justifyContent: 'center',
-        overflow:       'hidden',
-        background:     'var(--bg)',
+        position: 'relative',
+        minHeight: '100svh',
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+        background: 'radial-gradient(circle at 80% 20%, rgba(94,196,200,0.12), transparent 40%), var(--bg)',
+        paddingTop: '90px',
       }}
     >
-      {/* Canvas de fondo */}
       <canvas
         ref={canvasRef}
-        style={{
-          position:      'absolute',
-          inset:         0,
-          pointerEvents: 'none',
-          zIndex:        0,
-        }}
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}
         aria-hidden="true"
       />
 
-      {/* Contenido */}
       <div
         style={{
-          position:  'relative',
-          zIndex:    2,
-          textAlign: 'center',
-          padding:   '0 28px',
-          maxWidth:  '980px',
+          width: '100%',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 28px 56px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '40px',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 2,
         }}
       >
-        {/* Eyebrow */}
-        <p
-          className="text-caption"
-          style={{
-            color:         'var(--teal)',
-            marginBottom:  '24px',
-            letterSpacing: '0.12em',
-          }}
-        >
-          Visual Design Manager · Full Stack Developer
-        </p>
+        <SectionReveal>
+          <p className="text-caption" style={{ color: 'var(--teal)', marginBottom: '18px' }}>
+            Visual Design Manager · Full Stack Developer
+          </p>
 
-        {/* Headline principal */}
-        <h1
-          className="text-hero"
-          style={{
-            color:        'var(--text)',
-            marginBottom: '24px',
-            fontWeight:   700,
-          }}
-        >
-          Diseño que
-          <br />
-          <span
-            style={{
-              background:              'linear-gradient(135deg, #00C8FF 0%, #FF2D78 100%)',
-              WebkitBackgroundClip:    'text',
-              WebkitTextFillColor:     'transparent',
-              backgroundClip:         'text',
-            }}
-          >
-            piensa en código.
-          </span>
-        </h1>
+          <h1 className="text-hero" style={{ color: 'var(--text)', marginBottom: '20px' }}>
+            Diseno que
+            <br />
+            <GradientText variant="brand">piensa en codigo.</GradientText>
+          </h1>
 
-        {/* Subtítulo */}
-        <p
-          className="text-body-lg"
-          style={{
-            color:        'var(--text-sec)',
-            maxWidth:     '540px',
-            margin:       '0 auto 48px',
-          }}
-        >
-          Visual Design Manager en LALIGA.
-          UX, producto, 3D arquitectónico y full stack.
-        </p>
+          <p className="text-body-lg" style={{ color: 'var(--text-sec)', maxWidth: '560px', marginBottom: '30px' }}>
+            UX, producto digital, arquitectura 3D y desarrollo full stack. Una web cuidada visualmente y tecnicamente.
+          </p>
 
-        {/* CTAs */}
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a
-            href="#trabajo"
-            style={{
-              display:         'inline-flex',
-              alignItems:      'center',
-              gap:             '8px',
-              padding:         '14px 28px',
-              background:      'var(--teal)',
-              color:           '#0a0a0a',
-              borderRadius:    '980px',
-              fontSize:        '15px',
-              fontWeight:      600,
-              textDecoration:  'none',
-              fontFamily:      "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-              transition:      'opacity 0.2s ease',
-            }}
-          >
-            Ver proyectos
-          </a>
-          <a
-            href="#sobre-mi"
-            style={{
-              display:         'inline-flex',
-              alignItems:      'center',
-              gap:             '8px',
-              padding:         '14px 28px',
-              background:      'transparent',
-              color:           'var(--text)',
-              borderRadius:    '980px',
-              border:          '1px solid var(--divider)',
-              fontSize:        '15px',
-              fontWeight:      500,
-              textDecoration:  'none',
-              fontFamily:      "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-              transition:      'all 0.2s ease',
-            }}
-          >
-            Más sobre mí
-          </a>
-        </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Button href="#trabajo" variant="blue" isDark={isDark}>
+              Ver proyectos
+            </Button>
+            <Button href="#sobre-mi" variant="secondary" isDark={isDark}>
+              Mas sobre mi
+            </Button>
+          </div>
+        </SectionReveal>
+
+        <SectionReveal variant="scale" delay={120}>
+          <DeviceMockup isDark={isDark} scrollTilt />
+        </SectionReveal>
       </div>
-
-      {/* Flecha de scroll */}
-      <div
-        style={{
-          position:  'absolute',
-          bottom:    '40px',
-          left:      '50%',
-          transform: 'translateX(-50%)',
-          zIndex:    2,
-          animation: 'bounce 2s infinite',
-        }}
-        aria-hidden="true"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-sec)" strokeWidth="1.5">
-          <path d="M12 5v14M5 12l7 7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-
-      <style>{`
-        @keyframes bounce {
-          0%, 100% { transform: translateX(-50%) translateY(0); }
-          50%       { transform: translateX(-50%) translateY(8px); }
-        }
-      `}</style>
     </section>
   )
 }

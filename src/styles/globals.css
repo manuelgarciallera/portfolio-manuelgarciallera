@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    GLOBALS.CSS — Portfolio Manuel García Llera
    Tailwind base + CSS custom properties + clases reutilizables
    ============================================================ */
@@ -156,4 +156,85 @@ body {
 ::selection {
   background: rgba(94,196,200,0.3);
   color: var(--text);
+}
+/* ── Button system (preview parity) ───────────────────── */
+.btn-blue {
+  background: #0071e3;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-blue:hover {
+  background: #0077ed;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 113, 227, 0.32);
+}
+
+.btn-dk {
+  background: #2c2c2e;
+  color: #f5f5f7;
+  border: none;
+  border-radius: 999px;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-dk:hover {
+  background: #3a3a3c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.btn-lt {
+  background: #e8e8ed;
+  color: #1d1d1f;
+  border: none;
+  border-radius: 999px;
+  transition: background 0.15s, transform 0.15s;
+}
+.btn-lt:hover {
+  background: #d2d2d7;
+  transform: translateY(-2px);
+}
+
+.btn-ghost-dk {
+  background: transparent;
+  color: #f5f5f7;
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.btn-ghost-dk:hover {
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.btn-ghost-lt {
+  background: transparent;
+  color: #1d1d1f;
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.btn-ghost-lt:hover {
+  border-color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.btn-social {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f5f7;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+.btn-social-lt {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1d1d1f;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 700px) {
+  .hide-m {
+    display: none !important;
+  }
 }

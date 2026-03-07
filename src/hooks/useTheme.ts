@@ -1,22 +1,22 @@
-﻿'use client'
-import { useState, useEffect } from 'react'
+'use client'
+
+import { useEffect, useState } from 'react'
 import type { Theme } from '@/types'
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'dark'
+    const saved = localStorage.getItem('theme') as Theme | null
+    return saved ?? 'dark'
+  })
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme') as Theme | null
-    const initial = saved || 'dark'
-    setTheme(initial)
-    document.documentElement.setAttribute('data-theme', initial)
-  }, [])
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
   const toggle = () => {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    document.documentElement.setAttribute('data-theme', next)
-    localStorage.setItem('theme', next)
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
   }
 
   return { theme, toggle, isDark: theme === 'dark' }
