@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 
@@ -81,7 +82,7 @@ export function DeviceMockup({ isDark = true, screenContent, screenshot, scrollT
 
         <div style={{ width: '100%', height: '100%', borderRadius: '38px', overflow: 'hidden', background: '#000', position: 'relative' }}>
           {screenshot ? (
-            <img src={screenshot} alt="App screenshot" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Image src={screenshot} alt="App screenshot" fill style={{ objectFit: 'cover' }} sizes="252px" unoptimized />
           ) : screenContent ? (
             screenContent
           ) : (

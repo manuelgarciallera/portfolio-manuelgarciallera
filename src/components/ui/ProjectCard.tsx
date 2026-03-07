@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import type { Project } from '@/types';
 import { GlassCard } from './GlassCard';
@@ -25,12 +26,13 @@ export function ProjectCard({ project, isDark = true, onClick }: ProjectCardProp
     >
       <div className="relative overflow-hidden" style={{ height: '220px' }}>
         {project.thumbnail && !imgError ? (
-          <img
+          <Image
             src={project.thumbnail}
             alt={project.title}
+            fill
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImgError(true)}
-            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 33vw"
           />
         ) : (
           <div
