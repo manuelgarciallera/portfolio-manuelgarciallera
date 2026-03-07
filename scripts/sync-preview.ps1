@@ -26,6 +26,12 @@ if (-not $sourceText.StartsWith("/* eslint-disable */")) {
   $sourceText = "/* eslint-disable */`r`n" + $sourceText
 }
 
+# Patch known React inline-style warning: avoid border shorthand + borderTop mixed
+$sourceText = $sourceText.Replace(
+  'border:`1px solid ${isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)"}`,borderTop:"none"',
+  'borderStyle:"solid",borderColor:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)",borderWidth:"0 1px 1px 1px"'
+)
+
 $destinationDir = Split-Path -Parent $Destination
 if ($destinationDir -and -not (Test-Path -LiteralPath $destinationDir)) {
   New-Item -ItemType Directory -Force -Path $destinationDir | Out-Null
