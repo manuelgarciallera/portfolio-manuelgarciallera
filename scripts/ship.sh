@@ -10,7 +10,7 @@ suggest_message() {
     return
   fi
 
-  if echo "$files" | grep -q "scripts/ship.sh\|package.json\|README.md\|.gitattributes"; then
+  if echo "$files" | grep -q "scripts/ship.sh\|scripts/sync-preview.ps1\|package.json\|README.md\|.gitattributes"; then
     echo "chore: improve automation workflow for ship command"
     return
   fi
@@ -28,6 +28,12 @@ if [[ -z "$(git status --porcelain)" ]]; then
   exit 0
 fi
 
+BRANCH="$(git branch --show-current)"
+if [[ -z "$BRANCH" ]]; then
+  echo "No se pudo detectar rama actual (detached HEAD)."
+  exit 1
+fi
+
 echo "[1/5] Lint"
 npm run lint
 
@@ -43,16 +49,15 @@ if git diff --cached --quiet; then
 fi
 
 MSG="${*:-}"
-
 if [[ -z "$MSG" ]] || [[ "$MSG" =~ ^[Mm]ensaje\ de\ commit$ ]]; then
   MSG="$(suggest_message)"
-  echo "Mensaje automático: $MSG"
+  echo "Mensaje automatico: $MSG"
 fi
 
 echo "[4/5] Commit"
 git commit -m "$MSG"
 
 echo "[5/5] Push"
-git push origin main
+git push origin "$BRANCH"
 
-echo "Listo: commit + push completados."
+echo "Listo: commit + push completados en '$BRANCH'."

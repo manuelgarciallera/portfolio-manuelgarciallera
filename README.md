@@ -12,7 +12,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Automation
 
-One-command flow (lint + typecheck + commit + push to `main`) from Git Bash:
+Sync Claude preview file from Downloads into app component:
+
+```bash
+npm run sync:preview
+```
+
+One-command flow (lint + typecheck + commit + push to current branch) from Git Bash:
 
 ```bash
 npm run ship -- "feat: refine portfolio visual parity"

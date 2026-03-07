@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "sync:preview": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-preview.ps1",
     "ship": "bash ./scripts/ship.sh"
   },
   "dependencies": {
