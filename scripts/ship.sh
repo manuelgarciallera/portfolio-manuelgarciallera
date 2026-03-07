@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 suggest_message() {
@@ -10,7 +10,7 @@ suggest_message() {
     return
   fi
 
-  if echo "$files" | grep -q "scripts/ship.sh\|package.json\|README.md"; then
+  if echo "$files" | grep -q "scripts/ship.sh\|package.json\|README.md\|.gitattributes"; then
     echo "chore: improve automation workflow for ship command"
     return
   fi
@@ -28,14 +28,17 @@ if [[ -z "$(git status --porcelain)" ]]; then
   exit 0
 fi
 
-echo "[1/4] Lint"
+echo "[1/5] Lint"
 npm run lint
 
-echo "[2/4] Stage"
+echo "[2/5] Typecheck"
+npm run typecheck
+
+echo "[3/5] Stage"
 git add -A
 
 if git diff --cached --quiet; then
-  echo "No hay cambios staged tras lint."
+  echo "No hay cambios staged tras checks."
   exit 0
 fi
 
@@ -46,10 +49,10 @@ if [[ -z "$MSG" ]] || [[ "$MSG" =~ ^[Mm]ensaje\ de\ commit$ ]]; then
   echo "Mensaje automático: $MSG"
 fi
 
-echo "[3/4] Commit"
+echo "[4/5] Commit"
 git commit -m "$MSG"
 
-echo "[4/4] Push"
+echo "[5/5] Push"
 git push origin main
 
 echo "Listo: commit + push completados."
