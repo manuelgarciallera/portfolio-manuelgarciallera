@@ -29,3 +29,10 @@ You can also run it without message and it will auto-generate one based on chang
 ```bash
 npm run ship
 ```
+
+## CI
+
+GitHub Actions runs on every push/PR to `main`:
+- lint
+- typecheck
+- build
