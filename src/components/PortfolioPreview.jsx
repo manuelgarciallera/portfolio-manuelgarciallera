@@ -187,6 +187,7 @@ const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={
 const IMGS=["https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=75&auto=format","https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=75&auto=format","https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=75&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75&auto=format"];
 const FBK=["linear-gradient(135deg,#0a1628,#1a3a5c)","linear-gradient(135deg,#0a1a18,#0e3530)","linear-gradient(135deg,#0d0d1a,#1a1a32)","linear-gradient(135deg,#1a1020,#2d1a3e)"];
 const HERO_GALLERY_AUTOPLAY_MS=5000;
+const HERO_GALLERY_GRID_MIN=24;
 const HERO_GALLERY=[
   {k:"chips",title:"M5, M5 Pro y M5 Max.\nUna familia con mucho poder."},
   {k:"image",title:"Una potente plataforma para la inteligencia artificial.\nCon una mente maravillosa.",src:"https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=1600&q=80&auto=format",zoom:true},
@@ -339,7 +340,7 @@ export default function Portfolio(){
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{height:"100vh",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
+      <section style={{height:"100dvh",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
@@ -504,15 +505,16 @@ function HeroGallerySection({isDark,C,prefRM}){
   },[playing,prefRM,n]);
 
   const gap=w<760?10:22;
-  const slideW=w<760?Math.max(300,w*.92):Math.min(1260,Math.max(1000,w*.66));
-  const slideH=w<760?410:640;
+  const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
+  const slideH=w<760?424:668;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
   const controlH=50;
+  const leadX=Math.max(HERO_GALLERY_GRID_MIN,(w-slideW)/2);
 
   return(
-    <section style={{padding:"136px 0 28px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"92vh"}}>
-      <div style={{maxWidth:1320,margin:"0 auto",padding:"0 24px"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:"0 0 42px"}}>Lo principal.</h2>
+    <section style={{padding:"132px 0 10px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"86vh"}}>
+      <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)",padding:`0 ${HERO_GALLERY_GRID_MIN}px`}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 42px ${leadX}px`}}>Lo principal.</h2>
       </div>
 
       <div ref={frameRef} style={{overflow:"hidden",width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
@@ -528,7 +530,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
               }}>
-                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(13px,1.02vw,18px)",lineHeight:1.16,fontWeight:600,letterSpacing:"-.012em",color:"#f5f5f7",maxWidth:"58%"}}>
+                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(12px,.93vw,16px)",lineHeight:1.17,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7",maxWidth:"58%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
@@ -555,7 +557,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:30}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:18}}>
           <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
