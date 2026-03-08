@@ -628,13 +628,13 @@ function CloseLookSection({isDark,C,prefRM}){
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const pulseTimerRef=useRef(null);
-  const [panelW,setPanelW]=useState(1100);
+  const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
 
   useEffect(()=>{
     const el=panelRef.current;if(!el)return;
-    const measure=()=>setPanelW(el.clientWidth||1100);
+    const measure=()=>setPanelW(el.clientWidth||1120);
     measure();
     const ro=new ResizeObserver(measure);ro.observe(el);
     return()=>ro.disconnect();
@@ -671,14 +671,18 @@ function CloseLookSection({isDark,C,prefRM}){
   };
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
-  const wide=panelW>=1020;
+  const wide=panelW>=980;
   const activeItem=items[active];
+  const listLeft=wide?42:16;
+  const listTop=wide?44:20;
+  const descWidth=wide?Math.min(620,Math.max(360,panelW*.46)):0;
+  const descMax=Math.max(340,panelW-listLeft-28);
 
   return(
     <section style={{padding:wide?"108px 28px 54px":"84px 16px 46px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1220,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:34}}>
-          Más de cerca.
+          {"M\u00E1s de cerca."}
         </h2>
 
         <div ref={panelRef} style={{
@@ -686,10 +690,50 @@ function CloseLookSection({isDark,C,prefRM}){
           overflow:"hidden",
           background:"#000",
           border:`1px solid ${isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.12)"}`,
-          padding:wide?"26px 24px 20px":"18px 14px 14px",
+          padding:0,
         }}>
-          <div style={{display:"grid",gridTemplateColumns:wide?"330px minmax(0,1fr)":"1fr",gap:wide?24:16,minHeight:wide?620:760}}>
-            <div style={{display:"grid",gridTemplateColumns:wide?"1fr 40px":"1fr",gap:10,alignItems:"start"}}>
+          <div style={{position:"relative",minHeight:wide?620:760}}>
+            <div
+              key={active}
+              ref={mediaRef}
+              onMouseMove={onMove}
+              onMouseLeave={onLeave}
+              style={{
+                position:"absolute",
+                inset:0,
+                transform:"scale(1) rotateX(0deg) rotateY(0deg)",
+                transformStyle:"preserve-3d",
+                transition:"transform .24s ease,box-shadow .35s ease",
+                animation:prefRM.current?"none":"nearMediaIn .72s cubic-bezier(.16,1,.3,1)",
+                background:"#0b0b10",
+              }}>
+              <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>
+            </div>
+
+            <div style={{position:"absolute",inset:0,background:wide?"linear-gradient(90deg,rgba(0,0,0,.7) 0%,rgba(0,0,0,.52) 24%,rgba(0,0,0,.2) 45%,rgba(0,0,0,.05) 70%,rgba(0,0,0,.14) 100%)":"linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.25) 38%,rgba(0,0,0,.35) 100%)",pointerEvents:"none"}}/>
+
+            {open!==-1&&(
+              <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:30,height:30,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:18,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                {"\u00D7"}
+              </button>
+            )}
+
+            <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?360:"calc(100% - 32px)"}}>
+              {wide&&(
+                <div style={{position:"absolute",left:-58,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:10}}>
+                  <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
+                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    <ChU/>
+                  </button>
+                  <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
+                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    <ChD/>
+                  </button>
+                </div>
+              )}
+
               <div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {items.map((item,i)=>{
                   const isOn=active===i;
@@ -699,8 +743,8 @@ function CloseLookSection({isDark,C,prefRM}){
                       <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
                         style={{
                           width:"100%",
-                          border:"1px solid rgba(255,255,255,.1)",
-                          background:expanded?"rgba(52,52,58,.92)":(isOn?"rgba(45,45,50,.82)":"rgba(36,36,42,.72)"),
+                          border:"1px solid rgba(255,255,255,.14)",
+                          background:expanded?"rgba(58,58,64,.8)":(isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)"),
                           boxShadow:expanded?"0 14px 34px rgba(0,0,0,.35)":"none",
                           borderRadius:999,
                           display:"flex",
@@ -715,6 +759,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           letterSpacing:"-.015em",
                           transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease",
                           animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
+                          backdropFilter:"blur(6px)",
                         }}>
                         <span style={{
                           width:18,
@@ -730,7 +775,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           background:expanded?"rgba(255,255,255,.14)":"transparent",
                           flexShrink:0,
                         }}>
-                          {expanded?"•":"+"}
+                          {expanded?"\u2022":"+"}
                         </span>
                         <span>{item.label}</span>
                       </button>
@@ -739,15 +784,17 @@ function CloseLookSection({isDark,C,prefRM}){
                           marginTop:8,
                           borderRadius:18,
                           padding:wide?"14px 16px":"13px 14px",
+                          width:wide?Math.min(descWidth,descMax):"100%",
                           fontSize:wide?13.5:13,
                           lineHeight:1.45,
                           letterSpacing:"-.01em",
                           color:"rgba(245,245,247,.88)",
-                          background:"rgba(33,33,38,.94)",
-                          border:"1px solid rgba(255,255,255,.09)",
+                          background:"rgba(34,34,40,.68)",
+                          border:"1px solid rgba(255,255,255,.13)",
                           animation:prefRM.current?"none":"nearPop .42s cubic-bezier(.16,1,.3,1)",
+                          backdropFilter:"blur(10px)",
                         }}>
-                          {item.desc}
+                          <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>{item.desc}
                         </div>
                       )}
                     </div>
@@ -755,67 +802,18 @@ function CloseLookSection({isDark,C,prefRM}){
                 })}
               </div>
 
-              {wide&&(
-                <div style={{display:"flex",flexDirection:"column",gap:10,alignSelf:"center"}}>
+              {!wide&&(
+                <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:32,height:32,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChU/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:32,height:32,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChD/>
                   </button>
                 </div>
               )}
-            </div>
-
-            {!wide&&(
-              <div style={{display:"flex",gap:10,marginTop:-2}}>
-                <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                  style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
-                  <ChU/>
-                </button>
-                <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                  style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
-                  <ChD/>
-                </button>
-              </div>
-            )}
-
-            <div style={{position:"relative",borderRadius:18,overflow:"hidden",background:"#050507",border:"1px solid rgba(255,255,255,.08)"}}>
-              {open!==-1&&(
-                <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                  style={{position:"absolute",top:12,right:12,zIndex:15,width:28,height:28,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:18,lineHeight:1,background:"rgba(38,38,43,.95)",color:"#d8d8df"}}>
-                  ×
-                </button>
-              )}
-              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 50% at 50% 100%,rgba(94,196,200,.28),transparent 65%)",pointerEvents:"none",zIndex:2}}/>
-              <div style={{position:"absolute",inset:wide?18:12,perspective:"1500px"}}>
-                <div
-                  key={active}
-                  ref={mediaRef}
-                  onMouseMove={onMove}
-                  onMouseLeave={onLeave}
-                  style={{
-                    width:"100%",
-                    height:"100%",
-                    borderRadius:16,
-                    overflow:"hidden",
-                    transform:"scale(1) rotateX(0deg) rotateY(0deg)",
-                    transformStyle:"preserve-3d",
-                    transition:"transform .24s ease,box-shadow .35s ease",
-                    boxShadow:"0 34px 78px rgba(0,0,0,.55)",
-                    animation:prefRM.current?"none":"nearMediaIn .72s cubic-bezier(.16,1,.3,1)",
-                    background:"#0b0b10",
-                  }}>
-                  <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.02)",filter:"saturate(1.08) contrast(1.03)"}}/>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.02) 45%,rgba(0,0,0,.38) 100%)"}}/>
-                </div>
-              </div>
-              <div style={{position:"absolute",left:wide?24:16,bottom:wide?20:14,zIndex:8,display:"inline-flex",alignItems:"center",gap:8,padding:wide?"9px 14px":"8px 12px",borderRadius:999,background:"rgba(10,10,12,.62)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,.12)"}}>
-                <span style={{width:7,height:7,borderRadius:"50%",background:"#5ec4c8",display:"inline-block"}}/>
-                <span style={{fontSize:12.5,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7"}}>{activeItem.label}</span>
-              </div>
             </div>
           </div>
         </div>
