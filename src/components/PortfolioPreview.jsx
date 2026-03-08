@@ -50,6 +50,8 @@ const CSS=`
 .acc-dk{background:linear-gradient(92deg,#ffffff 0%,#ffffff 7%,#bde3de 19%,#96c8ce 42%,#6ea8bc 70%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 /* Light bg: near-black → teal dark (readable, professional) */
 .acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 7%,#88b5c2 34%,#668fa6 66%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-dk::first-letter{background:none;color:#fff;-webkit-text-fill-color:#fff;}
+.acc-lt::first-letter{background:none;color:#a5ced3;-webkit-text-fill-color:#a5ced3;}
 
 /* ── SCROLL REVEALS ── */
 .rv{opacity:0;transform:translateY(80px);transition:opacity 1.4s cubic-bezier(.16,1,.3,1),transform 1.4s cubic-bezier(.16,1,.3,1);will-change:transform,opacity;}

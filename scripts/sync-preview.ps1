@@ -80,6 +80,13 @@ foreach ($variant in $accLtVariants) {
   $sourceText = $sourceText.Replace($variant, $accLtFinal)
 }
 
+if (-not $sourceText.Contains('.acc-dk::first-letter')) {
+  $sourceText = $sourceText.Replace(
+    $accLtFinal,
+    $accLtFinal + "`r`n.acc-dk::first-letter{background:none;color:#fff;-webkit-text-fill-color:#fff;}" + "`r`n.acc-lt::first-letter{background:none;color:#a5ced3;-webkit-text-fill-color:#a5ced3;}"
+  )
+}
+
 $sourceText = $sourceText.Replace(
   'border:`1px solid ${isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)"}`,borderTop:"none"',
   'borderStyle:"solid",borderColor:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)",borderWidth:"0 1px 1px 1px"'
