@@ -47,9 +47,9 @@ const CSS=`
 
 /* ── GRADIENTS ── */
 /* Dark bg: white → teal light */
-.acc-dk{background:linear-gradient(92deg,#ffffff 0%,#ffffff 7%,#bde3de 19%,#96c8ce 42%,#6ea8bc 70%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-dk{background:linear-gradient(92deg,#9cd0d3 0%,#84bdc8 28%,#6b9fb4 60%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 /* Light bg: near-black → teal dark (readable, professional) */
-.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 7%,#88b5c2 34%,#668fa6 66%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-lt{background:linear-gradient(92deg,#93c1c9 0%,#7aa8b8 28%,#608aa3 60%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .acc-dk::first-letter{background:none;color:#fff;-webkit-text-fill-color:#fff;}
 .acc-lt::first-letter{background:none;color:#a5ced3;-webkit-text-fill-color:#a5ced3;}
 
