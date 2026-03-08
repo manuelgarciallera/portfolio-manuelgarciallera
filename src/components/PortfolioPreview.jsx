@@ -520,7 +520,7 @@ function ArchSection({isDark,C,prefRM}){
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D · Arquitectura</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
-              <span style={{color:C.text}}>Del plano al </span><span className={isDark?"acc-dk":"acc-lt"}>fotorrealismo.</span>
+              <span className={isDark?"acc-dk":"acc-lt"}>Del plano al fotorrealismo.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
@@ -752,7 +752,7 @@ function UXSection({isDark,C,prefRM}){
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX · UI · Product Design</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
-              <span style={{color:C.text}}>Interfaces que </span><span className={isDark?"acc-dk":"acc-lt"}>enamoran.</span>
+              <span className={isDark?"acc-dk":"acc-lt"}>Interfaces que enamoran.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>

@@ -84,6 +84,16 @@ foreach ($variant in $accLtVariants) {
   $sourceText = $sourceText.Replace($variant, $accLtFinal)
 }
 
+$sourceText = $sourceText.Replace(
+  '<span style={{color:C.text}}>Del plano al </span><span className={isDark?"acc-dk":"acc-lt"}>fotorrealismo.</span>',
+  '<span className={isDark?"acc-dk":"acc-lt"}>Del plano al fotorrealismo.</span>'
+)
+
+$sourceText = $sourceText.Replace(
+  '<span style={{color:C.text}}>Interfaces que </span><span className={isDark?"acc-dk":"acc-lt"}>enamoran.</span>',
+  '<span className={isDark?"acc-dk":"acc-lt"}>Interfaces que enamoran.</span>'
+)
+
 
 $sourceText = $sourceText.Replace(
   'border:`1px solid ${isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)"}`,borderTop:"none"',
