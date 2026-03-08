@@ -679,7 +679,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
 
   return(
-    <section style={{padding:wide?"108px 28px 54px":"84px 16px 46px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"72px 28px 128px":"62px 16px 96px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1360,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:34}}>
           {"M\u00E1s de cerca."}
@@ -762,14 +762,14 @@ function CloseLookSection({isDark,C,prefRM}){
                           backdropFilter:"blur(6px)",
                         }}>
                         <span style={{
-                          width:18,
-                          height:18,
+                          width:22,
+                          height:22,
                           borderRadius:"50%",
                           border:`1px solid ${expanded?"rgba(255,255,255,.46)":"rgba(255,255,255,.28)"}`,
                           display:"inline-flex",
                           alignItems:"center",
                           justifyContent:"center",
-                          fontSize:13,
+                          fontSize:16,
                           fontWeight:700,
                           color:"rgba(245,245,247,.95)",
                           background:expanded?"rgba(255,255,255,.14)":"transparent",
@@ -785,7 +785,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           borderRadius:18,
                           padding:wide?"14px 16px":"13px 14px",
                           width:wide?Math.min(descWidth,descMax):"100%",
-                          fontSize:wide?16:14.5,
+                          fontSize:wide?17:15.5,
+                          fontWeight:500,
                           lineHeight:1.45,
                           letterSpacing:"-.01em",
                           color:"rgba(245,245,247,.88)",
@@ -794,7 +795,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           animation:prefRM.current?"none":"nearPop .42s cubic-bezier(.16,1,.3,1)",
                           backdropFilter:"blur(10px)",
                         }}>
-                          <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>{item.desc}
+                          <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
+                          <span style={{fontWeight:500,color:"rgba(245,245,247,.92)"}}>{item.desc}</span>
                         </div>
                       )}
                     </div>
