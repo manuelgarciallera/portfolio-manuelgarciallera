@@ -47,11 +47,9 @@ const CSS=`
 
 /* ── GRADIENTS ── */
 /* Dark bg: white → teal light */
-.acc-dk{background:linear-gradient(92deg,#9cd0d3 0%,#84bdc8 28%,#6b9fb4 60%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-dk{background:linear-gradient(90deg,#d7efe9 0%,#cbe8e2 18%,#87b5bd 57%,#4b6d85 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
 /* Light bg: near-black → teal dark (readable, professional) */
-.acc-lt{background:linear-gradient(92deg,#93c1c9 0%,#7aa8b8 28%,#608aa3 60%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.acc-dk::first-letter{background:none;color:#fff;-webkit-text-fill-color:#fff;}
-.acc-lt::first-letter{background:none;color:#a5ced3;-webkit-text-fill-color:#a5ced3;}
+.acc-lt{background:linear-gradient(90deg,#d3ebe6 0%,#bfe2dc 18%,#7eaeb8 57%,#456985 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
 
 /* ── SCROLL REVEALS ── */
 .rv{opacity:0;transform:translateY(80px);transition:opacity 1.4s cubic-bezier(.16,1,.3,1),transform 1.4s cubic-bezier(.16,1,.3,1);will-change:transform,opacity;}
@@ -430,7 +428,7 @@ function FeaturedSection({isDark,C}){
       <div style={{maxWidth:980,margin:"0 auto",padding:"130px 28px 56px"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
         <h2 className="rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
-          <span style={{color:C.text}}>El trabajo </span><span className={isDark?"acc-dk":"acc-lt"}>habla por sí solo.</span>
+          <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por sí solo.</span>
         </h2>
       </div>
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 28px"}}>

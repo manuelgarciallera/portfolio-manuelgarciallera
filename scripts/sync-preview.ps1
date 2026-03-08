@@ -51,8 +51,8 @@ if (-not $sourceText.StartsWith("/* eslint-disable */")) {
 }
 
 # Persist project-specific visual and compatibility fixes after sync.
-$accDkFinal = '.acc-dk{background:linear-gradient(92deg,#9cd0d3 0%,#84bdc8 28%,#6b9fb4 60%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
-$accLtFinal = '.acc-lt{background:linear-gradient(92deg,#93c1c9 0%,#7aa8b8 28%,#608aa3 60%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
+$accDkFinal = '.acc-dk{background:linear-gradient(90deg,#d7efe9 0%,#cbe8e2 18%,#87b5bd 57%,#4b6d85 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}'
+$accLtFinal = '.acc-lt{background:linear-gradient(90deg,#d3ebe6 0%,#bfe2dc 18%,#7eaeb8 57%,#456985 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}'
 
 $accDkVariants = @(
   '.acc-dk{background:linear-gradient(90deg,#fff 0%,#5ec4c8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
@@ -60,7 +60,9 @@ $accDkVariants = @(
   '.acc-dk{background:linear-gradient(92deg,#9fcac9 0%,#84b8bf 28%,#669cb0 60%,#456e97 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
   '.acc-dk{background:linear-gradient(92deg,#def6ef 0%,#a9d7dc 48%,#5e8fb8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
   '.acc-dk{background:linear-gradient(92deg,#afd7d4 0%,#97c7cb 30%,#73acbd 62%,#4e7aa2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
-  '.acc-dk{background:linear-gradient(92deg,#b7dfda 0%,#b7dfda 7%,#95c8cd 34%,#6fa9bc 66%,#48739a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
+  '.acc-dk{background:linear-gradient(92deg,#b7dfda 0%,#b7dfda 7%,#95c8cd 34%,#6fa9bc 66%,#48739a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
+  '.acc-dk{background:linear-gradient(92deg,#9cd0d3 0%,#84bdc8 28%,#6b9fb4 60%,#49759d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
+  '.acc-dk{background:linear-gradient(92deg,#d9ece7 0%,#b8ddd8 24%,#88b8c6 58%,#4f769f 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
 )
 
 $accLtVariants = @(
@@ -69,7 +71,9 @@ $accLtVariants = @(
   '.acc-lt{background:linear-gradient(92deg,#94bfc6 0%,#79a9b8 28%,#5f8fa4 60%,#3f648b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
   '.acc-lt{background:linear-gradient(92deg,#9acbd2 0%,#75aec0 50%,#527ea6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
   '.acc-lt{background:linear-gradient(92deg,#9bc6cd 0%,#80afbd 30%,#618fa5 62%,#3f668e 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
-  '.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 7%,#88b5c2 34%,#668fa6 66%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
+  '.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 7%,#88b5c2 34%,#668fa6 66%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
+  '.acc-lt{background:linear-gradient(92deg,#93c1c9 0%,#7aa8b8 28%,#608aa3 60%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
+  '.acc-lt{background:linear-gradient(92deg,#c8e3df 0%,#a8ccd3 24%,#7fa9bc 58%,#4f769f 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
 )
 
 foreach ($variant in $accDkVariants) {
@@ -80,12 +84,6 @@ foreach ($variant in $accLtVariants) {
   $sourceText = $sourceText.Replace($variant, $accLtFinal)
 }
 
-if (-not $sourceText.Contains('.acc-dk::first-letter')) {
-  $sourceText = $sourceText.Replace(
-    $accLtFinal,
-    $accLtFinal + "`r`n.acc-dk::first-letter{background:none;color:#fff;-webkit-text-fill-color:#fff;}" + "`r`n.acc-lt::first-letter{background:none;color:#a5ced3;-webkit-text-fill-color:#a5ced3;}"
-  )
-}
 
 $sourceText = $sourceText.Replace(
   'border:`1px solid ${isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)"}`,borderTop:"none"',
