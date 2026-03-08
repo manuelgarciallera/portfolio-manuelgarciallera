@@ -673,15 +673,16 @@ function CloseLookSection({isDark,C,prefRM}){
 
   const wide=panelW>=980;
   const activeItem=items[active];
-  const listLeft=wide?56:16;
-  const listTop=wide?52:20;
-  const descWidth=wide?Math.min(760,Math.max(420,panelW*.52)):0;
+  const listLeft=wide?78:16;
+  const listTop=wide?48:20;
+  const descWidth=wide?Math.min(820,Math.max(500,panelW*.56)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
+  const ctrlSize=wide?44:40;
 
   return(
-    <section style={{padding:wide?"72px 28px 128px":"62px 16px 96px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"40px 28px 168px":"44px 16px 120px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1360,margin:"0 auto"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:34}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:30,marginLeft:wide?56:0}}>
           {"M\u00E1s de cerca."}
         </h2>
 
@@ -689,7 +690,7 @@ function CloseLookSection({isDark,C,prefRM}){
           borderRadius:22,
           overflow:"hidden",
           background:"#000",
-          border:`1px solid ${isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.12)"}`,
+          border:"none",
           padding:0,
         }}>
           <div style={{position:"relative",minHeight:wide?700:790}}>
@@ -715,20 +716,20 @@ function CloseLookSection({isDark,C,prefRM}){
 
             {open!==-1&&(
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:30,height:30,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:18,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:22,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
                 {"\u00D7"}
               </button>
             )}
 
             <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
               {wide&&(
-                <div style={{position:"absolute",left:-36,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:12}}>
+                <div style={{position:"absolute",left:-72,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:18}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:38,height:38,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChU/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:38,height:38,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChD/>
                   </button>
                 </div>
@@ -740,63 +741,67 @@ function CloseLookSection({isDark,C,prefRM}){
                   const expanded=open===i;
                   return(
                     <div key={item.label}>
-                      <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
-                        style={{
-                          width:"100%",
-                          border:"1px solid rgba(255,255,255,.14)",
-                          background:expanded?"rgba(58,58,64,.8)":(isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)"),
-                          boxShadow:expanded?"0 14px 34px rgba(0,0,0,.35)":"none",
-                          borderRadius:999,
-                          display:"flex",
-                          alignItems:"center",
-                          justifyContent:"flex-start",
-                          gap:10,
-                          cursor:"pointer",
-                          padding:wide?"12px 18px":"11px 14px",
-                          color:"#f5f5f7",
-                          fontSize:wide?20:17,
-                          fontWeight:600,
-                          letterSpacing:"-.015em",
-                          transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease",
-                          animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
-                          backdropFilter:"blur(6px)",
-                        }}>
-                        <span style={{
-                          width:22,
-                          height:22,
-                          borderRadius:"50%",
-                          border:`1px solid ${expanded?"rgba(255,255,255,.46)":"rgba(255,255,255,.28)"}`,
-                          display:"inline-flex",
-                          alignItems:"center",
-                          justifyContent:"center",
-                          fontSize:16,
-                          fontWeight:700,
-                          color:"rgba(245,245,247,.95)",
-                          background:expanded?"rgba(255,255,255,.14)":"transparent",
-                          flexShrink:0,
-                        }}>
-                          {expanded?"\u2022":"+"}
-                        </span>
-                        <span>{item.label}</span>
-                      </button>
+                      {!expanded&&(
+                        <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
+                          style={{
+                            width:"100%",
+                            border:"1px solid rgba(255,255,255,.14)",
+                            background:isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)",
+                            boxShadow:"none",
+                            borderRadius:999,
+                            display:"flex",
+                            alignItems:"center",
+                            justifyContent:"flex-start",
+                            gap:10,
+                            cursor:"pointer",
+                            padding:wide?"12px 18px":"11px 14px",
+                            color:"#f5f5f7",
+                            fontSize:wide?20:17,
+                            fontWeight:600,
+                            letterSpacing:"-.015em",
+                            transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
+                            animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
+                            backdropFilter:"blur(6px)",
+                            opacity:open===-1||!isOn?1:.65,
+                          }}>
+                          <span style={{
+                            width:26,
+                            height:26,
+                            borderRadius:"50%",
+                            border:`1px solid ${isOn?"rgba(255,255,255,.46)":"rgba(255,255,255,.28)"}`,
+                            display:"inline-flex",
+                            alignItems:"center",
+                            justifyContent:"center",
+                            fontSize:20,
+                            fontWeight:650,
+                            color:"rgba(245,245,247,.95)",
+                            background:isOn?"rgba(255,255,255,.14)":"transparent",
+                            flexShrink:0,
+                            lineHeight:1,
+                          }}>
+                            +
+                          </span>
+                          <span>{item.label}</span>
+                        </button>
+                      )}
                       {expanded&&(
                         <div style={{
                           marginTop:8,
                           borderRadius:18,
                           padding:wide?"14px 16px":"13px 14px",
                           width:wide?Math.min(descWidth,descMax):"100%",
-                          fontSize:wide?17:15.5,
-                          fontWeight:500,
-                          lineHeight:1.45,
+                          fontSize:wide?18:16,
+                          fontWeight:520,
+                          lineHeight:1.47,
                           letterSpacing:"-.01em",
-                          color:"rgba(245,245,247,.88)",
+                          color:"rgba(245,245,247,.95)",
                           background:"rgba(34,34,40,.68)",
                           border:"1px solid rgba(255,255,255,.13)",
                           animation:prefRM.current?"none":"nearPop .42s cubic-bezier(.16,1,.3,1)",
                           backdropFilter:"blur(10px)",
                         }}>
                           <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
-                          <span style={{fontWeight:500,color:"rgba(245,245,247,.92)"}}>{item.desc}</span>
+                          <span style={{fontWeight:550,color:"rgba(245,245,247,.95)"}}>{item.desc}</span>
                         </div>
                       )}
                     </div>
@@ -807,11 +812,11 @@ function CloseLookSection({isDark,C,prefRM}){
               {!wide&&(
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChU/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChD/>
                   </button>
                 </div>
