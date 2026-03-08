@@ -4,15 +4,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════════
 // SAVED FOR INDIVIDUAL SECTION PAGES (not rendered on home):
 // - SectionUXUI effect: fluid particles (organic human-feel network)
 // - SectionFullStack effect: constellation with vertex connections
 // These effects ARE rendered here inside SectionBlock components on home,
 // but the full individual pages will be built separately.
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════════
 
-// â”€â”€â”€ SPHERE SHADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SPHERE SHADER ───────────────────────────────────────────────────────────
 const SV=`uniform float uTime;varying vec3 vN;varying vec3 vP;varying float vNoise;
 vec3 m289(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 m289(vec4 x){return x-floor(x*(1./289.))*289.;}
 vec4 perm(vec4 x){return m289(((x*34.)+1.)*x);}vec4 tiSq(vec4 r){return 1.79284291-.85373472*r;}
@@ -38,20 +38,20 @@ float ir=sin(vP.y*4.+vP.x*2.+uTime*.4)*.5+.5;col=mix(col,vec3(.18,.08,.32),ir*.1
 col+=fr*hi*.55+fr*fr*vec3(.38,.72,.84)*.22+vNoise*.04*t;
 gl_FragColor=vec4(clamp(col,0.,1.),.88+fr*.05);}`;
 
-// â”€â”€â”€ CSS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── CSS ─────────────────────────────────────────────────────────────────────
 const CSS=`
 .p *{box-sizing:border-box;margin:0;padding:0;}
 .p{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;}
 .p ::-webkit-scrollbar{width:4px;}
 .p ::-webkit-scrollbar-thumb{background:rgba(128,128,128,.2);border-radius:2px;}
 
-/* â”€â”€ GRADIENTS â”€â”€ */
-/* Dark bg: white â†’ teal light */
-.acc-dk{background:linear-gradient(92deg,#d9f2ec 0%,#9acfd7 46%,#5f8fb7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-/* Light bg: near-black â†’ teal dark (readable, professional) */
-.acc-lt{background:linear-gradient(92deg,#8fc7cf 0%,#6aa6bb 52%,#4f7ea6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* ── GRADIENTS ── */
+/* Dark bg: white → teal light */
+.acc-dk{background:linear-gradient(92deg,#def6ef 0%,#a9d7dc 48%,#5e8fb8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* Light bg: near-black → teal dark (readable, professional) */
+.acc-lt{background:linear-gradient(92deg,#9acbd2 0%,#75aec0 50%,#527ea6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
-/* â”€â”€ SCROLL REVEALS â”€â”€ */
+/* ── SCROLL REVEALS ── */
 .rv{opacity:0;transform:translateY(80px);transition:opacity 1.4s cubic-bezier(.16,1,.3,1),transform 1.4s cubic-bezier(.16,1,.3,1);will-change:transform,opacity;}
 .rv.in{opacity:1;transform:translateY(0);}
 .rv2{opacity:0;transform:translateY(52px);transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1);}
@@ -66,12 +66,12 @@ const CSS=`
 .clip-rv{clip-path:inset(0 0 110% 0);transition:clip-path 1.15s cubic-bezier(.16,1,.3,1);}
 .clip-rv.in{clip-path:inset(0 0 0% 0);}
 
-/* â”€â”€ NAVBAR â€” exacto Apple â”€â”€ */
+/* ── NAVBAR — exacto Apple ── */
 .nl{
   text-decoration:none;font-size:13.5px;font-weight:400;letter-spacing:-.01em;
   display:flex;align-items:center;height:100%;position:relative;
   padding:0;margin-right:24px;cursor:pointer;
-  /* Hover rÃ¡pido */
+  /* Hover rápido */
   transition:color .1s ease;
 }
 .nl .nl-bar{
@@ -85,12 +85,12 @@ const CSS=`
 .nl-dk.active{color:#fff!important;font-weight:600;}
 .nl-dk:not(.active):hover{color:rgba(255,255,255,.85)!important;}
 
-/* Light mode nav â€” FIXED: active = dark, hover = dark blue */
+/* Light mode nav — FIXED: active = dark, hover = dark blue */
 .nl-lt{color:#6e6e73;}
 .nl-lt.active{color:#1d1d1f!important;font-weight:600;}
 .nl-lt:not(.active):hover{color:#0d2a4a!important;}
 
-/* â”€â”€ BUTTONS â€” cÃ¡psulas limpias â”€â”€ */
+/* ── BUTTONS — cápsulas limpias ── */
 .btn-blue{
   background:#0071e3;color:#fff;border:none;padding:13px 28px;border-radius:980px;
   font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:-.015em;
@@ -113,7 +113,7 @@ const CSS=`
 }
 .btn-lt:hover{background:#d2d2d7;transform:translateY(-2px);}
 
-/* Ghost buttons â€” visibles en cualquier fondo */
+/* Ghost buttons — visibles en cualquier fondo */
 .btn-ghost-dk{
   background:transparent;color:#f5f5f7;
   border:1.5px solid rgba(255,255,255,.32);
@@ -132,7 +132,7 @@ const CSS=`
 }
 .btn-ghost-lt:hover{border-color:rgba(0,0,0,.45);background:rgba(0,0,0,.05);transform:translateY(-2px);}
 
-/* Social buttons â€” always visible pill with icon */
+/* Social buttons — always visible pill with icon */
 .btn-social{
   display:inline-flex;align-items:center;gap:8px;
   background:rgba(255,255,255,.1);color:#f5f5f7;
@@ -148,7 +148,7 @@ const CSS=`
 }
 .btn-social-lt:hover{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.35);}
 
-/* â”€â”€ TABS â”€â”€ */
+/* ── TABS ── */
 .tab-row{display:flex;border-bottom:1.5px solid rgba(255,255,255,.08);}
 .tab-row-lt{border-bottom-color:rgba(0,0,0,.1);}
 .tab-btn{background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:14px;
@@ -159,13 +159,13 @@ const CSS=`
 .tab-lt-a{color:#1d1d1f!important;font-weight:500;}
 .tab-lt-a::after{transform:scaleX(1)!important;background:#1d1d1f!important;}
 
-/* â”€â”€ CARDS â”€â”€ */
+/* ── CARDS ── */
 .card-dk{background:#1c1c1e;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:transform .55s cubic-bezier(.16,1,.3,1),box-shadow .55s;}
 .card-dk:hover{transform:translateY(-10px);box-shadow:0 34px 68px rgba(0,0,0,.6);}
 .card-lt{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);cursor:pointer;transition:transform .55s cubic-bezier(.16,1,.3,1),box-shadow .55s;}
 .card-lt:hover{transform:translateY(-10px);box-shadow:0 28px 56px rgba(0,0,0,.13),0 0 0 1px rgba(0,0,0,.04);}
 
-/* â”€â”€ COMPARISON â”€â”€ */
+/* ── COMPARISON ── */
 .comp-knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 18px rgba(0,0,0,.38);}
 
 .sec-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
@@ -177,13 +177,13 @@ const CSS=`
 @media(max-width:700px){.hide-m{display:none!important;}}
 `;
 
-// â”€â”€â”€ SVG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SVG ─────────────────────────────────────────────────────────────────────
 const ChR=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M4.5 2.5l4 4-4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChL=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M8.5 2.5l-4 4 4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoLI=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2" fill={c}/></svg>;
 const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>;
 
-// â”€â”€â”€ SMART IMAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SMART IMAGE ─────────────────────────────────────────────────────────────
 const IMGS=["https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=75&auto=format","https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=75&auto=format","https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=75&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75&auto=format"];
 const FBK=["linear-gradient(135deg,#0a1628,#1a3a5c)","linear-gradient(135deg,#0a1a18,#0e3530)","linear-gradient(135deg,#0d0d1a,#1a1a32)","linear-gradient(135deg,#1a1020,#2d1a3e)"];
 function Img({src,fb,alt,style={}}){
@@ -192,7 +192,7 @@ function Img({src,fb,alt,style={}}){
   return <img src={src} alt={alt} loading="lazy" onError={()=>setE(true)} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",...style}}/>;
 }
 
-// â”€â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Portfolio(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
@@ -287,12 +287,12 @@ export default function Portfolio(){
     statBg:"#fff",divider:"rgba(0,0,0,0.07)",
   };
 
-  const NAVLINKS=["Trabajo","3D","Sobre mÃ­","Contacto"];
+  const NAVLINKS=["Trabajo","3D","Sobre mí","Contacto"];
 
   return(
     <div ref={wrapRef} className="p" style={{height:"100vh",overflowY:"scroll",overflowX:"hidden",background:C.bg,color:C.text,transition:"background .5s,color .35s",scrollbarWidth:"thin"}}>
 
-      {/* â”€â”€ NAVBAR â”€â”€ */}
+      {/* ── NAVBAR ── */}
       <nav style={{
         position:"sticky",top:0,zIndex:200,height:52,
         display:"flex",alignItems:"stretch",justifyContent:"space-between",
@@ -304,7 +304,7 @@ export default function Portfolio(){
         transition:"background .25s,border-color .25s",
       }}>
         <div style={{display:"flex",alignItems:"center"}}>
-          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-.04em",color:isDark?"#f5f5f7":"#1d1d1f"}}>Manuel GarcÃ­a Llera</span>
+          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-.04em",color:isDark?"#f5f5f7":"#1d1d1f"}}>Manuel García Llera</span>
         </div>
 
         <div className="hide-m" style={{display:"flex",alignItems:"stretch",position:"absolute",left:"50%",transform:"translateX(-50%)",height:"100%"}}>
@@ -325,30 +325,30 @@ export default function Portfolio(){
           <button onClick={()=>setTheme(t=>t==="dark"?"light":"dark")}
             className={isDark?"btn-dk":"btn-lt"}
             style={{fontSize:12.5,padding:"6px 14px"}}>
-            {isDark?"â˜€ï¸ Claro":"ðŸŒ™ Oscuro"}
+            {isDark?"☀️ Claro":"🌙 Oscuro"}
           </button>
         </div>
       </nav>
 
-      {/* â”€â”€ HERO â”€â”€ */}
+      {/* ── HERO ── */}
       <section style={{height:"calc(100vh - 52px)",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
         <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 24px",maxWidth:980,width:"100%"}}>
           <p style={{fontSize:13.5,color:"rgba(255,255,255,.62)",letterSpacing:".015em",marginBottom:20,fontWeight:400}}>
-            Portfolio Â· Manuel GarcÃ­a Llera
+            Portfolio · Manuel García Llera
           </p>
           <h1 style={{fontSize:"clamp(50px,8.5vw,98px)",fontWeight:700,lineHeight:1.03,letterSpacing:"-.048em",marginBottom:6}}>
-            <span style={{display:"block",color:"#fff"}}>DiseÃ±o que</span>
-            <span style={{display:"block",color:"#fff"}}>piensa en <span className="acc-dk">cÃ³digo.</span></span>
+            <span style={{display:"block",color:"#fff"}}>Diseño que</span>
+            <span style={{display:"block",color:"#fff"}}>piensa en <span className="acc-dk">código.</span></span>
           </h1>
           <p style={{fontSize:"clamp(17px,1.9vw,20px)",color:"rgba(255,255,255,.7)",lineHeight:1.58,maxWidth:500,margin:"28px auto 44px",fontWeight:400,letterSpacing:"-.015em"}}>
-            Visual Design Manager en LALIGA.<br/>UX, producto, 3D arquitectÃ³nico y full stack.
+            Visual Design Manager en LALIGA.<br/>UX, producto, 3D arquitectónico y full stack.
           </p>
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
             <button className="btn-blue">Ver proyectos</button>
-            <button className="btn-ghost-dk">MÃ¡s sobre mÃ­</button>
+            <button className="btn-ghost-dk">Más sobre mí</button>
           </div>
         </div>
 
@@ -359,44 +359,44 @@ export default function Portfolio(){
         </div>
       </section>
 
-      {/* â”€â”€ FEATURED â”€â”€ */}
+      {/* ── FEATURED ── */}
       <FeaturedSection isDark={isDark} C={C}/>
 
-      {/* â”€â”€ SECTION BLOCK: 3D ARQUITECTURA â”€â”€ */}
+      {/* ── SECTION BLOCK: 3D ARQUITECTURA ── */}
       <ArchSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ MINI PROJECTS â€” visual separator â”€â”€ */}
+      {/* ── MINI PROJECTS — visual separator ── */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[0],PROJECTS[1],PROJECTS[2]]}/>
 
-      {/* â”€â”€ SECTION BLOCK: UX / PRODUCT DESIGN â”€â”€ */}
+      {/* ── SECTION BLOCK: UX / PRODUCT DESIGN ── */}
       <UXSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ MINI PROJECTS â€” separator â”€â”€ */}
+      {/* ── MINI PROJECTS — separator ── */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[3],PROJECTS[0],PROJECTS[1]]} alt/>
 
-      {/* â”€â”€ SECTION BLOCK: FULL STACK â”€â”€ */}
+      {/* ── SECTION BLOCK: FULL STACK ── */}
       <FullStackSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ DEVICE â”€â”€ */}
+      {/* ── DEVICE ── */}
       <DeviceSection isDark={isDark} C={C} wrapRef={wrapRef} prefRM={prefRM}/>
 
-      {/* â”€â”€ COMPARISON â”€â”€ */}
+      {/* ── COMPARISON ── */}
       <ComparisonSection isDark={isDark} C={C}/>
 
-      {/* â”€â”€ CTA â”€â”€ */}
+      {/* ── CTA ── */}
       <section style={{padding:"150px 28px",textAlign:"center",background:C.ctaBg,transition:"background .5s"}}>
         <div style={{maxWidth:560,margin:"0 auto"}}>
           <p className="rv" style={{fontSize:12,color:C.ctaTextSec,letterSpacing:".1em",textTransform:"uppercase",fontWeight:500,marginBottom:22}}>Contacto</p>
           <h2 className="rv" style={{transitionDelay:".14s",fontSize:"clamp(34px,6vw,68px)",fontWeight:700,letterSpacing:"-.046em",lineHeight:1.02,marginBottom:20,color:C.ctaText}}>
             Construyamos algo{" "}
-            {/* Gradient adapts to background: dark bg (light mode) â†’ white/teal; light bg (dark mode) â†’ dark/teal */}
+            {/* Gradient adapts to background: dark bg (light mode) → white/teal; light bg (dark mode) → dark/teal */}
             <span className={isDark?"acc-lt":"acc-dk"}>extraordinario.</span>
           </h2>
           <p className="rv" style={{transitionDelay:".26s",fontSize:17,lineHeight:1.65,marginBottom:44,fontWeight:400,color:C.ctaTextSec}}>
-            Disponible para proyectos de diseÃ±o, producto y 3D arquitectÃ³nico.
+            Disponible para proyectos de diseño, producto y 3D arquitectónico.
           </p>
           <div className="rv" style={{transitionDelay:".38s",display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",alignItems:"center"}}>
-            <button className="btn-blue" style={{padding:"13px 28px"}}>Contactar â†’</button>
+            <button className="btn-blue" style={{padding:"13px 28px"}}>Contactar →</button>
             {/* CTA bg es INVERTIDO al tema: dark mode = fondo claro, light mode = fondo oscuro */}
             <button className={`btn-social${isDark?" btn-social-lt":""}`}>
               <IcoLI c={isDark?"#1d1d1f":"#f5f5f7"}/> LinkedIn
@@ -411,15 +411,15 @@ export default function Portfolio(){
   );
 }
 
-// â”€â”€â”€ FEATURED â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── FEATURED ─────────────────────────────────────────────────────────────────
 function FeaturedSection({isDark,C}){
   const [active,setActive]=useState(0);
   const imgRef=useRef(null);
   const items=[
-    {label:"UX Â· LALIGA",cat:"Product Design",headline:"DiseÃ±o de",accent:"producto.",sub:"Experiencias digitales para 20 millones de seguidores en todo el mundo.",src:IMGS[0],fb:FBK[0]},
-    {label:"3D Â· Estadios",cat:"3D Visualization",headline:"Arquitectura",accent:"fotorrealista.",sub:"Modelos SketchUp, visualizaciÃ³n en UE5 y rendering web interactivo.",src:IMGS[1],fb:FBK[1]},
-    {label:"Full Stack",cat:"Development",headline:"Del diseÃ±o al",accent:"cÃ³digo.",sub:"Angular, Node.js y MongoDB. Interfaces que funcionan en producciÃ³n real.",src:IMGS[2],fb:FBK[2]},
-    {label:"Branding",cat:"Brand Design",headline:"Identidad visual de",accent:"marca.",sub:"Sistemas de diseÃ±o coherentes para entidades del deporte global.",src:IMGS[3],fb:FBK[3]},
+    {label:"UX · LALIGA",cat:"Product Design",headline:"Diseño de",accent:"producto.",sub:"Experiencias digitales para 20 millones de seguidores en todo el mundo.",src:IMGS[0],fb:FBK[0]},
+    {label:"3D · Estadios",cat:"3D Visualization",headline:"Arquitectura",accent:"fotorrealista.",sub:"Modelos SketchUp, visualización en UE5 y rendering web interactivo.",src:IMGS[1],fb:FBK[1]},
+    {label:"Full Stack",cat:"Development",headline:"Del diseño al",accent:"código.",sub:"Angular, Node.js y MongoDB. Interfaces que funcionan en producción real.",src:IMGS[2],fb:FBK[2]},
+    {label:"Branding",cat:"Brand Design",headline:"Identidad visual de",accent:"marca.",sub:"Sistemas de diseño coherentes para entidades del deporte global.",src:IMGS[3],fb:FBK[3]},
   ];
   const go=i=>{if(i===active)return;const el=imgRef.current;if(el){el.style.opacity="0";el.style.transform="scale(1.025)";}setTimeout(()=>{setActive(i);if(el){el.style.transition="opacity .55s ease,transform .65s ease";el.style.opacity="1";el.style.transform="scale(1)";}},160);};
   const cur=items[active];
@@ -428,7 +428,7 @@ function FeaturedSection({isDark,C}){
       <div style={{maxWidth:980,margin:"0 auto",padding:"130px 28px 56px"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
         <h2 className="rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
-          <span style={{color:C.text}}>El trabajo </span><span className={isDark?"acc-dk":"acc-lt"}>habla por sÃ­ solo.</span>
+          <span style={{color:C.text}}>El trabajo </span><span className={isDark?"acc-dk":"acc-lt"}>habla por sí solo.</span>
         </h2>
       </div>
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 28px"}}>
@@ -466,7 +466,7 @@ function FeaturedSection({isDark,C}){
   );
 }
 
-// â”€â”€â”€ ARCH SECTION â€” drawrange wireframe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ARCH SECTION — drawrange wireframe ───────────────────────────────────────
 function ArchSection({isDark,C,prefRM}){
   const canvasRef=useRef(null);
   const secRef=useRef(null);
@@ -517,26 +517,26 @@ function ArchSection({isDark,C,prefRM}){
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D Â· Arquitectura</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D · Arquitectura</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
               <span style={{color:C.text}}>Del plano al </span><span className={isDark?"acc-dk":"acc-lt"}>fotorrealismo.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Pipeline completo desde SketchUp. Modelado arquitectÃ³nico, baking en Blender, renders estÃ¡ticos en UE5 y Twinmotion 2025. VisualizaciÃ³n 3D interactiva para web.
+            Pipeline completo desde SketchUp. Modelado arquitectónico, baking en Blender, renders estáticos en UE5 y Twinmotion 2025. Visualización 3D interactiva para web.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className={isDark?"btn-dk":"btn-lt"}>Ver renders 3D</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Pipeline â†’</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Pipeline →</button>
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
           <Img src={IMGS[1]} fb={FBK[1]} alt="Estadio 3D" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>VisualizaciÃ³n arquitectÃ³nica</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Estadio Â· SketchUp â†’ UE5</div>
-            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>Render fotorrealista 4K Â· Lumen GI Â· Nanite</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Visualización arquitectónica</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Estadio · SketchUp → UE5</div>
+            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>Render fotorrealista 4K · Lumen GI · Nanite</div>
           </div>
         </div>
       </div>
@@ -544,7 +544,7 @@ function ArchSection({isDark,C,prefRM}){
   );
 }
 
-// â”€â”€â”€ UX SECTION â€” WebGL curl-noise fluid simulation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── UX SECTION — WebGL curl-noise fluid simulation ───────────────────────────
 function UXSection({isDark,C,prefRM}){
   const canvasRef=useRef(null);
   useEffect(()=>{
@@ -558,14 +558,14 @@ function UXSection({isDark,C,prefRM}){
       pts=Array.from({length:N},(_,i)=>({
         x:Math.random()*c.width,
         y:Math.random()*c.height,
-        hx:0,hy:0, // posiciÃ³n home â€” se asigna tras crear
+        hx:0,hy:0, // posición home — se asigna tras crear
         vx:(Math.random()-.5)*.3,
         vy:(Math.random()-.5)*.3,
         r:Math.random()*2.5+2,
         hue:190+Math.random()*20,
         bright: i<18,
       }));
-      // guardar posiciÃ³n inicial como "home"
+      // guardar posición inicial como "home"
       pts.forEach(p=>{p.hx=p.x;p.hy=p.y;});
     };
     const ro=new ResizeObserver(init);ro.observe(c);init();
@@ -583,7 +583,7 @@ function UXSection({isDark,C,prefRM}){
       ctx.clearRect(0,0,w,h);
 
       pts.forEach((p,i)=>{
-        // â”€â”€ CAMPO DE FLUJO orgÃ¡nico â”€â”€
+        // ── CAMPO DE FLUJO orgánico ──
         const fi=i*0.43;
         const baseX=Math.sin(t*0.11+fi*0.2)*0.022+Math.cos(t*0.07+fi*0.15)*0.014;
         const baseY=Math.cos(t*0.09+fi*0.18)*0.018+Math.sin(t*0.06+fi*0.22)*0.012;
@@ -591,7 +591,7 @@ function UXSection({isDark,C,prefRM}){
         p.vx+=baseX*gust;
         p.vy+=baseY*gust;
 
-        // â”€â”€ RATÃ“N: repulsiÃ³n notable â”€â”€
+        // ── RATÓN: repulsión notable ──
         const mdx=p.x-mouse.x,mdy=p.y-mouse.y;
         const md=Math.sqrt(mdx*mdx+mdy*mdy)||1;
         if(md<140){
@@ -600,8 +600,8 @@ function UXSection({isDark,C,prefRM}){
           p.vy+=mdy/md*f;
         }
 
-        // â”€â”€ RETORNO AL HOME: fuerza suave hacia posiciÃ³n original â”€â”€
-        // Solo actÃºa cuando se han alejado â€” no interfiere con la deriva normal
+        // ── RETORNO AL HOME: fuerza suave hacia posición original ──
+        // Solo actúa cuando se han alejado — no interfiere con la deriva normal
         const hDist=Math.sqrt((p.x-p.hx)**2+(p.y-p.hy)**2);
         if(hDist>8){
           p.vx+=(p.hx-p.x)*0.0018;
@@ -614,7 +614,7 @@ function UXSection({isDark,C,prefRM}){
 
         p.x+=p.vx; p.y+=p.vy;
 
-        // el home deriva muy lentamente con el flujo â€” no lucha contra Ã©l
+        // el home deriva muy lentamente con el flujo — no lucha contra él
         if(md>140){
           p.hx+=(p.x-p.hx)*0.004;
           p.hy+=(p.y-p.hy)*0.004;
@@ -646,7 +646,7 @@ function UXSection({isDark,C,prefRM}){
     return()=>{cancelAnimationFrame(raf);ro.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
   },[]);
 
-  // â”€â”€ CAPA PROTAGONISTA: bandada que se abre/cierra, muy reactiva al ratÃ³n â”€â”€
+  // ── CAPA PROTAGONISTA: bandada que se abre/cierra, muy reactiva al ratón ──
   const fgRef=useRef(null);
   const sharedMouse=useRef({x:-999,y:-999});
   useEffect(()=>{
@@ -687,28 +687,28 @@ function UXSection({isDark,C,prefRM}){
       pts.forEach(p=>{gcx+=p.x;gcy+=p.y;});
       gcx/=N; gcy/=N;
 
-      // pulso: el grupo se expande y contrae rÃ­tmicamente
+      // pulso: el grupo se expande y contrae rítmicamente
       const pulse=Math.sin(t*1.4)*0.00045+0.0008;
 
       pts.forEach((p,i)=>{
         const fi=i*0.55;
 
-        // deriva orgÃ¡nica suave
+        // deriva orgánica suave
         p.vx+=Math.sin(t*0.9+fi*0.3)*0.018+Math.cos(t*0.7+fi*0.5)*0.012;
         p.vy+=Math.cos(t*0.8+fi*0.4)*0.018+Math.sin(t*0.6+fi*0.6)*0.012;
 
-        // cohesiÃ³n al centro del grupo (abre/cierra)
+        // cohesión al centro del grupo (abre/cierra)
         p.vx+=(gcx-p.x)*pulse;
         p.vy+=(gcy-p.y)*pulse;
 
-        // separaciÃ³n mÃ­nima
+        // separación mínima
         pts.forEach(q=>{
           if(q===p)return;
           const dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy)||1;
           if(d<22){p.vx+=dx/d*0.12;p.vy+=dy/d*0.12;}
         });
 
-        // RATÃ“N: obstÃ¡culo potente
+        // RATÓN: obstáculo potente
         const mdx=p.x-mouse.x,mdy=p.y-mouse.y;
         const md=Math.sqrt(mdx*mdx+mdy*mdy)||1;
         if(md<180){
@@ -725,11 +725,11 @@ function UXSection({isDark,C,prefRM}){
         if(p.x<-40)p.x=w+40;if(p.x>w+40)p.x=-40;
         if(p.y<-40)p.y=h+40;if(p.y>h+40)p.y=-40;
 
-        // dibujar â€” tamaÃ±o segÃºn distancia al centro del grupo
+        // dibujar — tamaño según distancia al centro del grupo
         const dx=p.x-gcx, dy=p.y-gcy;
         const distG=Math.sqrt(dx*dx+dy*dy);
         const norm=Math.min(distG/140,1); // 0=centro, 1=periferia (radio ref 140px)
-        const rD=(p.r*3.2)*(1-norm*0.78)+p.r*0.6; // centro ~Ã—3.2, periferia ~Ã—0.6
+        const rD=(p.r*3.2)*(1-norm*0.78)+p.r*0.6; // centro ~×3.2, periferia ~×0.6
         const lx=p.x-rD*.38,ly=p.y-rD*.38;
         const g=ctx.createRadialGradient(lx,ly,rD*.04,p.x,p.y,rD*1.2);
         g.addColorStop(0,  `hsla(${p.hue+18},92%,94%,0.92)`);
@@ -749,26 +749,26 @@ function UXSection({isDark,C,prefRM}){
       <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}}/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:2,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX Â· UI Â· Product Design</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX · UI · Product Design</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
               <span style={{color:C.text}}>Interfaces que </span><span className={isDark?"acc-dk":"acc-lt"}>enamoran.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Once aÃ±os diseÃ±ando para millones de personas. MetodologÃ­as de investigaciÃ³n aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
+            Once años diseñando para millones de personas. Metodologías de investigación aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX Â· UI</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>MetodologÃ­a â†’</button>
+            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX · UI</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Metodología →</button>
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
           <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design Â· LALIGA</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA Â· 20M+ usuarios</div>
-            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research Â· Design System Â· Prototyping</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design · LALIGA</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA · 20M+ usuarios</div>
+            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research · Design System · Prototyping</div>
           </div>
         </div>
       </div>
@@ -776,7 +776,7 @@ function UXSection({isDark,C,prefRM}){
   );
 }
 
-// â”€â”€â”€ FULL STACK SECTION â€” constellation points â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── FULL STACK SECTION — constellation points ─────────────────────────────────
 // (Effect also saved for individual Full Stack page)
 function FullStackSection({isDark,C,prefRM}){
   const canvasRef=useRef(null);
@@ -808,18 +808,18 @@ function FullStackSection({isDark,C,prefRM}){
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"start"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>Full Stack Â· Dev</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>Full Stack · Dev</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
-              <span style={{color:C.text}}>Del diseÃ±o al </span><span className={isDark?"acc-dk":"acc-lt"}>cÃ³digo real.</span>
+              <span style={{color:C.text}}>Del diseño al </span><span className={isDark?"acc-dk":"acc-lt"}>código real.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Angular 17+ con Signals, Node.js, MongoDB y MySQL. Arquitecturas escalables que van de la idea al deploy, integrando 3D y visualizaciÃ³n interactiva.
+            Angular 17+ con Signals, Node.js, MongoDB y MySQL. Arquitecturas escalables que van de la idea al deploy, integrando 3D y visualización interactiva.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos dev</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Stack completo â†’</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Stack completo →</button>
           </div>
         </div>
         <div className="rv2" style={{transitionDelay:".12s",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
@@ -834,12 +834,12 @@ function FullStackSection({isDark,C,prefRM}){
   );
 }
 
-// â”€â”€â”€ MINI PROJECTS â€” visual separator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MINI PROJECTS — visual separator ─────────────────────────────────────────
 const PROJECTS=[
-  {id:0,cat:"UX Â· Product Design",title:"LALIGA App",sub:"Experiencia para 20M+ usuarios en 150 paÃ­ses.",tags:["Figma","UX Research"],year:"2023â€“24",src:IMGS[0],fb:FBK[0]},
-  {id:1,cat:"3D Â· Arquitectura",title:"Estadio Render",sub:"SketchUp â†’ UE5 â†’ fotorrealismo 4K.",tags:["UE5","SketchUp"],year:"2024",src:IMGS[1],fb:FBK[1]},
+  {id:0,cat:"UX · Product Design",title:"LALIGA App",sub:"Experiencia para 20M+ usuarios en 150 países.",tags:["Figma","UX Research"],year:"2023–24",src:IMGS[0],fb:FBK[0]},
+  {id:1,cat:"3D · Arquitectura",title:"Estadio Render",sub:"SketchUp → UE5 → fotorrealismo 4K.",tags:["UE5","SketchUp"],year:"2024",src:IMGS[1],fb:FBK[1]},
   {id:2,cat:"Full Stack",title:"Plataforma Angular",sub:"Angular + Node.js + MongoDB.",tags:["Angular","Node.js"],year:"2025",src:IMGS[2],fb:FBK[2]},
-  {id:3,cat:"Branding Â· Visual",title:"Sistema Identidad",sub:"Brand system para deporte global.",tags:["Brand","Figma"],year:"2022â€“24",src:IMGS[3],fb:FBK[3]},
+  {id:3,cat:"Branding · Visual",title:"Sistema Identidad",sub:"Brand system para deporte global.",tags:["Brand","Figma"],year:"2022–24",src:IMGS[3],fb:FBK[3]},
 ];
 function MiniProjects({isDark,C,projects,alt}){
   return(
@@ -847,10 +847,10 @@ function MiniProjects({isDark,C,projects,alt}){
       <div style={{maxWidth:980,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:32}}>
           <p style={{fontSize:12,color:C.textSec,letterSpacing:".08em",textTransform:"uppercase",fontWeight:500}}>
-            {alt?"Proyectos destacados":"MÃ¡s trabajo"}
+            {alt?"Proyectos destacados":"Más trabajo"}
           </p>
           <button className={isDark?"btn-dk":"btn-lt"} style={{fontSize:12.5,padding:"7px 18px"}}>
-            Ver todos â†’
+            Ver todos →
           </button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:14}}>
@@ -880,7 +880,7 @@ function MiniProjects({isDark,C,projects,alt}){
   );
 }
 
-// â”€â”€â”€ COMPARISON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── COMPARISON ───────────────────────────────────────────────────────────────
 function ComparisonSection({isDark,C}){
   const [pos,setPos]=useState(50);
   const dragging=useRef(false);
@@ -900,11 +900,11 @@ function ComparisonSection({isDark,C}){
         </div>
         <div ref={wRef} className="rs" style={{position:"relative",height:"clamp(260px,44vw,480px)",borderRadius:20,overflow:"hidden",cursor:"ew-resize",userSelect:"none",border:`1px solid ${C.divider}`,boxShadow:isDark?"0 24px 64px rgba(0,0,0,.5)":"0 24px 64px rgba(0,0,0,.09)"}} onMouseDown={onDown} onTouchStart={onDown}>
           <div style={{position:"absolute",inset:0}}><Img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1000&q=80" fb="linear-gradient(135deg,#0a1a0a,#1a3520)" alt="UE5 render"/>
-            <div style={{position:"absolute",top:14,right:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"#5ec4c8",fontWeight:600}}>UE5 â†’</div></div>
+            <div style={{position:"absolute",top:14,right:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"#5ec4c8",fontWeight:600}}>UE5 →</div></div>
           <div style={{position:"absolute",inset:0,clipPath:`inset(0 ${100-pos}% 0 0)`}}>
             <Img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1000&q=80" fb="linear-gradient(135deg,#0a0a14,#14143a)" alt="SketchUp"/>
             <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(94,196,200,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(94,196,200,.07) 1px,transparent 1px)`,backgroundSize:"38px 38px",mixBlendMode:"screen"}}/>
-            <div style={{position:"absolute",top:14,left:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"rgba(255,255,255,.6)",fontWeight:600}}>â† SketchUp</div>
+            <div style={{position:"absolute",top:14,left:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"rgba(255,255,255,.6)",fontWeight:600}}>← SketchUp</div>
           </div>
           <div style={{position:"absolute",top:0,bottom:0,left:`${pos}%`,width:2,background:"rgba(255,255,255,.92)",transform:"translateX(-50%)",zIndex:10,boxShadow:"0 0 14px rgba(255,255,255,.2)"}} onMouseDown={onDown} onTouchStart={onDown}>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,.95)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 18px rgba(0,0,0,.35)",gap:3}}>
@@ -917,7 +917,7 @@ function ComparisonSection({isDark,C}){
   );
 }
 
-// â”€â”€â”€ DEVICE HIPERREALISTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── DEVICE HIPERREALISTA ─────────────────────────────────────────────────────
 function DeviceSection({isDark,C,wrapRef,prefRM}){
   const secRef=useRef(null);
   const devRef=useRef(null);
@@ -937,10 +937,10 @@ function DeviceSection({isDark,C,wrapRef,prefRM}){
     <section ref={secRef} style={{padding:"130px 28px",background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s",overflow:"hidden"}}>
       <div style={{maxWidth:980,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>UX Â· Product Design</p>
-          <div style={{overflow:"hidden",marginBottom:20}}><h2 className="clip-rv" style={{fontSize:"clamp(26px,4vw,50px)",fontWeight:700,letterSpacing:"-.036em",lineHeight:1.1}}><span style={{color:C.text}}>DiseÃ±o que vive<br/>en </span><span className={isDark?"acc-dk":"acc-lt"}>los dedos.</span></h2></div>
-          <p className="rv2" style={{transitionDelay:".14s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:34}}>Interfaces intuitivas desde el primer toque. Once aÃ±os diseÃ±ando para millones de personas en el deporte global.</p>
-          <div className="rv2" style={{transitionDelay:".28s"}}><button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX â†’</button></div>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>UX · Product Design</p>
+          <div style={{overflow:"hidden",marginBottom:20}}><h2 className="clip-rv" style={{fontSize:"clamp(26px,4vw,50px)",fontWeight:700,letterSpacing:"-.036em",lineHeight:1.1}}><span style={{color:C.text}}>Diseño que vive<br/>en </span><span className={isDark?"acc-dk":"acc-lt"}>los dedos.</span></h2></div>
+          <p className="rv2" style={{transitionDelay:".14s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:34}}>Interfaces intuitivas desde el primer toque. Once años diseñando para millones de personas en el deporte global.</p>
+          <div className="rv2" style={{transitionDelay:".28s"}}><button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX →</button></div>
         </div>
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",minHeight:540}}>
           <div ref={devRef} style={{transition:"transform .14s ease-out",transformStyle:"preserve-3d",position:"relative"}}>
@@ -962,15 +962,15 @@ function DeviceSection({isDark,C,wrapRef,prefRM}){
               <div style={{width:"100%",height:"100%",borderRadius:42,overflow:"hidden",position:"relative",background:"linear-gradient(168deg,#06060f,#090f22 40%,#0e0816 75%,#06060f)"}}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(138deg,rgba(255,255,255,.08) 0%,transparent 40%)",borderRadius:42,zIndex:15,pointerEvents:"none"}}/>
                 <div style={{padding:"68px 14px 16px",height:"100%",display:"flex",flexDirection:"column",position:"relative",zIndex:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}><span>9:41</span><span style={{fontSize:9}}>â—â—â—â— WiFi</span></div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}><span>9:41</span><span style={{fontSize:9}}>●●●● WiFi</span></div>
                   <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:2,letterSpacing:"-.03em"}}>LALIGA</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.28)",marginBottom:18}}>Temporada 2025â€“26</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.28)",marginBottom:18}}>Temporada 2025–26</div>
                   <div style={{borderRadius:14,padding:"13px 14px",marginBottom:10,background:"rgba(94,196,200,.09)",border:"1px solid rgba(94,196,200,.18)"}}>
-                    <div style={{fontSize:9.5,color:"#5ec4c8",fontWeight:700,letterSpacing:".07em",marginBottom:7,textTransform:"uppercase"}}>â¬¤ En directo</div>
-                    <div style={{fontSize:13.5,fontWeight:700,color:"#fff"}}>Real Madrid 2 â€“ 1 BarÃ§a</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.32)",marginTop:3}}>Min 73' Â· Santiago BernabÃ©u</div>
+                    <div style={{fontSize:9.5,color:"#5ec4c8",fontWeight:700,letterSpacing:".07em",marginBottom:7,textTransform:"uppercase"}}>⬤ En directo</div>
+                    <div style={{fontSize:13.5,fontWeight:700,color:"#fff"}}>Real Madrid 2 – 1 Barça</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.32)",marginTop:3}}>Min 73' · Santiago Bernabéu</div>
                   </div>
-                  {[{t:"AtlÃ©tico 1-0 Sevilla",s:"Final",e:"ðŸ”´"},{t:"ClasificaciÃ³n Â· J30",s:"Ver tabla",e:"ðŸ“Š"},{t:"MbappÃ© â€” 15 goles",s:"Top goleador",e:"â­"}].map((item,i)=>(
+                  {[{t:"Atlético 1-0 Sevilla",s:"Final",e:"🔴"},{t:"Clasificación · J30",s:"Ver tabla",e:"📊"},{t:"Mbappé — 15 goles",s:"Top goleador",e:"⭐"}].map((item,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:12,marginBottom:7,background:"rgba(255,255,255,.046)",border:"1px solid rgba(255,255,255,.04)"}}>
                       <span style={{fontSize:13,flexShrink:0}}>{item.e}</span>
                       <div style={{flex:1}}><div style={{fontSize:11.5,fontWeight:600,color:"#fff"}}>{item.t}</div><div style={{fontSize:9.5,color:"rgba(255,255,255,.28)",marginTop:1}}>{item.s}</div></div>
