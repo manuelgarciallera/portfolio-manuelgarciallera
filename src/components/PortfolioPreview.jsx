@@ -530,7 +530,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
               }}>
-                <div style={{position:"absolute",left:38,top:36,zIndex:10,fontSize:"clamp(13px,1.05vw,17px)",lineHeight:1.17,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7",maxWidth:"58%"}}>
+                <div style={{position:"absolute",left:38,top:36,zIndex:10,fontSize:"clamp(14px,1.12vw,18px)",lineHeight:1.17,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7",maxWidth:"58%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
