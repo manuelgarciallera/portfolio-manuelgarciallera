@@ -624,6 +624,7 @@ function HeroGallerySection({isDark,C,prefRM}){
 function CloseLookSection({isDark,C,prefRM}){
   const [active,setActive]=useState(0);
   const [open,setOpen]=useState(-1);
+  const [hovered,setHovered]=useState(-1);
   const [pulseId,setPulseId]=useState(-1);
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
@@ -739,14 +740,19 @@ function CloseLookSection({isDark,C,prefRM}){
                 {items.map((item,i)=>{
                   const isOn=active===i;
                   const expanded=open===i;
+                  const isHover=hovered===i;
                   return(
                     <div key={item.label}>
                       {!expanded&&(
                         <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
+                          onMouseEnter={()=>setHovered(i)}
+                          onMouseLeave={()=>setHovered(-1)}
+                          onFocus={()=>setHovered(i)}
+                          onBlur={()=>setHovered(-1)}
                           style={{
                             width:"100%",
-                            border:"1px solid rgba(255,255,255,.14)",
-                            background:isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)",
+                            border:isHover?"1px solid rgba(255,255,255,.22)":"1px solid rgba(255,255,255,.14)",
+                            background:isHover?(isOn?"rgba(39,39,44,.9)":"rgba(22,22,27,.84)"):(isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)"),
                             boxShadow:"none",
                             borderRadius:999,
                             display:"flex",
@@ -759,7 +765,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             fontSize:wide?20:17,
                             fontWeight:600,
                             letterSpacing:"-.015em",
-                            transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
+                            transition:"background .24s ease,border-color .24s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
                             animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
                             backdropFilter:"blur(6px)",
                             opacity:open===-1||!isOn?1:.65,
@@ -775,7 +781,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             fontSize:20,
                             fontWeight:650,
                             color:"rgba(245,245,247,.95)",
-                            background:isOn?"rgba(255,255,255,.14)":"transparent",
+                            background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
                             flexShrink:0,
                             lineHeight:1,
                           }}>
