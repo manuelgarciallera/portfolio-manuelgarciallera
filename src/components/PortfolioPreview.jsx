@@ -673,14 +673,14 @@ function CloseLookSection({isDark,C,prefRM}){
 
   const wide=panelW>=980;
   const activeItem=items[active];
-  const listLeft=wide?42:16;
-  const listTop=wide?44:20;
-  const descWidth=wide?Math.min(620,Math.max(360,panelW*.46)):0;
+  const listLeft=wide?56:16;
+  const listTop=wide?52:20;
+  const descWidth=wide?Math.min(760,Math.max(420,panelW*.52)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
 
   return(
     <section style={{padding:wide?"108px 28px 54px":"84px 16px 46px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
-      <div style={{maxWidth:1220,margin:"0 auto"}}>
+      <div style={{maxWidth:1360,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:34}}>
           {"M\u00E1s de cerca."}
         </h2>
@@ -692,7 +692,7 @@ function CloseLookSection({isDark,C,prefRM}){
           border:`1px solid ${isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.12)"}`,
           padding:0,
         }}>
-          <div style={{position:"relative",minHeight:wide?620:760}}>
+          <div style={{position:"relative",minHeight:wide?700:790}}>
             <div
               key={active}
               ref={mediaRef}
@@ -720,15 +720,15 @@ function CloseLookSection({isDark,C,prefRM}){
               </button>
             )}
 
-            <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?360:"calc(100% - 32px)"}}>
+            <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
               {wide&&(
-                <div style={{position:"absolute",left:-58,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:10}}>
+                <div style={{position:"absolute",left:-36,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:38,height:38,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChU/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    style={{width:38,height:38,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChD/>
                   </button>
                 </div>
@@ -752,9 +752,9 @@ function CloseLookSection({isDark,C,prefRM}){
                           justifyContent:"flex-start",
                           gap:10,
                           cursor:"pointer",
-                          padding:wide?"10px 14px":"10px 13px",
+                          padding:wide?"12px 18px":"11px 14px",
                           color:"#f5f5f7",
-                          fontSize:wide?17:16,
+                          fontSize:wide?20:17,
                           fontWeight:600,
                           letterSpacing:"-.015em",
                           transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease",
@@ -785,7 +785,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           borderRadius:18,
                           padding:wide?"14px 16px":"13px 14px",
                           width:wide?Math.min(descWidth,descMax):"100%",
-                          fontSize:wide?13.5:13,
+                          fontSize:wide?16:14.5,
                           lineHeight:1.45,
                           letterSpacing:"-.01em",
                           color:"rgba(245,245,247,.88)",
