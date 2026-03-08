@@ -435,7 +435,7 @@ function FeaturedSection({isDark,C}){
   const cur=items[active];
   return(
     <section style={{background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s"}}>
-      <div style={{maxWidth:980,margin:"0 auto",padding:"130px 28px 56px"}}>
+      <div style={{maxWidth:980,margin:"0 auto",padding:"96px 28px 56px"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
         <h2 className="rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
           <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por sí solo.</span>
@@ -503,19 +503,19 @@ function HeroGallerySection({isDark,C,prefRM}){
     return()=>{clearTimeout(first);clearInterval(id);};
   },[playing,prefRM,n]);
 
-  const gap=w<760?10:20;
-  const slideW=w<760?Math.max(280,w*.9):Math.min(1120,Math.max(900,w*.6));
-  const slideH=w<760?340:520;
+  const gap=w<760?10:22;
+  const slideW=w<760?Math.max(300,w*.92):Math.min(1240,Math.max(980,w*.64));
+  const slideH=w<760?380:580;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
-  const controlH=40;
+  const controlH=46;
 
   return(
-    <section style={{padding:"118px 0 92px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:"136px 0 62px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"88vh"}}>
       <div style={{maxWidth:1320,margin:"0 auto",padding:"0 24px"}}>
-        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 34px"}}>Lo principal.</h2>
+        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 42px"}}>Lo principal.</h2>
       </div>
 
-      <div ref={frameRef} style={{overflow:"hidden",marginLeft:"calc(50% - 50vw)",marginRight:"calc(50% - 50vw)"}}>
+      <div ref={frameRef} style={{overflow:"hidden",width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
           <div style={{display:"flex",gap,transform:`translateX(${tx}px)`,transition:"transform .72s cubic-bezier(.22,.61,.36,1)"}}>
             {HERO_GALLERY.map((item,i)=>(
               <article key={`${item.title}-${i}`} style={{
@@ -528,7 +528,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
               }}>
-                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(18px,1.9vw,34px)",lineHeight:1.08,fontWeight:600,letterSpacing:"-.02em",color:"#f5f5f7",maxWidth:"62%"}}>
+                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(15px,1.25vw,24px)",lineHeight:1.14,fontWeight:600,letterSpacing:"-.015em",color:"#f5f5f7",maxWidth:"58%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
@@ -555,15 +555,15 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:10,marginTop:28}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 14px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:30}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
-                style={{border:"none",padding:0,width:active===i?34:6,height:6,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
+                style={{border:"none",padding:0,width:active===i?38:7,height:7,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
             ))}
           </div>
           <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
-            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
+            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
             {playing?"\u23F8":"\u25B6"}
           </button>
         </div>
