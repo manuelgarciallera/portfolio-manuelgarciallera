@@ -174,12 +174,17 @@ const CSS=`
 @keyframes ppulse{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.12);}}
 @keyframes pscroll{0%,100%{transform:translateY(0);}60%{transform:translateY(10px);}}
 @keyframes pfade{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes nearPop{from{opacity:0;transform:translateY(-10px) scale(.9);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+@keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
 @media(max-width:700px){.hide-m{display:none!important;}}
 `;
 
 // ─── SVG ─────────────────────────────────────────────────────────────────────
 const ChR=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M4.5 2.5l4 4-4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChL=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M8.5 2.5l-4 4 4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const ChU=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 7.6l3.6-3.6 3.6 3.6" stroke={c} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const ChD=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 4.4L6 8l3.6-3.6" stroke={c} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoLI=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2" fill={c}/></svg>;
 const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>;
 
@@ -194,6 +199,48 @@ const HERO_GALLERY=[
   {k:"image",title:"App Telefono. Sigue en contacto sin tocar el movil.",src:"https://images.unsplash.com/photo-1517959105821-eaf2591984f8?w=1600&q=80&auto=format"},
   {k:"image",title:"Rendimiento de estudio para flujos visuales en tiempo real.",src:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format",zoom:true},
   {k:"image",title:"Bateria para jornadas largas. Rapido cuando lo necesitas.",src:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format"}
+];
+const CLOSE_LOOK_ITEMS=[
+  {
+    label:"Diseño UX/UI",
+    desc:"Arquitecturas de experiencia y sistemas visuales con foco en claridad, conversion y producto digital.",
+    src:"https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Diseño Arquitectónico",
+    desc:"Modelado de espacios, narrativa visual y presentaciones inmersivas para proyectos arquitectonicos.",
+    src:"https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Diseño 3D",
+    desc:"Pipelines de 3D realtime, optimizacion de escenas y visualizacion con motion controlado.",
+    src:"https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Research",
+    desc:"Entrevistas, pruebas y sintesis para transformar señales de usuario en decisiones de producto.",
+    src:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Investigación docente",
+    desc:"Diseño de materiales, experimentacion y aprendizaje aplicado a tecnologia, UX y desarrollo.",
+    src:"https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Diseño gráfico",
+    desc:"Identidad, composicion tipografica y piezas visuales con criterio editorial y consistencia de marca.",
+    src:"https://images.unsplash.com/photo-1502945015378-0e284ca1a5be?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Desarrollo Front",
+    desc:"Interfaces web performantes, accesibles y animadas con arquitectura modular orientada a producto.",
+    src:"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1700&q=80&auto=format"
+  },
+  {
+    label:"Desarrollo Back",
+    desc:"APIs robustas, integraciones y modelado de datos para escalar funcionalidades de forma fiable.",
+    src:"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1700&q=80&auto=format"
+  },
 ];
 function Img({src,fb,alt,style={}}){
   const [e,setE]=useState(false);
@@ -370,6 +417,7 @@ export default function Portfolio(){
 
       {/* ── FEATURED ── */}
       <HeroGallerySection isDark={isDark} C={C} prefRM={prefRM}/> 
+      <CloseLookSection isDark={isDark} C={C} prefRM={prefRM}/>
 
       <FeaturedSection isDark={isDark} C={C}/>
 
@@ -569,6 +617,209 @@ function HeroGallerySection({isDark,C,prefRM}){
             {playing?"\u23F8":"\u25B6"}
           </button>
         </div>
+    </section>
+  );
+}
+
+function CloseLookSection({isDark,C,prefRM}){
+  const [active,setActive]=useState(0);
+  const [open,setOpen]=useState(-1);
+  const [pulseId,setPulseId]=useState(-1);
+  const panelRef=useRef(null);
+  const mediaRef=useRef(null);
+  const pulseTimerRef=useRef(null);
+  const [panelW,setPanelW]=useState(1100);
+  const items=CLOSE_LOOK_ITEMS;
+  const n=items.length;
+
+  useEffect(()=>{
+    const el=panelRef.current;if(!el)return;
+    const measure=()=>setPanelW(el.clientWidth||1100);
+    measure();
+    const ro=new ResizeObserver(measure);ro.observe(el);
+    return()=>ro.disconnect();
+  },[]);
+
+  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
+
+  const bump=useCallback((i)=>{
+    setPulseId(i);
+    if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);
+    pulseTimerRef.current=setTimeout(()=>setPulseId(-1),390);
+  },[]);
+
+  const select=useCallback((i,shouldOpen=true)=>{
+    const next=(i+n)%n;
+    setActive(next);
+    setOpen(shouldOpen?next:-1);
+    bump(next);
+  },[n,bump]);
+
+  const onItem=useCallback((i)=>{
+    if(open===i){setOpen(-1);setActive(i);bump(i);return;}
+    select(i,true);
+  },[open,select,bump]);
+
+  const onMove=e=>{
+    if(!mediaRef.current||prefRM.current||panelW<960)return;
+    const r=mediaRef.current.getBoundingClientRect();
+    const nx=(e.clientX-r.left)/r.width;
+    const ny=(e.clientY-r.top)/r.height;
+    const ry=(nx-.5)*9;
+    const rx=(.5-ny)*6;
+    mediaRef.current.style.transform=`scale(1.012) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  };
+  const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
+
+  const wide=panelW>=1020;
+  const activeItem=items[active];
+
+  return(
+    <section style={{padding:wide?"108px 28px 54px":"84px 16px 46px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+      <div style={{maxWidth:1220,margin:"0 auto"}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:34}}>
+          Más de cerca.
+        </h2>
+
+        <div ref={panelRef} style={{
+          borderRadius:22,
+          overflow:"hidden",
+          background:"#000",
+          border:`1px solid ${isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.12)"}`,
+          padding:wide?"26px 24px 20px":"18px 14px 14px",
+        }}>
+          <div style={{display:"grid",gridTemplateColumns:wide?"330px minmax(0,1fr)":"1fr",gap:wide?24:16,minHeight:wide?620:760}}>
+            <div style={{display:"grid",gridTemplateColumns:wide?"1fr 40px":"1fr",gap:10,alignItems:"start"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:9}}>
+                {items.map((item,i)=>{
+                  const isOn=active===i;
+                  const expanded=open===i;
+                  return(
+                    <div key={item.label}>
+                      <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
+                        style={{
+                          width:"100%",
+                          border:"1px solid rgba(255,255,255,.1)",
+                          background:expanded?"rgba(52,52,58,.92)":(isOn?"rgba(45,45,50,.82)":"rgba(36,36,42,.72)"),
+                          boxShadow:expanded?"0 14px 34px rgba(0,0,0,.35)":"none",
+                          borderRadius:999,
+                          display:"flex",
+                          alignItems:"center",
+                          justifyContent:"flex-start",
+                          gap:10,
+                          cursor:"pointer",
+                          padding:wide?"10px 14px":"10px 13px",
+                          color:"#f5f5f7",
+                          fontSize:wide?17:16,
+                          fontWeight:600,
+                          letterSpacing:"-.015em",
+                          transition:"background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .22s ease",
+                          animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
+                        }}>
+                        <span style={{
+                          width:18,
+                          height:18,
+                          borderRadius:"50%",
+                          border:`1px solid ${expanded?"rgba(255,255,255,.46)":"rgba(255,255,255,.28)"}`,
+                          display:"inline-flex",
+                          alignItems:"center",
+                          justifyContent:"center",
+                          fontSize:13,
+                          fontWeight:700,
+                          color:"rgba(245,245,247,.95)",
+                          background:expanded?"rgba(255,255,255,.14)":"transparent",
+                          flexShrink:0,
+                        }}>
+                          {expanded?"•":"+"}
+                        </span>
+                        <span>{item.label}</span>
+                      </button>
+                      {expanded&&(
+                        <div style={{
+                          marginTop:8,
+                          borderRadius:18,
+                          padding:wide?"14px 16px":"13px 14px",
+                          fontSize:wide?13.5:13,
+                          lineHeight:1.45,
+                          letterSpacing:"-.01em",
+                          color:"rgba(245,245,247,.88)",
+                          background:"rgba(33,33,38,.94)",
+                          border:"1px solid rgba(255,255,255,.09)",
+                          animation:prefRM.current?"none":"nearPop .42s cubic-bezier(.16,1,.3,1)",
+                        }}>
+                          {item.desc}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {wide&&(
+                <div style={{display:"flex",flexDirection:"column",gap:10,alignSelf:"center"}}>
+                  <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
+                    style={{width:32,height:32,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                    <ChU/>
+                  </button>
+                  <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
+                    style={{width:32,height:32,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                    <ChD/>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {!wide&&(
+              <div style={{display:"flex",gap:10,marginTop:-2}}>
+                <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
+                  style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                  <ChU/>
+                </button>
+                <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
+                  style={{width:34,height:34,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.12)",color:"#f5f5f7"}}>
+                  <ChD/>
+                </button>
+              </div>
+            )}
+
+            <div style={{position:"relative",borderRadius:18,overflow:"hidden",background:"#050507",border:"1px solid rgba(255,255,255,.08)"}}>
+              {open!==-1&&(
+                <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
+                  style={{position:"absolute",top:12,right:12,zIndex:15,width:28,height:28,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:18,lineHeight:1,background:"rgba(38,38,43,.95)",color:"#d8d8df"}}>
+                  ×
+                </button>
+              )}
+              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 60% 50% at 50% 100%,rgba(94,196,200,.28),transparent 65%)",pointerEvents:"none",zIndex:2}}/>
+              <div style={{position:"absolute",inset:wide?18:12,perspective:"1500px"}}>
+                <div
+                  key={active}
+                  ref={mediaRef}
+                  onMouseMove={onMove}
+                  onMouseLeave={onLeave}
+                  style={{
+                    width:"100%",
+                    height:"100%",
+                    borderRadius:16,
+                    overflow:"hidden",
+                    transform:"scale(1) rotateX(0deg) rotateY(0deg)",
+                    transformStyle:"preserve-3d",
+                    transition:"transform .24s ease,box-shadow .35s ease",
+                    boxShadow:"0 34px 78px rgba(0,0,0,.55)",
+                    animation:prefRM.current?"none":"nearMediaIn .72s cubic-bezier(.16,1,.3,1)",
+                    background:"#0b0b10",
+                  }}>
+                  <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.02)",filter:"saturate(1.08) contrast(1.03)"}}/>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.02) 45%,rgba(0,0,0,.38) 100%)"}}/>
+                </div>
+              </div>
+              <div style={{position:"absolute",left:wide?24:16,bottom:wide?20:14,zIndex:8,display:"inline-flex",alignItems:"center",gap:8,padding:wide?"9px 14px":"8px 12px",borderRadius:999,background:"rgba(10,10,12,.62)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,.12)"}}>
+                <span style={{width:7,height:7,borderRadius:"50%",background:"#5ec4c8",display:"inline-block"}}/>
+                <span style={{fontSize:12.5,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7"}}>{activeItem.label}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
