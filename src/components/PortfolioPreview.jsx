@@ -186,7 +186,7 @@ const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={
 // ─── SMART IMAGE ─────────────────────────────────────────────────────────────
 const IMGS=["https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=75&auto=format","https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=75&auto=format","https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=75&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75&auto=format"];
 const FBK=["linear-gradient(135deg,#0a1628,#1a3a5c)","linear-gradient(135deg,#0a1a18,#0e3530)","linear-gradient(135deg,#0d0d1a,#1a1a32)","linear-gradient(135deg,#1a1020,#2d1a3e)"];
-const HERO_GALLERY_AUTOPLAY_MS=120000;
+const HERO_GALLERY_AUTOPLAY_MS=8000;
 const HERO_GALLERY=[
   {k:"chips",title:"M5, M5 Pro y M5 Max.\nUna familia con mucho poder."},
   {k:"image",title:"Una potente plataforma para la inteligencia artificial.\nCon una mente maravillosa.",src:"https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=1600&q=80&auto=format",zoom:true},
@@ -498,21 +498,24 @@ function HeroGallerySection({isDark,C,prefRM}){
 
   useEffect(()=>{
     if(!playing||prefRM.current)return;
+    const first=setTimeout(()=>setActive(v=>(v+1)%n),1800);
     const id=setInterval(()=>setActive(v=>(v+1)%n),HERO_GALLERY_AUTOPLAY_MS);
-    return()=>clearInterval(id);
+    return()=>{clearTimeout(first);clearInterval(id);};
   },[playing,prefRM,n]);
 
-  const gap=w<760?10:18;
-  const slideW=w<760?Math.max(280,w*.9):Math.min(1060,Math.max(760,w*.74));
+  const gap=w<760?10:20;
+  const slideW=w<760?Math.max(280,w*.9):Math.min(1120,Math.max(900,w*.6));
   const slideH=w<760?340:520;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
+  const controlH=40;
 
   return(
-    <section style={{padding:"82px 0 90px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:"118px 0 92px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1320,margin:"0 auto",padding:"0 24px"}}>
-        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 28px"}}>Lo principal.</h2>
+        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 34px"}}>Lo principal.</h2>
+      </div>
 
-        <div ref={frameRef} style={{overflow:"hidden"}}>
+      <div ref={frameRef} style={{overflow:"hidden",marginLeft:"calc(50% - 50vw)",marginRight:"calc(50% - 50vw)"}}>
           <div style={{display:"flex",gap,transform:`translateX(${tx}px)`,transition:"transform .72s cubic-bezier(.22,.61,.36,1)"}}>
             {HERO_GALLERY.map((item,i)=>(
               <article key={`${item.title}-${i}`} style={{
@@ -524,9 +527,8 @@ function HeroGallerySection({isDark,C,prefRM}){
                 position:"relative",
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
-                boxShadow:isDark?"0 14px 42px rgba(0,0,0,.5)":"0 14px 42px rgba(0,0,0,.12)",
               }}>
-                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(16px,1.7vw,40px)",lineHeight:1.06,fontWeight:600,letterSpacing:"-.02em",color:"#f5f5f7",maxWidth:"62%"}}>
+                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(18px,1.9vw,34px)",lineHeight:1.08,fontWeight:600,letterSpacing:"-.02em",color:"#f5f5f7",maxWidth:"62%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
@@ -537,7 +539,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                       {t:"M5 PRO",g:"linear-gradient(145deg,#080d2b 0%,#0c2d8f 45%,#69cdf7 100%)"},
                       {t:"M5 MAX",g:"linear-gradient(145deg,#130a1e 0%,#4a1492 50%,#d7a5ff 100%)"}
                     ].map((chip,idx)=>(
-                      <div key={chip.t} style={{width:w<760?92:190,height:w<760?92:190,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:w<760?23:52,fontWeight:700,letterSpacing:"-.03em",color:"#d7e6ea",background:chip.g,border:"1px solid rgba(170,225,255,.75)",boxShadow:"0 10px 30px rgba(0,0,0,.45)"}}>
+                      <div key={chip.t} style={{width:w<760?92:190,height:w<760?92:190,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:w<760?23:52,fontWeight:700,letterSpacing:"-.03em",color:"#d7e6ea",background:chip.g,border:"1px solid rgba(170,225,255,.75)"}}>
                         {chip.t}
                       </div>
                     ))}
@@ -551,21 +553,20 @@ function HeroGallerySection({isDark,C,prefRM}){
               </article>
             ))}
           </div>
-        </div>
+      </div>
 
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:26}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:10,marginTop:28}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 14px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
-                style={{border:"none",padding:0,width:active===i?36:8,height:8,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
+                style={{border:"none",padding:0,width:active===i?34:6,height:6,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
             ))}
           </div>
           <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
-            style={{width:42,height:42,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
+            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
             {playing?"\u23F8":"\u25B6"}
           </button>
         </div>
-      </div>
     </section>
   );
 }
