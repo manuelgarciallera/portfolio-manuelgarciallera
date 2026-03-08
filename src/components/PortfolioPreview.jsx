@@ -186,7 +186,7 @@ const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={
 // ─── SMART IMAGE ─────────────────────────────────────────────────────────────
 const IMGS=["https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=75&auto=format","https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=75&auto=format","https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=75&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75&auto=format"];
 const FBK=["linear-gradient(135deg,#0a1628,#1a3a5c)","linear-gradient(135deg,#0a1a18,#0e3530)","linear-gradient(135deg,#0d0d1a,#1a1a32)","linear-gradient(135deg,#1a1020,#2d1a3e)"];
-const HERO_GALLERY_AUTOPLAY_MS=8000;
+const HERO_GALLERY_AUTOPLAY_MS=5000;
 const HERO_GALLERY=[
   {k:"chips",title:"M5, M5 Pro y M5 Max.\nUna familia con mucho poder."},
   {k:"image",title:"Una potente plataforma para la inteligencia artificial.\nCon una mente maravillosa.",src:"https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=1600&q=80&auto=format",zoom:true},
@@ -339,7 +339,7 @@ export default function Portfolio(){
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{height:"calc(100vh - 52px)",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
+      <section style={{height:"100vh",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
@@ -498,21 +498,21 @@ function HeroGallerySection({isDark,C,prefRM}){
 
   useEffect(()=>{
     if(!playing||prefRM.current)return;
-    const first=setTimeout(()=>setActive(v=>(v+1)%n),1800);
+    const first=setTimeout(()=>setActive(v=>(v+1)%n),900);
     const id=setInterval(()=>setActive(v=>(v+1)%n),HERO_GALLERY_AUTOPLAY_MS);
     return()=>{clearTimeout(first);clearInterval(id);};
   },[playing,prefRM,n]);
 
   const gap=w<760?10:22;
-  const slideW=w<760?Math.max(300,w*.92):Math.min(1240,Math.max(980,w*.64));
-  const slideH=w<760?380:580;
+  const slideW=w<760?Math.max(300,w*.92):Math.min(1260,Math.max(1000,w*.66));
+  const slideH=w<760?410:640;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
-  const controlH=46;
+  const controlH=50;
 
   return(
-    <section style={{padding:"136px 0 62px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"88vh"}}>
+    <section style={{padding:"136px 0 28px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"92vh"}}>
       <div style={{maxWidth:1320,margin:"0 auto",padding:"0 24px"}}>
-        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 42px"}}>Lo principal.</h2>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:"0 0 42px"}}>Lo principal.</h2>
       </div>
 
       <div ref={frameRef} style={{overflow:"hidden",width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
@@ -528,7 +528,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
               }}>
-                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(15px,1.25vw,24px)",lineHeight:1.14,fontWeight:600,letterSpacing:"-.015em",color:"#f5f5f7",maxWidth:"58%"}}>
+                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(13px,1.02vw,18px)",lineHeight:1.16,fontWeight:600,letterSpacing:"-.012em",color:"#f5f5f7",maxWidth:"58%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
@@ -559,7 +559,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
-                style={{border:"none",padding:0,width:active===i?38:7,height:7,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
+                style={{border:"none",padding:0,width:active===i?42:8,height:8,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
             ))}
           </div>
           <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
