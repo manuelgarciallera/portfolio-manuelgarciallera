@@ -186,6 +186,14 @@ const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={
 // ─── SMART IMAGE ─────────────────────────────────────────────────────────────
 const IMGS=["https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=75&auto=format","https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=75&auto=format","https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=75&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=75&auto=format"];
 const FBK=["linear-gradient(135deg,#0a1628,#1a3a5c)","linear-gradient(135deg,#0a1a18,#0e3530)","linear-gradient(135deg,#0d0d1a,#1a1a32)","linear-gradient(135deg,#1a1020,#2d1a3e)"];
+const HERO_GALLERY_AUTOPLAY_MS=120000;
+const HERO_GALLERY=[
+  {k:"chips",title:"M5, M5 Pro y M5 Max.\nUna familia con mucho poder."},
+  {k:"image",title:"Una potente plataforma para la inteligencia artificial.\nCon una mente maravillosa.",src:"https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=1600&q=80&auto=format",zoom:true},
+  {k:"image",title:"App Telefono. Sigue en contacto sin tocar el movil.",src:"https://images.unsplash.com/photo-1517959105821-eaf2591984f8?w=1600&q=80&auto=format"},
+  {k:"image",title:"Rendimiento de estudio para flujos visuales en tiempo real.",src:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format",zoom:true},
+  {k:"image",title:"Bateria para jornadas largas. Rapido cuando lo necesitas.",src:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format"}
+];
 function Img({src,fb,alt,style={}}){
   const [e,setE]=useState(false);
   if(e)return <div style={{width:"100%",height:"100%",background:fb,...style}}/>;
@@ -360,6 +368,8 @@ export default function Portfolio(){
       </section>
 
       {/* ── FEATURED ── */}
+      <HeroGallerySection isDark={isDark} C={C} prefRM={prefRM}/> 
+
       <FeaturedSection isDark={isDark} C={C}/>
 
       {/* ── SECTION BLOCK: 3D ARQUITECTURA ── */}
@@ -467,6 +477,99 @@ function FeaturedSection({isDark,C}){
 }
 
 // ─── ARCH SECTION — drawrange wireframe ───────────────────────────────────────
+function HeroGallerySection({isDark,C,prefRM}){
+  const [active,setActive]=useState(0);
+  const [playing,setPlaying]=useState(false);
+  const frameRef=useRef(null);
+  const [w,setW]=useState(1200);
+  const n=HERO_GALLERY.length;
+
+  useEffect(()=>{
+    const el=frameRef.current;if(!el)return;
+    const measure=()=>setW(el.clientWidth||1200);
+    measure();
+    const ro=new ResizeObserver(measure);ro.observe(el);
+    return()=>ro.disconnect();
+  },[]);
+
+  useEffect(()=>{
+    if(prefRM.current&&playing)setPlaying(false);
+  },[playing,prefRM]);
+
+  useEffect(()=>{
+    if(!playing||prefRM.current)return;
+    const id=setInterval(()=>setActive(v=>(v+1)%n),HERO_GALLERY_AUTOPLAY_MS);
+    return()=>clearInterval(id);
+  },[playing,prefRM,n]);
+
+  const gap=w<760?10:18;
+  const slideW=w<760?Math.max(280,w*.9):Math.min(1060,Math.max(760,w*.74));
+  const slideH=w<760?340:520;
+  const tx=((w-slideW)/2)-(active*(slideW+gap));
+
+  return(
+    <section style={{padding:"82px 0 90px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+      <div style={{maxWidth:1320,margin:"0 auto",padding:"0 24px"}}>
+        <h2 style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,color:isDark?"#f5f5f7":"#1d1d1f",margin:"0 0 28px"}}>Lo principal.</h2>
+
+        <div ref={frameRef} style={{overflow:"hidden"}}>
+          <div style={{display:"flex",gap,transform:`translateX(${tx}px)`,transition:"transform .72s cubic-bezier(.22,.61,.36,1)"}}>
+            {HERO_GALLERY.map((item,i)=>(
+              <article key={`${item.title}-${i}`} style={{
+                flex:"0 0 auto",
+                width:slideW,
+                height:slideH,
+                borderRadius:22,
+                overflow:"hidden",
+                position:"relative",
+                background:"#000",
+                border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
+                boxShadow:isDark?"0 14px 42px rgba(0,0,0,.5)":"0 14px 42px rgba(0,0,0,.12)",
+              }}>
+                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(16px,1.7vw,40px)",lineHeight:1.06,fontWeight:600,letterSpacing:"-.02em",color:"#f5f5f7",maxWidth:"62%"}}>
+                  {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
+                </div>
+
+                {item.k==="chips"?(
+                  <div style={{position:"absolute",inset:0,display:"flex",justifyContent:"center",alignItems:"center",gap:w<760?10:20,paddingTop:w<760?44:58}}>
+                    {[
+                      {t:"M5",g:"linear-gradient(145deg,#03131f 0%,#083e67 32%,#58d6d3 100%)"},
+                      {t:"M5 PRO",g:"linear-gradient(145deg,#080d2b 0%,#0c2d8f 45%,#69cdf7 100%)"},
+                      {t:"M5 MAX",g:"linear-gradient(145deg,#130a1e 0%,#4a1492 50%,#d7a5ff 100%)"}
+                    ].map((chip,idx)=>(
+                      <div key={chip.t} style={{width:w<760?92:190,height:w<760?92:190,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:w<760?23:52,fontWeight:700,letterSpacing:"-.03em",color:"#d7e6ea",background:chip.g,border:"1px solid rgba(170,225,255,.75)",boxShadow:"0 10px 30px rgba(0,0,0,.45)"}}>
+                        {chip.t}
+                      </div>
+                    ))}
+                  </div>
+                ):(
+                  <div style={{position:"absolute",inset:0}}>
+                    <Img src={item.src} fb="linear-gradient(135deg,#0d1525,#1a2740)" alt={item.title} style={{transform:active===i&&item.zoom?"scale(1.08)":"scale(1)",transition:"transform 8s cubic-bezier(.22,.61,.36,1)"}}/>
+                    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.22) 100%)"}}/>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:26}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+            {HERO_GALLERY.map((_,i)=>(
+              <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
+                style={{border:"none",padding:0,width:active===i?36:8,height:8,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
+            ))}
+          </div>
+          <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
+            style={{width:42,height:42,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
+            {playing?"\u23F8":"\u25B6"}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ArchSection({isDark,C,prefRM}){
   const canvasRef=useRef(null);
   const secRef=useRef(null);
