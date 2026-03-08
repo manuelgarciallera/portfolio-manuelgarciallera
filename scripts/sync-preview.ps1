@@ -51,8 +51,8 @@ if (-not $sourceText.StartsWith("/* eslint-disable */")) {
 }
 
 # Persist project-specific visual and compatibility fixes after sync.
-$accDkFinal = '.acc-dk{background:linear-gradient(92deg,#b7dfda 0%,#b7dfda 12%,#95c8cd 38%,#6fa9bc 68%,#48739a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
-$accLtFinal = '.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 12%,#86b3c0 38%,#648fa5 68%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
+$accDkFinal = '.acc-dk{background:linear-gradient(92deg,#b7dfda 0%,#b7dfda 7%,#95c8cd 34%,#6fa9bc 66%,#48739a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
+$accLtFinal = '.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 7%,#86b3c0 34%,#648fa5 66%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}'
 
 $accDkVariants = @(
   '.acc-dk{background:linear-gradient(90deg,#fff 0%,#5ec4c8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}',
