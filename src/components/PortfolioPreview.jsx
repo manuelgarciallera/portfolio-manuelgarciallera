@@ -47,9 +47,9 @@ const CSS=`
 
 /* ── GRADIENTS ── */
 /* Dark bg: white → teal light */
-.acc-dk{background:linear-gradient(92deg,#afd7d4 0%,#97c7cb 30%,#73acbd 62%,#4e7aa2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-dk{background:linear-gradient(92deg,#b7dfda 0%,#b7dfda 12%,#95c8cd 38%,#6fa9bc 68%,#48739a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 /* Light bg: near-black → teal dark (readable, professional) */
-.acc-lt{background:linear-gradient(92deg,#9bc6cd 0%,#80afbd 30%,#618fa5 62%,#3f668e 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.acc-lt{background:linear-gradient(92deg,#a5ced3 0%,#a5ced3 12%,#86b3c0 38%,#648fa5 68%,#3f648a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
 /* ── SCROLL REVEALS ── */
 .rv{opacity:0;transform:translateY(80px);transition:opacity 1.4s cubic-bezier(.16,1,.3,1),transform 1.4s cubic-bezier(.16,1,.3,1);will-change:transform,opacity;}
