@@ -506,14 +506,14 @@ function HeroGallerySection({isDark,C,prefRM}){
 
   const gap=w<760?10:22;
   const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
-  const slideH=w<760?424:668;
+  const slideH=w<760?438:686;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
   const controlH=50;
-  const leadX=Math.max(HERO_GALLERY_GRID_MIN,(w-slideW)/2);
+  const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"132px 0 10px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"86vh"}}>
-      <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)",padding:`0 ${HERO_GALLERY_GRID_MIN}px`}}>
+    <section style={{padding:"132px 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"84vh"}}>
+      <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 42px ${leadX}px`}}>Lo principal.</h2>
       </div>
 
@@ -530,7 +530,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 background:"#000",
                 border:`1px solid ${isDark?"rgba(255,255,255,.05)":"rgba(0,0,0,.08)"}`,
               }}>
-                <div style={{position:"absolute",left:34,top:32,zIndex:10,fontSize:"clamp(12px,.93vw,16px)",lineHeight:1.17,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7",maxWidth:"58%"}}>
+                <div style={{position:"absolute",left:38,top:36,zIndex:10,fontSize:"clamp(13px,1.05vw,17px)",lineHeight:1.17,fontWeight:600,letterSpacing:"-.01em",color:"#f5f5f7",maxWidth:"58%"}}>
                   {item.title.split("\n").map((line,idx)=><div key={idx}>{line}</div>)}
                 </div>
 
@@ -557,7 +557,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:18}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:12}}>
           <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
