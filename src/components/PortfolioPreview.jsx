@@ -967,7 +967,7 @@ function CloseLookSection({isDark,C,prefRM}){
                               color:"rgba(245,245,247,.95)",
                             }}>
                               <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
-                              <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                              <span style={{fontWeight:460,color:"rgba(245,245,247,.9)"}}>{item.desc}</span>
                             </div>
                           </motion.div>
                         </motion.button>
