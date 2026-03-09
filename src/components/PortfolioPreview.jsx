@@ -702,6 +702,10 @@ function CloseLookSection({isDark,C,prefRM}){
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
+  const appleBezier=[0.4,0,0,1];
+  const layoutTransition=prefRM.current?{duration:0}:{duration:.6,ease:appleBezier};
+  const descInTransition=prefRM.current?{duration:0}:{duration:.5,delay:.1,ease:appleBezier};
+  const descOutTransition=prefRM.current?{duration:0}:{duration:.2,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -782,13 +786,11 @@ function CloseLookSection({isDark,C,prefRM}){
                       :isHover
                         ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
                         :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
-                    const layoutT=prefRM.current?{duration:0}:{duration:.66,ease:[.22,1,.36,1]};
-                    const fadeT=prefRM.current?{duration:0}:{duration:.32,ease:[.16,1,.3,1]};
                     return(
                       <div key={item.label} style={{display:"flex"}}>
                         <motion.button
                           layout
-                          transition={{layout:layoutT}}
+                          transition={{layout:layoutTransition}}
                           onClick={()=>onItem(i)}
                           aria-expanded={expanded}
                           aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
@@ -803,24 +805,24 @@ function CloseLookSection({isDark,C,prefRM}){
                             border:"none",
                             background:bubbleBg,
                             boxShadow:"none",
-                            borderRadius:expanded?23:999,
+                            borderRadius:expanded?26:999,
                             display:"block",
                             cursor:"pointer",
                             padding:expanded?(wide?"17px 18px":"16px 15px"):(wide?"15px 18px":"14px 14px"),
                             color:"#f5f5f7",
                             textAlign:"left",
                             letterSpacing:"-.015em",
-                            transition:"background .24s ease,opacity .28s ease",
+                            transition:"background .22s ease,opacity .22s ease",
                             backdropFilter:"blur(6px)",
                             transformOrigin:"left center",
                             opacity:open===-1||expanded||!isOn?1:.65,
                             overflow:"hidden",
-                            willChange:"width,padding,border-radius",
+                            willChange:"width,padding,border-radius,height",
                           }}>
                           <motion.div
                             layout="position"
-                            animate={{opacity:expanded?0:1,scale:expanded ? .965 : 1,maxHeight:expanded?0:80}}
-                            transition={fadeT}
+                            transition={layoutTransition}
+                            animate={expanded?{opacity:0,y:-5,height:0}:{opacity:1,y:0,height:"auto"}}
                             style={{overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -844,16 +846,16 @@ function CloseLookSection({isDark,C,prefRM}){
                             </div>
                           </motion.div>
 
-                          <AnimatePresence initial={false}>
+                          <AnimatePresence initial={false} mode="wait">
                             {expanded&&(
                               <motion.div
                                 key={`desc-${item.label}`}
                                 layout
-                                initial={{opacity:0,maxHeight:0,scale:.985,y:8,filter:"blur(2px)"}}
-                                animate={{opacity:1,maxHeight:wide?236:258,scale:1,y:0,filter:"blur(0px)"}}
-                                exit={{opacity:0,maxHeight:0,scale:.985,y:-4,filter:"blur(1px)"}}
-                                transition={prefRM.current?{duration:0}:{duration:.5,ease:[.16,1,.3,1]}}
-                                style={{overflow:"hidden",transformOrigin:"left center"}}>
+                                initial={{opacity:0,y:10,height:0}}
+                                animate={{opacity:1,y:0,height:"auto"}}
+                                exit={{opacity:0,y:5,height:0,transition:descOutTransition}}
+                                transition={descInTransition}
+                                style={{overflow:"hidden",marginTop:14,transformOrigin:"left center"}}>
                                 <div style={{
                                   fontSize:wide?17:15,
                                   fontWeight:500,
