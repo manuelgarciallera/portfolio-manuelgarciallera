@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -732,10 +732,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const [hovered,setHovered]=useState(-1);
   const [xHover,setXHover]=useState(false);
   const [arrowHover,setArrowHover]=useState("");
-  const [,setPulseId]=useState(-1);
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
-  const pulseTimerRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
@@ -756,25 +754,16 @@ function CloseLookSection({isDark,C,prefRM}){
     });
   },[]);
 
-  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
-
-  const bump=useCallback((i)=>{
-    setPulseId(i);
-    if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);
-    pulseTimerRef.current=setTimeout(()=>setPulseId(-1),390);
-  },[]);
-
   const select=useCallback((i,shouldOpen=true)=>{
     const next=(i+n)%n;
     setActive(next);
     setOpen(shouldOpen?next:-1);
-    bump(next);
-  },[n,bump]);
+  },[n]);
 
   const onItem=useCallback((i)=>{
-    if(open===i){setOpen(-1);setActive(i);bump(i);return;}
+    if(open===i){setOpen(-1);setActive(i);return;}
     select(i,true);
-  },[open,select,bump]);
+  },[open,select]);
 
   const onMove=e=>{
     if(!mediaRef.current||prefRM.current||panelW<960)return;
@@ -788,17 +777,18 @@ function CloseLookSection({isDark,C,prefRM}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
-  const activeItem=items[active];
+  const mediaItem=items[active];
   const listLeft=wide?118:16;
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
-  const motionEase=[0.4,0,0,1];
+  const motionEase=[0.22,0.61,0.36,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
-  const bubbleOpenMs=prefRM.current?0:.38;
-  const bubbleCloseMs=prefRM.current?0:.4;
-  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.34,ease:motionEase};
+  const bubbleOpenMs=prefRM.current?0:.5;
+  const bubbleCloseMs=prefRM.current?0:.5;
+  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.46,ease:motionEase};
+  const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:.52,ease:motionEase};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -816,7 +806,6 @@ function CloseLookSection({isDark,C,prefRM}){
         }}>
           <div style={{position:"relative",minHeight:wide?800:880}}>
             <div
-              key={active}
               ref={mediaRef}
               onMouseMove={onMove}
               onMouseLeave={onLeave}
@@ -825,11 +814,26 @@ function CloseLookSection({isDark,C,prefRM}){
                 inset:0,
                 transform:"scale(1) rotateX(0deg) rotateY(0deg)",
                 transformStyle:"preserve-3d",
-                transition:"transform .24s ease,box-shadow .35s ease,opacity .38s cubic-bezier(.4,0,0,1)",
-                animation:prefRM.current?"none":"nearMediaIn .38s cubic-bezier(.4,0,0,1)",
+                transition:"transform .24s ease,box-shadow .35s ease",
                 background:"#0b0b10",
               }}>
-              <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+              <AnimatePresence mode="sync" initial={false}>
+                <motion.div
+                  key={mediaItem.src}
+                  initial={prefRM.current?false:{opacity:0,clipPath:"inset(0 0 0 100%)",x:"8%"}}
+                  animate={{opacity:1,clipPath:"inset(0 0 0 0%)",x:"0%"}}
+                  exit={prefRM.current?{opacity:0}:{opacity:0,clipPath:"inset(0 100% 0 0%)",x:"-8%"}}
+                  transition={mediaTransition}
+                  style={{
+                    position:"absolute",
+                    inset:0,
+                    willChange:"transform,opacity,clip-path",
+                    transform:"translateZ(0)",
+                    backfaceVisibility:"hidden",
+                  }}>
+                  <Img src={mediaItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={mediaItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+                </motion.div>
+              </AnimatePresence>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>
             </div>
 
