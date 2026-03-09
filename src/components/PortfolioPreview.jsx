@@ -576,7 +576,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                 flex:"0 0 auto",
                 width:slideW,
                 height:slideH,
-                borderRadius:22,
+                borderRadius:30,
                 overflow:"hidden",
                 position:"relative",
                 background:"#000",
@@ -679,7 +679,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
   const wide=panelW>=980;
   const activeItem=items[active];
-  const listLeft=wide?96:16;
+  const listLeft=wide?118:16;
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
@@ -687,19 +687,19 @@ function CloseLookSection({isDark,C,prefRM}){
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
-      <div style={{maxWidth:1360,margin:"0 auto"}}>
+      <div style={{maxWidth:1420,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
           {"M\u00E1s de cerca."}
         </h2>
 
         <div ref={panelRef} style={{
-          borderRadius:22,
+          borderRadius:30,
           overflow:"hidden",
           background:"#000",
           border:"none",
           padding:0,
         }}>
-          <div style={{position:"relative",minHeight:wide?760:840}}>
+          <div style={{position:"relative",minHeight:wide?800:880}}>
             <div
               key={active}
               ref={mediaRef}
@@ -729,9 +729,9 @@ function CloseLookSection({isDark,C,prefRM}){
               </button>
             )}
 
-            <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
+            <div style={{position:"absolute",left:listLeft,top:wide?"50%":listTop,transform:wide?"translateY(-50%)":"none",zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
               {wide&&(
-                <div style={{position:"absolute",left:-62,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:30}}>
+                <div style={{position:"absolute",left:-74,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:30}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
                     <ChU s={20}/>
