@@ -647,10 +647,11 @@ function CloseLookSection({isDark,C,prefRM}){
   const [hovered,setHovered]=useState(-1);
   const [xHover,setXHover]=useState(false);
   const [arrowHover,setArrowHover]=useState("");
-  const [pulseId,setPulseId]=useState(-1);
+  const [,setPulseId]=useState(-1);
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const pulseTimerRef=useRef(null);
+  const openTimerRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
@@ -663,7 +664,7 @@ function CloseLookSection({isDark,C,prefRM}){
     return()=>ro.disconnect();
   },[]);
 
-  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
+  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);if(openTimerRef.current)clearTimeout(openTimerRef.current);},[]);
 
   const bump=useCallback((i)=>{
     setPulseId(i);
@@ -673,12 +674,20 @@ function CloseLookSection({isDark,C,prefRM}){
 
   const select=useCallback((i,shouldOpen=true)=>{
     const next=(i+n)%n;
+    if(openTimerRef.current){clearTimeout(openTimerRef.current);openTimerRef.current=null;}
     setActive(next);
-    setOpen(shouldOpen?next:-1);
     bump(next);
-  },[n,bump]);
+    if(!shouldOpen){setOpen(-1);return;}
+    if(prefRM.current||open===-1||open===next){setOpen(next);return;}
+    setOpen(-1);
+    openTimerRef.current=setTimeout(()=>{
+      setOpen(next);
+      openTimerRef.current=null;
+    },210);
+  },[n,bump,prefRM,open]);
 
   const onItem=useCallback((i)=>{
+    if(openTimerRef.current){clearTimeout(openTimerRef.current);openTimerRef.current=null;}
     if(open===i){setOpen(-1);setActive(i);bump(i);return;}
     select(i,true);
   },[open,select,bump]);
@@ -800,19 +809,22 @@ function CloseLookSection({isDark,C,prefRM}){
                           color:"#f5f5f7",
                           textAlign:"left",
                           letterSpacing:"-.015em",
-                          transition:"width .58s cubic-bezier(.16,1,.3,1),padding .58s cubic-bezier(.16,1,.3,1),border-radius .58s cubic-bezier(.16,1,.3,1),background .24s ease,opacity .24s ease,transform .3s cubic-bezier(.16,1,.3,1)",
-                          animation:expanded&&pulseId===i&&!prefRM.current?"nearBubbleOpen .58s cubic-bezier(.16,1,.3,1)":pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
+                          transition:"width .72s cubic-bezier(.22,.61,.36,1),padding .72s cubic-bezier(.22,.61,.36,1),border-radius .68s cubic-bezier(.22,.61,.36,1),background .24s ease,opacity .28s ease,transform .36s cubic-bezier(.22,.61,.36,1)",
+                          animation:expanded&&!prefRM.current?"nearBubbleOpen .64s cubic-bezier(.16,1,.3,1)":"none",
                           backdropFilter:"blur(6px)",
                           transformOrigin:"left center",
                           opacity:open===-1||expanded||!isOn?1:.65,
                           overflow:"hidden",
+                          willChange:"width,padding,border-radius",
                         }}>
                         <div style={{
                           overflow:"hidden",
                           maxHeight:expanded?0:72,
                           opacity:expanded?0:1,
                           transform:expanded?"scale(.955)":"scale(1)",
-                          transition:"max-height .44s cubic-bezier(.16,1,.3,1),opacity .28s ease,transform .44s cubic-bezier(.16,1,.3,1)",
+                          transition:expanded
+                            ?"max-height .34s cubic-bezier(.2,.9,.3,1),opacity .22s ease,transform .34s cubic-bezier(.2,.9,.3,1)"
+                            :"max-height .56s cubic-bezier(.22,.61,.36,1) .14s,opacity .32s ease .14s,transform .56s cubic-bezier(.22,.61,.36,1) .14s",
                         }}>
                           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                             <span style={{
@@ -841,7 +853,9 @@ function CloseLookSection({isDark,C,prefRM}){
                           maxHeight:expanded?(wide?232:250):0,
                           opacity:expanded?1:0,
                           transform:expanded?"translateY(0) scale(1)":"translateY(10px) scale(.985)",
-                          transition:"max-height .58s cubic-bezier(.16,1,.3,1),opacity .34s ease .07s,transform .56s cubic-bezier(.16,1,.3,1) .07s",
+                          transition:expanded
+                            ?"max-height .66s cubic-bezier(.16,1,.3,1),opacity .38s ease .09s,transform .64s cubic-bezier(.16,1,.3,1) .09s"
+                            :"max-height .44s cubic-bezier(.2,.9,.3,1),opacity .24s ease,transform .42s cubic-bezier(.2,.9,.3,1)",
                           animation:expanded&&!prefRM.current?"nearTextRise .44s cubic-bezier(.16,1,.3,1)":"none",
                         }}>
                           <div style={{
