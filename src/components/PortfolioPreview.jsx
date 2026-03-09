@@ -233,7 +233,7 @@ const CLOSE_LOOK_ITEMS=[
   {
     label:"Diseño 3D",
     desc:"Pipelines de 3D realtime, optimizacion de escenas y visualizacion con motion controlado.",
-    src:"https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1700&q=80&auto=format"
   },
   {
     label:"Research",
