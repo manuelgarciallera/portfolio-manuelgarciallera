@@ -664,6 +664,14 @@ function CloseLookSection({isDark,C,prefRM}){
     return()=>ro.disconnect();
   },[]);
 
+  useEffect(()=>{
+    CLOSE_LOOK_ITEMS.forEach(({src})=>{
+      const img=new Image();
+      img.decoding="async";
+      img.src=src;
+    });
+  },[]);
+
   useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
 
   const bump=useCallback((i)=>{
@@ -703,9 +711,9 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
-  const layoutTransition=prefRM.current?{duration:0}:{duration:.6,ease:appleBezier};
-  const descInTransition=prefRM.current?{duration:0}:{duration:.5,delay:.1,ease:appleBezier};
-  const descOutTransition=prefRM.current?{duration:0}:{duration:.2,ease:appleBezier};
+  const layoutTransition=prefRM.current?{duration:0}:{duration:.52,ease:appleBezier};
+  const descInTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
+  const descOutTransition=prefRM.current?{duration:0}:{duration:.16,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -723,7 +731,6 @@ function CloseLookSection({isDark,C,prefRM}){
         }}>
           <div style={{position:"relative",minHeight:wide?800:880}}>
             <div
-              key={active}
               ref={mediaRef}
               onMouseMove={onMove}
               onMouseLeave={onLeave}
@@ -819,43 +826,16 @@ function CloseLookSection({isDark,C,prefRM}){
                             overflow:"hidden",
                             willChange:"width,padding,border-radius,height",
                           }}>
-                          <motion.div
-                            layout="position"
-                            transition={layoutTransition}
-                            animate={expanded?{opacity:0,y:-5,height:0}:{opacity:1,y:0,height:"auto"}}
-                            style={{overflow:"hidden",transformOrigin:"left center"}}>
-                            <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
-                              <span style={{
-                                width:25,
-                                height:25,
-                                borderRadius:"50%",
-                                border:"1.8px solid #fff",
-                                display:"inline-flex",
-                                alignItems:"center",
-                                justifyContent:"center",
-                                fontSize:20,
-                                fontWeight:650,
-                                color:"#fff",
-                                background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
-                                flexShrink:0,
-                                lineHeight:1,
-                              }}>
-                                +
-                              </span>
-                              <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
-                            </div>
-                          </motion.div>
-
-                          <AnimatePresence initial={false} mode="wait">
-                            {expanded&&(
+                          <AnimatePresence initial={false} mode="sync">
+                            {expanded?(
                               <motion.div
                                 key={`desc-${item.label}`}
-                                layout
-                                initial={{opacity:0,y:10,height:0}}
-                                animate={{opacity:1,y:0,height:"auto"}}
-                                exit={{opacity:0,y:5,height:0,transition:descOutTransition}}
+                                layout="position"
+                                initial={prefRM.current?false:{opacity:0,y:6,scale:.995}}
+                                animate={{opacity:1,y:0,scale:1}}
+                                exit={{opacity:0,y:4,scale:.995,transition:descOutTransition}}
                                 transition={descInTransition}
-                                style={{overflow:"hidden",marginTop:14,transformOrigin:"left center"}}>
+                                style={{overflow:"hidden",marginTop:4,transformOrigin:"left center"}}>
                                 <div style={{
                                   fontSize:wide?17:15,
                                   fontWeight:500,
@@ -865,6 +845,36 @@ function CloseLookSection({isDark,C,prefRM}){
                                 }}>
                                   <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
                                   <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                                </div>
+                              </motion.div>
+                            ):(
+                              <motion.div
+                                key={`label-${item.label}`}
+                                layout="position"
+                                initial={prefRM.current?false:{opacity:0,y:-3}}
+                                animate={{opacity:1,y:0}}
+                                exit={{opacity:0,y:-3}}
+                                transition={prefRM.current?{duration:0}:{duration:.18,ease:appleBezier}}
+                                style={{overflow:"hidden",transformOrigin:"left center"}}>
+                                <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                                  <span style={{
+                                    width:25,
+                                    height:25,
+                                    borderRadius:"50%",
+                                    border:"1.8px solid #fff",
+                                    display:"inline-flex",
+                                    alignItems:"center",
+                                    justifyContent:"center",
+                                    fontSize:20,
+                                    fontWeight:650,
+                                    color:"#fff",
+                                    background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
+                                    flexShrink:0,
+                                    lineHeight:1,
+                                  }}>
+                                    +
+                                  </span>
+                                  <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
                                 </div>
                               </motion.div>
                             )}
