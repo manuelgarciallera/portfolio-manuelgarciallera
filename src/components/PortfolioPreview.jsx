@@ -785,10 +785,14 @@ function CloseLookSection({isDark,C,prefRM}){
   const ctrlSize=wide?36:32;
   const motionEase=[0.22,0.61,0.36,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
-  const bubbleOpenMs=prefRM.current?0:.5;
-  const bubbleCloseMs=prefRM.current?0:.5;
-  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.46,ease:motionEase};
-  const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:.52,ease:motionEase};
+  const morphMs=prefRM.current?0:.62;
+  const bubbleOpenMs=morphMs;
+  const bubbleCloseMs=morphMs;
+  const labelOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.2,ease:[0.55,0,1,1]};
+  const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.3,ease:motionEase,delay:.05};
+  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.48,ease:motionEase,delay:.12};
+  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.24,ease:[0.55,0,1,1]};
+  const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:morphMs,ease:motionEase};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -820,14 +824,14 @@ function CloseLookSection({isDark,C,prefRM}){
               <AnimatePresence mode="sync" initial={false}>
                 <motion.div
                   key={mediaItem.src}
-                  initial={prefRM.current?false:{opacity:0,clipPath:"inset(0 0 0 100%)",x:"8%"}}
-                  animate={{opacity:1,clipPath:"inset(0 0 0 0%)",x:"0%"}}
-                  exit={prefRM.current?{opacity:0}:{opacity:0,clipPath:"inset(0 100% 0 0%)",x:"-8%"}}
+                  initial={prefRM.current?false:{opacity:0,x:"8%",scale:1.035,filter:"blur(2.2px)"}}
+                  animate={{opacity:1,x:"0%",scale:1,filter:"blur(0px)"}}
+                  exit={prefRM.current?{opacity:0}:{opacity:[1,.42,0],x:"-8%",scale:.966,filter:"blur(2.2px)"}}
                   transition={mediaTransition}
                   style={{
                     position:"absolute",
                     inset:0,
-                    willChange:"transform,opacity,clip-path",
+                    willChange:"transform,opacity,filter",
                     transform:"translateZ(0)",
                     backfaceVisibility:"hidden",
                   }}>
@@ -926,8 +930,8 @@ function CloseLookSection({isDark,C,prefRM}){
                             willChange:"width,height,border-radius,transform",
                           }}>
                           <motion.div
-                            transition={contentTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded ? .992 : 1,y:expanded?-1:0}}
+                            transition={expanded?labelOutTransition:labelInTransition}
+                            animate={{opacity:expanded?0:1,scale:expanded?.985:1,y:expanded?-1.5:0,filter:expanded?"blur(4px)":"blur(0px)"}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -952,8 +956,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           </motion.div>
 
                           <motion.div
-                            transition={contentTransition}
-                            animate={{opacity:expanded?1:0,scale:expanded?1:.992,y:expanded?0:2}}
+                            transition={expanded?descInTransition:descOutTransition}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.985,y:expanded?0:2,filter:expanded?"blur(0px)":"blur(6px)"}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
                               fontSize:wide?17:15,
