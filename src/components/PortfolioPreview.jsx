@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import * as THREE from "three";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -651,7 +652,6 @@ function CloseLookSection({isDark,C,prefRM}){
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const pulseTimerRef=useRef(null);
-  const openTimerRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
@@ -664,7 +664,7 @@ function CloseLookSection({isDark,C,prefRM}){
     return()=>ro.disconnect();
   },[]);
 
-  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);if(openTimerRef.current)clearTimeout(openTimerRef.current);},[]);
+  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
 
   const bump=useCallback((i)=>{
     setPulseId(i);
@@ -674,20 +674,12 @@ function CloseLookSection({isDark,C,prefRM}){
 
   const select=useCallback((i,shouldOpen=true)=>{
     const next=(i+n)%n;
-    if(openTimerRef.current){clearTimeout(openTimerRef.current);openTimerRef.current=null;}
     setActive(next);
+    setOpen(shouldOpen?next:-1);
     bump(next);
-    if(!shouldOpen){setOpen(-1);return;}
-    if(prefRM.current||open===-1||open===next){setOpen(next);return;}
-    setOpen(-1);
-    openTimerRef.current=setTimeout(()=>{
-      setOpen(next);
-      openTimerRef.current=null;
-    },210);
-  },[n,bump,prefRM,open]);
+  },[n,bump]);
 
   const onItem=useCallback((i)=>{
-    if(openTimerRef.current){clearTimeout(openTimerRef.current);openTimerRef.current=null;}
     if(open===i){setOpen(-1);setActive(i);bump(i);return;}
     select(i,true);
   },[open,select,bump]);
@@ -777,103 +769,110 @@ function CloseLookSection({isDark,C,prefRM}){
                 </div>
               )}
 
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                {items.map((item,i)=>{
-                  const isOn=active===i;
-                  const expanded=open===i;
-                  const isHover=hovered===i;
-                  const collapsedW=Math.min(descMax,wide?Math.max(198,Math.round(112+item.label.length*10.2)):Math.max(176,Math.round(98+item.label.length*9.4)));
-                  const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
-                  const bubbleBg=expanded
-                    ?"rgba(36,36,44,.72)"
-                    :isHover
-                      ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
-                      :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
-                  return(
-                    <div key={item.label} style={{display:"flex"}}>
-                      <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
-                        onMouseEnter={()=>setHovered(i)}
-                        onMouseLeave={()=>setHovered(-1)}
-                        onFocus={()=>setHovered(i)}
-                        onBlur={()=>setHovered(-1)}
-                        style={{
-                          width:expanded?expandedW:collapsedW,
-                          maxWidth:"100%",
-                          border:"none",
-                          background:bubbleBg,
-                          boxShadow:"none",
-                          borderRadius:expanded?23:999,
-                          display:"block",
-                          cursor:"pointer",
-                          padding:expanded?(wide?"17px 18px":"16px 15px"):(wide?"15px 18px":"14px 14px"),
-                          color:"#f5f5f7",
-                          textAlign:"left",
-                          letterSpacing:"-.015em",
-                          transition:"width .72s cubic-bezier(.22,.61,.36,1),padding .72s cubic-bezier(.22,.61,.36,1),border-radius .68s cubic-bezier(.22,.61,.36,1),background .24s ease,opacity .28s ease,transform .36s cubic-bezier(.22,.61,.36,1)",
-                          animation:expanded&&!prefRM.current?"nearBubbleOpen .64s cubic-bezier(.16,1,.3,1)":"none",
-                          backdropFilter:"blur(6px)",
-                          transformOrigin:"left center",
-                          opacity:open===-1||expanded||!isOn?1:.65,
-                          overflow:"hidden",
-                          willChange:"width,padding,border-radius",
-                        }}>
-                        <div style={{
-                          overflow:"hidden",
-                          maxHeight:expanded?0:72,
-                          opacity:expanded?0:1,
-                          transform:expanded?"scale(.955)":"scale(1)",
-                          transition:expanded
-                            ?"max-height .34s cubic-bezier(.2,.9,.3,1),opacity .22s ease,transform .34s cubic-bezier(.2,.9,.3,1)"
-                            :"max-height .56s cubic-bezier(.22,.61,.36,1) .14s,opacity .32s ease .14s,transform .56s cubic-bezier(.22,.61,.36,1) .14s",
-                        }}>
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
-                            <span style={{
-                              width:25,
-                              height:25,
-                              borderRadius:"50%",
-                              border:"1.8px solid #fff",
-                              display:"inline-flex",
-                              alignItems:"center",
-                              justifyContent:"center",
-                              fontSize:20,
-                              fontWeight:650,
-                              color:"#fff",
-                              background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
-                              flexShrink:0,
-                              lineHeight:1,
-                            }}>
-                              +
-                            </span>
-                            <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
-                          </div>
-                        </div>
-
-                        <div style={{
-                          overflow:"hidden",
-                          maxHeight:expanded?(wide?232:250):0,
-                          opacity:expanded?1:0,
-                          transform:expanded?"translateY(0) scale(1)":"translateY(10px) scale(.985)",
-                          transition:expanded
-                            ?"max-height .66s cubic-bezier(.16,1,.3,1),opacity .38s ease .09s,transform .64s cubic-bezier(.16,1,.3,1) .09s"
-                            :"max-height .44s cubic-bezier(.2,.9,.3,1),opacity .24s ease,transform .42s cubic-bezier(.2,.9,.3,1)",
-                          animation:expanded&&!prefRM.current?"nearTextRise .44s cubic-bezier(.16,1,.3,1)":"none",
-                        }}>
-                          <div style={{
-                            fontSize:wide?17:15,
-                            fontWeight:500,
-                            lineHeight:1.46,
-                            letterSpacing:"-.01em",
-                            color:"rgba(245,245,247,.95)",
+              <LayoutGroup id="close-look-pills">
+                <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                  {items.map((item,i)=>{
+                    const isOn=active===i;
+                    const expanded=open===i;
+                    const isHover=hovered===i;
+                    const collapsedW=Math.min(descMax,wide?Math.max(198,Math.round(112+item.label.length*10.2)):Math.max(176,Math.round(98+item.label.length*9.4)));
+                    const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
+                    const bubbleBg=expanded
+                      ?"rgba(36,36,44,.72)"
+                      :isHover
+                        ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
+                        :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
+                    const layoutT=prefRM.current?{duration:0}:{duration:.66,ease:[.22,1,.36,1]};
+                    const fadeT=prefRM.current?{duration:0}:{duration:.32,ease:[.16,1,.3,1]};
+                    return(
+                      <div key={item.label} style={{display:"flex"}}>
+                        <motion.button
+                          layout
+                          transition={{layout:layoutT}}
+                          onClick={()=>onItem(i)}
+                          aria-expanded={expanded}
+                          aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
+                          onMouseEnter={()=>setHovered(i)}
+                          onMouseLeave={()=>setHovered(-1)}
+                          onFocus={()=>setHovered(i)}
+                          onBlur={()=>setHovered(-1)}
+                          whileTap={prefRM.current?undefined:{scale:.995}}
+                          style={{
+                            width:expanded?expandedW:collapsedW,
+                            maxWidth:"100%",
+                            border:"none",
+                            background:bubbleBg,
+                            boxShadow:"none",
+                            borderRadius:expanded?23:999,
+                            display:"block",
+                            cursor:"pointer",
+                            padding:expanded?(wide?"17px 18px":"16px 15px"):(wide?"15px 18px":"14px 14px"),
+                            color:"#f5f5f7",
+                            textAlign:"left",
+                            letterSpacing:"-.015em",
+                            transition:"background .24s ease,opacity .28s ease",
+                            backdropFilter:"blur(6px)",
+                            transformOrigin:"left center",
+                            opacity:open===-1||expanded||!isOn?1:.65,
+                            overflow:"hidden",
+                            willChange:"width,padding,border-radius",
                           }}>
-                            <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
-                            <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                          <motion.div
+                            layout="position"
+                            animate={{opacity:expanded?0:1,scale:expanded ? .965 : 1,maxHeight:expanded?0:80}}
+                            transition={fadeT}
+                            style={{overflow:"hidden",transformOrigin:"left center"}}>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                              <span style={{
+                                width:25,
+                                height:25,
+                                borderRadius:"50%",
+                                border:"1.8px solid #fff",
+                                display:"inline-flex",
+                                alignItems:"center",
+                                justifyContent:"center",
+                                fontSize:20,
+                                fontWeight:650,
+                                color:"#fff",
+                                background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
+                                flexShrink:0,
+                                lineHeight:1,
+                              }}>
+                                +
+                              </span>
+                              <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
+                            </div>
+                          </motion.div>
+
+                          <AnimatePresence initial={false}>
+                            {expanded&&(
+                              <motion.div
+                                key={`desc-${item.label}`}
+                                layout
+                                initial={{opacity:0,maxHeight:0,scale:.985,y:8,filter:"blur(2px)"}}
+                                animate={{opacity:1,maxHeight:wide?236:258,scale:1,y:0,filter:"blur(0px)"}}
+                                exit={{opacity:0,maxHeight:0,scale:.985,y:-4,filter:"blur(1px)"}}
+                                transition={prefRM.current?{duration:0}:{duration:.5,ease:[.16,1,.3,1]}}
+                                style={{overflow:"hidden",transformOrigin:"left center"}}>
+                                <div style={{
+                                  fontSize:wide?17:15,
+                                  fontWeight:500,
+                                  lineHeight:1.46,
+                                  letterSpacing:"-.01em",
+                                  color:"rgba(245,245,247,.95)",
+                                }}>
+                                  <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
+                                  <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </LayoutGroup>
 
               {!wide&&(
                 <div style={{display:"flex",gap:10,marginTop:12}}>
