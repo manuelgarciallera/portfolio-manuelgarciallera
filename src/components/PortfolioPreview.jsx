@@ -790,10 +790,12 @@ function CloseLookSection({isDark,C,prefRM}){
   const bubbleOpenMs=morphMs;
   const bubbleCloseMs=morphMs;
   const labelOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:[0.55,0,1,1]};
-  const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:motionEase,delay:.16};
-  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.32,ease:motionEase,delay:.18};
-  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.16,ease:[0.55,0,1,1]};
+  const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.26,ease:motionEase,delay:.2};
+  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.3,ease:motionEase,delay:.24};
+  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:[0.55,0,1,1]};
   const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:morphMs,ease:motionEase};
+  const textClipClosed="inset(0 50% 0 50% round 12px)";
+  const textClipOpen="inset(0 0% 0 0% round 12px)";
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -932,8 +934,14 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={expanded?labelOutTransition:labelInTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded?.988:1,y:0}}
-                            style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
+                            animate={{
+                              opacity:expanded?0:1,
+                              scale:expanded?.99:1,
+                              y:0,
+                              filter:expanded?"blur(2.2px)":"blur(0px)",
+                              clipPath:expanded?textClipClosed:textClipOpen,
+                            }}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center",willChange:"opacity,filter,clip-path"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
                                 width:25,
@@ -958,8 +966,14 @@ function CloseLookSection({isDark,C,prefRM}){
 
                           <motion.div
                             transition={expanded?descInTransition:descOutTransition}
-                            animate={{opacity:expanded?1:0,scale:expanded?1:.997,y:0}}
-                            style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
+                            animate={{
+                              opacity:expanded?1:0,
+                              scale:expanded?1:.99,
+                              y:0,
+                              filter:expanded?"blur(0px)":"blur(2.6px)",
+                              clipPath:expanded?textClipOpen:textClipClosed,
+                            }}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none",willChange:"opacity,filter,clip-path"}}>
                             <div style={{
                               fontSize:wide?17:15,
                               fontWeight:500,
