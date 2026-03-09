@@ -790,8 +790,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const bubbleCloseMs=morphMs;
   const labelOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.2,ease:[0.55,0,1,1]};
   const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.3,ease:motionEase,delay:.05};
-  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.48,ease:motionEase,delay:.12};
-  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.24,ease:[0.55,0,1,1]};
+  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.34,ease:motionEase,delay:.2};
+  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:[0.55,0,1,1]};
   const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:morphMs,ease:motionEase};
 
   return(
@@ -824,9 +824,9 @@ function CloseLookSection({isDark,C,prefRM}){
               <AnimatePresence mode="sync" initial={false}>
                 <motion.div
                   key={mediaItem.src}
-                  initial={prefRM.current?false:{opacity:0,x:"8%",scale:1.035,filter:"blur(2.2px)"}}
+                  initial={prefRM.current?false:{opacity:0,x:"3.2%",scale:1.02,filter:"blur(2.1px)"}}
                   animate={{opacity:1,x:"0%",scale:1,filter:"blur(0px)"}}
-                  exit={prefRM.current?{opacity:0}:{opacity:[1,.42,0],x:"-8%",scale:.966,filter:"blur(2.2px)"}}
+                  exit={prefRM.current?{opacity:0}:{opacity:[1,.66,0],x:"-3.2%",scale:.986,filter:"blur(2.1px)"}}
                   transition={mediaTransition}
                   style={{
                     position:"absolute",
@@ -886,10 +886,10 @@ function CloseLookSection({isDark,C,prefRM}){
                       ?Math.min(238,Math.max(146,112+Math.ceil(item.desc.length/44)*24))
                       :Math.min(252,Math.max(146,106+Math.ceil(item.desc.length/36)*23));
                     const bubbleBg=expanded
-                      ?"rgba(36,36,44,.72)"
+                      ?"rgba(30,30,36,.78)"
                       :isHover
-                        ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
-                        :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
+                        ?(isOn?"rgba(98,98,108,.84)":"rgba(88,88,98,.8)")
+                        :(isOn?"rgba(76,76,86,.78)":"rgba(64,64,74,.72)");
                     return(
                       <div key={item.label} style={{display:"flex"}}>
                         <motion.button
@@ -931,7 +931,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={expanded?labelOutTransition:labelInTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded?.985:1,y:expanded?-1.5:0,filter:expanded?"blur(4px)":"blur(0px)"}}
+                            animate={{opacity:expanded?0:1,scale:expanded?.985:1,y:0,filter:expanded?"blur(4px)":"blur(0px)"}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -957,7 +957,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
                           <motion.div
                             transition={expanded?descInTransition:descOutTransition}
-                            animate={{opacity:expanded?1:0,scale:expanded?1:.985,y:expanded?0:2,filter:expanded?"blur(0px)":"blur(6px)"}}
+                            animate={{opacity:expanded?1:0,scale:1,y:0,filter:expanded?"blur(0px)":"blur(6px)"}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
                               fontSize:wide?17:15,
