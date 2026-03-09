@@ -724,7 +724,7 @@ function CloseLookSection({isDark,C,prefRM}){
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
                 onMouseEnter={()=>setXHover(true)}
                 onMouseLeave={()=>setXHover(false)}
-                style={{position:"absolute",top:18,right:18,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:25,fontWeight:760,lineHeight:1,background:xHover?"rgba(20,20,24,.96)":"rgba(34,34,38,.88)",color:"#d8d8df",transition:"background .24s ease"}}>
+                style={{position:"absolute",top:22,right:22,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:25,fontWeight:760,lineHeight:1,background:xHover?"rgba(20,20,24,.96)":"rgba(34,34,38,.88)",color:"#d8d8df",transition:"background .24s ease"}}>
                 {"\u00D7"}
               </button>
             )}
@@ -743,7 +743,7 @@ function CloseLookSection({isDark,C,prefRM}){
                 </div>
               )}
 
-              <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 {items.map((item,i)=>{
                   const isOn=active===i;
                   const expanded=open===i;
@@ -760,7 +760,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             width:"fit-content",
                             maxWidth:"100%",
                             border:"none",
-                            background:isHover?(isOn?"rgba(39,39,44,.9)":"rgba(22,22,27,.84)"):(isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)"),
+                            background:isHover?(isOn?"rgba(88,88,96,.86)":"rgba(76,76,84,.78)"):(isOn?"rgba(66,66,74,.78)":"rgba(56,56,64,.68)"),
                             boxShadow:"none",
                             borderRadius:999,
                             display:"flex",
@@ -768,7 +768,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             justifyContent:"flex-start",
                             gap:10,
                             cursor:"pointer",
-                            padding:wide?"13px 18px":"12px 14px",
+                            padding:wide?"14px 18px":"13px 14px",
                             color:"#f5f5f7",
                             fontSize:wide?17:15.5,
                             fontWeight:600,
