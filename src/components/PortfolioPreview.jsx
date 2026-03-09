@@ -175,9 +175,9 @@ const CSS=`
 @keyframes pscroll{0%,100%{transform:translateY(0);}60%{transform:translateY(10px);}}
 @keyframes pfade{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
 @keyframes nearPop{
-  0%{opacity:0;transform:translateY(8px) scale(.72);filter:blur(5px);}
-  62%{opacity:1;transform:translateY(0) scale(1.035);filter:blur(0);}
-  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+  0%{opacity:0;transform:translateY(12px) scale(.56);filter:blur(7px);border-radius:28px;}
+  58%{opacity:1;transform:translateY(-1px) scale(1.045);filter:blur(0);border-radius:20px;}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);border-radius:18px;}
 }
 @keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
 @keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
@@ -187,8 +187,8 @@ const CSS=`
 // ─── SVG ─────────────────────────────────────────────────────────────────────
 const ChR=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M4.5 2.5l4 4-4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChL=({s=13,c="#fff"})=><svg width={s} height={s} viewBox="0 0 13 13" fill="none"><path d="M8.5 2.5l-4 4 4 4" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-const ChU=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 7.6l3.6-3.6 3.6 3.6" stroke={c} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-const ChD=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 4.4L6 8l3.6-3.6" stroke={c} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const ChU=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 7.6l3.6-3.6 3.6 3.6" stroke={c} strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const ChD=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 4.4L6 8l3.6-3.6" stroke={c} strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoLI=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2" fill={c}/></svg>;
 const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>;
 
@@ -609,7 +609,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:28}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:46}}>
           <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
@@ -682,12 +682,12 @@ function CloseLookSection({isDark,C,prefRM}){
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(820,Math.max(500,panelW*.56)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
-  const ctrlSize=wide?40:36;
+  const ctrlSize=wide?38:34;
 
   return(
-    <section style={{padding:wide?"16px 28px 220px":"36px 16px 140px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"10px 28px 190px":"28px 16px 120px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1360,margin:"0 auto"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(40px,4.3vw,62px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.03,marginBottom:42,marginLeft:wide?64:0}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
           {"M\u00E1s de cerca."}
         </h2>
 
@@ -698,7 +698,7 @@ function CloseLookSection({isDark,C,prefRM}){
           border:"none",
           padding:0,
         }}>
-          <div style={{position:"relative",minHeight:wide?700:790}}>
+          <div style={{position:"relative",minHeight:wide?662:742}}>
             <div
               key={active}
               ref={mediaRef}
@@ -721,7 +721,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
             {open!==-1&&(
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:20,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:20,fontWeight:700,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
                 {"\u00D7"}
               </button>
             )}
@@ -778,7 +778,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             width:26,
                             height:26,
                             borderRadius:"50%",
-                            border:`1px solid ${isOn?"rgba(255,255,255,.46)":"rgba(255,255,255,.28)"}`,
+                            border:`1.9px solid ${isOn?"rgba(255,255,255,.52)":"rgba(255,255,255,.34)"}`,
                             display:"inline-flex",
                             alignItems:"center",
                             justifyContent:"center",
