@@ -175,6 +175,7 @@ const CSS=`
 @keyframes ppulse{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.12);}}
 @keyframes pscroll{0%,100%{transform:translateY(0);}60%{transform:translateY(10px);}}
 @keyframes pfade{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes heroProgFill{from{width:0%;}to{width:100%;}}
 @keyframes nearPop{
   0%{opacity:0;transform:translateY(0) scaleX(.36) scaleY(.22);filter:blur(6px);border-radius:999px;}
   64%{opacity:1;transform:translateY(0) scaleX(1.04) scaleY(1.03);filter:blur(0);border-radius:22px;}
@@ -201,6 +202,7 @@ const ChU=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill=
 const ChD=({s=12,c="#fff"})=><svg width={s} height={s} viewBox="0 0 12 12" fill="none"><path d="M2.4 4.4L6 8l3.6-3.6" stroke={c} strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoPlay=({s=22,c="#fff"})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M8.2 6.6L17.6 12 8.2 17.4V6.6z" fill={c} stroke={c} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoPause=({s=20,c="#fff"})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="7.2" y="6.4" width="3.8" height="11.2" rx="1.9" fill={c}/><rect x="13" y="6.4" width="3.8" height="11.2" rx="1.9" fill={c}/></svg>;
+const IcoReplay=({s=24,c="#f5f5f7"})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M19 6.8V11h-4.2" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.6 11a7.6 7.6 0 11-2.6-5.5" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoClose=({s=18,c="#d8d8df"})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7L7 17" stroke={c} strokeWidth="2.35" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const IcoLI=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2" fill={c}/></svg>;
 const IcoGH=({c="#fff"})=><svg width="14" height="14" viewBox="0 0 24 24" fill={c}><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>;
@@ -546,8 +548,12 @@ function FeaturedSection({isDark,C}){
 function HeroGallerySection({isDark,C,prefRM}){
   const [active,setActive]=useState(0);
   const [playing,setPlaying]=useState(false);
+  const [ended,setEnded]=useState(false);
+  const [elapsedMs,setElapsedMs]=useState(0);
   const [playHover,setPlayHover]=useState(false);
   const frameRef=useRef(null);
+  const advanceTimerRef=useRef(null);
+  const startedAtRef=useRef(0);
   const [w,setW]=useState(1200);
   const n=HERO_GALLERY.length;
 
@@ -564,11 +570,58 @@ function HeroGallerySection({isDark,C,prefRM}){
   },[playing,prefRM]);
 
   useEffect(()=>{
-    if(!playing||prefRM.current)return;
-    const first=setTimeout(()=>setActive(v=>(v+1)%n),900);
-    const id=setInterval(()=>setActive(v=>(v+1)%n),HERO_GALLERY_AUTOPLAY_MS);
-    return()=>{clearTimeout(first);clearInterval(id);};
-  },[playing,prefRM,n]);
+    if(advanceTimerRef.current){
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current=null;
+    }
+    if(!playing||prefRM.current||ended)return;
+    startedAtRef.current=performance.now();
+    const remaining=Math.max(60,HERO_GALLERY_AUTOPLAY_MS-elapsedMs);
+    advanceTimerRef.current=setTimeout(()=>{
+      if(active<n-1){
+        setActive(active+1);
+        setElapsedMs(0);
+      }else{
+        setElapsedMs(HERO_GALLERY_AUTOPLAY_MS);
+        setPlaying(false);
+        setEnded(true);
+      }
+    },remaining);
+    return()=>{
+      if(advanceTimerRef.current){
+        clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current=null;
+      }
+    };
+  },[playing,prefRM,ended,active,n,elapsedMs]);
+
+  useEffect(()=>()=>{if(advanceTimerRef.current)clearTimeout(advanceTimerRef.current);},[]);
+
+  const onPickSlide=i=>{
+    setActive(i);
+    setPlaying(false);
+    setEnded(false);
+    setElapsedMs(0);
+  };
+
+  const onTogglePlay=()=>{
+    if(prefRM.current)return;
+    if(ended){
+      setActive(0);
+      setEnded(false);
+      setElapsedMs(0);
+      setPlaying(true);
+      return;
+    }
+    if(playing){
+      const now=performance.now();
+      const delta=startedAtRef.current?now-startedAtRef.current:0;
+      setElapsedMs(v=>Math.min(HERO_GALLERY_AUTOPLAY_MS,v+delta));
+      setPlaying(false);
+      return;
+    }
+    setPlaying(true);
+  };
 
   const gap=w<760?10:22;
   const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
@@ -623,22 +676,52 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:72}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 20px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
-            {HERO_GALLERY.map((_,i)=>(
-              <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
-                style={{border:"none",padding:0,width:active===i?50:9,height:9,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
-            ))}
-          </div>
-          <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
-            onMouseEnter={()=>setPlayHover(true)}
-            onMouseLeave={()=>setPlayHover(false)}
-            onFocus={()=>setPlayHover(true)}
-            onBlur={()=>setPlayHover(false)}
-            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:playHover?"rgba(100,100,110,.8)":"rgba(74,74,84,.72)",color:"#f5f5f7",transition:"background .24s ease"}}>
-            {playing?<IcoPause s={20} c="#f5f5f7"/>:<IcoPlay s={23} c="#f5f5f7"/>}
-          </button>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:86}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 20px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+          {HERO_GALLERY.map((_,i)=>{
+            const isActive=active===i;
+            const staticSelected=!playing&&!ended&&elapsedMs===0&&isActive;
+            const progressDelay=`-${Math.min(elapsedMs,HERO_GALLERY_AUTOPLAY_MS)}ms`;
+            return(
+              <button
+                key={i}
+                aria-label={`Ir a tarjeta ${i+1}`}
+                onClick={()=>onPickSlide(i)}
+                style={{border:"none",padding:0,width:isActive?76:10,height:10,display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",cursor:"pointer"}}>
+                {isActive?(
+                  <div style={{position:"relative",width:74,height:10,borderRadius:999,overflow:"hidden",background:isDark?"rgba(255,255,255,.24)":"rgba(0,0,0,.18)"}}>
+                    <div
+                      key={`${active}-${ended}-${playing}-${Math.round(elapsedMs)}`}
+                      style={{
+                        position:"absolute",
+                        left:0,
+                        top:0,
+                        bottom:0,
+                        width:ended?"100%":(staticSelected?"42%":"0%"),
+                        borderRadius:999,
+                        background:isDark?"#f5f5f7":"#1d1d1f",
+                        animation:ended||staticSelected?"none":`heroProgFill ${HERO_GALLERY_AUTOPLAY_MS}ms linear forwards`,
+                        animationDelay:progressDelay,
+                        animationPlayState:playing?"running":"paused",
+                      }}
+                    />
+                  </div>
+                ):(
+                  <span style={{display:"block",width:10,height:10,borderRadius:"50%",background:isDark?"rgba(255,255,255,.76)":"rgba(0,0,0,.36)"}}/>
+                )}
+              </button>
+            );
+          })}
         </div>
+        <button onClick={onTogglePlay} aria-label={ended?"Reiniciar galeria":(playing?"Pausar galeria":"Reproducir galeria")}
+          onMouseEnter={()=>setPlayHover(true)}
+          onMouseLeave={()=>setPlayHover(false)}
+          onFocus={()=>setPlayHover(true)}
+          onBlur={()=>setPlayHover(false)}
+          style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:playHover?"rgba(100,100,110,.8)":"rgba(74,74,84,.72)",color:"#f5f5f7",transition:"background .24s ease"}}>
+          {ended?<IcoReplay s={27} c="#f5f5f7"/>:(playing?<IcoPause s={25} c="#f5f5f7"/>:<IcoPlay s={27} c="#f5f5f7"/>)}
+        </button>
+      </div>
     </section>
   );
 }
