@@ -789,10 +789,10 @@ function CloseLookSection({isDark,C,prefRM}){
   const morphMs=prefRM.current?0:.62;
   const bubbleOpenMs=morphMs;
   const bubbleCloseMs=morphMs;
-  const labelOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.2,ease:[0.55,0,1,1]};
-  const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.3,ease:motionEase,delay:.05};
-  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.34,ease:motionEase,delay:.2};
-  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:[0.55,0,1,1]};
+  const labelOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:[0.55,0,1,1]};
+  const labelInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:motionEase,delay:.16};
+  const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.32,ease:motionEase,delay:.18};
+  const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.16,ease:[0.55,0,1,1]};
   const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:morphMs,ease:motionEase};
 
   return(
@@ -932,7 +932,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={expanded?labelOutTransition:labelInTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded?.985:1,y:0,filter:expanded?"blur(4px)":"blur(0px)"}}
+                            animate={{opacity:expanded?0:1,scale:expanded?.988:1,y:0}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -958,7 +958,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
                           <motion.div
                             transition={expanded?descInTransition:descOutTransition}
-                            animate={{opacity:expanded?1:0,scale:1,y:0,filter:expanded?"blur(0px)":"blur(6px)"}}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.997,y:0}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
                               fontSize:wide?17:15,
