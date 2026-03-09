@@ -729,9 +729,6 @@ function HeroGallerySection({isDark,C,prefRM}){
 function CloseLookSection({isDark,C,prefRM}){
   const [active,setActive]=useState(0);
   const [open,setOpen]=useState(-1);
-  const [mediaIdx,setMediaIdx]=useState(0);
-  const [mediaPrevIdx,setMediaPrevIdx]=useState(-1);
-  const [mediaBlend,setMediaBlend]=useState(1);
   const [hovered,setHovered]=useState(-1);
   const [xHover,setXHover]=useState(false);
   const [arrowHover,setArrowHover]=useState("");
@@ -739,7 +736,6 @@ function CloseLookSection({isDark,C,prefRM}){
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const pulseTimerRef=useRef(null);
-  const mediaTimerRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
@@ -760,18 +756,7 @@ function CloseLookSection({isDark,C,prefRM}){
     });
   },[]);
 
-  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);if(mediaTimerRef.current)clearTimeout(mediaTimerRef.current);},[]);
-
-  useEffect(()=>{
-    const mediaMs=prefRM.current?0:300;
-    if(active===mediaIdx)return;
-    if(mediaTimerRef.current)clearTimeout(mediaTimerRef.current);
-    setMediaPrevIdx(mediaIdx);
-    setMediaIdx(active);
-    setMediaBlend(0);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>setMediaBlend(1)));
-    mediaTimerRef.current=setTimeout(()=>setMediaPrevIdx(-1),mediaMs+36);
-  },[active,mediaIdx,prefRM]);
+  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
 
   const bump=useCallback((i)=>{
     setPulseId(i);
@@ -803,9 +788,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
-  const mediaMs=prefRM.current?0:300;
-  const activeMedia=items[mediaIdx];
-  const prevMedia=mediaPrevIdx>=0?items[mediaPrevIdx]:null;
+  const activeItem=items[active];
   const listLeft=wide?118:16;
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
@@ -831,6 +814,7 @@ function CloseLookSection({isDark,C,prefRM}){
         }}>
           <div style={{position:"relative",minHeight:wide?800:880}}>
             <div
+              key={active}
               ref={mediaRef}
               onMouseMove={onMove}
               onMouseLeave={onLeave}
@@ -839,18 +823,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 inset:0,
                 transform:"scale(1) rotateX(0deg) rotateY(0deg)",
                 transformStyle:"preserve-3d",
-                transition:"transform .24s ease,box-shadow .35s ease",
-                animation:prefRM.current?"none":"nearMediaIn .72s cubic-bezier(.16,1,.3,1)",
+                transition:"transform .24s ease,box-shadow .35s ease,opacity .3s cubic-bezier(.4,0,0,1)",
+                animation:prefRM.current?"none":"nearMediaIn .32s cubic-bezier(.4,0,0,1)",
                 background:"#0b0b10",
               }}>
-              {prevMedia&&(
-                <div style={{position:"absolute",inset:0,opacity:1-mediaBlend,transition:`opacity ${mediaMs}ms cubic-bezier(.4,0,0,1)`}}>
-                  <Img src={prevMedia.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={prevMedia.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
-                </div>
-              )}
-              <div style={{position:"absolute",inset:0,opacity:mediaBlend,transition:`opacity ${mediaMs}ms cubic-bezier(.4,0,0,1)`}}>
-                <Img src={activeMedia.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeMedia.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
-              </div>
+              <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>
             </div>
 
