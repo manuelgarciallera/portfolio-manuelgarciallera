@@ -174,7 +174,11 @@ const CSS=`
 @keyframes ppulse{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.12);}}
 @keyframes pscroll{0%,100%{transform:translateY(0);}60%{transform:translateY(10px);}}
 @keyframes pfade{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
-@keyframes nearPop{from{opacity:0;transform:translateY(-10px) scale(.9);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes nearPop{
+  0%{opacity:0;transform:translateY(8px) scale(.72);filter:blur(5px);}
+  62%{opacity:1;transform:translateY(0) scale(1.035);filter:blur(0);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+}
 @keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
 @keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
 @media(max-width:700px){.hide-m{display:none!important;}}
@@ -605,7 +609,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:12}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:28}}>
           <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
@@ -678,7 +682,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(820,Math.max(500,panelW*.56)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
-  const ctrlSize=wide?46:42;
+  const ctrlSize=wide?40:36;
 
   return(
     <section style={{padding:wide?"16px 28px 220px":"36px 16px 140px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -717,7 +721,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
             {open!==-1&&(
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:22,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:20,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
                 {"\u00D7"}
               </button>
             )}
@@ -727,11 +731,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 <div style={{position:"absolute",left:-62,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:22}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={16}/>
+                    <ChU s={17}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={16}/>
+                    <ChD s={17}/>
                   </button>
                 </div>
               )}
@@ -803,7 +807,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           color:"rgba(245,245,247,.95)",
                           background:"rgba(34,34,40,.68)",
                           border:"none",
-                          animation:prefRM.current?"none":"nearPop .42s cubic-bezier(.16,1,.3,1)",
+                          animation:prefRM.current?"none":"nearPop .72s cubic-bezier(.16,1,.3,1)",
+                          transformOrigin:"top left",
                           backdropFilter:"blur(10px)",
                         }}>
                           <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
@@ -819,11 +824,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={16}/>
+                    <ChU s={17}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={16}/>
+                    <ChD s={17}/>
                   </button>
                 </div>
               )}
