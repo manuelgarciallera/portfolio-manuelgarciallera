@@ -629,6 +629,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const [active,setActive]=useState(0);
   const [open,setOpen]=useState(-1);
   const [hovered,setHovered]=useState(-1);
+  const [xHover,setXHover]=useState(false);
   const [pulseId,setPulseId]=useState(-1);
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
@@ -682,7 +683,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
-  const ctrlSize=wide?42:38;
+  const ctrlSize=wide?36:32;
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -698,7 +699,7 @@ function CloseLookSection({isDark,C,prefRM}){
           border:"none",
           padding:0,
         }}>
-          <div style={{position:"relative",minHeight:wide?662:742}}>
+          <div style={{position:"relative",minHeight:wide?760:840}}>
             <div
               key={active}
               ref={mediaRef}
@@ -721,21 +722,23 @@ function CloseLookSection({isDark,C,prefRM}){
 
             {open!==-1&&(
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:24,fontWeight:760,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                onMouseEnter={()=>setXHover(true)}
+                onMouseLeave={()=>setXHover(false)}
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:25,fontWeight:760,lineHeight:1,background:xHover?"rgba(20,20,24,.96)":"rgba(34,34,38,.88)",color:"#d8d8df",transition:"background .24s ease"}}>
                 {"\u00D7"}
               </button>
             )}
 
             <div style={{position:"absolute",left:listLeft,top:listTop,zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
               {wide&&(
-                <div style={{position:"absolute",left:-62,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:22}}>
+                <div style={{position:"absolute",left:-62,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:30}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={19}/>
+                    <ChU s={20}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={19}/>
+                    <ChD s={20}/>
                   </button>
                 </div>
               )}
@@ -779,13 +782,13 @@ function CloseLookSection({isDark,C,prefRM}){
                             width:27,
                             height:27,
                             borderRadius:"50%",
-                            border:`2.3px solid ${isOn?"rgba(255,255,255,.52)":"rgba(255,255,255,.34)"}`,
+                            border:"2px solid #fff",
                             display:"inline-flex",
                             alignItems:"center",
                             justifyContent:"center",
                             fontSize:22,
                             fontWeight:650,
-                          color:"rgba(245,245,247,.95)",
+                          color:"#fff",
                           background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
                           flexShrink:0,
                           lineHeight:1,
@@ -801,8 +804,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           borderRadius:18,
                           padding:wide?"14px 16px":"13px 14px",
                           width:wide?Math.min(descWidth,descMax):"100%",
-                          fontSize:wide?18:16,
-                          fontWeight:520,
+                          fontSize:wide?17:15,
+                          fontWeight:470,
                           lineHeight:1.47,
                           letterSpacing:"-.01em",
                           color:"rgba(245,245,247,.95)",
@@ -813,7 +816,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           backdropFilter:"blur(10px)",
                         }}>
                           <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
-                          <span style={{fontWeight:550,color:"rgba(245,245,247,.95)"}}>{item.desc}</span>
+                          <span style={{fontWeight:470,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
                         </div>
                       )}
                     </div>
@@ -825,11 +828,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={19}/>
+                    <ChU s={20}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={19}/>
+                    <ChD s={20}/>
                   </button>
                 </div>
               )}
