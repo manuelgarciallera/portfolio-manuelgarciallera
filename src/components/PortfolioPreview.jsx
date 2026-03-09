@@ -712,8 +712,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
-  const bubbleTransition=prefRM.current?{duration:0}:{type:"tween",duration:.24,ease:appleBezier};
-  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.15,ease:appleBezier};
+  const bubbleBezier=[0.22,0.61,0.36,1];
+  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.13,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -799,11 +799,12 @@ function CloseLookSection({isDark,C,prefRM}){
                     return(
                       <div key={item.label} style={{display:"flex"}}>
                         <motion.button
-                          transition={bubbleTransition}
+                          transition={prefRM.current?{duration:0}:{type:"tween",duration:expanded ? .19 : .21,ease:bubbleBezier}}
                           animate={{
                             width:expanded?expandedW:collapsedW,
                             height:expanded?expandedH:collapsedH,
-                            borderRadius:expanded?26:999,
+                            borderRadius:expanded?22:Math.round(collapsedH/2),
+                            scale:expanded?[.992,1.003,1]:[1,.998,1],
                           }}
                           onClick={()=>onItem(i)}
                           aria-expanded={expanded}
