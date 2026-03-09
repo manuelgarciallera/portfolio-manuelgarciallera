@@ -637,6 +637,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const [open,setOpen]=useState(-1);
   const [hovered,setHovered]=useState(-1);
   const [xHover,setXHover]=useState(false);
+  const [arrowHover,setArrowHover]=useState("");
   const [pulseId,setPulseId]=useState(-1);
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
@@ -740,11 +741,19 @@ function CloseLookSection({isDark,C,prefRM}){
               {wide&&(
                 <div style={{position:"absolute",left:-74,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:30}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    onMouseEnter={()=>setArrowHover("desk-up")}
+                    onMouseLeave={()=>setArrowHover("")}
+                    onFocus={()=>setArrowHover("desk-up")}
+                    onBlur={()=>setArrowHover("")}
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="desk-up"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
                     <ChU s={20}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    onMouseEnter={()=>setArrowHover("desk-down")}
+                    onMouseLeave={()=>setArrowHover("")}
+                    onFocus={()=>setArrowHover("desk-down")}
+                    onBlur={()=>setArrowHover("")}
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="desk-down"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
                     <ChD s={20}/>
                   </button>
                 </div>
@@ -834,11 +843,19 @@ function CloseLookSection({isDark,C,prefRM}){
               {!wide&&(
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
-                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    onMouseEnter={()=>setArrowHover("mob-up")}
+                    onMouseLeave={()=>setArrowHover("")}
+                    onFocus={()=>setArrowHover("mob-up")}
+                    onBlur={()=>setArrowHover("")}
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="mob-up"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
                     <ChU s={20}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
-                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
+                    onMouseEnter={()=>setArrowHover("mob-down")}
+                    onMouseLeave={()=>setArrowHover("")}
+                    onFocus={()=>setArrowHover("mob-down")}
+                    onBlur={()=>setArrowHover("")}
+                    style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="mob-down"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
                     <ChD s={20}/>
                   </button>
                 </div>
