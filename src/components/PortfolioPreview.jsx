@@ -712,8 +712,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
-  const bubbleTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
-  const contentTransition=prefRM.current?{duration:0}:{duration:.22,ease:appleBezier};
+  const bubbleTransition=prefRM.current?{duration:0}:{type:"tween",duration:.24,ease:appleBezier};
+  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.15,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -812,7 +812,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           onMouseLeave={()=>setHovered(-1)}
                           onFocus={()=>setHovered(i)}
                           onBlur={()=>setHovered(-1)}
-                          whileTap={prefRM.current?undefined:{scale:.995}}
+                          whileTap={undefined}
                           style={{
                             maxWidth:"100%",
                             height:collapsedH,
@@ -826,8 +826,8 @@ function CloseLookSection({isDark,C,prefRM}){
                             color:"#f5f5f7",
                             textAlign:"left",
                             letterSpacing:"-.015em",
-                            transition:"background .16s ease,opacity .16s ease",
-                            backdropFilter:"blur(4px)",
+                            transition:"background .12s ease,opacity .12s ease",
+                            backdropFilter:"none",
                             transformOrigin:"left center",
                             transform:"translateZ(0)",
                             backfaceVisibility:"hidden",
@@ -837,7 +837,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={contentTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded ? .986 : 1,y:expanded?-3:0}}
+                            animate={{opacity:expanded?0:1,scale:expanded ? .99 : 1,y:expanded?-1.5:0}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -862,8 +862,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           </motion.div>
 
                           <motion.div
-                            transition={prefRM.current?{duration:0}:{duration:.26,ease:appleBezier}}
-                            animate={{opacity:expanded?1:0,scale:expanded?1:.988,y:expanded?0:6}}
+                            transition={prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:appleBezier}}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.992,y:expanded?0:3}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
                               fontSize:wide?17:15,
