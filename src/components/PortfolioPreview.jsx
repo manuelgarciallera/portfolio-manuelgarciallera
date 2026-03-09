@@ -175,9 +175,9 @@ const CSS=`
 @keyframes pscroll{0%,100%{transform:translateY(0);}60%{transform:translateY(10px);}}
 @keyframes pfade{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
 @keyframes nearPop{
-  0%{opacity:0;transform:translateY(12px) scale(.56);filter:blur(7px);border-radius:28px;}
-  58%{opacity:1;transform:translateY(-1px) scale(1.045);filter:blur(0);border-radius:20px;}
-  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);border-radius:18px;}
+  0%{opacity:0;transform:translateY(0) scaleX(.36) scaleY(.22);filter:blur(6px);border-radius:999px;}
+  64%{opacity:1;transform:translateY(0) scaleX(1.04) scaleY(1.03);filter:blur(0);border-radius:22px;}
+  100%{opacity:1;transform:translateY(0) scaleX(1) scaleY(1);filter:blur(0);border-radius:18px;}
 }
 @keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
 @keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
@@ -560,7 +560,7 @@ function HeroGallerySection({isDark,C,prefRM}){
   const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
   const slideH=w<760?438:686;
   const tx=((w-slideW)/2)-(active*(slideW+gap));
-  const controlH=50;
+  const controlH=58;
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
@@ -609,11 +609,11 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:46}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,height:controlH,padding:"0 16px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:72}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 20px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
             {HERO_GALLERY.map((_,i)=>(
               <button key={i} aria-label={`Ir a tarjeta ${i+1}`} onClick={()=>{setActive(i);setPlaying(false);}}
-                style={{border:"none",padding:0,width:active===i?42:8,height:8,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
+                style={{border:"none",padding:0,width:active===i?50:9,height:9,borderRadius:999,background:active===i?(isDark?"#f5f5f7":"#1d1d1f"):(isDark?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)"),cursor:"pointer",transition:"all .28s ease"}}/>
             ))}
           </div>
           <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
@@ -680,12 +680,12 @@ function CloseLookSection({isDark,C,prefRM}){
   const activeItem=items[active];
   const listLeft=wide?96:16;
   const listTop=wide?48:20;
-  const descWidth=wide?Math.min(820,Math.max(500,panelW*.56)):0;
+  const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
-  const ctrlSize=wide?38:34;
+  const ctrlSize=wide?42:38;
 
   return(
-    <section style={{padding:wide?"10px 28px 190px":"28px 16px 120px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1360,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
           {"M\u00E1s de cerca."}
@@ -721,7 +721,7 @@ function CloseLookSection({isDark,C,prefRM}){
 
             {open!==-1&&(
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:20,fontWeight:700,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
+                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:24,fontWeight:760,lineHeight:1,background:"rgba(34,34,38,.88)",color:"#d8d8df"}}>
                 {"\u00D7"}
               </button>
             )}
@@ -731,11 +731,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 <div style={{position:"absolute",left:-62,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:22}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={17}/>
+                    <ChU s={19}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={17}/>
+                    <ChD s={19}/>
                   </button>
                 </div>
               )}
@@ -754,7 +754,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           onFocus={()=>setHovered(i)}
                           onBlur={()=>setHovered(-1)}
                           style={{
-                            width:"100%",
+                            width:"fit-content",
+                            maxWidth:"100%",
                             border:"none",
                             background:isHover?(isOn?"rgba(39,39,44,.9)":"rgba(22,22,27,.84)"):(isOn?"rgba(47,47,54,.76)":"rgba(31,31,36,.62)"),
                             boxShadow:"none",
@@ -766,7 +767,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             cursor:"pointer",
                             padding:wide?"12px 18px":"11px 14px",
                             color:"#f5f5f7",
-                            fontSize:wide?20:17,
+                            fontSize:wide?18:16,
                             fontWeight:600,
                             letterSpacing:"-.015em",
                             transition:"background .24s ease,border-color .24s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
@@ -775,14 +776,14 @@ function CloseLookSection({isDark,C,prefRM}){
                             opacity:open===-1||!isOn?1:.65,
                           }}>
                           <span style={{
-                            width:26,
-                            height:26,
+                            width:27,
+                            height:27,
                             borderRadius:"50%",
-                            border:`1.9px solid ${isOn?"rgba(255,255,255,.52)":"rgba(255,255,255,.34)"}`,
+                            border:`2.3px solid ${isOn?"rgba(255,255,255,.52)":"rgba(255,255,255,.34)"}`,
                             display:"inline-flex",
                             alignItems:"center",
                             justifyContent:"center",
-                            fontSize:20,
+                            fontSize:22,
                             fontWeight:650,
                           color:"rgba(245,245,247,.95)",
                           background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
@@ -807,8 +808,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           color:"rgba(245,245,247,.95)",
                           background:"rgba(34,34,40,.68)",
                           border:"none",
-                          animation:prefRM.current?"none":"nearPop .72s cubic-bezier(.16,1,.3,1)",
-                          transformOrigin:"top left",
+                          animation:prefRM.current?"none":"nearPop .92s cubic-bezier(.16,1,.3,1)",
+                          transformOrigin:"center center",
                           backdropFilter:"blur(10px)",
                         }}>
                           <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
@@ -824,11 +825,11 @@ function CloseLookSection({isDark,C,prefRM}){
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChU s={17}/>
+                    <ChU s={19}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)"}}>
-                    <ChD s={17}/>
+                    <ChD s={19}/>
                   </button>
                 </div>
               )}
