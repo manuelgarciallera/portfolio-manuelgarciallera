@@ -713,7 +713,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
   const bubbleTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
-  const contentTransition=prefRM.current?{duration:0}:{duration:.24,ease:appleBezier};
+  const contentTransition=prefRM.current?{duration:0}:{duration:.22,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -837,8 +837,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={contentTransition}
-                            animate={{opacity:expanded?0:1,y:expanded?-2:0}}
-                            style={{position:"absolute",inset:0,padding:wide?16:14,display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
+                            animate={{opacity:expanded?0:1,scale:expanded ? .986 : 1,y:expanded?-3:0}}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
                                 width:25,
@@ -862,19 +862,18 @@ function CloseLookSection({isDark,C,prefRM}){
                           </motion.div>
 
                           <motion.div
-                            transition={contentTransition}
-                            animate={{opacity:expanded?1:0,y:expanded?0:2}}
-                            style={{position:"absolute",inset:0,padding:wide?16:14,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
+                            transition={prefRM.current?{duration:0}:{duration:.26,ease:appleBezier}}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.988,y:expanded?0:6}}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
-                              width:"100%",
-                              fontSize:wide?16.25:14.55,
-                              fontWeight:610,
-                              lineHeight:1.42,
+                              fontSize:wide?17:15,
+                              fontWeight:500,
+                              lineHeight:1.46,
                               letterSpacing:"-.01em",
                               color:"rgba(245,245,247,.95)",
                             }}>
-                              <span style={{fontWeight:610,color:"#f5f5f7"}}>{item.label}. </span>
-                              <span style={{fontWeight:500,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                              <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
+                              <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
                             </div>
                           </motion.div>
                         </motion.button>
