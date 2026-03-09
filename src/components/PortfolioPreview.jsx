@@ -179,6 +179,15 @@ const CSS=`
   64%{opacity:1;transform:translateY(0) scaleX(1.04) scaleY(1.03);filter:blur(0);border-radius:22px;}
   100%{opacity:1;transform:translateY(0) scaleX(1) scaleY(1);filter:blur(0);border-radius:18px;}
 }
+@keyframes nearBubbleOpen{
+  0%{transform:scaleX(.92) scaleY(.78);filter:blur(2px);}
+  62%{transform:scaleX(1.02) scaleY(1.035);filter:blur(0);}
+  100%{transform:scaleX(1) scaleY(1);filter:blur(0);}
+}
+@keyframes nearTextRise{
+  0%{opacity:0;transform:translateY(9px) scale(.985);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
 @keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
 @keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
 @media(max-width:700px){.hide-m{display:none!important;}}
@@ -764,77 +773,89 @@ function CloseLookSection({isDark,C,prefRM}){
                   const isOn=active===i;
                   const expanded=open===i;
                   const isHover=hovered===i;
+                  const collapsedW=Math.min(descMax,wide?Math.max(198,Math.round(112+item.label.length*10.2)):Math.max(176,Math.round(98+item.label.length*9.4)));
+                  const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
+                  const bubbleBg=expanded
+                    ?"rgba(36,36,44,.72)"
+                    :isHover
+                      ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
+                      :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
                   return(
-                    <div key={item.label}>
-                      {!expanded&&(
-                        <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
-                          onMouseEnter={()=>setHovered(i)}
-                          onMouseLeave={()=>setHovered(-1)}
-                          onFocus={()=>setHovered(i)}
-                          onBlur={()=>setHovered(-1)}
-                          style={{
-                            width:"fit-content",
-                            maxWidth:"100%",
-                            border:"none",
-                            background:isHover?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)"):(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)"),
-                            boxShadow:"none",
-                            borderRadius:999,
-                            display:"flex",
-                            alignItems:"center",
-                            justifyContent:"flex-start",
-                            gap:10,
-                            cursor:"pointer",
-                            padding:wide?"15px 18px":"14px 14px",
-                            color:"#f5f5f7",
-                            fontSize:wide?17:15.5,
-                            fontWeight:600,
-                            letterSpacing:"-.015em",
-                            transition:"background .24s ease,border-color .24s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
-                            animation:pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
-                            backdropFilter:"blur(6px)",
-                            opacity:open===-1||!isOn?1:.65,
-                          }}>
-                          <span style={{
-                            width:27,
-                            height:27,
-                            borderRadius:"50%",
-                            border:"1.8px solid #fff",
-                            display:"inline-flex",
-                            alignItems:"center",
-                            justifyContent:"center",
-                            fontSize:22,
-                            fontWeight:650,
-                          color:"#fff",
-                          background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
-                          flexShrink:0,
-                          lineHeight:1,
-                        }}>
-                            +
-                          </span>
-                          <span>{item.label}</span>
-                        </button>
-                      )}
-                      {expanded&&(
-                        <div style={{
-                          marginTop:8,
-                          borderRadius:18,
-                          padding:wide?"14px 16px":"13px 14px",
-                          width:wide?Math.min(descWidth,descMax):"100%",
-                          fontSize:wide?17:15,
-                          fontWeight:490,
-                          lineHeight:1.47,
-                          letterSpacing:"-.01em",
-                          color:"rgba(245,245,247,.95)",
-                          background:"rgba(34,34,40,.68)",
+                    <div key={item.label} style={{display:"flex"}}>
+                      <button onClick={()=>onItem(i)} aria-expanded={expanded} aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
+                        onMouseEnter={()=>setHovered(i)}
+                        onMouseLeave={()=>setHovered(-1)}
+                        onFocus={()=>setHovered(i)}
+                        onBlur={()=>setHovered(-1)}
+                        style={{
+                          width:expanded?expandedW:collapsedW,
+                          maxWidth:"100%",
                           border:"none",
-                          animation:prefRM.current?"none":"nearPop .92s cubic-bezier(.16,1,.3,1)",
-                          transformOrigin:"center center",
-                          backdropFilter:"blur(10px)",
+                          background:bubbleBg,
+                          boxShadow:"none",
+                          borderRadius:expanded?23:999,
+                          display:"block",
+                          cursor:"pointer",
+                          padding:expanded?(wide?"17px 18px":"16px 15px"):(wide?"15px 18px":"14px 14px"),
+                          color:"#f5f5f7",
+                          textAlign:"left",
+                          letterSpacing:"-.015em",
+                          transition:"width .58s cubic-bezier(.16,1,.3,1),padding .58s cubic-bezier(.16,1,.3,1),border-radius .58s cubic-bezier(.16,1,.3,1),background .24s ease,opacity .24s ease,transform .3s cubic-bezier(.16,1,.3,1)",
+                          animation:expanded&&pulseId===i&&!prefRM.current?"nearBubbleOpen .58s cubic-bezier(.16,1,.3,1)":pulseId===i&&!prefRM.current?"nearChipPulse .38s cubic-bezier(.16,1,.3,1)":"none",
+                          backdropFilter:"blur(6px)",
+                          transformOrigin:"left center",
+                          opacity:open===-1||expanded||!isOn?1:.65,
+                          overflow:"hidden",
                         }}>
-                          <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
-                          <span style={{fontWeight:490,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                        <div style={{
+                          overflow:"hidden",
+                          maxHeight:expanded?0:72,
+                          opacity:expanded?0:1,
+                          transform:expanded?"scale(.955)":"scale(1)",
+                          transition:"max-height .44s cubic-bezier(.16,1,.3,1),opacity .28s ease,transform .44s cubic-bezier(.16,1,.3,1)",
+                        }}>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                            <span style={{
+                              width:27,
+                              height:27,
+                              borderRadius:"50%",
+                              border:"1.8px solid #fff",
+                              display:"inline-flex",
+                              alignItems:"center",
+                              justifyContent:"center",
+                              fontSize:22,
+                              fontWeight:650,
+                              color:"#fff",
+                              background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
+                              flexShrink:0,
+                              lineHeight:1,
+                            }}>
+                              +
+                            </span>
+                            <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
+                          </div>
                         </div>
-                      )}
+
+                        <div style={{
+                          overflow:"hidden",
+                          maxHeight:expanded?(wide?232:250):0,
+                          opacity:expanded?1:0,
+                          transform:expanded?"translateY(0) scale(1)":"translateY(10px) scale(.985)",
+                          transition:"max-height .58s cubic-bezier(.16,1,.3,1),opacity .34s ease .07s,transform .56s cubic-bezier(.16,1,.3,1) .07s",
+                          animation:expanded&&!prefRM.current?"nearTextRise .44s cubic-bezier(.16,1,.3,1)":"none",
+                        }}>
+                          <div style={{
+                            fontSize:wide?17:15,
+                            fontWeight:500,
+                            lineHeight:1.46,
+                            letterSpacing:"-.01em",
+                            color:"rgba(245,245,247,.95)",
+                          }}>
+                            <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
+                            <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                          </div>
+                        </div>
+                      </button>
                     </div>
                   );
                 })}
