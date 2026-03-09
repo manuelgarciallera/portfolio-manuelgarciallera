@@ -223,48 +223,48 @@ const CLOSE_LOOK_ITEMS=[
   {
     label:"Diseño UX/UI",
     desc:"Arquitecturas de experiencia y sistemas visuales con foco en claridad, conversion y producto digital.",
-    src:"https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=1500&q=76&auto=format"
   },
   {
     label:"Diseño Arquitectónico",
     desc:"Modelado de espacios, narrativa visual y presentaciones inmersivas para proyectos arquitectonicos.",
-    src:"https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1500&q=76&auto=format"
   },
   {
     label:"Diseño 3D",
     desc:"Pipelines de 3D realtime, optimizacion de escenas y visualizacion con motion controlado.",
-    src:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1500&q=76&auto=format"
   },
   {
     label:"Research",
     desc:"Entrevistas, pruebas y sintesis para transformar señales de usuario en decisiones de producto.",
-    src:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1500&q=76&auto=format"
   },
   {
     label:"Investigación docente",
     desc:"Diseño de materiales, experimentacion y aprendizaje aplicado a tecnologia, UX y desarrollo.",
-    src:"https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1500&q=76&auto=format"
   },
   {
     label:"Diseño gráfico",
     desc:"Identidad, composicion tipografica y piezas visuales con criterio editorial y consistencia de marca.",
-    src:"https://images.unsplash.com/photo-1502945015378-0e284ca1a5be?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1502945015378-0e284ca1a5be?w=1500&q=76&auto=format"
   },
   {
     label:"Desarrollo Front",
     desc:"Interfaces web performantes, accesibles y animadas con arquitectura modular orientada a producto.",
-    src:"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1500&q=76&auto=format"
   },
   {
     label:"Desarrollo Back",
     desc:"APIs robustas, integraciones y modelado de datos para escalar funcionalidades de forma fiable.",
-    src:"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1700&q=80&auto=format"
+    src:"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1500&q=76&auto=format"
   },
 ];
-function Img({src,fb,alt,style={}}){
+function Img({src,fb,alt,style={},loading="lazy",fetchPriority="auto"}){
   const [e,setE]=useState(false);
   if(e)return <div style={{width:"100%",height:"100%",background:fb,...style}}/>;
-  return <img src={src} alt={alt} loading="lazy" onError={()=>setE(true)} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",...style}}/>;
+  return <img src={src} alt={alt} loading={loading} decoding="async" fetchPriority={fetchPriority} onError={()=>setE(true)} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",...style}}/>;
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -751,6 +751,7 @@ function CloseLookSection({isDark,C,prefRM}){
       const img=new Image();
       img.decoding="async";
       img.src=src;
+      if(img.decode){img.decode().catch(()=>{});}
     });
   },[]);
 
@@ -824,18 +825,18 @@ function CloseLookSection({isDark,C,prefRM}){
               <AnimatePresence mode="sync" initial={false}>
                 <motion.div
                   key={mediaItem.src}
-                  initial={prefRM.current?false:{opacity:0,x:"3.2%",scale:1.02,filter:"blur(2.1px)"}}
-                  animate={{opacity:1,x:"0%",scale:1,filter:"blur(0px)"}}
-                  exit={prefRM.current?{opacity:0}:{opacity:[1,.66,0],x:"-3.2%",scale:.986,filter:"blur(2.1px)"}}
+                  initial={prefRM.current?false:{opacity:0,x:"2.6%",scale:1.015}}
+                  animate={{opacity:1,x:"0%",scale:1}}
+                  exit={prefRM.current?{opacity:0}:{opacity:[1,.7,0],x:"-2.6%",scale:.99}}
                   transition={mediaTransition}
                   style={{
                     position:"absolute",
                     inset:0,
-                    willChange:"transform,opacity,filter",
+                    willChange:"transform,opacity",
                     transform:"translateZ(0)",
                     backfaceVisibility:"hidden",
                   }}>
-                  <Img src={mediaItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={mediaItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+                  <Img src={mediaItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={mediaItem.label} loading="eager" fetchPriority="high" style={{transform:"scale(1.02)"}}/>
                 </motion.div>
               </AnimatePresence>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>
