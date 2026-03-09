@@ -712,9 +712,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
-  const appleBezierCss="cubic-bezier(0.4,0,0,1)";
   const layoutTransition=prefRM.current?{duration:0}:{duration:.52,ease:appleBezier};
-  const morphMs=prefRM.current?0:520;
+  const contentTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -789,6 +788,10 @@ function CloseLookSection({isDark,C,prefRM}){
                     const isHover=hovered===i;
                     const collapsedW=Math.min(descMax,wide?Math.max(198,Math.round(112+item.label.length*10.2)):Math.max(176,Math.round(98+item.label.length*9.4)));
                     const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
+                    const collapsedH=wide?58:54;
+                    const expandedH=wide
+                      ?Math.min(238,Math.max(146,112+Math.ceil(item.desc.length/44)*24))
+                      :Math.min(252,Math.max(146,106+Math.ceil(item.desc.length/36)*23));
                     const bubbleBg=expanded
                       ?"rgba(36,36,44,.72)"
                       :isHover
@@ -799,6 +802,11 @@ function CloseLookSection({isDark,C,prefRM}){
                         <motion.button
                           layout
                           transition={{layout:layoutTransition}}
+                          animate={{
+                            width:expanded?expandedW:collapsedW,
+                            height:expanded?expandedH:collapsedH,
+                            borderRadius:expanded?26:999,
+                          }}
                           onClick={()=>onItem(i)}
                           aria-expanded={expanded}
                           aria-label={`${expanded?"Cerrar":"Abrir"} ${item.label}`}
@@ -808,15 +816,15 @@ function CloseLookSection({isDark,C,prefRM}){
                           onBlur={()=>setHovered(-1)}
                           whileTap={prefRM.current?undefined:{scale:.995}}
                           style={{
-                            width:expanded?expandedW:collapsedW,
                             maxWidth:"100%",
+                            height:collapsedH,
                             border:"none",
                             background:bubbleBg,
                             boxShadow:"none",
-                            borderRadius:expanded?26:999,
                             display:"block",
                             cursor:"pointer",
-                            padding:expanded?(wide?"17px 18px":"16px 15px"):(wide?"15px 18px":"14px 14px"),
+                            position:"relative",
+                            padding:0,
                             color:"#f5f5f7",
                             textAlign:"left",
                             letterSpacing:"-.015em",
@@ -825,64 +833,51 @@ function CloseLookSection({isDark,C,prefRM}){
                             transformOrigin:"left center",
                             opacity:open===-1||expanded||!isOn?1:.65,
                             overflow:"hidden",
-                            willChange:"width,padding,border-radius,height",
+                            willChange:"width,height,border-radius,transform",
                           }}>
-                          <div style={{
-                            display:"grid",
-                            gridTemplateRows:expanded?"0fr 1fr":"1fr 0fr",
-                            rowGap:expanded?9:0,
-                            transition:`grid-template-rows ${morphMs}ms ${appleBezierCss},row-gap ${Math.max(140,morphMs-120)}ms ${appleBezierCss}`,
-                          }}>
-                            <div style={{
-                              minHeight:0,
-                              overflow:"hidden",
-                              opacity:expanded?0:1,
-                              transform:expanded?"translateY(-4px) scale(.985)":"translateY(0) scale(1)",
-                              transition:`opacity ${Math.max(120,morphMs-260)}ms ${appleBezierCss},transform ${Math.max(180,morphMs-180)}ms ${appleBezierCss}`,
-                              transformOrigin:"left center",
-                            }}>
-                              <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
-                                <span style={{
-                                  width:25,
-                                  height:25,
-                                  borderRadius:"50%",
-                                  border:"1.8px solid #fff",
-                                  display:"inline-flex",
-                                  alignItems:"center",
-                                  justifyContent:"center",
-                                  fontSize:20,
-                                  fontWeight:650,
-                                  color:"#fff",
-                                  background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
-                                  flexShrink:0,
-                                  lineHeight:1,
-                                }}>
-                                  +
-                                </span>
-                                <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
-                              </div>
-                            </div>
-
-                            <div style={{
-                              minHeight:0,
-                              overflow:"hidden",
-                              opacity:expanded?1:0,
-                              transform:expanded?"translateY(0) scale(1)":"translateY(8px) scale(.992)",
-                              transition:`opacity ${Math.max(140,morphMs-220)}ms ${appleBezierCss} ${expanded?70:0}ms,transform ${Math.max(220,morphMs-140)}ms ${appleBezierCss}`,
-                              transformOrigin:"left center",
-                            }}>
-                              <div style={{
-                                fontSize:wide?17:15,
-                                fontWeight:500,
-                                lineHeight:1.46,
-                                letterSpacing:"-.01em",
-                                color:"rgba(245,245,247,.95)",
+                          <motion.div
+                            layout="position"
+                            transition={contentTransition}
+                            animate={{opacity:expanded?0:1,scale:expanded ? .986 : 1,y:expanded?-3:0}}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                              <span style={{
+                                width:25,
+                                height:25,
+                                borderRadius:"50%",
+                                border:"1.8px solid #fff",
+                                display:"inline-flex",
+                                alignItems:"center",
+                                justifyContent:"center",
+                                fontSize:20,
+                                fontWeight:650,
+                                color:"#fff",
+                                background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
+                                flexShrink:0,
+                                lineHeight:1,
                               }}>
-                                <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
-                                <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
-                              </div>
+                                +
+                              </span>
+                              <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
                             </div>
-                          </div>
+                          </motion.div>
+
+                          <motion.div
+                            layout="position"
+                            transition={prefRM.current?{duration:0}:{duration:.42,ease:appleBezier}}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.988,y:expanded?0:6}}
+                            style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
+                            <div style={{
+                              fontSize:wide?17:15,
+                              fontWeight:500,
+                              lineHeight:1.46,
+                              letterSpacing:"-.01em",
+                              color:"rgba(245,245,247,.95)",
+                            }}>
+                              <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
+                              <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                            </div>
+                          </motion.div>
                         </motion.button>
                       </motion.div>
                     );
