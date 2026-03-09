@@ -617,7 +617,7 @@ function HeroGallerySection({isDark,C,prefRM}){
             ))}
           </div>
           <button onClick={()=>setPlaying(v=>!v)} aria-label={playing?"Pausar galeria":"Reproducir galeria"}
-            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
+            style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:19,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:isDark?"rgba(255,255,255,.08)":"rgba(0,0,0,.08)",color:isDark?"#f5f5f7":"#1d1d1f"}}>
             {playing?"\u23F8":"\u25B6"}
           </button>
         </div>
