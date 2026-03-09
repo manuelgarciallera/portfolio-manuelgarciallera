@@ -724,7 +724,7 @@ function CloseLookSection({isDark,C,prefRM}){
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
                 onMouseEnter={()=>setXHover(true)}
                 onMouseLeave={()=>setXHover(false)}
-                style={{position:"absolute",top:14,right:14,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:25,fontWeight:760,lineHeight:1,background:xHover?"rgba(20,20,24,.96)":"rgba(34,34,38,.88)",color:"#d8d8df",transition:"background .24s ease"}}>
+                style={{position:"absolute",top:18,right:18,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",fontSize:25,fontWeight:760,lineHeight:1,background:xHover?"rgba(20,20,24,.96)":"rgba(34,34,38,.88)",color:"#d8d8df",transition:"background .24s ease"}}>
                 {"\u00D7"}
               </button>
             )}
@@ -768,9 +768,9 @@ function CloseLookSection({isDark,C,prefRM}){
                             justifyContent:"flex-start",
                             gap:10,
                             cursor:"pointer",
-                            padding:wide?"12px 18px":"11px 14px",
+                            padding:wide?"13px 18px":"12px 14px",
                             color:"#f5f5f7",
-                            fontSize:wide?18:16,
+                            fontSize:wide?17:15.5,
                             fontWeight:600,
                             letterSpacing:"-.015em",
                             transition:"background .24s ease,border-color .24s ease,transform .2s ease,box-shadow .22s ease,opacity .24s ease",
@@ -782,7 +782,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             width:27,
                             height:27,
                             borderRadius:"50%",
-                            border:"2px solid #fff",
+                            border:"1.8px solid #fff",
                             display:"inline-flex",
                             alignItems:"center",
                             justifyContent:"center",
@@ -805,7 +805,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           padding:wide?"14px 16px":"13px 14px",
                           width:wide?Math.min(descWidth,descMax):"100%",
                           fontSize:wide?17:15,
-                          fontWeight:470,
+                          fontWeight:490,
                           lineHeight:1.47,
                           letterSpacing:"-.01em",
                           color:"rgba(245,245,247,.95)",
@@ -816,7 +816,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           backdropFilter:"blur(10px)",
                         }}>
                           <span style={{fontWeight:700,color:"#f5f5f7"}}>{item.label}. </span>
-                          <span style={{fontWeight:470,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                          <span style={{fontWeight:490,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
                         </div>
                       )}
                     </div>
