@@ -729,6 +729,9 @@ function HeroGallerySection({isDark,C,prefRM}){
 function CloseLookSection({isDark,C,prefRM}){
   const [active,setActive]=useState(0);
   const [open,setOpen]=useState(-1);
+  const [mediaIdx,setMediaIdx]=useState(0);
+  const [mediaPrevIdx,setMediaPrevIdx]=useState(-1);
+  const [mediaBlend,setMediaBlend]=useState(1);
   const [hovered,setHovered]=useState(-1);
   const [xHover,setXHover]=useState(false);
   const [arrowHover,setArrowHover]=useState("");
@@ -736,6 +739,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const pulseTimerRef=useRef(null);
+  const mediaTimerRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
@@ -756,7 +760,18 @@ function CloseLookSection({isDark,C,prefRM}){
     });
   },[]);
 
-  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);},[]);
+  useEffect(()=>()=>{if(pulseTimerRef.current)clearTimeout(pulseTimerRef.current);if(mediaTimerRef.current)clearTimeout(mediaTimerRef.current);},[]);
+
+  useEffect(()=>{
+    const mediaMs=prefRM.current?0:300;
+    if(active===mediaIdx)return;
+    if(mediaTimerRef.current)clearTimeout(mediaTimerRef.current);
+    setMediaPrevIdx(mediaIdx);
+    setMediaIdx(active);
+    setMediaBlend(0);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>setMediaBlend(1)));
+    mediaTimerRef.current=setTimeout(()=>setMediaPrevIdx(-1),mediaMs+36);
+  },[active,mediaIdx,prefRM]);
 
   const bump=useCallback((i)=>{
     setPulseId(i);
@@ -788,7 +803,9 @@ function CloseLookSection({isDark,C,prefRM}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
-  const activeItem=items[active];
+  const mediaMs=prefRM.current?0:300;
+  const activeMedia=items[mediaIdx];
+  const prevMedia=mediaPrevIdx>=0?items[mediaPrevIdx]:null;
   const listLeft=wide?118:16;
   const listTop=wide?48:20;
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
@@ -796,7 +813,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
-  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.13,ease:appleBezier};
+  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -826,7 +843,14 @@ function CloseLookSection({isDark,C,prefRM}){
                 animation:prefRM.current?"none":"nearMediaIn .72s cubic-bezier(.16,1,.3,1)",
                 background:"#0b0b10",
               }}>
-              <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+              {prevMedia&&(
+                <div style={{position:"absolute",inset:0,opacity:1-mediaBlend,transition:`opacity ${mediaMs}ms cubic-bezier(.4,0,0,1)`}}>
+                  <Img src={prevMedia.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={prevMedia.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+                </div>
+              )}
+              <div style={{position:"absolute",inset:0,opacity:mediaBlend,transition:`opacity ${mediaMs}ms cubic-bezier(.4,0,0,1)`}}>
+                <Img src={activeMedia.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeMedia.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
+              </div>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>
             </div>
 
@@ -882,7 +906,7 @@ function CloseLookSection({isDark,C,prefRM}){
                     return(
                       <div key={item.label} style={{display:"flex"}}>
                         <motion.button
-                          transition={prefRM.current?{duration:0}:{type:"tween",duration:expanded ? .19 : .21,ease:bubbleBezier}}
+                          transition={prefRM.current?{duration:0}:{type:"tween",duration:expanded ? .3 : .32,ease:bubbleBezier}}
                           animate={{
                             width:expanded?expandedW:collapsedW,
                             height:expanded?expandedH:collapsedH,
@@ -921,7 +945,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           }}>
                           <motion.div
                             transition={contentTransition}
-                            animate={{opacity:expanded?0:1,scale:expanded ? .99 : 1,y:expanded?-1.5:0}}
+                            animate={{opacity:expanded?0:1,scale:expanded ? .992 : 1,y:expanded?-1:0}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                               <span style={{
@@ -946,8 +970,8 @@ function CloseLookSection({isDark,C,prefRM}){
                           </motion.div>
 
                           <motion.div
-                            transition={prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:appleBezier}}
-                            animate={{opacity:expanded?1:0,scale:expanded?1:.992,y:expanded?0:3}}
+                            transition={contentTransition}
+                            animate={{opacity:expanded?1:0,scale:expanded?1:.992,y:expanded?0:2}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
                               fontSize:wide?17:15,
