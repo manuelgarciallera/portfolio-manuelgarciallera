@@ -816,14 +816,14 @@ function CloseLookSection({isDark,C,prefRM}){
                         }}>
                           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
                             <span style={{
-                              width:27,
-                              height:27,
+                              width:25,
+                              height:25,
                               borderRadius:"50%",
                               border:"1.8px solid #fff",
                               display:"inline-flex",
                               alignItems:"center",
                               justifyContent:"center",
-                              fontSize:22,
+                              fontSize:20,
                               fontWeight:650,
                               color:"#fff",
                               background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
