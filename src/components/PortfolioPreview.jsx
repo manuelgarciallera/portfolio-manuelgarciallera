@@ -794,9 +794,11 @@ function CloseLookSection({isDark,C,prefRM}){
   const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
-  const appleBezier=[0.4,0,0,1];
+  const motionEase=[0.4,0,0,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
-  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.28,ease:appleBezier};
+  const bubbleOpenMs=prefRM.current?0:.38;
+  const bubbleCloseMs=prefRM.current?0:.4;
+  const contentTransition=prefRM.current?{duration:0}:{type:"tween",duration:.34,ease:motionEase};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -823,8 +825,8 @@ function CloseLookSection({isDark,C,prefRM}){
                 inset:0,
                 transform:"scale(1) rotateX(0deg) rotateY(0deg)",
                 transformStyle:"preserve-3d",
-                transition:"transform .24s ease,box-shadow .35s ease,opacity .3s cubic-bezier(.4,0,0,1)",
-                animation:prefRM.current?"none":"nearMediaIn .32s cubic-bezier(.4,0,0,1)",
+                transition:"transform .24s ease,box-shadow .35s ease,opacity .38s cubic-bezier(.4,0,0,1)",
+                animation:prefRM.current?"none":"nearMediaIn .38s cubic-bezier(.4,0,0,1)",
                 background:"#0b0b10",
               }}>
               <Img src={activeItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={activeItem.label} style={{transform:"scale(1.03)",filter:"saturate(1.08) contrast(1.03)"}}/>
@@ -883,12 +885,11 @@ function CloseLookSection({isDark,C,prefRM}){
                     return(
                       <div key={item.label} style={{display:"flex"}}>
                         <motion.button
-                          transition={prefRM.current?{duration:0}:{type:"tween",duration:expanded ? .3 : .32,ease:bubbleBezier}}
+                          transition={prefRM.current?{duration:0}:{type:"tween",duration:expanded ? bubbleOpenMs : bubbleCloseMs,ease:bubbleBezier}}
                           animate={{
                             width:expanded?expandedW:collapsedW,
                             height:expanded?expandedH:collapsedH,
                             borderRadius:expanded?22:Math.round(collapsedH/2),
-                            scale:expanded?[.992,1.003,1]:[1,.998,1],
                           }}
                           onClick={()=>onItem(i)}
                           aria-expanded={expanded}
@@ -911,7 +912,7 @@ function CloseLookSection({isDark,C,prefRM}){
                             color:"#f5f5f7",
                             textAlign:"left",
                             letterSpacing:"-.015em",
-                            transition:"background .12s ease,opacity .12s ease",
+                            transition:"background .2s ease,opacity .2s ease",
                             backdropFilter:"none",
                             transformOrigin:"left center",
                             transform:"translateZ(0)",
