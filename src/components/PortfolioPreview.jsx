@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { LayoutGroup, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import * as THREE from "three";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -712,8 +712,8 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
-  const layoutTransition=prefRM.current?{duration:0}:{duration:.52,ease:appleBezier};
-  const contentTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
+  const bubbleTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
+  const contentTransition=prefRM.current?{duration:0}:{duration:.22,ease:appleBezier};
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -780,8 +780,7 @@ function CloseLookSection({isDark,C,prefRM}){
                 </div>
               )}
 
-              <LayoutGroup id="close-look-pills">
-                <motion.div layout transition={{layout:layoutTransition}} style={{display:"flex",flexDirection:"column",gap:14}}>
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
                   {items.map((item,i)=>{
                     const isOn=active===i;
                     const expanded=open===i;
@@ -798,10 +797,9 @@ function CloseLookSection({isDark,C,prefRM}){
                         ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
                         :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
                     return(
-                      <motion.div key={item.label} layout transition={{layout:layoutTransition}} style={{display:"flex"}}>
+                      <div key={item.label} style={{display:"flex"}}>
                         <motion.button
-                          layout
-                          transition={{layout:layoutTransition}}
+                          transition={bubbleTransition}
                           animate={{
                             width:expanded?expandedW:collapsedW,
                             height:expanded?expandedH:collapsedH,
@@ -828,15 +826,16 @@ function CloseLookSection({isDark,C,prefRM}){
                             color:"#f5f5f7",
                             textAlign:"left",
                             letterSpacing:"-.015em",
-                            transition:"background .22s ease,opacity .22s ease",
-                            backdropFilter:"blur(6px)",
+                            transition:"background .16s ease,opacity .16s ease",
+                            backdropFilter:"blur(4px)",
                             transformOrigin:"left center",
+                            transform:"translateZ(0)",
+                            backfaceVisibility:"hidden",
                             opacity:open===-1||expanded||!isOn?1:.65,
                             overflow:"hidden",
                             willChange:"width,height,border-radius,transform",
                           }}>
                           <motion.div
-                            layout="position"
                             transition={contentTransition}
                             animate={{opacity:expanded?0:1,scale:expanded ? .986 : 1,y:expanded?-3:0}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center"}}>
@@ -863,8 +862,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           </motion.div>
 
                           <motion.div
-                            layout="position"
-                            transition={prefRM.current?{duration:0}:{duration:.42,ease:appleBezier}}
+                            transition={prefRM.current?{duration:0}:{duration:.26,ease:appleBezier}}
                             animate={{opacity:expanded?1:0,scale:expanded?1:.988,y:expanded?0:6}}
                             style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none"}}>
                             <div style={{
@@ -879,11 +877,10 @@ function CloseLookSection({isDark,C,prefRM}){
                             </div>
                           </motion.div>
                         </motion.button>
-                      </motion.div>
+                      </div>
                     );
                   })}
-                </motion.div>
-              </LayoutGroup>
+                </div>
 
               {!wide&&(
                 <div style={{display:"flex",gap:10,marginTop:12}}>
