@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { LayoutGroup, motion } from "framer-motion";
 import * as THREE from "three";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -711,9 +711,9 @@ function CloseLookSection({isDark,C,prefRM}){
   const descMax=Math.max(340,panelW-listLeft-28);
   const ctrlSize=wide?36:32;
   const appleBezier=[0.4,0,0,1];
+  const appleBezierCss="cubic-bezier(0.4,0,0,1)";
   const layoutTransition=prefRM.current?{duration:0}:{duration:.52,ease:appleBezier};
-  const descInTransition=prefRM.current?{duration:0}:{duration:.34,ease:appleBezier};
-  const descOutTransition=prefRM.current?{duration:0}:{duration:.16,ease:appleBezier};
+  const morphMs=prefRM.current?0:520;
 
   return(
     <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
@@ -781,7 +781,7 @@ function CloseLookSection({isDark,C,prefRM}){
               )}
 
               <LayoutGroup id="close-look-pills">
-                <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                <motion.div layout transition={{layout:layoutTransition}} style={{display:"flex",flexDirection:"column",gap:14}}>
                   {items.map((item,i)=>{
                     const isOn=active===i;
                     const expanded=open===i;
@@ -794,7 +794,7 @@ function CloseLookSection({isDark,C,prefRM}){
                         ?(isOn?"rgba(112,112,122,.88)":"rgba(100,100,110,.8)")
                         :(isOn?"rgba(86,86,96,.8)":"rgba(74,74,84,.72)");
                     return(
-                      <div key={item.label} style={{display:"flex"}}>
+                      <motion.div key={item.label} layout transition={{layout:layoutTransition}} style={{display:"flex"}}>
                         <motion.button
                           layout
                           transition={{layout:layoutTransition}}
@@ -826,64 +826,67 @@ function CloseLookSection({isDark,C,prefRM}){
                             overflow:"hidden",
                             willChange:"width,padding,border-radius,height",
                           }}>
-                          <AnimatePresence initial={false} mode="sync">
-                            {expanded?(
-                              <motion.div
-                                key={`desc-${item.label}`}
-                                layout="position"
-                                initial={prefRM.current?false:{opacity:0,y:6,scale:.995}}
-                                animate={{opacity:1,y:0,scale:1}}
-                                exit={{opacity:0,y:4,scale:.995,transition:descOutTransition}}
-                                transition={descInTransition}
-                                style={{overflow:"hidden",marginTop:4,transformOrigin:"left center"}}>
-                                <div style={{
-                                  fontSize:wide?17:15,
-                                  fontWeight:500,
-                                  lineHeight:1.46,
-                                  letterSpacing:"-.01em",
-                                  color:"rgba(245,245,247,.95)",
+                          <div style={{
+                            display:"grid",
+                            gridTemplateRows:expanded?"0fr 1fr":"1fr 0fr",
+                            rowGap:expanded?9:0,
+                            transition:`grid-template-rows ${morphMs}ms ${appleBezierCss},row-gap ${Math.max(140,morphMs-120)}ms ${appleBezierCss}`,
+                          }}>
+                            <div style={{
+                              minHeight:0,
+                              overflow:"hidden",
+                              opacity:expanded?0:1,
+                              transform:expanded?"translateY(-4px) scale(.985)":"translateY(0) scale(1)",
+                              transition:`opacity ${Math.max(120,morphMs-260)}ms ${appleBezierCss},transform ${Math.max(180,morphMs-180)}ms ${appleBezierCss}`,
+                              transformOrigin:"left center",
+                            }}>
+                              <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                                <span style={{
+                                  width:25,
+                                  height:25,
+                                  borderRadius:"50%",
+                                  border:"1.8px solid #fff",
+                                  display:"inline-flex",
+                                  alignItems:"center",
+                                  justifyContent:"center",
+                                  fontSize:20,
+                                  fontWeight:650,
+                                  color:"#fff",
+                                  background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
+                                  flexShrink:0,
+                                  lineHeight:1,
                                 }}>
-                                  <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
-                                  <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
-                                </div>
-                              </motion.div>
-                            ):(
-                              <motion.div
-                                key={`label-${item.label}`}
-                                layout="position"
-                                initial={prefRM.current?false:{opacity:0,y:-3}}
-                                animate={{opacity:1,y:0}}
-                                exit={{opacity:0,y:-3}}
-                                transition={prefRM.current?{duration:0}:{duration:.18,ease:appleBezier}}
-                                style={{overflow:"hidden",transformOrigin:"left center"}}>
-                                <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
-                                  <span style={{
-                                    width:25,
-                                    height:25,
-                                    borderRadius:"50%",
-                                    border:"1.8px solid #fff",
-                                    display:"inline-flex",
-                                    alignItems:"center",
-                                    justifyContent:"center",
-                                    fontSize:20,
-                                    fontWeight:650,
-                                    color:"#fff",
-                                    background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
-                                    flexShrink:0,
-                                    lineHeight:1,
-                                  }}>
-                                    +
-                                  </span>
-                                  <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                                  +
+                                </span>
+                                <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
+                              </div>
+                            </div>
+
+                            <div style={{
+                              minHeight:0,
+                              overflow:"hidden",
+                              opacity:expanded?1:0,
+                              transform:expanded?"translateY(0) scale(1)":"translateY(8px) scale(.992)",
+                              transition:`opacity ${Math.max(140,morphMs-220)}ms ${appleBezierCss} ${expanded?70:0}ms,transform ${Math.max(220,morphMs-140)}ms ${appleBezierCss}`,
+                              transformOrigin:"left center",
+                            }}>
+                              <div style={{
+                                fontSize:wide?17:15,
+                                fontWeight:500,
+                                lineHeight:1.46,
+                                letterSpacing:"-.01em",
+                                color:"rgba(245,245,247,.95)",
+                              }}>
+                                <span style={{fontWeight:640,color:"#f5f5f7"}}>{item.label}. </span>
+                                <span style={{fontWeight:515,color:"rgba(245,245,247,.94)"}}>{item.desc}</span>
+                              </div>
+                            </div>
+                          </div>
                         </motion.button>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
               </LayoutGroup>
 
               {!wide&&(
