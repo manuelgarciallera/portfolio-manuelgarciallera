@@ -266,12 +266,17 @@ function Img({src,fb,alt,style={},loading="lazy",fetchPriority="auto"}){
   if(e)return <div style={{width:"100%",height:"100%",background:fb,...style}}/>;
   return <img src={src} alt={alt} loading={loading} decoding="async" fetchPriority={fetchPriority} onError={()=>setE(true)} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",...style}}/>;
 }
+const clamp01=v=>Math.max(0,Math.min(1,v));
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Portfolio(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
   const [activeNav,setActiveNav]=useState("Trabajo");
+  const [vp,setVp]=useState(()=>({
+    w:typeof window!=="undefined"?window.innerWidth:2560,
+    h:typeof window!=="undefined"?window.innerHeight:1440,
+  }));
   const wrapRef=useRef(null);
   const canvasRef=useRef(null);
   const isDark=theme==="dark";
@@ -284,6 +289,37 @@ export default function Portfolio(){
     const fn=()=>setScrolled(el.scrollTop>50);
     el.addEventListener("scroll",fn,{passive:true});return()=>el.removeEventListener("scroll",fn);
   },[]);
+
+  useEffect(()=>{
+    const onResize=()=>setVp({w:window.innerWidth,h:window.innerHeight});
+    onResize();
+    window.addEventListener("resize",onResize,{passive:true});
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
+
+  const isDesktopDown4k=vp.w>=1024&&vp.w<2560;
+  const wNorm=clamp01((vp.w-1280)/1280);
+  const hNorm=clamp01((vp.h-800)/640);
+  const desktopFluid=isDesktopDown4k?(0.86+((wNorm*.6+hNorm*.4)*.14)):1;
+  const toFluidPx=v=>`${Math.round(v*desktopFluid)}px`;
+  const rootVars={
+    "--nav-pad-x":toFluidPx(24),
+    "--hero-side-pad":toFluidPx(24),
+    "--hero-min-h":toFluidPx(620),
+    "--page-pad-x":toFluidPx(28),
+    "--sec-pad-y":toFluidPx(130),
+    "--sec-pad-y-lg":toFluidPx(150),
+    "--sec-pad-y-sm":toFluidPx(72),
+    "--hero-gallery-pad-top":toFluidPx(132),
+    "--hero-gallery-slide-h":toFluidPx(686),
+    "--hero-gallery-controls-mt":toFluidPx(86),
+    "--featured-head-pad-top":toFluidPx(96),
+    "--featured-head-pad-bottom":toFluidPx(56),
+    "--close-look-pad-top":toFluidPx(10),
+    "--close-look-pad-bottom":toFluidPx(170),
+    "--close-look-panel-h":toFluidPx(800),
+    "--device-min-h":toFluidPx(540),
+  };
 
   useEffect(()=>{
     const el=wrapRef.current;if(!el)return;
@@ -365,13 +401,13 @@ export default function Portfolio(){
   const NAVLINKS=["Trabajo","3D","Sobre mí","Contacto"];
 
   return(
-    <div ref={wrapRef} className="p" style={{height:"100vh",overflowY:"scroll",overflowX:"hidden",background:C.bg,color:C.text,transition:"background .5s,color .35s",scrollbarWidth:"thin"}}>
+    <div ref={wrapRef} className="p" style={{height:"100vh",overflowY:"scroll",overflowX:"hidden",background:C.bg,color:C.text,transition:"background .5s,color .35s",scrollbarWidth:"thin",...rootVars}}>
 
       {/* ── NAVBAR ── */}
       <nav style={{
         position:"sticky",top:0,zIndex:200,height:52,
         display:"flex",alignItems:"stretch",justifyContent:"space-between",
-        padding:"0 24px",animation:"pfade .4s ease",
+        padding:"0 var(--nav-pad-x,24px)",animation:"pfade .4s ease",
         background:isDark?"#1d1d1f":C.nav,
         backdropFilter:!isDark?"blur(20px) saturate(180%)":"none",
         WebkitBackdropFilter:!isDark?"blur(20px) saturate(180%)":"none",
@@ -406,11 +442,11 @@ export default function Portfolio(){
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{height:"100dvh",minHeight:620,position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
+      <section style={{height:"100dvh",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
-        <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 24px",maxWidth:980,width:"100%"}}>
+        <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 var(--hero-side-pad,24px)",maxWidth:980,width:"100%"}}>
           <p style={{fontSize:13.5,color:"rgba(255,255,255,.62)",letterSpacing:".015em",marginBottom:20,fontWeight:400}}>
             Portfolio · Manuel García Llera
           </p>
@@ -462,7 +498,7 @@ export default function Portfolio(){
       <ComparisonSection isDark={isDark} C={C}/>
 
       {/* ── CTA ── */}
-      <section style={{padding:"150px 28px",textAlign:"center",background:C.ctaBg,transition:"background .5s"}}>
+      <section style={{padding:"var(--sec-pad-y-lg,150px) var(--page-pad-x,28px)",textAlign:"center",background:C.ctaBg,transition:"background .5s"}}>
         <div style={{maxWidth:560,margin:"0 auto"}}>
           <p className="rv" style={{fontSize:12,color:C.ctaTextSec,letterSpacing:".1em",textTransform:"uppercase",fontWeight:500,marginBottom:22}}>Contacto</p>
           <h2 className="rv" style={{transitionDelay:".14s",fontSize:"clamp(34px,6vw,68px)",fontWeight:700,letterSpacing:"-.046em",lineHeight:1.02,marginBottom:20,color:C.ctaText}}>
@@ -503,13 +539,13 @@ function FeaturedSection({isDark,C}){
   const cur=items[active];
   return(
     <section style={{background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s"}}>
-      <div style={{maxWidth:980,margin:"0 auto",padding:"96px 28px 56px"}}>
+      <div style={{maxWidth:980,margin:"0 auto",padding:"var(--featured-head-pad-top,96px) var(--page-pad-x,28px) var(--featured-head-pad-bottom,56px)"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
         <h2 className="rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
           <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por sí solo.</span>
         </h2>
       </div>
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"0 28px"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"0 var(--page-pad-x,28px)"}}>
         <div style={{borderRadius:"20px 20px 0 0",overflow:"hidden",position:"relative",height:"clamp(320px,52vw,600px)"}}>
           <div ref={imgRef} style={{width:"100%",height:"100%",transition:"none"}}><Img src={cur.src} fb={cur.fb} alt={cur.label}/></div>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.04) 55%,transparent 100%)"}}/>
@@ -529,7 +565,7 @@ function FeaturedSection({isDark,C}){
             ))}
           </div>
         </div>
-        <div style={{background:isDark?"rgba(255,255,255,.03)":"rgba(0,0,0,.025)",borderRadius:"0 0 20px 20px",borderStyle:"solid",borderColor:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)",borderWidth:"0 1px 1px 1px",padding:"0 28px"}}>
+        <div style={{background:isDark?"rgba(255,255,255,.03)":"rgba(0,0,0,.025)",borderRadius:"0 0 20px 20px",borderStyle:"solid",borderColor:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.07)",borderWidth:"0 1px 1px 1px",padding:"0 var(--page-pad-x,28px)"}}>
           <div className={`tab-row${!isDark?" tab-row-lt":""}`}>
             {items.map((item,i)=>(
               <button key={item.label} onClick={()=>go(i)}
@@ -625,13 +661,13 @@ function HeroGallerySection({isDark,C,prefRM}){
 
   const gap=w<760?10:22;
   const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
-  const slideH=w<760?438:686;
+  const slideH=w<760?438:"var(--hero-gallery-slide-h,686px)";
   const tx=((w-slideW)/2)-(active*(slideW+gap));
   const controlH=58;
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"132px 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"84vh"}}>
+    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"84vh"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 42px ${leadX}px`}}>Lo principal.</h2>
       </div>
@@ -676,7 +712,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           </div>
       </div>
 
-      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:86}}>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:"var(--hero-gallery-controls-mt,86px)"}}>
         <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 20px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
           {HERO_GALLERY.map((_,i)=>{
             const isActive=active===i;
@@ -798,7 +834,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const textClipOpen="inset(0 0% 0 0% round 12px)";
 
   return(
-    <section style={{padding:wide?"10px 28px 170px":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
       <div style={{maxWidth:1420,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
           {"M\u00E1s de cerca."}
@@ -811,7 +847,7 @@ function CloseLookSection({isDark,C,prefRM}){
           border:"none",
           padding:0,
         }}>
-          <div style={{position:"relative",minHeight:wide?800:880}}>
+          <div style={{position:"relative",minHeight:wide?"var(--close-look-panel-h,800px)":880}}>
             <div
               ref={mediaRef}
               onMouseMove={onMove}
@@ -1065,7 +1101,7 @@ function ArchSection({isDark,C,prefRM}){
     return()=>{cancelAnimationFrame(raf);geo.dispose();mat.dispose();renderer.dispose();ro.disconnect();io.disconnect();};
   },[]);
   return(
-    <section ref={secRef} style={{padding:"130px 28px",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
+    <section ref={secRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
@@ -1296,7 +1332,7 @@ function UXSection({isDark,C,prefRM}){
   },[]);
 
   return(
-    <section style={{padding:"130px 28px",background:isDark?"#000":"#fff",position:"relative",overflow:"hidden",transition:"background .5s"}}>
+    <section style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#000":"#fff",position:"relative",overflow:"hidden",transition:"background .5s"}}>
       <canvas ref={canvasRef} className="sec-canvas"/>
       <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}}/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:2,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
@@ -1356,7 +1392,7 @@ function FullStackSection({isDark,C,prefRM}){
   },[]);
   const stack=[["Angular 17+","React 18","TypeScript"],["Node.js","Express","MongoDB"],["MySQL","REST APIs","Three.js"],["UE5","Blender","SketchUp"]];
   return(
-    <section style={{padding:"130px 28px",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
+    <section style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"start"}}>
         <div>
@@ -1395,7 +1431,7 @@ const PROJECTS=[
 ];
 function MiniProjects({isDark,C,projects,alt}){
   return(
-    <section style={{padding:"72px 28px",background:alt?(isDark?"#000":"#fff"):(isDark?"#111114":"#f5f5f7"),transition:"background .5s",borderTop:`1px solid ${C.divider}`,borderBottom:`1px solid ${C.divider}`}}>
+    <section style={{padding:"var(--sec-pad-y-sm,72px) var(--page-pad-x,28px)",background:alt?(isDark?"#000":"#fff"):(isDark?"#111114":"#f5f5f7"),transition:"background .5s",borderTop:`1px solid ${C.divider}`,borderBottom:`1px solid ${C.divider}`}}>
       <div style={{maxWidth:980,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:32}}>
           <p style={{fontSize:12,color:C.textSec,letterSpacing:".08em",textTransform:"uppercase",fontWeight:500}}>
@@ -1443,7 +1479,7 @@ function ComparisonSection({isDark,C}){
   const onUp=()=>{dragging.current=false;};
   useEffect(()=>{window.addEventListener("mousemove",onMove);window.addEventListener("mouseup",onUp);window.addEventListener("touchmove",onMove,{passive:false});window.addEventListener("touchend",onUp);return()=>{window.removeEventListener("mousemove",onMove);window.removeEventListener("mouseup",onUp);window.removeEventListener("touchmove",onMove);window.removeEventListener("touchend",onUp);};});
   return(
-    <section style={{padding:"130px 28px",background:isDark?"#000":"#fff",transition:"background .5s"}}>
+    <section style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#000":"#fff",transition:"background .5s"}}>
       <div style={{maxWidth:980,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:56}}>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Pipeline 3D</p>
@@ -1486,7 +1522,7 @@ function DeviceSection({isDark,C,wrapRef,prefRM}){
   },[]);
   const fl=isDark;
   return(
-    <section ref={secRef} style={{padding:"130px 28px",background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s",overflow:"hidden"}}>
+    <section ref={secRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s",overflow:"hidden"}}>
       <div style={{maxWidth:980,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>UX · Product Design</p>
@@ -1494,7 +1530,7 @@ function DeviceSection({isDark,C,wrapRef,prefRM}){
           <p className="rv2" style={{transitionDelay:".14s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:34}}>Interfaces intuitivas desde el primer toque. Once años diseñando para millones de personas en el deporte global.</p>
           <div className="rv2" style={{transitionDelay:".28s"}}><button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX →</button></div>
         </div>
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",minHeight:540}}>
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",minHeight:"var(--device-min-h,540px)"}}>
           <div ref={devRef} style={{transition:"transform .14s ease-out",transformStyle:"preserve-3d",position:"relative"}}>
             <div style={{width:252,height:530,borderRadius:50,position:"relative",
               background:fl?"linear-gradient(160deg,#3c3c40,#242426,#1c1c1e,#262628,#3c3c40)":"linear-gradient(160deg,#d0d0d8,#c0c0c8,#b0b0b8,#bcbcc4,#d0d0d8)",
