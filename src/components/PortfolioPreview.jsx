@@ -319,6 +319,13 @@ export default function Portfolio(){
     ?clampRange(390,viewportContentH-closeLookPadTop-closeLookPadBottom-closeLookTitleBlock,800)
     :Math.round(800*desktopFluid);
   const closeLookTitleMb=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.03),42):Math.round(42*desktopFluid);
+  const heroTrackW=vp.w;
+  const heroSlideW=heroTrackW<760?Math.max(304,heroTrackW*.93):Math.min(1280,Math.max(1030,heroTrackW*.68));
+  const heroLeadX=Math.max(0,(heroTrackW-heroSlideW)/2);
+  const pagePadPx=Math.round(28*desktopFluid);
+  const closeLookContainerW=Math.min(1420,Math.max(0,heroTrackW-(pagePadPx*2)));
+  const closeLookContainerLeft=(heroTrackW-closeLookContainerW)/2;
+  const closeLookAlignLeft=Math.max(0,heroLeadX-closeLookContainerLeft);
   const rootVars={
     "--nav-pad-x":toFluidPx(24),
     "--hero-side-pad":toFluidPx(24),
@@ -498,7 +505,7 @@ export default function Portfolio(){
 
       {/* ── FEATURED ── */}
       <HeroGallerySection isDark={isDark} C={C} prefRM={prefRM}/> 
-      <CloseLookSection isDark={isDark} C={C} prefRM={prefRM}/>
+      <CloseLookSection isDark={isDark} C={C} prefRM={prefRM} alignLeft={closeLookAlignLeft}/>
 
       <FeaturedSection isDark={isDark} C={C}/>
 
@@ -792,7 +799,7 @@ function HeroGallerySection({isDark,C,prefRM}){
   );
 }
 
-function CloseLookSection({isDark,C,prefRM}){
+function CloseLookSection({isDark,C,prefRM,alignLeft=0}){
   const [active,setActive]=useState(0);
   const [open,setOpen]=useState(-1);
   const [hovered,setHovered]=useState(-1);
@@ -860,7 +867,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const closeIconSize=wide?Math.max(14,Math.round(s(18))):18;
   const pillGap=wide?s(14):14;
   const titleMb=wide?s(42):42;
-  const titleMl=0;
+  const titleMl=wide?Math.round(alignLeft):0;
   const clipRadius=wide?Math.round(s(12)):12;
   const motionEase=[0.22,0.61,0.36,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
