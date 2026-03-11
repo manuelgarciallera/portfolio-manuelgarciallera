@@ -304,6 +304,10 @@ export default function Portfolio(){
   const heroGalleryPadTop=isDesktopDown4k?clampRange(46,Math.round(viewportContentH*.064),112):Math.round(132*desktopFluid);
   const heroGalleryTitleBlock=isDesktopDown4k?clampRange(60,Math.round(viewportContentH*.096),92):84;
   const heroGalleryControlsMt=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.035),56):Math.round(86*desktopFluid);
+  const heroGalleryControlH=isDesktopDown4k?clampRange(50,Math.round(viewportContentH*.055),58):58;
+  const heroGalleryDotSize=isDesktopDown4k?clampRange(8,Math.round(heroGalleryControlH*.17),10):10;
+  const heroGalleryActiveW=isDesktopDown4k?clampRange(62,Math.round(heroGalleryControlH*1.28),74):74;
+  const heroGalleryPillPadX=isDesktopDown4k?clampRange(16,Math.round(heroGalleryControlH*.34),20):20;
   const heroGallerySlideH=isDesktopDown4k
     ?clampRange(360,viewportContentH-heroGalleryPadTop-heroGalleryTitleBlock-58-heroGalleryControlsMt,686)
     :Math.round(686*desktopFluid);
@@ -327,6 +331,10 @@ export default function Portfolio(){
     "--hero-gallery-pad-top":`${heroGalleryPadTop}px`,
     "--hero-gallery-slide-h":`${heroGallerySlideH}px`,
     "--hero-gallery-controls-mt":`${heroGalleryControlsMt}px`,
+    "--hero-gallery-control-h":`${heroGalleryControlH}px`,
+    "--hero-gallery-dot-size":`${heroGalleryDotSize}px`,
+    "--hero-gallery-active-dot-w":`${heroGalleryActiveW}px`,
+    "--hero-gallery-pill-pad-x":`${heroGalleryPillPadX}px`,
     "--hero-gallery-title-mb":`${heroGalleryTitleMb}px`,
     "--hero-gallery-section-h":isDesktopDown4k?`${viewportContentH}px`:"84vh",
     "--featured-head-pad-top":toFluidPx(96),
@@ -681,7 +689,11 @@ function HeroGallerySection({isDark,C,prefRM}){
   const slideW=w<760?Math.max(304,w*.93):Math.min(1280,Math.max(1030,w*.68));
   const slideH=w<760?438:"var(--hero-gallery-slide-h,686px)";
   const tx=((w-slideW)/2)-(active*(slideW+gap));
-  const controlH=58;
+  const controlH=w<760?58:"var(--hero-gallery-control-h,58px)";
+  const dotSize=w<760?10:"var(--hero-gallery-dot-size,10px)";
+  const activeDotW=w<760?74:"var(--hero-gallery-active-dot-w,74px)";
+  const iconMain=w<760?27:25;
+  const iconPause=w<760?25:23;
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
@@ -731,7 +743,7 @@ function HeroGallerySection({isDark,C,prefRM}){
       </div>
 
       <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:18,marginTop:"var(--hero-gallery-controls-mt,86px)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 20px",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,height:controlH,padding:"0 var(--hero-gallery-pill-pad-x,20px)",borderRadius:999,background:isDark?"rgba(255,255,255,.07)":"rgba(0,0,0,.08)"}}>
           {HERO_GALLERY.map((_,i)=>{
             const isActive=active===i;
             const staticSelected=!playing&&!ended&&elapsedMs===0&&isActive;
@@ -741,9 +753,9 @@ function HeroGallerySection({isDark,C,prefRM}){
                 key={i}
                 aria-label={`Ir a tarjeta ${i+1}`}
                 onClick={()=>onPickSlide(i)}
-                style={{border:"none",padding:0,width:isActive?76:10,height:10,display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",cursor:"pointer"}}>
+                style={{border:"none",padding:0,width:isActive?activeDotW:dotSize,height:dotSize,display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",cursor:"pointer"}}>
                 {isActive?(
-                  <div style={{position:"relative",width:74,height:10,borderRadius:999,overflow:"hidden",background:isDark?"rgba(255,255,255,.24)":"rgba(0,0,0,.18)"}}>
+                  <div style={{position:"relative",width:activeDotW,height:dotSize,borderRadius:999,overflow:"hidden",background:isDark?"rgba(255,255,255,.24)":"rgba(0,0,0,.18)"}}>
                     <div
                       key={`${active}-${ended}-${playing}-${Math.round(elapsedMs)}`}
                       style={{
@@ -761,7 +773,7 @@ function HeroGallerySection({isDark,C,prefRM}){
                     />
                   </div>
                 ):(
-                  <span style={{display:"block",width:10,height:10,borderRadius:"50%",background:isDark?"rgba(255,255,255,.76)":"rgba(0,0,0,.36)"}}/>
+                  <span style={{display:"block",width:dotSize,height:dotSize,borderRadius:"50%",background:isDark?"rgba(255,255,255,.76)":"rgba(0,0,0,.36)"}}/>
                 )}
               </button>
             );
@@ -773,7 +785,7 @@ function HeroGallerySection({isDark,C,prefRM}){
           onFocus={()=>setPlayHover(true)}
           onBlur={()=>setPlayHover(false)}
           style={{width:controlH,height:controlH,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:playHover?"rgba(100,100,110,.8)":"rgba(74,74,84,.72)",color:"#f5f5f7",transition:"background .24s ease"}}>
-          {ended?<IcoReplay s={27} c="#f5f5f7"/>:(playing?<IcoPause s={25} c="#f5f5f7"/>:<IcoPlay s={27} c="#f5f5f7"/>)}
+          {ended?<IcoReplay s={iconMain} c="#f5f5f7"/>:(playing?<IcoPause s={iconPause} c="#f5f5f7"/>:<IcoPlay s={iconMain} c="#f5f5f7"/>)}
         </button>
       </div>
     </section>
@@ -836,7 +848,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
-  const uiScale=wide?clampRange(.74,panelH/800,1):1;
+  const uiScale=wide?clampRange(.9,panelH/760,1.05):1;
   const s=v=>Math.round(v*uiScale*100)/100;
   const mediaItem=items[active];
   const listLeft=wide?s(118):16;
@@ -848,7 +860,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const closeIconSize=wide?Math.max(14,Math.round(s(18))):18;
   const pillGap=wide?s(14):14;
   const titleMb=wide?s(42):42;
-  const titleMl=wide?s(64):0;
+  const titleMl=0;
   const clipRadius=wide?Math.round(s(12)):12;
   const motionEase=[0.22,0.61,0.36,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
