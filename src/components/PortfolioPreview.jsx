@@ -855,7 +855,7 @@ function CloseLookSection({isDark,C,prefRM,alignLeft=0}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
-  const uiScale=wide?clampRange(.9,panelH/760,1.05):1;
+  const uiScale=wide?clampRange(.86,panelH/760,1):1;
   const s=v=>Math.round(v*uiScale*100)/100;
   const mediaItem=items[active];
   const listLeft=wide?s(118):16;
@@ -967,11 +967,11 @@ function CloseLookSection({isDark,C,prefRM,alignLeft=0}){
                     const isOn=active===i;
                     const expanded=open===i;
                     const isHover=hovered===i;
-                    const collapsedW=Math.min(descMax,wide?Math.max(s(198),Math.round((112+item.label.length*10.2)*uiScale)):Math.max(176,Math.round(98+item.label.length*9.4)));
+                    const collapsedW=Math.min(descMax,wide?Math.max(s(188),Math.round((106+item.label.length*9.8)*uiScale)):Math.max(176,Math.round(98+item.label.length*9.4)));
                     const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
-                    const collapsedH=wide?s(58):54;
+                    const collapsedH=wide?s(54):54;
                     const expandedH=wide
-                      ?Math.min(s(238),Math.max(s(146),Math.round((112+Math.ceil(item.desc.length/44)*24)*uiScale)))
+                      ?Math.min(s(226),Math.max(s(136),Math.round((102+Math.ceil(item.desc.length/44)*22)*uiScale)))
                       :Math.min(252,Math.max(146,106+Math.ceil(item.desc.length/36)*23));
                     const bubbleBg=expanded
                       ?"rgba(30,30,36,.78)"
