@@ -274,10 +274,7 @@ export default function Portfolio(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
   const [activeNav,setActiveNav]=useState("Trabajo");
-  const [vp,setVp]=useState(()=>({
-    w:typeof window!=="undefined"?window.innerWidth:2560,
-    h:typeof window!=="undefined"?window.innerHeight:1440,
-  }));
+  const [vp,setVp]=useState({w:2560,h:1440});
   const wrapRef=useRef(null);
   const canvasRef=useRef(null);
   const isDark=theme==="dark";
@@ -303,13 +300,21 @@ export default function Portfolio(){
   const hNorm=clamp01((vp.h-800)/640);
   const desktopFluid=isDesktopDown4k?(0.86+((wNorm*.6+hNorm*.4)*.14)):1;
   const toFluidPx=v=>`${Math.round(v*desktopFluid)}px`;
-  const viewportContentH=Math.max(720,vp.h-52);
-  const heroGalleryPadTop=isDesktopDown4k?clampRange(70,Math.round(viewportContentH*.085),132):Math.round(132*desktopFluid);
-  const heroGallerySlideH=isDesktopDown4k?clampRange(430,Math.round(viewportContentH*.535),686):Math.round(686*desktopFluid);
-  const heroGalleryControlsMt=isDesktopDown4k?clampRange(50,Math.round(viewportContentH*.07),86):Math.round(86*desktopFluid);
-  const closeLookPadTop=isDesktopDown4k?clampRange(8,Math.round(viewportContentH*.012),14):Math.round(10*desktopFluid);
-  const closeLookPadBottom=isDesktopDown4k?clampRange(72,Math.round(viewportContentH*.11),170):Math.round(170*desktopFluid);
-  const closeLookPanelH=isDesktopDown4k?clampRange(500,Math.round(viewportContentH*.67),800):Math.round(800*desktopFluid);
+  const viewportContentH=Math.max(700,vp.h-52);
+  const heroGalleryPadTop=isDesktopDown4k?clampRange(46,Math.round(viewportContentH*.064),112):Math.round(132*desktopFluid);
+  const heroGalleryTitleBlock=isDesktopDown4k?clampRange(60,Math.round(viewportContentH*.096),92):84;
+  const heroGalleryControlsMt=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.035),56):Math.round(86*desktopFluid);
+  const heroGallerySlideH=isDesktopDown4k
+    ?clampRange(360,viewportContentH-heroGalleryPadTop-heroGalleryTitleBlock-58-heroGalleryControlsMt,686)
+    :Math.round(686*desktopFluid);
+  const heroGalleryTitleMb=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.03),42):Math.round(42*desktopFluid);
+  const closeLookPadTop=isDesktopDown4k?clampRange(6,Math.round(viewportContentH*.01),14):Math.round(10*desktopFluid);
+  const closeLookTitleBlock=isDesktopDown4k?clampRange(70,Math.round(viewportContentH*.102),116):94;
+  const closeLookPadBottom=isDesktopDown4k?clampRange(22,Math.round(viewportContentH*.05),78):Math.round(170*desktopFluid);
+  const closeLookPanelH=isDesktopDown4k
+    ?clampRange(390,viewportContentH-closeLookPadTop-closeLookPadBottom-closeLookTitleBlock,800)
+    :Math.round(800*desktopFluid);
+  const closeLookTitleMb=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.03),42):Math.round(42*desktopFluid);
   const rootVars={
     "--nav-pad-x":toFluidPx(24),
     "--hero-side-pad":toFluidPx(24),
@@ -322,12 +327,14 @@ export default function Portfolio(){
     "--hero-gallery-pad-top":`${heroGalleryPadTop}px`,
     "--hero-gallery-slide-h":`${heroGallerySlideH}px`,
     "--hero-gallery-controls-mt":`${heroGalleryControlsMt}px`,
+    "--hero-gallery-title-mb":`${heroGalleryTitleMb}px`,
     "--hero-gallery-section-h":isDesktopDown4k?`${viewportContentH}px`:"84vh",
     "--featured-head-pad-top":toFluidPx(96),
     "--featured-head-pad-bottom":toFluidPx(56),
     "--close-look-pad-top":`${closeLookPadTop}px`,
     "--close-look-pad-bottom":`${closeLookPadBottom}px`,
     "--close-look-panel-h":`${closeLookPanelH}px`,
+    "--close-look-title-mb":`${closeLookTitleMb}px`,
     "--close-look-section-h":isDesktopDown4k?`${viewportContentH}px`:"auto",
     "--device-min-h":toFluidPx(540),
   };
@@ -678,9 +685,9 @@ function HeroGallerySection({isDark,C,prefRM}){
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box"}}>
+    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 42px ${leadX}px`}}>Lo principal.</h2>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 var(--hero-gallery-title-mb,42px) ${leadX}px`}}>Lo principal.</h2>
       </div>
 
       <div ref={frameRef} style={{overflow:"hidden",width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
@@ -857,9 +864,9 @@ function CloseLookSection({isDark,C,prefRM}){
   const textClipOpen=`inset(0 0% 0 0% round ${clipRadius}px)`;
 
   return(
-    <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:wide?"var(--close-look-section-h,auto)":"auto",boxSizing:"border-box"}}>
+    <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:wide?"var(--close-look-section-h,auto)":"auto",boxSizing:"border-box",overflow:wide?"hidden":"visible"}}>
       <div style={{maxWidth:1420,margin:"0 auto"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:titleMb,marginLeft:titleMl}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:wide?"var(--close-look-title-mb,42px)":titleMb,marginLeft:titleMl}}>
           {"M\u00E1s de cerca."}
         </h2>
 
