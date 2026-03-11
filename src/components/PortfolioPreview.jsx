@@ -267,6 +267,7 @@ function Img({src,fb,alt,style={},loading="lazy",fetchPriority="auto"}){
   return <img src={src} alt={alt} loading={loading} decoding="async" fetchPriority={fetchPriority} onError={()=>setE(true)} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",...style}}/>;
 }
 const clamp01=v=>Math.max(0,Math.min(1,v));
+const clampRange=(min,val,max)=>Math.max(min,Math.min(max,val));
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Portfolio(){
@@ -302,22 +303,32 @@ export default function Portfolio(){
   const hNorm=clamp01((vp.h-800)/640);
   const desktopFluid=isDesktopDown4k?(0.86+((wNorm*.6+hNorm*.4)*.14)):1;
   const toFluidPx=v=>`${Math.round(v*desktopFluid)}px`;
+  const viewportContentH=Math.max(720,vp.h-52);
+  const heroGalleryPadTop=isDesktopDown4k?clampRange(70,Math.round(viewportContentH*.085),132):Math.round(132*desktopFluid);
+  const heroGallerySlideH=isDesktopDown4k?clampRange(430,Math.round(viewportContentH*.535),686):Math.round(686*desktopFluid);
+  const heroGalleryControlsMt=isDesktopDown4k?clampRange(50,Math.round(viewportContentH*.07),86):Math.round(86*desktopFluid);
+  const closeLookPadTop=isDesktopDown4k?clampRange(8,Math.round(viewportContentH*.012),14):Math.round(10*desktopFluid);
+  const closeLookPadBottom=isDesktopDown4k?clampRange(72,Math.round(viewportContentH*.11),170):Math.round(170*desktopFluid);
+  const closeLookPanelH=isDesktopDown4k?clampRange(500,Math.round(viewportContentH*.67),800):Math.round(800*desktopFluid);
   const rootVars={
     "--nav-pad-x":toFluidPx(24),
     "--hero-side-pad":toFluidPx(24),
     "--hero-min-h":toFluidPx(620),
+    "--hero-full-h":"100dvh",
     "--page-pad-x":toFluidPx(28),
     "--sec-pad-y":toFluidPx(130),
     "--sec-pad-y-lg":toFluidPx(150),
     "--sec-pad-y-sm":toFluidPx(72),
-    "--hero-gallery-pad-top":toFluidPx(132),
-    "--hero-gallery-slide-h":toFluidPx(686),
-    "--hero-gallery-controls-mt":toFluidPx(86),
+    "--hero-gallery-pad-top":`${heroGalleryPadTop}px`,
+    "--hero-gallery-slide-h":`${heroGallerySlideH}px`,
+    "--hero-gallery-controls-mt":`${heroGalleryControlsMt}px`,
+    "--hero-gallery-section-h":isDesktopDown4k?`${viewportContentH}px`:"84vh",
     "--featured-head-pad-top":toFluidPx(96),
     "--featured-head-pad-bottom":toFluidPx(56),
-    "--close-look-pad-top":toFluidPx(10),
-    "--close-look-pad-bottom":toFluidPx(170),
-    "--close-look-panel-h":toFluidPx(800),
+    "--close-look-pad-top":`${closeLookPadTop}px`,
+    "--close-look-pad-bottom":`${closeLookPadBottom}px`,
+    "--close-look-panel-h":`${closeLookPanelH}px`,
+    "--close-look-section-h":isDesktopDown4k?`${viewportContentH}px`:"auto",
     "--device-min-h":toFluidPx(540),
   };
 
@@ -442,7 +453,7 @@ export default function Portfolio(){
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{height:"100dvh",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
+      <section style={{height:"var(--hero-full-h,100dvh)",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
@@ -667,7 +678,7 @@ function HeroGallerySection({isDark,C,prefRM}){
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"84vh"}}>
+    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 42px ${leadX}px`}}>Lo principal.</h2>
       </div>
@@ -834,7 +845,7 @@ function CloseLookSection({isDark,C,prefRM}){
   const textClipOpen="inset(0 0% 0 0% round 12px)";
 
   return(
-    <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s"}}>
+    <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:wide?"var(--close-look-section-h,auto)":"auto",boxSizing:"border-box"}}>
       <div style={{maxWidth:1420,margin:"0 auto"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
           {"M\u00E1s de cerca."}
