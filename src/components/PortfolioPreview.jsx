@@ -782,12 +782,16 @@ function CloseLookSection({isDark,C,prefRM}){
   const panelRef=useRef(null);
   const mediaRef=useRef(null);
   const [panelW,setPanelW]=useState(1120);
+  const [panelH,setPanelH]=useState(800);
   const items=CLOSE_LOOK_ITEMS;
   const n=items.length;
 
   useEffect(()=>{
     const el=panelRef.current;if(!el)return;
-    const measure=()=>setPanelW(el.clientWidth||1120);
+    const measure=()=>{
+      setPanelW(el.clientWidth||1120);
+      setPanelH(el.clientHeight||800);
+    };
     measure();
     const ro=new ResizeObserver(measure);ro.observe(el);
     return()=>ro.disconnect();
@@ -825,12 +829,20 @@ function CloseLookSection({isDark,C,prefRM}){
   const onLeave=()=>{if(mediaRef.current)mediaRef.current.style.transform="scale(1) rotateX(0deg) rotateY(0deg)";};
 
   const wide=panelW>=980;
+  const uiScale=wide?clampRange(.74,panelH/800,1):1;
+  const s=v=>Math.round(v*uiScale*100)/100;
   const mediaItem=items[active];
-  const listLeft=wide?118:16;
-  const listTop=wide?48:20;
-  const descWidth=wide?Math.min(480,Math.max(360,panelW*.33)):0;
-  const descMax=Math.max(340,panelW-listLeft-28);
-  const ctrlSize=wide?36:32;
+  const listLeft=wide?s(118):16;
+  const listTop=wide?s(48):20;
+  const descWidth=wide?Math.min(s(480),Math.max(s(360),panelW*.33)):0;
+  const descMax=Math.max(wide?s(340):340,panelW-listLeft-(wide?s(28):28));
+  const ctrlSize=wide?s(36):32;
+  const arrowIconSize=wide?Math.max(16,Math.round(s(20))):20;
+  const closeIconSize=wide?Math.max(14,Math.round(s(18))):18;
+  const pillGap=wide?s(14):14;
+  const titleMb=wide?s(42):42;
+  const titleMl=wide?s(64):0;
+  const clipRadius=wide?Math.round(s(12)):12;
   const motionEase=[0.22,0.61,0.36,1];
   const bubbleBezier=[0.22,0.61,0.36,1];
   const morphMs=prefRM.current?0:.62;
@@ -841,18 +853,18 @@ function CloseLookSection({isDark,C,prefRM}){
   const descInTransition=prefRM.current?{duration:0}:{type:"tween",duration:.3,ease:motionEase,delay:.24};
   const descOutTransition=prefRM.current?{duration:0}:{type:"tween",duration:.18,ease:[0.55,0,1,1]};
   const mediaTransition=prefRM.current?{duration:0}:{type:"tween",duration:morphMs,ease:motionEase};
-  const textClipClosed="inset(0 50% 0 50% round 12px)";
-  const textClipOpen="inset(0 0% 0 0% round 12px)";
+  const textClipClosed=`inset(0 50% 0 50% round ${clipRadius}px)`;
+  const textClipOpen=`inset(0 0% 0 0% round ${clipRadius}px)`;
 
   return(
     <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",minHeight:wide?"var(--close-look-section-h,auto)":"auto",boxSizing:"border-box"}}>
       <div style={{maxWidth:1420,margin:"0 auto"}}>
-        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:42,marginLeft:wide?64:0}}>
+        <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:titleMb,marginLeft:titleMl}}>
           {"M\u00E1s de cerca."}
         </h2>
 
         <div ref={panelRef} style={{
-          borderRadius:30,
+          borderRadius:wide?s(30):30,
           overflow:"hidden",
           background:"#000",
           border:"none",
@@ -897,21 +909,21 @@ function CloseLookSection({isDark,C,prefRM}){
               <button onClick={()=>setOpen(-1)} aria-label="Cerrar descripcion"
                 onMouseEnter={()=>setXHover(true)}
                 onMouseLeave={()=>setXHover(false)}
-                style={{position:"absolute",top:26,right:26,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,background:xHover?"rgba(24,24,30,.96)":"rgba(42,42,48,.9)",color:"#d8d8df",transition:"background .24s ease"}}>
-                <IcoClose s={18} c="#d8d8df"/>
+                style={{position:"absolute",top:wide?s(26):26,right:wide?s(26):26,zIndex:15,width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,background:xHover?"rgba(24,24,30,.96)":"rgba(42,42,48,.9)",color:"#d8d8df",transition:"background .24s ease"}}>
+                <IcoClose s={closeIconSize} c="#d8d8df"/>
               </button>
             )}
 
-            <div style={{position:"absolute",left:listLeft,top:wide?"50%":listTop,transform:wide?"translateY(-50%)":"none",zIndex:10,width:wide?430:"calc(100% - 32px)"}}>
+            <div style={{position:"absolute",left:listLeft,top:wide?"50%":listTop,transform:wide?"translateY(-50%)":"none",zIndex:10,width:wide?s(430):"calc(100% - 32px)"}}>
               {wide&&(
-                <div style={{position:"absolute",left:-74,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:30}}>
+                <div style={{position:"absolute",left:-s(74),top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:s(30)}}>
                   <button onClick={()=>select(active-1,true)} aria-label="Categoria anterior"
                     onMouseEnter={()=>setArrowHover("desk-up")}
                     onMouseLeave={()=>setArrowHover("")}
                     onFocus={()=>setArrowHover("desk-up")}
                     onBlur={()=>setArrowHover("")}
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="desk-up"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
-                    <ChU s={20}/>
+                    <ChU s={arrowIconSize}/>
                   </button>
                   <button onClick={()=>select(active+1,true)} aria-label="Categoria siguiente"
                     onMouseEnter={()=>setArrowHover("desk-down")}
@@ -919,21 +931,21 @@ function CloseLookSection({isDark,C,prefRM}){
                     onFocus={()=>setArrowHover("desk-down")}
                     onBlur={()=>setArrowHover("")}
                     style={{width:ctrlSize,height:ctrlSize,borderRadius:"50%",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:arrowHover==="desk-down"?"rgba(100,100,110,.8)":"rgba(30,30,34,.86)",color:"#f5f5f7",backdropFilter:"blur(6px)",transition:"background .24s ease"}}>
-                    <ChD s={20}/>
+                    <ChD s={arrowIconSize}/>
                   </button>
                 </div>
               )}
 
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <div style={{display:"flex",flexDirection:"column",gap:pillGap}}>
                   {items.map((item,i)=>{
                     const isOn=active===i;
                     const expanded=open===i;
                     const isHover=hovered===i;
-                    const collapsedW=Math.min(descMax,wide?Math.max(198,Math.round(112+item.label.length*10.2)):Math.max(176,Math.round(98+item.label.length*9.4)));
+                    const collapsedW=Math.min(descMax,wide?Math.max(s(198),Math.round((112+item.label.length*10.2)*uiScale)):Math.max(176,Math.round(98+item.label.length*9.4)));
                     const expandedW=wide?Math.min(descWidth,descMax):Math.min(descMax,Math.max(284,panelW-34));
-                    const collapsedH=wide?58:54;
+                    const collapsedH=wide?s(58):54;
                     const expandedH=wide
-                      ?Math.min(238,Math.max(146,112+Math.ceil(item.desc.length/44)*24))
+                      ?Math.min(s(238),Math.max(s(146),Math.round((112+Math.ceil(item.desc.length/44)*24)*uiScale)))
                       :Math.min(252,Math.max(146,106+Math.ceil(item.desc.length/36)*23));
                     const bubbleBg=expanded
                       ?"rgba(30,30,36,.78)"
@@ -947,7 +959,7 @@ function CloseLookSection({isDark,C,prefRM}){
                           animate={{
                             width:expanded?expandedW:collapsedW,
                             height:expanded?expandedH:collapsedH,
-                            borderRadius:expanded?22:Math.round(collapsedH/2),
+                            borderRadius:expanded?s(22):Math.round(collapsedH/2),
                           }}
                           onClick={()=>onItem(i)}
                           aria-expanded={expanded}
@@ -988,17 +1000,17 @@ function CloseLookSection({isDark,C,prefRM}){
                               filter:expanded?"blur(2.2px)":"blur(0px)",
                               clipPath:expanded?textClipClosed:textClipOpen,
                             }}
-                            style={{position:"absolute",inset:0,padding:wide?"15px 18px":"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center",willChange:"opacity,filter,clip-path"}}>
-                            <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:10,whiteSpace:"nowrap"}}>
+                            style={{position:"absolute",inset:0,padding:wide?`${s(15)}px ${s(18)}px`:"14px 14px",display:"flex",alignItems:"center",justifyContent:"flex-start",overflow:"hidden",transformOrigin:"left center",willChange:"opacity,filter,clip-path"}}>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"flex-start",gap:wide?s(10):10,whiteSpace:"nowrap"}}>
                               <span style={{
-                                width:25,
-                                height:25,
+                                width:wide?s(25):25,
+                                height:wide?s(25):25,
                                 borderRadius:"50%",
-                                border:"1.8px solid #fff",
+                                border:`${wide?s(1.8):1.8}px solid #fff`,
                                 display:"inline-flex",
                                 alignItems:"center",
                                 justifyContent:"center",
-                                fontSize:20,
+                                fontSize:wide?s(20):20,
                                 fontWeight:650,
                                 color:"#fff",
                                 background:isOn||isHover?"rgba(255,255,255,.14)":"transparent",
@@ -1007,7 +1019,7 @@ function CloseLookSection({isDark,C,prefRM}){
                               }}>
                                 +
                               </span>
-                              <span style={{fontSize:wide?16.25:14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
+                              <span style={{fontSize:wide?s(16.25):14.55,fontWeight:610,lineHeight:1.08}}>{item.label}</span>
                             </div>
                           </motion.div>
 
@@ -1020,9 +1032,9 @@ function CloseLookSection({isDark,C,prefRM}){
                               filter:expanded?"blur(0px)":"blur(2.6px)",
                               clipPath:expanded?textClipOpen:textClipClosed,
                             }}
-                            style={{position:"absolute",inset:0,padding:wide?"15px 17px":"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none",willChange:"opacity,filter,clip-path"}}>
+                            style={{position:"absolute",inset:0,padding:wide?`${s(15)}px ${s(17)}px`:"14px 14px",overflow:"hidden",transformOrigin:"left center",pointerEvents:expanded?"auto":"none",willChange:"opacity,filter,clip-path"}}>
                             <div style={{
-                              fontSize:wide?17:15,
+                              fontSize:wide?s(17):15,
                               fontWeight:500,
                               lineHeight:1.46,
                               letterSpacing:"-.01em",
