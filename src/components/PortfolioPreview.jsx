@@ -274,7 +274,7 @@ export default function Portfolio(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
   const [activeNav,setActiveNav]=useState("Trabajo");
-  const [vp,setVp]=useState({w:2560,h:1440});
+  const [vp,setVp]=useState({w:1920,h:1080});
   const wrapRef=useRef(null);
   const canvasRef=useRef(null);
   const isDark=theme==="dark";
@@ -301,22 +301,30 @@ export default function Portfolio(){
   const desktopFluid=isDesktopDown4k?(0.86+((wNorm*.6+hNorm*.4)*.14)):1;
   const toFluidPx=v=>`${Math.round(v*desktopFluid)}px`;
   const viewportContentH=Math.max(700,vp.h-52);
-  const heroGalleryPadTop=isDesktopDown4k?clampRange(46,Math.round(viewportContentH*.064),112):Math.round(132*desktopFluid);
+  const heroGalleryPadTop=isDesktopDown4k?clampRange(88,Math.round(viewportContentH*.1),156):Math.round(132*desktopFluid);
+  const heroGalleryPanelPadBottom=isDesktopDown4k?0:0;
+  const heroGalleryPadBottom=isDesktopDown4k?clampRange(96,Math.round(viewportContentH*.11),168):0;
+  const heroGalleryExtraBottom=Math.max(0,heroGalleryPadBottom-heroGalleryPanelPadBottom);
   const heroGalleryTitleBlock=isDesktopDown4k?clampRange(60,Math.round(viewportContentH*.096),92):84;
   const heroGalleryControlsMt=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.035),56):Math.round(86*desktopFluid);
-  const heroGalleryControlH=isDesktopDown4k?clampRange(50,Math.round(viewportContentH*.055),58):58;
-  const heroGalleryDotSize=isDesktopDown4k?clampRange(8,Math.round(heroGalleryControlH*.17),10):10;
-  const heroGalleryActiveW=isDesktopDown4k?clampRange(62,Math.round(heroGalleryControlH*1.28),74):74;
-  const heroGalleryPillPadX=isDesktopDown4k?clampRange(16,Math.round(heroGalleryControlH*.34),20):20;
+  const heroGalleryControlH=isDesktopDown4k?clampRange(46,Math.round(viewportContentH*.05),54):58;
+  const heroGalleryDotSize=isDesktopDown4k?clampRange(7,Math.round(heroGalleryControlH*.16),9):10;
+  const heroGalleryActiveW=isDesktopDown4k?clampRange(54,Math.round(heroGalleryControlH*1.18),66):74;
+  const heroGalleryPillPadX=isDesktopDown4k?clampRange(14,Math.round(heroGalleryControlH*.3),18):20;
+  const heroGalleryContentBudget=viewportContentH-heroGalleryPadTop-heroGalleryPanelPadBottom-heroGalleryTitleBlock-heroGalleryControlH-heroGalleryControlsMt;
   const heroGallerySlideH=isDesktopDown4k
-    ?clampRange(360,viewportContentH-heroGalleryPadTop-heroGalleryTitleBlock-58-heroGalleryControlsMt,686)
+    ?clampRange(452,Math.round(heroGalleryContentBudget*.99)+10,762)
     :Math.round(686*desktopFluid);
   const heroGalleryTitleMb=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.03),42):Math.round(42*desktopFluid);
   const closeLookPadTop=isDesktopDown4k?clampRange(6,Math.round(viewportContentH*.01),14):Math.round(10*desktopFluid);
   const closeLookTitleBlock=isDesktopDown4k?clampRange(70,Math.round(viewportContentH*.102),116):94;
-  const closeLookPadBottom=isDesktopDown4k?clampRange(22,Math.round(viewportContentH*.05),78):Math.round(170*desktopFluid);
+  const closeLookPanelPadBottom=isDesktopDown4k?clampRange(22,Math.round(viewportContentH*.05),78):Math.round(170*desktopFluid);
+  const closeLookPadBottom=isDesktopDown4k
+    ?(closeLookPanelPadBottom+clampRange(26,Math.round(viewportContentH*.06),62)+70)
+    :Math.round(170*desktopFluid);
+  const closeLookExtraBottom=Math.max(0,closeLookPadBottom-closeLookPanelPadBottom);
   const closeLookPanelH=isDesktopDown4k
-    ?clampRange(390,viewportContentH-closeLookPadTop-closeLookPadBottom-closeLookTitleBlock,800)
+    ?clampRange(390,viewportContentH-closeLookPadTop-closeLookPanelPadBottom-closeLookTitleBlock,800)
     :Math.round(800*desktopFluid);
   const closeLookTitleMb=isDesktopDown4k?clampRange(18,Math.round(viewportContentH*.03),42):Math.round(42*desktopFluid);
   const heroTrackW=vp.w;
@@ -336,6 +344,7 @@ export default function Portfolio(){
     "--sec-pad-y-lg":toFluidPx(150),
     "--sec-pad-y-sm":toFluidPx(72),
     "--hero-gallery-pad-top":`${heroGalleryPadTop}px`,
+    "--hero-gallery-pad-bottom":`${heroGalleryPadBottom}px`,
     "--hero-gallery-slide-h":`${heroGallerySlideH}px`,
     "--hero-gallery-controls-mt":`${heroGalleryControlsMt}px`,
     "--hero-gallery-control-h":`${heroGalleryControlH}px`,
@@ -343,14 +352,14 @@ export default function Portfolio(){
     "--hero-gallery-active-dot-w":`${heroGalleryActiveW}px`,
     "--hero-gallery-pill-pad-x":`${heroGalleryPillPadX}px`,
     "--hero-gallery-title-mb":`${heroGalleryTitleMb}px`,
-    "--hero-gallery-section-h":isDesktopDown4k?`${viewportContentH}px`:"84vh",
+    "--hero-gallery-section-h":isDesktopDown4k?`${viewportContentH+heroGalleryExtraBottom}px`:"84vh",
     "--featured-head-pad-top":toFluidPx(96),
     "--featured-head-pad-bottom":toFluidPx(56),
     "--close-look-pad-top":`${closeLookPadTop}px`,
     "--close-look-pad-bottom":`${closeLookPadBottom}px`,
     "--close-look-panel-h":`${closeLookPanelH}px`,
     "--close-look-title-mb":`${closeLookTitleMb}px`,
-    "--close-look-section-h":isDesktopDown4k?`${viewportContentH}px`:"auto",
+    "--close-look-section-h":isDesktopDown4k?`${viewportContentH+closeLookExtraBottom}px`:"auto",
     "--device-min-h":toFluidPx(540),
   };
 
@@ -699,12 +708,12 @@ function HeroGallerySection({isDark,C,prefRM}){
   const controlH=w<760?58:"var(--hero-gallery-control-h,58px)";
   const dotSize=w<760?10:"var(--hero-gallery-dot-size,10px)";
   const activeDotW=w<760?74:"var(--hero-gallery-active-dot-w,74px)";
-  const iconMain=w<760?27:25;
-  const iconPause=w<760?25:23;
+  const iconMain=w<760?27:(w<2560?22:25);
+  const iconPause=w<760?25:(w<2560?20:23);
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 0",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
+    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 var(--hero-gallery-pad-bottom,0px)",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
         <h2 className={isDark?"acc-dk":"acc-lt"} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 var(--hero-gallery-title-mb,42px) ${leadX}px`}}>Lo principal.</h2>
       </div>
