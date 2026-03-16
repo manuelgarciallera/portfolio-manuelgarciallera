@@ -20,10 +20,10 @@ export function DeviceSection({isDark,C,wrapRef,prefRM}){
     <section ref={secRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s",overflow:"hidden"}}>
       <div style={{maxWidth:980,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>UX Â· Product Design</p>
-          <div style={{overflow:"hidden",marginBottom:20}}><h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(26px,4vw,50px)",fontWeight:700,letterSpacing:"-.036em",lineHeight:1.1}}><span style={{color:C.text}}>DiseÃ±o que vive<br/>en </span><span className={isDark?"acc-dk":"acc-lt"}>los dedos.</span></h2></div>
-          <p className="rv2" style={{transitionDelay:".14s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:34}}>Interfaces intuitivas desde el primer toque. Once aÃ±os diseÃ±ando para millones de personas en el deporte global.</p>
-          <div className="rv2" style={{transitionDelay:".28s"}}><button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX â†’</button></div>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>UX \u00b7 Product Design</p>
+          <div style={{overflow:"hidden",marginBottom:20}}><h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(26px,4vw,50px)",fontWeight:700,letterSpacing:"-.036em",lineHeight:1.1}}><span style={{color:C.text}}>Dise\u00f1o que vive<br/>en </span><span className={isDark?"acc-dk":"acc-lt"}>los dedos.</span></h2></div>
+          <p className="rv2" style={{transitionDelay:".14s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:34}}>Interfaces intuitivas desde el primer toque. Once a\u00f1os dise\u00f1ando para millones de personas en el deporte global.</p>
+          <div className="rv2" style={{transitionDelay:".28s"}}><button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX \u2192</button></div>
         </div>
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",minHeight:"var(--device-min-h,540px)"}}>
           <div ref={devRef} style={{transition:"transform .14s ease-out",transformStyle:"preserve-3d",position:"relative"}}>
@@ -45,15 +45,15 @@ export function DeviceSection({isDark,C,wrapRef,prefRM}){
               <div style={{width:"100%",height:"100%",borderRadius:42,overflow:"hidden",position:"relative",background:"linear-gradient(168deg,#06060f,#090f22 40%,#0e0816 75%,#06060f)"}}>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(138deg,rgba(255,255,255,.08) 0%,transparent 40%)",borderRadius:42,zIndex:15,pointerEvents:"none"}}/>
                 <div style={{padding:"68px 14px 16px",height:"100%",display:"flex",flexDirection:"column",position:"relative",zIndex:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}><span>9:41</span><span style={{fontSize:9}}>â—â—â—â— WiFi</span></div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:14,fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}><span>9:41</span><span style={{fontSize:9}}>\u25cf\u25cf\u25cf\u25cf WiFi</span></div>
                   <div style={{fontSize:21,fontWeight:700,color:"#fff",marginBottom:2,letterSpacing:"-.03em"}}>LALIGA</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.28)",marginBottom:18}}>Temporada 2025â€“26</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.28)",marginBottom:18}}>Temporada 2025\u201326</div>
                   <div style={{borderRadius:14,padding:"13px 14px",marginBottom:10,background:"rgba(94,196,200,.09)",border:"1px solid rgba(94,196,200,.18)"}}>
-                    <div style={{fontSize:9.5,color:"#5ec4c8",fontWeight:700,letterSpacing:".07em",marginBottom:7,textTransform:"uppercase"}}>â¬¤ En directo</div>
-                    <div style={{fontSize:13.5,fontWeight:700,color:"#fff"}}>Real Madrid 2 â€“ 1 BarÃ§a</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.32)",marginTop:3}}>Min 73&apos; Â· Santiago BernabÃ©u</div>
+                    <div style={{fontSize:9.5,color:"#5ec4c8",fontWeight:700,letterSpacing:".07em",marginBottom:7,textTransform:"uppercase"}}>\u2b24 En directo</div>
+                    <div style={{fontSize:13.5,fontWeight:700,color:"#fff"}}>Real Madrid 2 \u2013 1 Bar\u00e7a</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.32)",marginTop:3}}>Min 73&apos; \u00b7 Santiago Bernab\u00e9u</div>
                   </div>
-                  {[{t:"AtlÃ©tico 1-0 Sevilla",s:"Final",e:"ðŸ”´"},{t:"ClasificaciÃ³n Â· J30",s:"Ver tabla",e:"ðŸ“Š"},{t:"MbappÃ© â€” 15 goles",s:"Top goleador",e:"â­"}].map((item,i)=>(
+                  {[{t:"Atl\u00e9tico 1-0 Sevilla",s:"Final",e:"\ud83d\udd34"},{t:"Clasificaci\u00f3n \u00b7 J30",s:"Ver tabla",e:"\ud83d\udcca"},{t:"Mbapp\u00e9 \u2014 15 goles",s:"Top goleador",e:"\u2b50"}].map((item,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:12,marginBottom:7,background:"rgba(255,255,255,.046)",border:"1px solid rgba(255,255,255,.04)"}}>
                       <span style={{fontSize:13,flexShrink:0}}>{item.e}</span>
                       <div style={{flex:1}}><div style={{fontSize:11.5,fontWeight:600,color:"#fff"}}>{item.t}</div><div style={{fontSize:9.5,color:"rgba(255,255,255,.28)",marginTop:1}}>{item.s}</div></div>

@@ -53,26 +53,26 @@ export function ArchSection({isDark,C,prefRM}){
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D Â· Arquitectura</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D \u00b7 Arquitectura</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
               <span className={isDark?"acc-dk":"acc-lt"}>Del plano al fotorrealismo.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Pipeline completo desde SketchUp. Modelado arquitectÃ³nico, baking en Blender, renders estÃ¡ticos en UE5 y Twinmotion 2025. VisualizaciÃ³n 3D interactiva para web.
+            Pipeline completo desde SketchUp. Modelado arquitect\u00f3nico, baking en Blender, renders est\u00e1ticos en UE5 y Twinmotion 2025. Visualizaci\u00f3n 3D interactiva para web.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className={isDark?"btn-dk":"btn-lt"}>Ver renders 3D</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Pipeline â†’</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Pipeline \u2192</button>
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
           <Img src={IMGS[1]} fb={FBK[1]} alt="Estadio 3D" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>VisualizaciÃ³n arquitectÃ³nica</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Estadio Â· SketchUp â†’ UE5</div>
-            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>Render fotorrealista 4K Â· Lumen GI Â· Nanite</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Visualizaci\u00f3n arquitect\u00f3nica</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Estadio \u00b7 SketchUp \u2192 UE5</div>
+            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>Render fotorrealista 4K \u00b7 Lumen GI \u00b7 Nanite</div>
           </div>
         </div>
       </div>

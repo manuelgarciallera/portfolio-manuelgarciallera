@@ -31,18 +31,18 @@ export function FullStackSection({isDark,C,prefRM}){
       <canvas ref={canvasRef} className="sec-canvas"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"start"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>Full Stack Â· Dev</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>Full Stack \u00b7 Dev</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
-              <span style={{color:C.text}}>Del diseÃ±o al </span><span className={isDark?"acc-dk":"acc-lt"}>cÃ³digo real.</span>
+              <span style={{color:C.text}}>Del dise\u00f1o al </span><span className={isDark?"acc-dk":"acc-lt"}>c\u00f3digo real.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Angular 17+ con Signals, Node.js, MongoDB y MySQL. Arquitecturas escalables que van de la idea al deploy, integrando 3D y visualizaciÃ³n interactiva.
+            Angular 17+ con Signals, Node.js, MongoDB y MySQL. Arquitecturas escalables que van de la idea al deploy, integrando 3D y visualizaci\u00f3n interactiva.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos dev</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Stack completo â†’</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Stack completo \u2192</button>
           </div>
         </div>
         <div className="rv2" style={{transitionDelay:".12s",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>

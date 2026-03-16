@@ -7,10 +7,10 @@ export function MiniProjects({isDark,C,projects,alt}){
       <div style={{maxWidth:980,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:32}}>
           <p style={{fontSize:12,color:C.textSec,letterSpacing:".08em",textTransform:"uppercase",fontWeight:500}}>
-            {alt?"Proyectos destacados":"MÃ¡s trabajo"}
+            {alt?"Proyectos destacados":"M\u00e1s trabajo"}
           </p>
           <button className={isDark?"btn-dk":"btn-lt"} style={{fontSize:12.5,padding:"7px 18px"}}>
-            Ver todos â†’
+            Ver todos \u2192
           </button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:14}}>

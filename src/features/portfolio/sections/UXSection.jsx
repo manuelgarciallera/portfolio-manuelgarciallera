@@ -15,14 +15,14 @@ export function UXSection({isDark,C,prefRM}){
       pts=Array.from({length:N},(_,i)=>({
         x:Math.random()*c.width,
         y:Math.random()*c.height,
-        hx:0,hy:0, // posiciÃ³n home â€” se asigna tras crear
+        hx:0,hy:0, // home position assigned after creation
         vx:(Math.random()-.5)*.3,
         vy:(Math.random()-.5)*.3,
         r:Math.random()*2.5+2,
         hue:190+Math.random()*20,
         bright: i<18,
       }));
-      // guardar posiciÃ³n inicial como "home"
+      // Save initial position as "home"
       pts.forEach(p=>{p.hx=p.x;p.hy=p.y;});
     };
     const ro=new ResizeObserver(init);ro.observe(c);init();
@@ -40,7 +40,7 @@ export function UXSection({isDark,C,prefRM}){
       ctx.clearRect(0,0,w,h);
 
       pts.forEach((p,i)=>{
-        // â”€â”€ CAMPO DE FLUJO orgÃ¡nico â”€â”€
+        // Organic flow field
         const fi=i*0.43;
         const baseX=Math.sin(t*0.11+fi*0.2)*0.022+Math.cos(t*0.07+fi*0.15)*0.014;
         const baseY=Math.cos(t*0.09+fi*0.18)*0.018+Math.sin(t*0.06+fi*0.22)*0.012;
@@ -48,7 +48,7 @@ export function UXSection({isDark,C,prefRM}){
         p.vx+=baseX*gust;
         p.vy+=baseY*gust;
 
-        // â”€â”€ RATÃ“N: repulsiÃ³n notable â”€â”€
+        // Mouse: notable repulsion
         const mdx=p.x-mouse.x,mdy=p.y-mouse.y;
         const md=Math.sqrt(mdx*mdx+mdy*mdy)||1;
         if(md<140){
@@ -57,8 +57,8 @@ export function UXSection({isDark,C,prefRM}){
           p.vy+=mdy/md*f;
         }
 
-        // â”€â”€ RETORNO AL HOME: fuerza suave hacia posiciÃ³n original â”€â”€
-        // Solo actÃºa cuando se han alejado â€” no interfiere con la deriva normal
+        // Return to home: smooth force toward original position
+        // Only acts when particles are far enough from home
         const hDist=Math.sqrt((p.x-p.hx)**2+(p.y-p.hy)**2);
         if(hDist>8){
           p.vx+=(p.hx-p.x)*0.0018;
@@ -71,7 +71,7 @@ export function UXSection({isDark,C,prefRM}){
 
         p.x+=p.vx; p.y+=p.vy;
 
-        // el home deriva muy lentamente con el flujo â€” no lucha contra Ã©l
+        // Home drifts very slowly with the flow field
         if(md>140){
           p.hx+=(p.x-p.hx)*0.004;
           p.hy+=(p.y-p.hy)*0.004;
@@ -103,7 +103,7 @@ export function UXSection({isDark,C,prefRM}){
     return()=>{cancelAnimationFrame(raf);ro.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
   },[prefRM]);
 
-  // â”€â”€ CAPA PROTAGONISTA: bandada que se abre/cierra, muy reactiva al ratÃ³n â”€â”€
+  // Foreground layer: flock that opens/closes and reacts to mouse
   const fgRef=useRef(null);
   const sharedMouse=useRef({x:-999,y:-999});
   useEffect(()=>{
@@ -144,28 +144,28 @@ export function UXSection({isDark,C,prefRM}){
       pts.forEach(p=>{gcx+=p.x;gcy+=p.y;});
       gcx/=N; gcy/=N;
 
-      // pulso: el grupo se expande y contrae rÃ­tmicamente
+      // Pulse: the group expands and contracts rhythmically
       const pulse=Math.sin(t*1.4)*0.00045+0.0008;
 
       pts.forEach((p,i)=>{
         const fi=i*0.55;
 
-        // deriva orgÃ¡nica suave
+        // Smooth organic drift
         p.vx+=Math.sin(t*0.9+fi*0.3)*0.018+Math.cos(t*0.7+fi*0.5)*0.012;
         p.vy+=Math.cos(t*0.8+fi*0.4)*0.018+Math.sin(t*0.6+fi*0.6)*0.012;
 
-        // cohesiÃ³n al centro del grupo (abre/cierra)
+        // Cohesion toward the group center
         p.vx+=(gcx-p.x)*pulse;
         p.vy+=(gcy-p.y)*pulse;
 
-        // separaciÃ³n mÃ­nima
+        // Minimum separation
         pts.forEach(q=>{
           if(q===p)return;
           const dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy)||1;
           if(d<22){p.vx+=dx/d*0.12;p.vy+=dy/d*0.12;}
         });
 
-        // RATÃ“N: obstÃ¡culo potente
+        // Mouse: strong obstacle
         const mdx=p.x-mouse.x,mdy=p.y-mouse.y;
         const md=Math.sqrt(mdx*mdx+mdy*mdy)||1;
         if(md<180){
@@ -182,11 +182,11 @@ export function UXSection({isDark,C,prefRM}){
         if(p.x<-40)p.x=w+40;if(p.x>w+40)p.x=-40;
         if(p.y<-40)p.y=h+40;if(p.y>h+40)p.y=-40;
 
-        // dibujar â€” tamaÃ±o segÃºn distancia al centro del grupo
+        // Draw: size based on distance to center
         const dx=p.x-gcx, dy=p.y-gcy;
         const distG=Math.sqrt(dx*dx+dy*dy);
-        const norm=Math.min(distG/140,1); // 0=centro, 1=periferia (radio ref 140px)
-        const rD=(p.r*3.2)*(1-norm*0.78)+p.r*0.6; // centro ~Ã—3.2, periferia ~Ã—0.6
+        const norm=Math.min(distG/140,1); // 0=center, 1=periphery
+        const rD=(p.r*3.2)*(1-norm*0.78)+p.r*0.6; // center ~x3.2, periphery ~x0.6
         const lx=p.x-rD*.38,ly=p.y-rD*.38;
         const g=ctx.createRadialGradient(lx,ly,rD*.04,p.x,p.y,rD*1.2);
         g.addColorStop(0,  `hsla(${p.hue+18},92%,94%,0.92)`);
@@ -206,26 +206,26 @@ export function UXSection({isDark,C,prefRM}){
       <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}}/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:2,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX Â· UI Â· Product Design</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX \u00b7 UI \u00b7 Product Design</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
               <span className={isDark?"acc-dk":"acc-lt"}>Interfaces que enamoran.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Once aÃ±os diseÃ±ando para millones de personas. MetodologÃ­as de investigaciÃ³n aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
+            Once a\u00f1os dise\u00f1ando para millones de personas. Metodolog\u00edas de investigaci\u00f3n aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX Â· UI</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>MetodologÃ­a â†’</button>
+            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX \u00b7 UI</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Metodolog\u00eda \u2192</button>
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
           <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design Â· LALIGA</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA Â· 20M+ usuarios</div>
-            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research Â· Design System Â· Prototyping</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design \u00b7 LALIGA</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA \u00b7 20M+ usuarios</div>
+            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research \u00b7 Design System \u00b7 Prototyping</div>
           </div>
         </div>
       </div>

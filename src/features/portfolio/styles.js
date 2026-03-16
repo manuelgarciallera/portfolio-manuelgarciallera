@@ -4,13 +4,13 @@ export const PORTFOLIO_CSS = `
 .p ::-webkit-scrollbar{width:4px;}
 .p ::-webkit-scrollbar-thumb{background:rgba(128,128,128,.2);border-radius:2px;}
 
-/* â”€â”€ GRADIENTS â”€â”€ */
-/* Dark bg: white â†’ teal light */
+/* Gradients */
+/* Dark bg: white -> teal light */
 .acc-dk{background:linear-gradient(90deg,#d7efe9 0%,#cbe8e2 18%,#87b5bd 57%,#4b6d85 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
-/* Light bg: near-black â†’ teal dark (readable, professional) */
+/* Light bg: near-black -> teal dark (readable, professional) */
 .acc-lt{background:linear-gradient(90deg,#d3ebe6 0%,#bfe2dc 18%,#7eaeb8 57%,#456985 100%);background-repeat:no-repeat;background-size:100% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
 
-/* â”€â”€ SCROLL REVEALS â”€â”€ */
+/* Scroll reveals */
 .rv{opacity:0;transform:translateY(80px);transition:opacity 1.4s cubic-bezier(.16,1,.3,1),transform 1.4s cubic-bezier(.16,1,.3,1);will-change:transform,opacity;}
 .rv.in{opacity:1;transform:translateY(0);}
 .rv2{opacity:0;transform:translateY(52px);transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1);}
@@ -37,12 +37,12 @@ export const PORTFOLIO_CSS = `
 .ttl-rv[data-reveal-dir="down"]{transform:translate3d(0,42px,0) scale(.988);}
 .ttl-rv.in{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0);}
 
-/* â”€â”€ NAVBAR â€” exacto Apple â”€â”€ */
+/* Navbar: Apple-like behavior */
 .nl{
   text-decoration:none;font-size:13.5px;font-weight:400;letter-spacing:-.01em;
   display:flex;align-items:center;height:100%;position:relative;
   padding:0;margin-right:24px;cursor:pointer;
-  /* Hover rÃ¡pido */
+  /* Quick hover */
   transition:color .1s ease;
 }
 .nl .nl-bar{
@@ -56,12 +56,12 @@ export const PORTFOLIO_CSS = `
 .nl-dk.active{color:#fff!important;font-weight:600;}
 .nl-dk:not(.active):hover{color:rgba(255,255,255,.85)!important;}
 
-/* Light mode nav â€” FIXED: active = dark, hover = dark blue */
+/* Light mode nav: active = dark, hover = dark blue */
 .nl-lt{color:#6e6e73;}
 .nl-lt.active{color:#1d1d1f!important;font-weight:600;}
 .nl-lt:not(.active):hover{color:#0d2a4a!important;}
 
-/* â”€â”€ BUTTONS â€” cÃ¡psulas limpias â”€â”€ */
+/* Buttons: clean pills */
 .btn-blue{
   background:#0071e3;color:#fff;border:none;padding:13px 28px;border-radius:980px;
   font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:-.015em;
@@ -84,7 +84,7 @@ export const PORTFOLIO_CSS = `
 }
 .btn-lt:hover{background:#d2d2d7;transform:translateY(-2px);}
 
-/* Ghost buttons â€” visibles en cualquier fondo */
+/* Ghost buttons: visible on any background */
 .btn-ghost-dk{
   background:transparent;color:#f5f5f7;
   border:1.5px solid rgba(255,255,255,.32);
@@ -103,7 +103,7 @@ export const PORTFOLIO_CSS = `
 }
 .btn-ghost-lt:hover{border-color:rgba(0,0,0,.45);background:rgba(0,0,0,.05);transform:translateY(-2px);}
 
-/* Social buttons â€” always visible pill with icon */
+/* Social buttons: always visible pill with icon */
 .btn-social{
   display:inline-flex;align-items:center;gap:8px;
   background:rgba(255,255,255,.1);color:#f5f5f7;
@@ -119,7 +119,7 @@ export const PORTFOLIO_CSS = `
 }
 .btn-social-lt:hover{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.35);}
 
-/* â”€â”€ TABS â”€â”€ */
+/* Tabs */
 .tab-row{display:flex;border-bottom:1.5px solid rgba(255,255,255,.08);}
 .tab-row-lt{border-bottom-color:rgba(0,0,0,.1);}
 .tab-btn{background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:14px;
@@ -130,13 +130,13 @@ export const PORTFOLIO_CSS = `
 .tab-lt-a{color:#1d1d1f!important;font-weight:500;}
 .tab-lt-a::after{transform:scaleX(1)!important;background:#1d1d1f!important;}
 
-/* â”€â”€ CARDS â”€â”€ */
+/* Cards */
 .card-dk{background:#1c1c1e;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:transform .55s cubic-bezier(.16,1,.3,1),box-shadow .55s;}
 .card-dk:hover{transform:translateY(-10px);box-shadow:0 34px 68px rgba(0,0,0,.6);}
 .card-lt{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);cursor:pointer;transition:transform .55s cubic-bezier(.16,1,.3,1),box-shadow .55s;}
 .card-lt:hover{transform:translateY(-10px);box-shadow:0 28px 56px rgba(0,0,0,.13),0 0 0 1px rgba(0,0,0,.04);}
 
-/* â”€â”€ COMPARISON â”€â”€ */
+/* Comparison */
 .comp-knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 18px rgba(0,0,0,.38);}
 
 .sec-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}

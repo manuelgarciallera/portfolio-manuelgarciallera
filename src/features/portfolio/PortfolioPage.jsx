@@ -17,15 +17,15 @@ import { FullStackSection } from "./sections/FullStackSection";
 import { DeviceSection } from "./sections/DeviceSection";
 import { ComparisonSection } from "./sections/ComparisonSection";
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// -------------------------------------------------------------------------------
 // SAVED FOR INDIVIDUAL SECTION PAGES (not rendered on home):
 // - SectionUXUI effect: fluid particles (organic human-feel network)
 // - SectionFullStack effect: constellation with vertex connections
 // These effects ARE rendered here inside SectionBlock components on home,
 // but the full individual pages will be built separately.
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// -------------------------------------------------------------------------------
 
-// â”€â”€â”€ SPHERE SHADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Sphere Shader
 const SV=`uniform float uTime;varying vec3 vN;varying vec3 vP;varying float vNoise;
 vec3 m289(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 m289(vec4 x){return x-floor(x*(1./289.))*289.;}
 vec4 perm(vec4 x){return m289(((x*34.)+1.)*x);}vec4 tiSq(vec4 r){return 1.79284291-.85373472*r;}
@@ -51,7 +51,7 @@ float ir=sin(vP.y*4.+vP.x*2.+uTime*.4)*.5+.5;col=mix(col,vec3(.18,.08,.32),ir*.1
 col+=fr*hi*.55+fr*fr*vec3(.38,.72,.84)*.22+vNoise*.04*t;
 gl_FragColor=vec4(clamp(col,0.,1.),.88+fr*.05);}`;
 
-// â”€â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Main
 export default function PortfolioPage(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
@@ -62,9 +62,12 @@ export default function PortfolioPage(){
   const scrollDirRef=useRef("down");
   const lastScrollTopRef=useRef(0);
   const isDark=theme==="dark";
-  const prefRM=useRef(typeof window!=="undefined"&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);
+  const prefRM=useRef(false);
 
   useEffect(()=>{
+    if(typeof window!=="undefined"){
+      prefRM.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
     const s=document.createElement("style");
     s.textContent=PORTFOLIO_CSS;
     document.head.appendChild(s);
@@ -191,12 +194,12 @@ export default function PortfolioPage(){
     statBg:"#fff",divider:"rgba(0,0,0,0.07)",
   };
 
-  const NAVLINKS=["Trabajo","3D","Sobre mÃ­","Contacto"];
+  const NAVLINKS=["Trabajo","3D","Sobre m\u00ed","Contacto"];
 
   return(
     <div ref={wrapRef} className="p" style={{height:"100vh",overflowY:"scroll",overflowX:"hidden",background:C.bg,color:C.text,transition:"background .5s,color .35s",scrollbarWidth:"thin",...rootVars}}>
 
-      {/* â”€â”€ NAVBAR â”€â”€ */}
+      {/* Navbar */}
       <nav style={{
         position:"sticky",top:0,zIndex:200,height:52,
         display:"flex",alignItems:"stretch",justifyContent:"space-between",
@@ -208,7 +211,7 @@ export default function PortfolioPage(){
         transition:"background .25s,border-color .25s",
       }}>
         <div style={{display:"flex",alignItems:"center"}}>
-          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-.04em",color:isDark?"#f5f5f7":"#1d1d1f"}}>Manuel GarcÃ­a Llera</span>
+          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-.04em",color:isDark?"#f5f5f7":"#1d1d1f"}}>Manuel Garc\u00eda Llera</span>
         </div>
 
         <div className="hide-m" style={{display:"flex",alignItems:"stretch",position:"absolute",left:"50%",transform:"translateX(-50%)",height:"100%"}}>
@@ -229,30 +232,30 @@ export default function PortfolioPage(){
           <button onClick={()=>setTheme(t=>t==="dark"?"light":"dark")}
             className={isDark?"btn-dk":"btn-lt"}
             style={{fontSize:12.5,padding:"6px 14px"}}>
-            {isDark?"â˜€ï¸ Claro":"ðŸŒ™ Oscuro"}
+            {isDark?"\u2600\ufe0f Claro":"\ud83c\udf19 Oscuro"}
           </button>
         </div>
       </nav>
 
-      {/* â”€â”€ HERO â”€â”€ */}
+      {/* Hero */}
       <section style={{height:"var(--hero-full-h,100dvh)",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
         <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
         <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 var(--hero-side-pad,24px)",maxWidth:980,width:"100%"}}>
           <p style={{fontSize:13.5,color:"rgba(255,255,255,.62)",letterSpacing:".015em",marginBottom:20,fontWeight:400}}>
-            Portfolio Â· Manuel GarcÃ­a Llera
+            Portfolio \u00b7 Manuel Garc\u00eda Llera
           </p>
           <h1 style={{fontSize:"clamp(50px,8.5vw,98px)",fontWeight:700,lineHeight:1.03,letterSpacing:"-.048em",marginBottom:6}}>
-            <span style={{display:"block",color:"#fff"}}>DiseÃ±o que</span>
-            <span style={{display:"block",color:"#fff"}}>piensa en <span className="acc-dk">cÃ³digo.</span></span>
+            <span style={{display:"block",color:"#fff"}}>Dise\u00f1o que</span>
+            <span style={{display:"block",color:"#fff"}}>piensa en <span className="acc-dk">c\u00f3digo.</span></span>
           </h1>
           <p style={{fontSize:"clamp(17px,1.9vw,20px)",color:"rgba(255,255,255,.7)",lineHeight:1.58,maxWidth:500,margin:"28px auto 44px",fontWeight:400,letterSpacing:"-.015em"}}>
-            Visual Design Manager en LALIGA.<br/>UX, producto, 3D arquitectÃ³nico y full stack.
+            Visual Design Manager en LALIGA.<br/>UX, producto, 3D arquitect\u00f3nico y full stack.
           </p>
           <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
             <button className="btn-blue">Ver proyectos</button>
-            <button className="btn-ghost-dk">MÃ¡s sobre mÃ­</button>
+            <button className="btn-ghost-dk">M\u00e1s sobre m\u00ed</button>
           </div>
         </div>
 
@@ -263,48 +266,48 @@ export default function PortfolioPage(){
         </div>
       </section>
 
-      {/* â”€â”€ FEATURED â”€â”€ */}
+      {/* Featured */}
       <HeroGallerySection isDark={isDark} prefRM={prefRM}/> 
       <CloseLookSection isDark={isDark} prefRM={prefRM} alignLeft={closeLookAlignLeft}/>
 
       <FeaturedSection isDark={isDark} C={C}/>
 
-      {/* â”€â”€ SECTION BLOCK: 3D ARQUITECTURA â”€â”€ */}
+      {/* Section: 3D Arquitectura */}
       <ArchSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ MINI PROJECTS â€” visual separator â”€â”€ */}
+      {/* Mini projects: visual separator */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[0],PROJECTS[1],PROJECTS[2]]}/>
 
-      {/* â”€â”€ SECTION BLOCK: UX / PRODUCT DESIGN â”€â”€ */}
+      {/* Section: UX / Product design */}
       <UXSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ MINI PROJECTS â€” separator â”€â”€ */}
+      {/* Mini projects: separator */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[3],PROJECTS[0],PROJECTS[1]]} alt/>
 
-      {/* â”€â”€ SECTION BLOCK: FULL STACK â”€â”€ */}
+      {/* Section: Full stack */}
       <FullStackSection isDark={isDark} C={C} prefRM={prefRM}/>
 
-      {/* â”€â”€ DEVICE â”€â”€ */}
+      {/* Device */}
       <DeviceSection isDark={isDark} C={C} wrapRef={wrapRef} prefRM={prefRM}/>
 
-      {/* â”€â”€ COMPARISON â”€â”€ */}
+      {/* Comparison */}
       <ComparisonSection isDark={isDark} C={C}/>
 
-      {/* â”€â”€ CTA â”€â”€ */}
+      {/* CTA */}
       <section style={{padding:"var(--sec-pad-y-lg,150px) var(--page-pad-x,28px)",textAlign:"center",background:C.ctaBg,transition:"background .5s"}}>
         <div style={{maxWidth:560,margin:"0 auto"}}>
           <p className="rv" style={{fontSize:12,color:C.ctaTextSec,letterSpacing:".1em",textTransform:"uppercase",fontWeight:500,marginBottom:22}}>Contacto</p>
           <h2 className="rv ttl-rv" style={{transitionDelay:".14s",fontSize:"clamp(34px,6vw,68px)",fontWeight:700,letterSpacing:"-.046em",lineHeight:1.02,marginBottom:20,color:C.ctaText}}>
             Construyamos algo{" "}
-            {/* Gradient adapts to background: dark bg (light mode) â†’ white/teal; light bg (dark mode) â†’ dark/teal */}
+            {/* Gradient adapts to background: dark bg (light mode) -> white/teal; light bg (dark mode) -> dark/teal */}
             <span className={isDark?"acc-lt":"acc-dk"}>extraordinario.</span>
           </h2>
           <p className="rv" style={{transitionDelay:".26s",fontSize:17,lineHeight:1.65,marginBottom:44,fontWeight:400,color:C.ctaTextSec}}>
-            Disponible para proyectos de diseÃ±o, producto y 3D arquitectÃ³nico.
+            Disponible para proyectos de dise\u00f1o, producto y 3D arquitect\u00f3nico.
           </p>
           <div className="rv" style={{transitionDelay:".38s",display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",alignItems:"center"}}>
-            <button className="btn-blue" style={{padding:"13px 28px"}}>Contactar â†’</button>
-            {/* CTA bg es INVERTIDO al tema: dark mode = fondo claro, light mode = fondo oscuro */}
+            <button className="btn-blue" style={{padding:"13px 28px"}}>Contactar \u2192</button>
+            {/* CTA background is inverted by theme: dark mode = light surface; light mode = dark surface */}
             <button className={`btn-social${isDark?" btn-social-lt":""}`}>
               <IcoLI c={isDark?"#1d1d1f":"#f5f5f7"}/> LinkedIn
             </button>
@@ -318,5 +321,5 @@ export default function PortfolioPage(){
   );
 }
 
-// â”€â”€â”€ FEATURED â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// End of main portfolio page
 
