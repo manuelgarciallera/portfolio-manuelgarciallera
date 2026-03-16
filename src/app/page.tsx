@@ -1,6 +1,7 @@
-﻿import { PortfolioRuntime } from '@/features/portfolio/PortfolioRuntime'
+﻿import { PortfolioRuntime } from '@/features/portfolio'
 
 export default function Home() {
   return <PortfolioRuntime />
 }
+
 
