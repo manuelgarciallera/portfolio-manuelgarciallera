@@ -31,3 +31,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Security audit (runtime deps)
+        run: npm run audit:security

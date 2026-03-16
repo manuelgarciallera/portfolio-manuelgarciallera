@@ -9,8 +9,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "audit:security": "npm audit --omit=dev",
     "audit:lighthouse:desktop": "node ./scripts/lighthouse-audit.mjs desktop",
     "audit:lighthouse:mobile": "node ./scripts/lighthouse-audit.mjs mobile",
+    "check:all": "npm run lint && npm run typecheck && npm run build && npm run audit:security",
     "sync:preview": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-preview.ps1",
     "ship": "bash ./scripts/ship.sh"
   },
@@ -30,7 +32,8 @@
     "next-auth": "^4.24.13",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "three": "^0.183.2"
+    "three": "^0.183.2",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

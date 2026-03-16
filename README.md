@@ -57,8 +57,10 @@ npm run build
 npm run start
 npm run lint
 npm run typecheck
+npm run audit:security
 npm run audit:lighthouse:desktop
 npm run audit:lighthouse:mobile
+npm run check:all
 ```
 
 `npm run dev:restart` performs a clean local restart:
@@ -94,3 +96,9 @@ NEXT_PUBLIC_WEB_VITALS_ENDPOINT=/api/web-vitals
 - Keep accessibility baseline strong (`skip-link`, focus-visible, reduced motion support).
 - Keep naming and structure consistent by feature.
 - Keep modern integrations optional via feature flags.
+
+## Engineering guides
+- `docs/ARCHITECTURE.md`
+- `docs/PERFORMANCE.md`
+- `docs/QUALITY-GATES.md`
+- `docs/STACK-PLAYBOOK.md`
