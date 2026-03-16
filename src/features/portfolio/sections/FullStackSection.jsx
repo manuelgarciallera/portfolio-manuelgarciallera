@@ -1,10 +1,12 @@
 ﻿import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-export function FullStackSection({isDark,C,prefRM}){
+export function FullStackSection({isDark,C,prefRM,wrapRef}){
   const canvasRef=useRef(null);
+  const sectionRef=useRef(null);
   useEffect(()=>{
     const canvas=canvasRef.current;if(!canvas||prefRM.current)return;
+    let visible=true;
     const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
     const scene=new THREE.Scene();
@@ -21,14 +23,19 @@ export function FullStackSection({isDark,C,prefRM}){
     scene.add(new THREE.LineSegments(lGeo,lMat));
     const resize=()=>{const w=canvas.offsetWidth,h=canvas.offsetHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     const ro=new ResizeObserver(resize);ro.observe(canvas);resize();
+    const io=new IntersectionObserver(
+      e=>{visible=e[0]?.isIntersecting ?? true;},
+      {root:wrapRef?.current ?? null,threshold:.08,rootMargin:"200px 0px 200px 0px"}
+    );
+    if(sectionRef.current)io.observe(sectionRef.current);
     let t=0,raf;
-    const tick=()=>{raf=requestAnimationFrame(tick);t+=.006;pts.rotation.y=t*.08;pts.rotation.x=Math.sin(t*.3)*.06;renderer.render(scene,camera);};tick();
-    return()=>{cancelAnimationFrame(raf);geo.dispose();pMat.dispose();lGeo.dispose();lMat.dispose();renderer.dispose();ro.disconnect();};
-  },[prefRM]);
+    const tick=()=>{raf=requestAnimationFrame(tick);if(!visible)return;t+=.006;pts.rotation.y=t*.08;pts.rotation.x=Math.sin(t*.3)*.06;renderer.render(scene,camera);};tick();
+    return()=>{cancelAnimationFrame(raf);geo.dispose();pMat.dispose();lGeo.dispose();lMat.dispose();renderer.dispose();ro.disconnect();io.disconnect();};
+  },[prefRM,wrapRef]);
   const stack=[["Angular 17+","React 18","TypeScript"],["Node.js","Express","MongoDB"],["MySQL","REST APIs","Three.js"],["UE5","Blender","SketchUp"]];
   return(
-    <section style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
-      <canvas ref={canvasRef} className="sec-canvas"/>
+    <section ref={sectionRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
+      <canvas ref={canvasRef} className="sec-canvas" aria-hidden="true"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"start"}}>
         <div>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>Full Stack \u00b7 Dev</p>

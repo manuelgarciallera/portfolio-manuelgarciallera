@@ -1,5 +1,4 @@
-﻿/* eslint-disable */
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -54,11 +53,11 @@ gl_FragColor=vec4(clamp(col,0.,1.),.88+fr*.05);}`;
 // Main
 export default function PortfolioPage(){
   const [theme,setTheme]=useState("dark");
-  const [scrolled,setScrolled]=useState(false);
   const [activeNav,setActiveNav]=useState("Trabajo");
   const [vp,setVp]=useState({w:1920,h:1080});
   const wrapRef=useRef(null);
   const canvasRef=useRef(null);
+  const heroSectionRef=useRef(null);
   const scrollDirRef=useRef("down");
   const lastScrollTopRef=useRef(0);
   const isDark=theme==="dark";
@@ -82,7 +81,6 @@ export default function PortfolioPage(){
         scrollDirRef.current=top>lastScrollTopRef.current?"down":"up";
         lastScrollTopRef.current=top;
       }
-      setScrolled(top>50);
     };
     el.addEventListener("scroll",fn,{passive:true});return()=>el.removeEventListener("scroll",fn);
   },[]);
@@ -130,6 +128,7 @@ export default function PortfolioPage(){
   // Hero Three.js
   useEffect(()=>{
     const canvas=canvasRef.current;if(!canvas)return;
+    let heroVisible=true;
     const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     const scene=new THREE.Scene();
@@ -160,9 +159,14 @@ export default function PortfolioPage(){
     canvas.addEventListener("mousemove",onM,{passive:true});
     const resize=()=>{const w=canvas.offsetWidth,h=canvas.offsetHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     const ro=new ResizeObserver(resize);ro.observe(canvas);resize();
+    const io=new IntersectionObserver(entries=>{
+      heroVisible=entries[0]?.isIntersecting ?? true;
+    },{root:wrapRef.current,threshold:.05,rootMargin:"240px 0px 240px 0px"});
+    if(heroSectionRef.current)io.observe(heroSectionRef.current);
     let t=0,fr=0;const hist=[];for(let i=0;i<6;i++)hist.push({x:0,y:0,ry:0,rx:0,sc:1});
     let raf;
     const tick=()=>{raf=requestAnimationFrame(tick);t+=.009;fr++;
+      if(!heroVisible)return;
       if(!prefRM.current){
         mouse.x+=(mouse.tx-mouse.x)*.042;mouse.y+=(mouse.ty-mouse.y)*.042;
         sMat.uniforms.uTime.value=t;
@@ -175,7 +179,7 @@ export default function PortfolioPage(){
       }
       renderer.render(scene,camera);
     };tick();
-    return()=>{cancelAnimationFrame(raf);[sGeo,sMat,pGeo,pMat].forEach(x=>x.dispose());rings.forEach(r=>{r.geometry.dispose();r.material.dispose();});trail.forEach(t=>{t.mesh.geometry.dispose();t.mat.dispose();});renderer.dispose();ro.disconnect();canvas.removeEventListener("mousemove",onM);};
+    return()=>{cancelAnimationFrame(raf);[sGeo,sMat,pGeo,pMat].forEach(x=>x.dispose());rings.forEach(r=>{r.geometry.dispose();r.material.dispose();});trail.forEach(t=>{t.mesh.geometry.dispose();t.mat.dispose();});renderer.dispose();ro.disconnect();io.disconnect();canvas.removeEventListener("mousemove",onM);};
   },[]);
 
   const C=isDark?{
@@ -198,9 +202,10 @@ export default function PortfolioPage(){
 
   return(
     <div ref={wrapRef} className="p" style={{height:"100vh",overflowY:"scroll",overflowX:"hidden",background:C.bg,color:C.text,transition:"background .5s,color .35s",scrollbarWidth:"thin",...rootVars}}>
+      <a href="#main-content" className="skip-link">Saltar al contenido principal</a>
 
       {/* Navbar */}
-      <nav style={{
+      <nav aria-label="Navegación principal" style={{
         position:"sticky",top:0,zIndex:200,height:52,
         display:"flex",alignItems:"stretch",justifyContent:"space-between",
         padding:"0 var(--nav-pad-x,24px)",animation:"pfade .4s ease",
@@ -216,11 +221,11 @@ export default function PortfolioPage(){
 
         <div className="hide-m" style={{display:"flex",alignItems:"stretch",position:"absolute",left:"50%",transform:"translateX(-50%)",height:"100%"}}>
           {NAVLINKS.map(l=>(
-            <a key={l} onClick={()=>setActiveNav(l)}
-               className={`nl ${isDark?"nl-dk":"nl-lt"}${activeNav===l?" active":""}`}>
+            <button key={l} type="button" onClick={()=>setActiveNav(l)} aria-current={activeNav===l?"page":undefined}
+               className={`nl ${isDark?"nl-dk":"nl-lt"}${activeNav===l?" active":""}`} style={{background:"transparent",border:"none"}}>
               {l}
               <span className="nl-bar" style={{background:isDark?"#fff":"#1d1d1f"}}/>
-            </a>
+            </button>
           ))}
         </div>
 
@@ -229,7 +234,7 @@ export default function PortfolioPage(){
             <span style={{width:5.5,height:5.5,borderRadius:"50%",background:C.teal,display:"inline-block",animation:"ppulse 2.2s infinite"}}/>
             Disponible
           </div>
-          <button onClick={()=>setTheme(t=>t==="dark"?"light":"dark")}
+          <button onClick={()=>setTheme(t=>t==="dark"?"light":"dark")} aria-pressed={!isDark} aria-label="Cambiar tema de color"
             className={isDark?"btn-dk":"btn-lt"}
             style={{fontSize:12.5,padding:"6px 14px"}}>
             {isDark?"\u2600\ufe0f Claro":"\ud83c\udf19 Oscuro"}
@@ -237,9 +242,10 @@ export default function PortfolioPage(){
         </div>
       </nav>
 
+      <main id="main-content">
       {/* Hero */}
-      <section style={{height:"var(--hero-full-h,100dvh)",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
-        <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
+      <section ref={heroSectionRef} style={{height:"var(--hero-full-h,100dvh)",minHeight:"var(--hero-min-h,620px)",position:"relative",marginTop:-52,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center",background:"#000"}}>
+        <canvas ref={canvasRef} aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
         <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",pointerEvents:"none"}}/>
 
         <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 var(--hero-side-pad,24px)",maxWidth:980,width:"100%"}}>
@@ -267,25 +273,25 @@ export default function PortfolioPage(){
       </section>
 
       {/* Featured */}
-      <HeroGallerySection isDark={isDark} prefRM={prefRM}/> 
+      <HeroGallerySection isDark={isDark} prefRM={prefRM} wrapRef={wrapRef}/> 
       <CloseLookSection isDark={isDark} prefRM={prefRM} alignLeft={closeLookAlignLeft}/>
 
       <FeaturedSection isDark={isDark} C={C}/>
 
       {/* Section: 3D Arquitectura */}
-      <ArchSection isDark={isDark} C={C} prefRM={prefRM}/>
+      <ArchSection isDark={isDark} C={C} prefRM={prefRM} wrapRef={wrapRef}/>
 
       {/* Mini projects: visual separator */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[0],PROJECTS[1],PROJECTS[2]]}/>
 
       {/* Section: UX / Product design */}
-      <UXSection isDark={isDark} C={C} prefRM={prefRM}/>
+      <UXSection isDark={isDark} C={C} prefRM={prefRM} wrapRef={wrapRef}/>
 
       {/* Mini projects: separator */}
       <MiniProjects isDark={isDark} C={C} projects={[PROJECTS[3],PROJECTS[0],PROJECTS[1]]} alt/>
 
       {/* Section: Full stack */}
-      <FullStackSection isDark={isDark} C={C} prefRM={prefRM}/>
+      <FullStackSection isDark={isDark} C={C} prefRM={prefRM} wrapRef={wrapRef}/>
 
       {/* Device */}
       <DeviceSection isDark={isDark} C={C} wrapRef={wrapRef} prefRM={prefRM}/>
@@ -317,9 +323,11 @@ export default function PortfolioPage(){
           </div>
         </div>
       </section>
+      </main>
     </div>
   );
 }
 
 // End of main portfolio page
+
 

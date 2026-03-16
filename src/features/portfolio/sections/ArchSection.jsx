@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { IMGS, FBK } from "../content";
 import { SmartImage as Img } from "../SmartImage";
 
-export function ArchSection({isDark,C,prefRM}){
+export function ArchSection({isDark,C,prefRM,wrapRef}){
   const canvasRef=useRef(null);
   const secRef=useRef(null);
   useEffect(()=>{
@@ -38,19 +38,23 @@ export function ArchSection({isDark,C,prefRM}){
     const lines=new THREE.LineSegments(geo,mat);scene.add(lines);
     const resize=()=>{const w=canvas.offsetWidth,h=canvas.offsetHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
     const ro=new ResizeObserver(resize);ro.observe(canvas);resize();
-    let drawn=0,visible=false,t=0,raf;
-    const io=new IntersectionObserver(e=>{if(e[0].isIntersecting)visible=true;},{threshold:.08});
+    let drawn=0,visible=true,t=0,raf;
+    const io=new IntersectionObserver(
+      e=>{visible=e[0]?.isIntersecting ?? true;},
+      {root:wrapRef?.current ?? null,threshold:.08,rootMargin:"200px 0px 200px 0px"}
+    );
     if(secRef.current)io.observe(secRef.current);
     const tick=()=>{raf=requestAnimationFrame(tick);t+=.007;
+      if(!visible)return;
       if(visible&&drawn<totalPts){drawn=Math.min(totalPts,drawn+8);geo.setDrawRange(0,drawn);}
       lines.rotation.y=t*.1+.3;
       renderer.render(scene,camera);
     };tick();
     return()=>{cancelAnimationFrame(raf);geo.dispose();mat.dispose();renderer.dispose();ro.disconnect();io.disconnect();};
-  },[prefRM]);
+  },[prefRM,wrapRef]);
   return(
     <section ref={secRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#0a0a0b":"#f5f5f7",position:"relative",overflow:"hidden",transition:"background .5s"}}>
-      <canvas ref={canvasRef} className="sec-canvas"/>
+      <canvas ref={canvasRef} className="sec-canvas" aria-hidden="true"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:1,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D \u00b7 Arquitectura</p>
@@ -68,7 +72,7 @@ export function ArchSection({isDark,C,prefRM}){
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
-          <Img src={IMGS[1]} fb={FBK[1]} alt="Estadio 3D" style={{height:280}}/>
+          <Img src={IMGS[1]} fb={FBK[1]} alt="Estadio 3D" sizes="(max-width: 920px) 100vw, 420px" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
             <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Visualizaci\u00f3n arquitect\u00f3nica</div>
             <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Estadio \u00b7 SketchUp \u2192 UE5</div>

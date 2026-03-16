@@ -17,7 +17,7 @@ export function MiniProjects({isDark,C,projects,alt}){
           {projects.map((p,i)=>(
             <div key={`${p.id}-${i}`} className={`rs ${isDark?"card-dk":"card-lt"}`} style={{transitionDelay:`${i*.1}s`}}>
               <div style={{height:160,overflow:"hidden",position:"relative"}}>
-                <Img src={p.src} fb={p.fb} alt={p.title}/>
+                <Img src={p.src} fb={p.fb} alt={p.title} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 320px"/>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.42) 100%)"}}/>
                 <div style={{position:"absolute",top:10,right:10,padding:"2px 8px",borderRadius:980,background:"rgba(0,0,0,.52)",backdropFilter:"blur(6px)",fontSize:10.5,color:"rgba(255,255,255,.7)",fontWeight:500}}>{p.year}</div>
               </div>

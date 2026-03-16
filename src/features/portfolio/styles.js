@@ -3,6 +3,22 @@ export const PORTFOLIO_CSS = `
 .p{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;}
 .p ::-webkit-scrollbar{width:4px;}
 .p ::-webkit-scrollbar-thumb{background:rgba(128,128,128,.2);border-radius:2px;}
+.skip-link{
+  position:absolute;
+  left:16px;
+  top:12px;
+  transform:translateY(-180%);
+  z-index:999;
+  background:#0a84ff;
+  color:#fff;
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:13px;
+  font-weight:600;
+  text-decoration:none;
+  transition:transform .2s ease;
+}
+.skip-link:focus{transform:translateY(0);}
 
 /* Gradients */
 /* Dark bg: white -> teal light */
@@ -42,6 +58,7 @@ export const PORTFOLIO_CSS = `
   text-decoration:none;font-size:13.5px;font-weight:400;letter-spacing:-.01em;
   display:flex;align-items:center;height:100%;position:relative;
   padding:0;margin-right:24px;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
   /* Quick hover */
   transition:color .1s ease;
 }
@@ -118,6 +135,11 @@ export const PORTFOLIO_CSS = `
   border-color:rgba(0,0,0,.2);
 }
 .btn-social-lt:hover{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.35);}
+
+.p button:focus-visible,.p a:focus-visible{
+  outline:2px solid #5ec4c8;
+  outline-offset:2px;
+}
 
 /* Tabs */
 .tab-row{display:flex;border-bottom:1.5px solid rgba(255,255,255,.08);}

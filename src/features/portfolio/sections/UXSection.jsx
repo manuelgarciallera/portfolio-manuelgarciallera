@@ -2,10 +2,12 @@
 import { IMGS, FBK } from "../content";
 import { SmartImage as Img } from "../SmartImage";
 
-export function UXSection({isDark,C,prefRM}){
+export function UXSection({isDark,C,prefRM,wrapRef}){
   const canvasRef=useRef(null);
+  const sectionRef=useRef(null);
   useEffect(()=>{
     const c=canvasRef.current;if(!c||prefRM.current)return;
+    let visible=true;
     const ctx=c.getContext("2d");
     let pts=[];
     const N=380;
@@ -33,10 +35,18 @@ export function UXSection({isDark,C,prefRM}){
     const sec=c.parentElement;
     sec.addEventListener("mousemove",onM,{passive:true});
     sec.addEventListener("mouseleave",onL);
+    const io=new IntersectionObserver(
+      e=>{visible=e[0]?.isIntersecting ?? true;},
+      {root:wrapRef?.current ?? null,threshold:.08,rootMargin:"220px 0px 220px 0px"}
+    );
+    if(sectionRef.current)io.observe(sectionRef.current);
 
     let t=0,raf;
     const draw=()=>{
-      raf=requestAnimationFrame(draw);t+=.00012;      const{width:w,height:h}=c;
+      raf=requestAnimationFrame(draw);
+      if(!visible)return;
+      t+=.00012;
+      const{width:w,height:h}=c;
       ctx.clearRect(0,0,w,h);
 
       pts.forEach((p,i)=>{
@@ -100,14 +110,15 @@ export function UXSection({isDark,C,prefRM}){
       });
     };
     draw();
-    return()=>{cancelAnimationFrame(raf);ro.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
-  },[prefRM]);
+    return()=>{cancelAnimationFrame(raf);ro.disconnect();io.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
+  },[prefRM,wrapRef]);
 
   // Foreground layer: flock that opens/closes and reacts to mouse
   const fgRef=useRef(null);
   const sharedMouse=useRef({x:-999,y:-999});
   useEffect(()=>{
     const c=fgRef.current;if(!c||prefRM.current)return;
+    let visible=true;
     const ctx=c.getContext("2d");
     const N=110;
     let pts=[];
@@ -131,10 +142,17 @@ export function UXSection({isDark,C,prefRM}){
     const onL=()=>{sharedMouse.current.x=-999;sharedMouse.current.y=-999;};
     sec.addEventListener("mousemove",onM,{passive:true});
     sec.addEventListener("mouseleave",onL);
+    const io=new IntersectionObserver(
+      e=>{visible=e[0]?.isIntersecting ?? true;},
+      {root:wrapRef?.current ?? null,threshold:.08,rootMargin:"220px 0px 220px 0px"}
+    );
+    if(sectionRef.current)io.observe(sectionRef.current);
 
     let t=0,raf2;
     const draw=()=>{
-      raf2=requestAnimationFrame(draw);t+=.0006;
+      raf2=requestAnimationFrame(draw);
+      if(!visible)return;
+      t+=.0006;
       const{width:w,height:h}=c;
       ctx.clearRect(0,0,w,h);
       const mouse=sharedMouse.current;
@@ -197,13 +215,13 @@ export function UXSection({isDark,C,prefRM}){
       });
     };
     draw();
-    return()=>{cancelAnimationFrame(raf2);ro.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
-  },[prefRM]);
+    return()=>{cancelAnimationFrame(raf2);ro.disconnect();io.disconnect();sec.removeEventListener("mousemove",onM);sec.removeEventListener("mouseleave",onL);};
+  },[prefRM,wrapRef]);
 
   return(
-    <section style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#000":"#fff",position:"relative",overflow:"hidden",transition:"background .5s"}}>
-      <canvas ref={canvasRef} className="sec-canvas"/>
-      <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}}/>
+    <section ref={sectionRef} style={{padding:"var(--sec-pad-y,130px) var(--page-pad-x,28px)",background:isDark?"#000":"#fff",position:"relative",overflow:"hidden",transition:"background .5s"}}>
+      <canvas ref={canvasRef} className="sec-canvas" aria-hidden="true"/>
+      <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}} aria-hidden="true"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:2,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX \u00b7 UI \u00b7 Product Design</p>
@@ -221,7 +239,7 @@ export function UXSection({isDark,C,prefRM}){
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
-          <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" style={{height:280}}/>
+          <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" sizes="(max-width: 920px) 100vw, 420px" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
             <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design \u00b7 LALIGA</div>
             <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA \u00b7 20M+ usuarios</div>

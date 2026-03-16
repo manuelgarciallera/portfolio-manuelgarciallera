@@ -31,7 +31,7 @@ export function CloseLookSection({ isDark, prefRM, alignLeft = 0 }){
   },[]);
 
   useEffect(()=>{
-    CLOSE_LOOK_ITEMS.forEach(({src})=>{
+    CLOSE_LOOK_ITEMS.slice(0,2).forEach(({src})=>{
       const img=new Image();
       img.decoding="async";
       img.src=src;
@@ -130,7 +130,7 @@ export function CloseLookSection({ isDark, prefRM, alignLeft = 0 }){
                     transform:"translateZ(0)",
                     backfaceVisibility:"hidden",
                   }}>
-                  <Img src={mediaItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={mediaItem.label} loading="eager" fetchPriority="high" style={{transform:"scale(1.02)"}}/>
+                  <Img src={mediaItem.src} fb="linear-gradient(135deg,#101821,#1b293f)" alt={mediaItem.label} loading="eager" fetchPriority="high" sizes="(max-width: 980px) 100vw, 1420px" style={{transform:"scale(1.02)"}}/>
                 </motion.div>
               </AnimatePresence>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.05) 46%,rgba(0,0,0,.42) 100%)"}}/>

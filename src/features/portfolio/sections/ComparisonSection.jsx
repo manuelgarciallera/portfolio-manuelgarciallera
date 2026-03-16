@@ -20,10 +20,10 @@ export function ComparisonSection({isDark,C}){
           <p className="rv2" style={{transitionDelay:".16s",fontSize:16,color:C.textSec,maxWidth:460,margin:"0 auto",lineHeight:1.6}}>Arrastra para comparar el modelo 3D con el render final en UE5.</p>
         </div>
         <div ref={wRef} className="rs" style={{position:"relative",height:"clamp(260px,44vw,480px)",borderRadius:20,overflow:"hidden",cursor:"ew-resize",userSelect:"none",border:`1px solid ${C.divider}`,boxShadow:isDark?"0 24px 64px rgba(0,0,0,.5)":"0 24px 64px rgba(0,0,0,.09)"}} onMouseDown={onDown} onTouchStart={onDown}>
-          <div style={{position:"absolute",inset:0}}><Img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1000&q=80" fb="linear-gradient(135deg,#0a1a0a,#1a3520)" alt="UE5 render"/>
+          <div style={{position:"absolute",inset:0}}><Img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1000&q=80" fb="linear-gradient(135deg,#0a1a0a,#1a3520)" alt="UE5 render" sizes="(max-width: 980px) 100vw, 980px"/>
             <div style={{position:"absolute",top:14,right:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"#5ec4c8",fontWeight:600}}>UE5 \u2192</div></div>
           <div style={{position:"absolute",inset:0,clipPath:`inset(0 ${100-pos}% 0 0)`}}>
-            <Img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1000&q=80" fb="linear-gradient(135deg,#0a0a14,#14143a)" alt="SketchUp"/>
+            <Img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1000&q=80" fb="linear-gradient(135deg,#0a0a14,#14143a)" alt="SketchUp" sizes="(max-width: 980px) 100vw, 980px"/>
             <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(rgba(94,196,200,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(94,196,200,.07) 1px,transparent 1px)`,backgroundSize:"38px 38px",mixBlendMode:"screen"}}/>
             <div style={{position:"absolute",top:14,left:14,padding:"4px 12px",borderRadius:980,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",fontSize:11,color:"rgba(255,255,255,.6)",fontWeight:600}}>\u2190 SketchUp</div>
           </div>

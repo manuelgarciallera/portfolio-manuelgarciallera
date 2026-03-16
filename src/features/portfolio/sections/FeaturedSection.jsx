@@ -26,7 +26,7 @@ export function FeaturedSection({isDark,C}){
       </div>
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 var(--page-pad-x,28px)"}}>
         <div style={{borderRadius:"20px 20px 0 0",overflow:"hidden",position:"relative",height:"clamp(320px,52vw,600px)"}}>
-          <div ref={imgRef} style={{width:"100%",height:"100%",transition:"none"}}><Img src={cur.src} fb={cur.fb} alt={cur.label}/></div>
+          <div ref={imgRef} style={{width:"100%",height:"100%",transition:"none"}}><Img src={cur.src} fb={cur.fb} alt={cur.label} sizes="(max-width: 768px) 100vw, 1200px"/></div>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.04) 55%,transparent 100%)"}}/>
           <div style={{position:"absolute",bottom:34,left:38,right:38}}>
             <div style={{fontSize:10.5,color:"rgba(255,255,255,.44)",letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:10}}>{cur.cat}</div>

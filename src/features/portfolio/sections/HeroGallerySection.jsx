@@ -4,13 +4,15 @@ import { HERO_GALLERY, HERO_GALLERY_AUTOPLAY_MS } from "../content";
 import { IcoPause, IcoPlay, IcoReplay } from "../icons";
 import { SmartImage as Img } from "../SmartImage";
 
-export function HeroGallerySection({ isDark, prefRM }){
+export function HeroGallerySection({ isDark, prefRM, wrapRef }){
   const [active,setActive]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [ended,setEnded]=useState(false);
+  const [isVisible,setIsVisible]=useState(true);
   const [elapsedMs,setElapsedMs]=useState(0);
   const [playHover,setPlayHover]=useState(false);
   const frameRef=useRef(null);
+  const sectionRef=useRef(null);
   const advanceTimerRef=useRef(null);
   const startedAtRef=useRef(0);
   const [w,setW]=useState(1200);
@@ -25,11 +27,22 @@ export function HeroGallerySection({ isDark, prefRM }){
   },[]);
 
   useEffect(()=>{
+    const section=sectionRef.current;
+    if(!section)return;
+    const io=new IntersectionObserver(
+      entries=>setIsVisible(entries[0]?.isIntersecting ?? true),
+      {root:wrapRef?.current ?? null,threshold:.08,rootMargin:"180px 0px 180px 0px"}
+    );
+    io.observe(section);
+    return()=>io.disconnect();
+  },[wrapRef]);
+
+  useEffect(()=>{
     if(advanceTimerRef.current){
       clearTimeout(advanceTimerRef.current);
       advanceTimerRef.current=null;
     }
-    if(!playing||prefRM.current||ended)return;
+    if(!playing||prefRM.current||ended||!isVisible)return;
     startedAtRef.current=performance.now();
     const remaining=Math.max(60,HERO_GALLERY_AUTOPLAY_MS-elapsedMs);
     advanceTimerRef.current=setTimeout(()=>{
@@ -48,7 +61,7 @@ export function HeroGallerySection({ isDark, prefRM }){
         advanceTimerRef.current=null;
       }
     };
-  },[playing,prefRM,ended,active,n,elapsedMs]);
+  },[playing,prefRM,ended,active,n,elapsedMs,isVisible]);
 
   useEffect(()=>()=>{if(advanceTimerRef.current)clearTimeout(advanceTimerRef.current);},[]);
 
@@ -90,7 +103,7 @@ export function HeroGallerySection({ isDark, prefRM }){
   const leadX=Math.max(0,(w-slideW)/2);
 
   return(
-    <section style={{padding:"var(--hero-gallery-pad-top,132px) 0 var(--hero-gallery-pad-bottom,0px)",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
+    <section ref={sectionRef} style={{padding:"var(--hero-gallery-pad-top,132px) 0 var(--hero-gallery-pad-bottom,0px)",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
         <h2 className={`ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 var(--hero-gallery-title-mb,42px) ${leadX}px`}}>Lo principal.</h2>
       </div>
@@ -126,7 +139,7 @@ export function HeroGallerySection({ isDark, prefRM }){
                   </div>
                 ):(
                   <div style={{position:"absolute",inset:0}}>
-                    <Img src={item.src} fb="linear-gradient(135deg,#0d1525,#1a2740)" alt={item.title} style={{transform:active===i&&item.zoom?"scale(1.08)":"scale(1)",transition:"transform 8s cubic-bezier(.22,.61,.36,1)"}}/>
+                    <Img src={item.src} fb="linear-gradient(135deg,#0d1525,#1a2740)" alt={item.title} sizes="(max-width: 768px) 95vw, (max-width: 1440px) 68vw, 1280px" style={{transform:active===i&&item.zoom?"scale(1.08)":"scale(1)",transition:"transform 8s cubic-bezier(.22,.61,.36,1)"}}/>
                     <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.22) 100%)"}}/>
                   </div>
                 )}
