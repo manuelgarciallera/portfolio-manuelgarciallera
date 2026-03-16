@@ -15,6 +15,8 @@ It turns the "list of good repositories" into concrete engineering decisions.
 - `GSAP` for timeline precision and scroll-driven sequences.
 - `framer-motion` for component-level transitions and mount/unmount choreography.
 - Rule: use GSAP for long cinematic timelines, framer-motion for local UI transitions.
+- Motion tokens and defaults are centralized in `src/lib/motion/tokens.ts`.
+- Reduced-motion preference is centralized in `src/lib/motion/useReducedMotionRef.ts`.
 
 ## 3D layer
 

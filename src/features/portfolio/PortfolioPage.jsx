@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PROJECTS } from "./content";
 import { IcoGH, IcoLI } from "./icons";
@@ -9,6 +9,8 @@ import { PortfolioNavigation } from "./components/PortfolioNavigation";
 import { usePortfolioReveal } from "./hooks/usePortfolioReveal";
 import { usePortfolioViewport } from "./hooks/usePortfolioViewport";
 import { useLenisScroller } from "./hooks/useLenisScroller";
+import { useReducedMotionRef } from "@/lib/motion/useReducedMotionRef";
+import { PROFILE_LINKS, SITE_EMAIL } from "@/lib/site-config";
 import { ArchSection } from "./sections/ArchSection";
 import { CloseLookSection } from "./sections/CloseLookSection";
 import { ComparisonSection } from "./sections/ComparisonSection";
@@ -30,31 +32,43 @@ export default function PortfolioPage() {
   const [activeNav, setActiveNav] = useState("Trabajo");
   const wrapRef = useRef(null);
   const heroSectionRef = useRef(null);
-  const prefRM = useRef(false);
+  const prefRM = useReducedMotionRef();
   const lenisEnabled = process.env.NEXT_PUBLIC_ENABLE_LENIS === "true";
 
   const vp = usePortfolioViewport();
-  usePortfolioReveal(wrapRef);
+  usePortfolioReveal(wrapRef, prefRM);
   useLenisScroller({ wrapRef, enabled: lenisEnabled });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { prefRM.current = media.matches; };
-    sync();
-    if (media.addEventListener) {
-      media.addEventListener("change", sync);
-      return () => media.removeEventListener("change", sync);
-    }
-    media.addListener(sync);
-    return () => media.removeListener(sync);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  const handleNavSelect = useCallback((link) => {
+    setActiveNav(link);
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
+    const sectionMap = {
+      Trabajo: "work-section",
+      "3D": "section-3d",
+      "Sobre m\u00ed": "section-about",
+      Contacto: "section-contact",
+    };
+
+    const targetId = sectionMap[link];
+    if (!targetId) return;
+
+    const target = wrap.querySelector(`#${targetId}`);
+    if (!target) return;
+
+    target.scrollIntoView({
+      behavior: prefRM.current ? "auto" : "smooth",
+      block: "start",
+      inline: "nearest",
+    });
+  }, [prefRM]);
 
   const { rootVars, closeLookAlignLeft } = useMemo(() => computePortfolioLayout(vp), [vp]);
 
@@ -80,7 +94,7 @@ export default function PortfolioPage() {
       <PortfolioNavigation
         isDark={isDark}
         activeNav={activeNav}
-        onNavSelect={setActiveNav}
+        onNavSelect={handleNavSelect}
         onThemeToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
         colors={colors}
       />
@@ -88,11 +102,19 @@ export default function PortfolioPage() {
       <main id="main-content">
         <HeroSection wrapRef={wrapRef} heroSectionRef={heroSectionRef} prefRM={prefRM} />
 
-        <HeroGallerySection isDark={isDark} prefRM={prefRM} wrapRef={wrapRef} />
-        <CloseLookSection isDark={isDark} prefRM={prefRM} alignLeft={closeLookAlignLeft} />
+        <div id="work-section">
+          <HeroGallerySection isDark={isDark} prefRM={prefRM} wrapRef={wrapRef} />
+        </div>
+
+        <div id="section-about">
+          <CloseLookSection isDark={isDark} prefRM={prefRM} alignLeft={closeLookAlignLeft} />
+        </div>
 
         <FeaturedSection isDark={isDark} C={colors} />
-        <ArchSection isDark={isDark} C={colors} prefRM={prefRM} wrapRef={wrapRef} />
+
+        <div id="section-3d">
+          <ArchSection isDark={isDark} C={colors} prefRM={prefRM} wrapRef={wrapRef} />
+        </div>
 
         <MiniProjectsSection isDark={isDark} C={colors} projects={[PROJECTS[0], PROJECTS[1], PROJECTS[2]]} />
 
@@ -105,6 +127,7 @@ export default function PortfolioPage() {
         <ComparisonSection isDark={isDark} C={colors} />
 
         <section
+          id="section-contact"
           style={{
             padding: "var(--sec-pad-y-lg,150px) var(--page-pad-x,28px)",
             textAlign: "center",
@@ -159,13 +182,25 @@ export default function PortfolioPage() {
                 flexWrap: "wrap",
                 alignItems: "center",
               }}>
-              <button className="btn-blue" style={{ padding: "13px 28px" }}>Contactar \u2192</button>
-              <button className={`btn-social${isDark ? " btn-social-lt" : ""}`}>
+              <a className="btn-blue" style={{ padding: "13px 28px", textDecoration: "none" }} href={`mailto:${SITE_EMAIL}`}>
+                Contactar \u2192
+              </a>
+              <a
+                className={`btn-social${isDark ? " btn-social-lt" : ""}`}
+                style={{ textDecoration: "none" }}
+                href={PROFILE_LINKS.linkedin}
+                target="_blank"
+                rel="noreferrer noopener">
                 <IcoLI c={isDark ? "#1d1d1f" : "#f5f5f7"} /> LinkedIn
-              </button>
-              <button className={`btn-social${isDark ? " btn-social-lt" : ""}`}>
+              </a>
+              <a
+                className={`btn-social${isDark ? " btn-social-lt" : ""}`}
+                style={{ textDecoration: "none" }}
+                href={PROFILE_LINKS.github}
+                target="_blank"
+                rel="noreferrer noopener">
                 <IcoGH c={isDark ? "#1d1d1f" : "#f5f5f7"} /> GitHub
-              </button>
+              </a>
             </div>
           </div>
         </section>

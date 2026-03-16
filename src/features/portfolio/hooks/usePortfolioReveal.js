@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function usePortfolioReveal(wrapRef) {
+export function usePortfolioReveal(wrapRef, reducedMotionRef) {
   const scrollDirRef = useRef("down");
   const lastScrollTopRef = useRef(0);
 
@@ -23,6 +23,12 @@ export function usePortfolioReveal(wrapRef) {
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    if (reducedMotionRef?.current) {
+      el
+        .querySelectorAll(".rv,.rv2,.rs,.rl,.rr,.clip-rv,.ttl-rv")
+        .forEach((node) => node.classList.add("in"));
+      return;
+    }
 
     const revealObserver = new IntersectionObserver(
       (entries) => entries.forEach((entry) => {
@@ -41,11 +47,12 @@ export function usePortfolioReveal(wrapRef) {
       window.clearTimeout(timer);
       revealObserver.disconnect();
     };
-  }, [wrapRef]);
+  }, [reducedMotionRef, wrapRef]);
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    if (reducedMotionRef?.current) return;
 
     const titleNodes = el.querySelectorAll(".ttl-rv");
     titleNodes.forEach((node) => node.setAttribute("data-reveal-dir", "down"));
@@ -66,5 +73,5 @@ export function usePortfolioReveal(wrapRef) {
 
     titleNodes.forEach((node) => titleObserver.observe(node));
     return () => titleObserver.disconnect();
-  }, [wrapRef]);
+  }, [reducedMotionRef, wrapRef]);
 }

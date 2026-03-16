@@ -3,8 +3,13 @@
 ## Runtime quality
 - Core Web Vitals are captured in the browser with `web-vitals`.
 - Metrics are sent to `POST /api/web-vitals`.
-- Structured data is embedded as JSON-LD (`WebSite` and `Person`).
-- Robots and sitemap routes are enabled (`/robots.txt`, `/sitemap.xml`).
+- Structured data is embedded as JSON-LD (`WebSite`, `Person`, `ProfilePage`).
+- Technical metadata routes are enabled:
+  - `/robots.txt`
+  - `/sitemap.xml`
+  - `/manifest.webmanifest`
+  - `/humans.txt`
+  - `/.well-known/security.txt`
 
 ## SEO baseline
 - Canonical URL configured in metadata.
@@ -15,6 +20,7 @@
 - Semantic landmarks and keyboard visible focus.
 - Reduced-motion mode supported across reveal animations.
 - Decorative canvases marked as `aria-hidden`.
+- External links use safe rel attributes (`noopener`, `noreferrer`) when opening in new tab.
 
 ## Performance audit workflow
 1. Start app:

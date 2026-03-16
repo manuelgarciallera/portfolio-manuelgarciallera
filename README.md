@@ -21,7 +21,10 @@ src/
     api/web-vitals/route.ts
     robots.ts
     sitemap.ts
+    manifest.ts
     opengraph-image.tsx
+    humans.txt/route.ts
+    .well-known/security.txt/route.ts
   components/
     ErrorBoundary.tsx
     analytics/WebVitalsReporter.tsx
@@ -71,6 +74,14 @@ npm run check:all
 ## Environment (`.env.local`)
 ```bash
 NEXT_PUBLIC_SITE_URL=https://manuelgarciallera.com
+NEXT_PUBLIC_CONTACT_EMAIL=hola@manuelgarciallera.com
+NEXT_PUBLIC_PROFILE_LINKEDIN=https://www.linkedin.com/in/manuelgarciallera/
+NEXT_PUBLIC_PROFILE_GITHUB=https://github.com/manuelgarciallera
+NEXT_PUBLIC_PROFILE_MEDIUM=
+NEXT_PUBLIC_PROFILE_ORCID=
+NEXT_PUBLIC_PROFILE_BEHANCE=
+NEXT_PUBLIC_PROFILE_DRIBBBLE=
+NEXT_PUBLIC_TWITTER_HANDLE=
 NEXT_PUBLIC_SPLINE_SCENE_URL=https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode
 NEXT_PUBLIC_ENABLE_SPLINE=false
 NEXT_PUBLIC_ENABLE_LENIS=false
@@ -90,6 +101,13 @@ NEXT_PUBLIC_WEB_VITALS_ENDPOINT=/api/web-vitals
 ## Labs
 - Spline: `/lab/spline`
 - Theatre: `/lab/theatre`
+
+## Technical metadata routes
+- Manifest: `/manifest.webmanifest`
+- Robots: `/robots.txt`
+- Sitemap: `/sitemap.xml`
+- Humans: `/humans.txt`
+- Security TXT: `/.well-known/security.txt`
 
 ## Technical goals
 - Pause heavy 3D animation when sections are offscreen.

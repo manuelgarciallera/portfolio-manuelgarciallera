@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { LENIS_DEFAULTS } from "@/lib/motion/tokens";
 
 export function useLenisScroller({ wrapRef, enabled = false }) {
   useEffect(() => {
@@ -15,13 +16,7 @@ export function useLenisScroller({ wrapRef, enabled = false }) {
       wrapper,
       content,
       autoRaf: false,
-      smoothWheel: true,
-      gestureOrientation: "vertical",
-      wheelMultiplier: 0.95,
-      touchMultiplier: 1.05,
-      duration: 1.0,
-      lerp: 0.09,
-      syncTouch: false,
+      ...LENIS_DEFAULTS,
     });
 
     const onScroll = () => ScrollTrigger.update();

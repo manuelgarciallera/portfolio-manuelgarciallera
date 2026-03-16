@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from "next";
 
 import { WebVitalsReporter } from "@/components/analytics/WebVitalsReporter";
 import {
+  PERSON_LEGAL_NAME,
   SITE_DESCRIPTION,
+  SITE_LANGUAGE,
   SITE_LOCALE,
   SITE_NAME,
   SITE_TITLE,
   SITE_URL,
+  TWITTER_HANDLE,
+  getProfilePageJsonLd,
   getPersonJsonLd,
   getWebsiteJsonLd,
 } from "@/lib/site-config";
@@ -14,6 +18,7 @@ import "@/styles/globals.css";
 
 const websiteJsonLd = JSON.stringify(getWebsiteJsonLd()).replace(/</g, "\\u003c");
 const personJsonLd = JSON.stringify(getPersonJsonLd()).replace(/</g, "\\u003c");
+const profilePageJsonLd = JSON.stringify(getProfilePageJsonLd()).replace(/</g, "\\u003c");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -23,9 +28,13 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: ["UX Design", "UI Design", "Full Stack", "Three.js", "ArchViz", "LALIGA", "React", "Angular"],
-  authors: [{ name: SITE_NAME }],
-  creator: SITE_NAME,
+  authors: [{ name: PERSON_LEGAL_NAME, url: SITE_URL }],
+  creator: PERSON_LEGAL_NAME,
+  publisher: SITE_NAME,
+  category: "Portfolio",
   alternates: { canonical: "/" },
+  manifest: "/manifest.webmanifest",
+  applicationName: SITE_NAME,
   icons: {
     icon: "/favicon.ico",
   },
@@ -47,7 +56,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
+    site: TWITTER_HANDLE ? `@${TWITTER_HANDLE.replace(/^@/, "")}` : undefined,
+    creator: TWITTER_HANDLE ? `@${TWITTER_HANDLE.replace(/^@/, "")}` : undefined,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     images: ["/opengraph-image"],
   },
@@ -69,10 +80,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-theme="dark" suppressHydrationWarning>
+    <html lang={SITE_LANGUAGE} data-theme="dark" suppressHydrationWarning>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
         {/* Evita el flash de tema incorrecto */}
         <script
           dangerouslySetInnerHTML={{

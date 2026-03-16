@@ -9,7 +9,7 @@ export function PortfolioNavigation({
 }) {
   return (
     <nav
-      aria-label="Navegación principal"
+      aria-label="Navegaci\u00f3n principal"
       style={{
         position: "sticky",
         top: 0,
@@ -92,6 +92,7 @@ export function PortfolioNavigation({
         </div>
 
         <button
+          type="button"
           onClick={onThemeToggle}
           aria-pressed={!isDark}
           aria-label="Cambiar tema de color"
@@ -103,3 +104,4 @@ export function PortfolioNavigation({
     </nav>
   );
 }
+

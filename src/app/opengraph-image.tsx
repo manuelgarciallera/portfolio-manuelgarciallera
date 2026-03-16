@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 
+import { PERSON_DISPLAY_NAME, SITE_TITLE } from "@/lib/site-config";
+
 export const size = {
   width: 1200,
   height: 630,
@@ -23,16 +25,16 @@ export default function OpengraphImage() {
           padding: "56px 64px",
           fontFamily: "Inter, system-ui, sans-serif",
         }}>
-        <div style={{ fontSize: 36, opacity: 0.85 }}>Manuel García Llera</div>
+        <div style={{ fontSize: 36, opacity: 0.85 }}>{PERSON_DISPLAY_NAME}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontSize: 76, lineHeight: 1, fontWeight: 800, letterSpacing: "-0.04em" }}>
-            Diseño que piensa en código.
+            {"Dise\u00f1o que piensa en c\u00f3digo."}
           </div>
           <div style={{ fontSize: 32, opacity: 0.86 }}>
-            UX/UI · Product Design · 3D Arquitectónico · Full Stack
+            {"UX/UI - Product Design - 3D Arquitect\u00f3nico - Full Stack"}
           </div>
         </div>
-        <div style={{ fontSize: 26, opacity: 0.8 }}>portfolio profesional · React + Three.js</div>
+        <div style={{ fontSize: 26, opacity: 0.8 }}>{SITE_TITLE}</div>
       </div>
     ),
     size
