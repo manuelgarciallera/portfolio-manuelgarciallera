@@ -4,13 +4,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
-import { PORTFOLIO_CSS } from "./portfolio-preview/styles";
-import { ChR, ChL, IcoLI, IcoGH } from "./portfolio-preview/icons";
-import { IMGS, FBK, PROJECTS } from "./portfolio-preview/data";
-import { computePortfolioLayout } from "./portfolio-preview/layout";
-import { SmartImage as Img } from "./portfolio-preview/SmartImage";
-import { HeroGallerySection } from "./portfolio-preview/sections/HeroGallerySection";
-import { CloseLookSection } from "./portfolio-preview/sections/CloseLookSection";
+import { PORTFOLIO_CSS } from "./styles";
+import { ChR, ChL, IcoLI, IcoGH } from "./icons";
+import { IMGS, FBK, PROJECTS } from "./content";
+import { computePortfolioLayout } from "./layout";
+import { SmartImage as Img } from "./SmartImage";
+import { HeroGallerySection } from "./sections/HeroGallerySection";
+import { CloseLookSection } from "./sections/CloseLookSection";
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SAVED FOR INDIVIDUAL SECTION PAGES (not rendered on home):
@@ -47,7 +47,7 @@ col+=fr*hi*.55+fr*fr*vec3(.38,.72,.84)*.22+vNoise*.04*t;
 gl_FragColor=vec4(clamp(col,0.,1.),.88+fr*.05);}`;
 
 // â”€â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function Portfolio(){
+export default function PortfolioPage(){
   const [theme,setTheme]=useState("dark");
   const [scrolled,setScrolled]=useState(false);
   const [activeNav,setActiveNav]=useState("Trabajo");
@@ -883,5 +883,6 @@ function DeviceSection({isDark,C,wrapRef,prefRM}){
     </section>
   );
 }
+
 
 

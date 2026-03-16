@@ -1,5 +1,6 @@
-﻿import { PreviewRuntime } from '@/components/PreviewRuntime'
+﻿import { PortfolioRuntime } from '@/features/portfolio/PortfolioRuntime'
 
 export default function Home() {
-  return <PreviewRuntime />
+  return <PortfolioRuntime />
 }
+

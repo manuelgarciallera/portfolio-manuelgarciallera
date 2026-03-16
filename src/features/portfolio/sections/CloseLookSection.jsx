@@ -1,7 +1,7 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { CLOSE_LOOK_ITEMS } from "../data";
+import { CLOSE_LOOK_ITEMS } from "../content";
 import { ChD, ChU, IcoClose } from "../icons";
 import { SmartImage as Img } from "../SmartImage";
 import { clampRange } from "../utils";
@@ -310,4 +310,5 @@ export function CloseLookSection({ isDark, prefRM, alignLeft = 0 }){
     </section>
   );
 }
+
 

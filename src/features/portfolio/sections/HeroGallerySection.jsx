@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 
-import { HERO_GALLERY, HERO_GALLERY_AUTOPLAY_MS } from "../data";
+import { HERO_GALLERY, HERO_GALLERY_AUTOPLAY_MS } from "../content";
 import { IcoPause, IcoPlay, IcoReplay } from "../icons";
 import { SmartImage as Img } from "../SmartImage";
 
@@ -184,6 +184,7 @@ export function HeroGallerySection({ isDark, prefRM }){
     </section>
   );
 }
+
 
 
 
