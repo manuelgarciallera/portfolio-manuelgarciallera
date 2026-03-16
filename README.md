@@ -38,11 +38,14 @@ src/
 ## Scripts
 ```bash
 npm run dev
+npm run dev:restart
 npm run build
 npm run start
 npm run lint
 npm run typecheck
 ```
+
+`npm run dev:restart` reinicia limpio el servidor local (mata procesos `next dev` del repo, limpia lock y vuelve a levantar `localhost:3000`).
 
 ## Entorno (`.env.local`)
 ```bash
