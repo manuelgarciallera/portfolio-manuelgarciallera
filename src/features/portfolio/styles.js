@@ -184,6 +184,15 @@ export const PORTFOLIO_CSS = `
 }
 @keyframes nearMediaIn{from{opacity:.2;transform:scale(1.08) rotate(-1.1deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
 @keyframes nearChipPulse{0%{transform:scale(1);}52%{transform:scale(1.055);}100%{transform:scale(1);}}
-@media(prefers-reduced-motion:reduce){.ttl-rv{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;}}
+@media(prefers-reduced-motion:reduce){
+  .rv,.rv2,.rs,.rl,.rr,.clip-rv,.ttl-rv{
+    opacity:1!important;
+    transform:none!important;
+    filter:none!important;
+    clip-path:none!important;
+    transition:none!important;
+    animation:none!important;
+  }
+}
 @media(max-width:700px){.hide-m{display:none!important;}}
 `;
