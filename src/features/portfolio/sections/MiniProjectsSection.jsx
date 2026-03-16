@@ -1,7 +1,7 @@
 ﻿import { ChR } from "../icons";
 import { SmartImage as Img } from "../SmartImage";
 
-export function MiniProjects({isDark,C,projects,alt}){
+export function MiniProjectsSection({isDark,C,projects,alt}){
   return(
     <section style={{padding:"var(--sec-pad-y-sm,72px) var(--page-pad-x,28px)",background:alt?(isDark?"#000":"#fff"):(isDark?"#111114":"#f5f5f7"),transition:"background .5s",borderTop:`1px solid ${C.divider}`,borderBottom:`1px solid ${C.divider}`}}>
       <div style={{maxWidth:980,margin:"0 auto"}}>
