@@ -48,6 +48,7 @@ npm run typecheck
 ```bash
 NEXT_PUBLIC_SPLINE_SCENE_URL=https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode
 NEXT_PUBLIC_ENABLE_SPLINE=false
+NEXT_PUBLIC_ENABLE_LENIS=false
 ```
 
 ## Flujo recomendado
@@ -59,6 +60,9 @@ NEXT_PUBLIC_ENABLE_SPLINE=false
    - `npm run build`
 
 Sandbox Spline disponible en: `/lab/spline`
+
+Smooth scroll Lenis (opcional) en la home:
+- activar `NEXT_PUBLIC_ENABLE_LENIS=true`
 
 ## Objetivos técnicos del proyecto
 - Render 3D pausado fuera de viewport para ahorrar CPU/GPU.

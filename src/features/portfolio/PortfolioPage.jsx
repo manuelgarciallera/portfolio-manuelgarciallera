@@ -8,6 +8,7 @@ import { computePortfolioLayout } from "./layout";
 import { PortfolioNavigation } from "./components/PortfolioNavigation";
 import { usePortfolioReveal } from "./hooks/usePortfolioReveal";
 import { usePortfolioViewport } from "./hooks/usePortfolioViewport";
+import { useLenisScroller } from "./hooks/useLenisScroller";
 import { ArchSection } from "./sections/ArchSection";
 import { CloseLookSection } from "./sections/CloseLookSection";
 import { ComparisonSection } from "./sections/ComparisonSection";
@@ -30,9 +31,11 @@ export default function PortfolioPage() {
   const wrapRef = useRef(null);
   const heroSectionRef = useRef(null);
   const prefRM = useRef(false);
+  const lenisEnabled = process.env.NEXT_PUBLIC_ENABLE_LENIS === "true";
 
   const vp = usePortfolioViewport();
   usePortfolioReveal(wrapRef);
+  useLenisScroller({ wrapRef, enabled: lenisEnabled });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
