@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { IMGS, FBK } from "../content";
 import { SmartImage as Img } from "../SmartImage";
 
@@ -224,26 +224,26 @@ export function UXSection({isDark,C,prefRM,wrapRef}){
       <canvas ref={fgRef} className="sec-canvas" style={{zIndex:1}} aria-hidden="true"/>
       <div style={{maxWidth:980,margin:"0 auto",position:"relative",zIndex:2,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"52px 80px",alignItems:"center"}}>
         <div>
-          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX \u00b7 UI \u00b7 Product Design</p>
+          <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>UX · UI · Product Design</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
             <h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
               <span className={isDark?"acc-dk":"acc-lt"}>Interfaces que enamoran.</span>
             </h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Once a\u00f1os dise\u00f1ando para millones de personas. Metodolog\u00edas de investigaci\u00f3n aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
+            Once años diseñando para millones de personas. Metodologías de investigación aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX \u00b7 UI</button>
-            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Metodolog\u00eda \u2192</button>
+            <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX · UI</button>
+            <button className={`btn-ghost-${isDark?"dk":"lt"}`}>Metodología →</button>
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
           <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" sizes="(max-width: 920px) 100vw, 420px" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design \u00b7 LALIGA</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA \u00b7 20M+ usuarios</div>
-            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research \u00b7 Design System \u00b7 Prototyping</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design · LALIGA</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA · 20M+ usuarios</div>
+            <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research · Design System · Prototyping</div>
           </div>
         </div>
       </div>

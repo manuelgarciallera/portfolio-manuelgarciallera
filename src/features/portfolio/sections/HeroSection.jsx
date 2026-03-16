@@ -42,7 +42,7 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             marginBottom: 20,
             fontWeight: 400,
           }}>
-          Portfolio \u00b7 Manuel Garc\u00eda Llera
+          {"Portfolio \u00B7 Manuel Garc\u00EDa Llera"}
         </p>
         <h1
           style={{
@@ -52,9 +52,10 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             letterSpacing: "-.048em",
             marginBottom: 6,
           }}>
-          <span style={{ display: "block", color: "#fff" }}>Dise\u00f1o que</span>
+          <span style={{ display: "block", color: "#fff" }}>{"Dise\u00F1o que"}</span>
           <span style={{ display: "block", color: "#fff" }}>
-            piensa en <span className="acc-dk">c\u00f3digo.</span>
+            {"piensa en "}
+            <span className="acc-dk">{"c\u00F3digo."}</span>
           </span>
         </h1>
         <p
@@ -67,13 +68,13 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             fontWeight: 400,
             letterSpacing: "-.015em",
           }}>
-          Visual Design Manager en LALIGA.
+          {"Visual Design Manager en LALIGA."}
           <br />
-          UX, producto, 3D arquitect\u00f3nico y full stack.
+          {"UX, producto, 3D arquitect\u00F3nico y full stack."}
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn-blue">Ver proyectos</button>
-          <button className="btn-ghost-dk">M\u00e1s sobre m\u00ed</button>
+          <button className="btn-blue">{"Ver proyectos"}</button>
+          <button className="btn-ghost-dk">{"M\u00E1s sobre m\u00ED"}</button>
         </div>
       </div>
 

@@ -25,7 +25,7 @@ export const HERO_GALLERY = [
   },
   {
     k: "image",
-    title: "App Tel\u00e9fono. Sigue en contacto sin tocar el m\u00f3vil.",
+    title: "App Teléfono. Sigue en contacto sin tocar el móvil.",
     src: "https://images.unsplash.com/photo-1517959105821-eaf2591984f8?w=1600&q=80&auto=format",
   },
   {
@@ -36,40 +36,40 @@ export const HERO_GALLERY = [
   },
   {
     k: "image",
-    title: "Bater\u00eda para jornadas largas. R\u00e1pido cuando lo necesitas.",
+    title: "Batería para jornadas largas. Rápido cuando lo necesitas.",
     src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format",
   },
 ];
 
 export const CLOSE_LOOK_ITEMS = [
   {
-    label: "Dise\u00f1o UX/UI",
-    desc: "Arquitecturas de experiencia y sistemas visuales con foco en claridad, conversi\u00f3n y producto digital.",
+    label: "Diseño UX/UI",
+    desc: "Arquitecturas de experiencia y sistemas visuales con foco en claridad, conversión y producto digital.",
     src: "https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=1500&q=76&auto=format",
   },
   {
-    label: "Dise\u00f1o Arquitect\u00f3nico",
-    desc: "Modelado de espacios, narrativa visual y presentaciones inmersivas para proyectos arquitect\u00f3nicos.",
+    label: "Diseño Arquitectónico",
+    desc: "Modelado de espacios, narrativa visual y presentaciones inmersivas para proyectos arquitectónicos.",
     src: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1500&q=76&auto=format",
   },
   {
-    label: "Dise\u00f1o 3D",
-    desc: "Pipelines de 3D realtime, optimizaci\u00f3n de escenas y visualizaci\u00f3n con motion controlado.",
+    label: "Diseño 3D",
+    desc: "Pipelines de 3D realtime, optimización de escenas y visualización con motion controlado.",
     src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1500&q=76&auto=format",
   },
   {
     label: "Research",
-    desc: "Entrevistas, pruebas y s\u00edntesis para transformar se\u00f1ales de usuario en decisiones de producto.",
+    desc: "Entrevistas, pruebas y síntesis para transformar señales de usuario en decisiones de producto.",
     src: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1500&q=76&auto=format",
   },
   {
-    label: "Investigaci\u00f3n docente",
-    desc: "Dise\u00f1o de materiales, experimentaci\u00f3n y aprendizaje aplicado a tecnolog\u00eda, UX y desarrollo.",
+    label: "Investigación docente",
+    desc: "Diseño de materiales, experimentación y aprendizaje aplicado a tecnología, UX y desarrollo.",
     src: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1500&q=76&auto=format",
   },
   {
-    label: "Dise\u00f1o gr\u00e1fico",
-    desc: "Identidad, composici\u00f3n tipogr\u00e1fica y piezas visuales con criterio editorial y consistencia de marca.",
+    label: "Diseño gráfico",
+    desc: "Identidad, composición tipográfica y piezas visuales con criterio editorial y consistencia de marca.",
     src: "https://images.unsplash.com/photo-1502945015378-0e284ca1a5be?w=1500&q=76&auto=format",
   },
   {
@@ -87,19 +87,19 @@ export const CLOSE_LOOK_ITEMS = [
 export const PROJECTS = [
   {
     id: 0,
-    cat: "UX \u00b7 Product Design",
+    cat: "UX · Product Design",
     title: "LALIGA App",
-    sub: "Experiencia para 20M+ usuarios en 150 pa\u00edses.",
+    sub: "Experiencia para 20M+ usuarios en 150 países.",
     tags: ["Figma", "UX Research"],
-    year: "2023\u201324",
+    year: "2023–24",
     src: IMGS[0],
     fb: FBK[0],
   },
   {
     id: 1,
-    cat: "3D \u00b7 Arquitectura",
+    cat: "3D · Arquitectura",
     title: "Estadio Render",
-    sub: "SketchUp \u2192 UE5 \u2192 fotorrealismo 4K.",
+    sub: "SketchUp → UE5 → fotorrealismo 4K.",
     tags: ["UE5", "SketchUp"],
     year: "2024",
     src: IMGS[1],
@@ -117,11 +117,11 @@ export const PROJECTS = [
   },
   {
     id: 3,
-    cat: "Branding \u00b7 Visual",
+    cat: "Branding · Visual",
     title: "Sistema Identidad",
     sub: "Brand system para deporte global.",
     tags: ["Brand", "Figma"],
-    year: "2022\u201324",
+    year: "2022–24",
     src: IMGS[3],
     fb: FBK[3],
   },

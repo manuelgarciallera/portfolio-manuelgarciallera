@@ -1,4 +1,4 @@
-export const PORTFOLIO_NAV_LINKS = ["Trabajo", "3D", "Sobre m\u00ed", "Contacto"];
+export const PORTFOLIO_NAV_LINKS = ["Trabajo", "3D", "Sobre mí", "Contacto"];
 
 export function getPortfolioThemeColors(isDark) {
   if (isDark) {

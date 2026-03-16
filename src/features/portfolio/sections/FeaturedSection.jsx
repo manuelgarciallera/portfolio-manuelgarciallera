@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ChL, ChR } from "../icons";
 import { IMGS, FBK } from "../content";
 import { SmartImage as Img } from "../SmartImage";
@@ -7,10 +7,10 @@ export function FeaturedSection({isDark,C}){
   const [active,setActive]=useState(0);
   const imgRef=useRef(null);
   const items=[
-    {label:"UX \u00b7 LALIGA",cat:"Product Design",headline:"Dise\u00f1o de",accent:"producto.",sub:"Experiencias digitales para 20 millones de seguidores en todo el mundo.",src:IMGS[0],fb:FBK[0]},
-    {label:"3D \u00b7 Estadios",cat:"3D Visualization",headline:"Arquitectura",accent:"fotorrealista.",sub:"Modelos SketchUp, visualizaci\u00f3n en UE5 y rendering web interactivo.",src:IMGS[1],fb:FBK[1]},
-    {label:"Full Stack",cat:"Development",headline:"Del dise\u00f1o al",accent:"c\u00f3digo.",sub:"Angular, Node.js y MongoDB. Interfaces que funcionan en producci\u00f3n real.",src:IMGS[2],fb:FBK[2]},
-    {label:"Branding",cat:"Brand Design",headline:"Identidad visual de",accent:"marca.",sub:"Sistemas de dise\u00f1o coherentes para entidades del deporte global.",src:IMGS[3],fb:FBK[3]},
+    {label:"UX · LALIGA",cat:"Product Design",headline:"Diseño de",accent:"producto.",sub:"Experiencias digitales para 20 millones de seguidores en todo el mundo.",src:IMGS[0],fb:FBK[0]},
+    {label:"3D · Estadios",cat:"3D Visualization",headline:"Arquitectura",accent:"fotorrealista.",sub:"Modelos SketchUp, visualización en UE5 y rendering web interactivo.",src:IMGS[1],fb:FBK[1]},
+    {label:"Full Stack",cat:"Development",headline:"Del diseño al",accent:"código.",sub:"Angular, Node.js y MongoDB. Interfaces que funcionan en producción real.",src:IMGS[2],fb:FBK[2]},
+    {label:"Branding",cat:"Brand Design",headline:"Identidad visual de",accent:"marca.",sub:"Sistemas de diseño coherentes para entidades del deporte global.",src:IMGS[3],fb:FBK[3]},
   ];
   const go=i=>{if(i===active)return;const el=imgRef.current;if(el){el.style.opacity="0";el.style.transform="scale(1.025)";}setTimeout(()=>{setActive(i);if(el){el.style.transition="opacity .55s ease,transform .65s ease";el.style.opacity="1";el.style.transform="scale(1)";}},160);};
   const onPrev=()=>go((active-1+items.length)%items.length);
@@ -21,7 +21,7 @@ export function FeaturedSection({isDark,C}){
       <div style={{maxWidth:980,margin:"0 auto",padding:"var(--featured-head-pad-top,96px) var(--page-pad-x,28px) var(--featured-head-pad-bottom,56px)"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
         <h2 className="rv ttl-rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
-          <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por s\u00ed solo.</span>
+          <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por sí solo.</span>
         </h2>
       </div>
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 var(--page-pad-x,28px)"}}>

@@ -32,7 +32,7 @@ export function SplineScene({ reducedMotion = false, sceneUrl }) {
           textAlign: "center",
           padding: 24,
         }}>
-        Modo reducido activo: visual 3D est\u00e1tico.
+        Modo reducido activo: visual 3D estático.
       </div>
     );
   }

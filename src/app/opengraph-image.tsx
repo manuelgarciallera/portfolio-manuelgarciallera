@@ -28,10 +28,10 @@ export default function OpengraphImage() {
         <div style={{ fontSize: 36, opacity: 0.85 }}>{PERSON_DISPLAY_NAME}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontSize: 76, lineHeight: 1, fontWeight: 800, letterSpacing: "-0.04em" }}>
-            {"Dise\u00f1o que piensa en c\u00f3digo."}
+            {"Dise\u00F1o que piensa en c\u00F3digo."}
           </div>
           <div style={{ fontSize: 32, opacity: 0.86 }}>
-            {"UX/UI - Product Design - 3D Arquitect\u00f3nico - Full Stack"}
+            {"UX/UI - Product Design - 3D Arquitect\u00F3nico - Full Stack"}
           </div>
         </div>
         <div style={{ fontSize: 26, opacity: 0.8 }}>{SITE_TITLE}</div>

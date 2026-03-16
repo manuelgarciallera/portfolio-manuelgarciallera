@@ -9,7 +9,7 @@ export function PortfolioNavigation({
 }) {
   return (
     <nav
-      aria-label="Navegaci\u00f3n principal"
+      aria-label={"Navegaci\u00F3n principal"}
       style={{
         position: "sticky",
         top: 0,
@@ -34,7 +34,7 @@ export function PortfolioNavigation({
             letterSpacing: "-.04em",
             color: isDark ? "#f5f5f7" : "#1d1d1f",
           }}>
-          Manuel Garc\u00eda Llera
+          {"Manuel Garc\u00EDa Llera"}
         </span>
       </div>
 
@@ -88,20 +88,19 @@ export function PortfolioNavigation({
               animation: "ppulse 2.2s infinite",
             }}
           />
-          Disponible
+          {"Disponible"}
         </div>
 
         <button
           type="button"
           onClick={onThemeToggle}
           aria-pressed={!isDark}
-          aria-label="Cambiar tema de color"
+          aria-label={"Cambiar tema de color"}
           className={isDark ? "btn-dk" : "btn-lt"}
           style={{ fontSize: 12.5, padding: "6px 14px" }}>
-          {isDark ? "\u2600\ufe0f Claro" : "\ud83c\udf19 Oscuro"}
+          {isDark ? "\u2600\uFE0F Claro" : "\uD83C\uDF19 Oscuro"}
         </button>
       </div>
     </nav>
   );
 }
-

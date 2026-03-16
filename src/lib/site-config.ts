@@ -21,12 +21,12 @@ export const SITE_HANDLE = "manuelgarciallera";
 export const SITE_LOCALE = "es_ES";
 export const SITE_LANGUAGE = "es";
 
-export const PERSON_LEGAL_NAME = "Manuel Garc\u00eda-Llera A\u00f1\u00f3n";
-export const PERSON_DISPLAY_NAME = "Manuel Garc\u00eda Llera";
+export const PERSON_LEGAL_NAME = "Manuel Garc\u00EDa-Llera A\u00F1\u00F3n";
+export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa Llera";
 export const SITE_NAME = PERSON_DISPLAY_NAME;
 export const SITE_TITLE = `${PERSON_DISPLAY_NAME} - Visual Design & Full Stack`;
 export const SITE_DESCRIPTION =
-  "Portfolio profesional de Manuel Garc\u00eda-Llera A\u00f1\u00f3n. Visual Design, UX/UI, Product Design, Research, Dise\u00f1o 3D arquitect\u00f3nico y desarrollo full stack.";
+  "Portfolio profesional de Manuel Garc\u00EDa-Llera A\u00F1\u00F3n. Visual Design, UX/UI, Product Design, Research, Dise\u00F1o 3D arquitect\u00F3nico y desarrollo full stack.";
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hola@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
@@ -65,14 +65,9 @@ export function getPersonJsonLd() {
     "@context": "https://schema.org",
     "@type": "Person",
     name: PERSON_LEGAL_NAME,
-    alternateName: dedupe([
-      PERSON_DISPLAY_NAME,
-      "Manuel Garcia-Llera Anon",
-      "Manuel Garcia Llera",
-      SITE_HANDLE,
-    ]),
+    alternateName: dedupe([PERSON_DISPLAY_NAME, "Manuel Garcia-Llera Anon", "Manuel Garcia Llera", SITE_HANDLE]),
     givenName: "Manuel",
-    familyName: "Garc\u00eda-Llera A\u00f1\u00f3n",
+    familyName: "Garc\u00EDa-Llera A\u00F1\u00F3n",
     url: SITE_URL,
     image: `${SITE_URL}/opengraph-image`,
     email: SITE_EMAIL,

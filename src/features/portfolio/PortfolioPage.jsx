@@ -53,7 +53,7 @@ export default function PortfolioPage() {
     const sectionMap = {
       Trabajo: "work-section",
       "3D": "section-3d",
-      "Sobre m\u00ed": "section-about",
+      "Sobre mí": "section-about",
       Contacto: "section-contact",
     };
 
@@ -170,7 +170,7 @@ export default function PortfolioPage() {
                 fontWeight: 400,
                 color: colors.ctaTextSec,
               }}>
-              Disponible para proyectos de dise\u00f1o, producto y 3D arquitect\u00f3nico.
+              Disponible para proyectos de diseño, producto y 3D arquitectónico.
             </p>
             <div
               className="rv"
@@ -183,7 +183,7 @@ export default function PortfolioPage() {
                 alignItems: "center",
               }}>
               <a className="btn-blue" style={{ padding: "13px 28px", textDecoration: "none" }} href={`mailto:${SITE_EMAIL}`}>
-                Contactar \u2192
+                Contactar →
               </a>
               <a
                 className={`btn-social${isDark ? " btn-social-lt" : ""}`}
