@@ -20,7 +20,7 @@ Todo lo relacionado con la home está bajo `src/features/portfolio`.
 - `hooks/`
   - Hooks específicos de la feature (`viewport`, `reveal`).
 - `integrations/`
-  - Integraciones externas desacopladas (`spline/`).
+  - Integraciones externas desacopladas (`spline/`, `theatre/`).
 
 ## Convenciones de nomenclatura
 
