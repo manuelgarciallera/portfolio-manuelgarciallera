@@ -39,3 +39,4 @@ export function MiniProjects({isDark,C,projects,alt}){
     </section>
   );
 }
+
