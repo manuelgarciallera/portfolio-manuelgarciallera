@@ -1,21 +1,23 @@
 # Stack Status (2026-ready)
 
-## Instalado y operativo
+## Installed and active
 
 - `three`
 - `@react-three/fiber`
 - `@react-three/drei`
 - `gsap` (+ `ScrollTrigger`)
-- `lenis` (integración opcional por flag)
-- `@splinetool/react-spline` (lab desacoplado)
-- `@theatre/core` + `@theatre/studio` (lab desacoplado)
+- `lenis` (optional via feature flag)
+- `@splinetool/react-spline` (isolated lab route)
+- `@theatre/core` + `@theatre/studio` (isolated lab route)
+- `web-vitals` (browser metrics collection)
+- `lighthouse` (local quality audits)
 
-## Notas de compatibilidad
+## Compatibility notes
 
-- `@theatre/r3f` **no es compatible** actualmente con `@react-three/fiber` v9 en este proyecto.
-- Se ha integrado Theatre en modo imperativo con Three.js para mantener compatibilidad y control total.
+- `@theatre/r3f` is currently incompatible with `@react-three/fiber` v9 in this project.
+- Theatre integration is implemented with imperative Three.js to keep compatibility and full code control.
 
-## Rutas de laboratorio
+## Lab routes
 
 - `/lab/spline`
 - `/lab/theatre`

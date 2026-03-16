@@ -1,21 +1,23 @@
-# Performance Checklist (actual)
+# Performance Checklist
 
-## Ya implementado
+## Implemented
 
-- Pausa de animaciones/canvas fuera de viewport con `IntersectionObserver`.
-- `sizes` en imágenes críticas para reducir bytes en desktop/mobile.
-- Fallbacks visuales para escenas pesadas (Spline / reduced motion).
-- Limpieza de código no usado para reducir superficie de mantenimiento.
+- Offscreen canvas/animation pause via `IntersectionObserver`.
+- `sizes` attribute on critical images to reduce transfer bytes.
+- Visual fallbacks for heavy scenes (Spline and reduced motion mode).
+- Legacy code cleanup to reduce maintenance and runtime overhead.
 
-## Reglas de implementación
+## Engineering rules
 
-1. No añadir nuevos `requestAnimationFrame` sin condición de visibilidad.
-2. Todo canvas decorativo debe llevar `aria-hidden="true"`.
-3. Evitar autoplay si `prefers-reduced-motion` está activo.
-4. Todo bloque con imágenes de ancho variable debe incluir `sizes`.
+1. Do not introduce new `requestAnimationFrame` loops without visibility gating.
+2. Decorative canvases must include `aria-hidden="true"`.
+3. Disable autoplay behavior when `prefers-reduced-motion` is active.
+4. Responsive image blocks must include explicit `sizes`.
+5. Track Core Web Vitals continuously (`web-vitals` + `/api/web-vitals`).
 
-## Validación mínima antes de merge
+## Minimum gate before merge
 
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run audit:lighthouse:desktop`

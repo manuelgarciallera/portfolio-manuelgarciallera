@@ -1,40 +1,40 @@
-# Arquitectura del Portfolio
+# Portfolio Architecture
 
-## Principio base
-El proyecto se organiza por **feature**, no por tipo técnico.  
-Todo lo relacionado con la home está bajo `src/features/portfolio`.
+## Core principle
+The codebase is organized by **feature/domain**, not by technical layer only.
+Everything related to the main experience lives in `src/features/portfolio`.
 
-## Capas del módulo `portfolio`
+## Portfolio module layers
 
 - `PortfolioRuntime.tsx`
-  - Punto de entrada de la feature.
-  - Envuelve la página con `ErrorBoundary`.
+  - Feature entry point.
+  - Wraps runtime with `ErrorBoundary`.
 - `PortfolioPage.jsx`
-  - Orquestador de secciones.
-  - Estado global de la feature (tema, navegación activa, layout responsive).
+  - Section orchestrator.
+  - Owns feature-level state (theme, nav state, responsive layout vars).
 - `sections/`
-  - Secciones visuales autocontenidas.
-  - Cada sección tiene su propia lógica de animación/canvas.
+  - Visual sections with local behavior.
+  - Canvas and animation logic stay close to each section.
 - `three/`
-  - Recursos 3D reutilizables (shaders y canvases dedicados).
+  - Reusable Three.js resources (shaders, background canvas components).
 - `hooks/`
-  - Hooks específicos de la feature (`viewport`, `reveal`).
+  - Feature-specific hooks (`viewport`, reveal observers, Lenis bridge).
 - `integrations/`
-  - Integraciones externas desacopladas (`spline/`, `theatre/`).
+  - External tooling integration modules (`spline/`, `theatre/`).
 
-## Convenciones de nomenclatura
+## Naming conventions
 
-- Componentes de sección: `PascalCaseSection.jsx`
-  - Ejemplo: `HeroGallerySection.jsx`, `CloseLookSection.jsx`
+- Section components: `PascalCaseSection.jsx`
+  - Example: `HeroGallerySection.jsx`, `CloseLookSection.jsx`
 - Hooks: `useXxx.js`
-  - Ejemplo: `usePortfolioViewport.js`
-- Utilidades de dominio: nombres explícitos
-  - Ejemplo: `computePortfolioLayout`, `getPortfolioThemeColors`
+  - Example: `usePortfolioViewport.js`
+- Domain helpers: explicit names
+  - Example: `computePortfolioLayout`, `getPortfolioThemeColors`
 
-## Regla de evolución
+## Evolution rule
 
-Cuando una lógica crece y deja de ser “presentacional”, se extrae:
+When logic grows beyond presentational concerns:
 
-1. de sección a `hooks/` si es reusable entre secciones,
-2. de página a `components/` si solo afecta a una zona de composición,
-3. de componente a `three/` si contiene renderizado WebGL.
+1. move section-shared logic into `hooks/`,
+2. move page composition blocks into `components/`,
+3. move WebGL internals into `three/`.

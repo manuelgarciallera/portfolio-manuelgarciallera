@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "audit:lighthouse:desktop": "node ./scripts/lighthouse-audit.mjs desktop",
+    "audit:lighthouse:mobile": "node ./scripts/lighthouse-audit.mjs mobile",
     "sync:preview": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-preview.ps1",
     "ship": "bash ./scripts/ship.sh"
   },
@@ -38,6 +40,7 @@
     "@types/three": "^0.183.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "lighthouse": "^13.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

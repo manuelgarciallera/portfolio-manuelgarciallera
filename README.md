@@ -1,23 +1,30 @@
-# Manuel García Llera Portfolio
+# Manuel Garcia Llera Portfolio
 
-Portfolio profesional construido con **Next.js 16 + React 19 + Three.js** y arquitectura modular por feature.
+Professional portfolio built with **Next.js 16 + React 19 + Three.js** using a feature-first architecture.
 
 ## Stack
 - Next.js (App Router)
 - React 19
 - Three.js / React Three Fiber
 - GSAP / Framer Motion
+- Theatre.js (core + studio)
 - Tailwind CSS v4
-- TypeScript (tipado del entorno y runtime de Next)
+- TypeScript
 
-## Estructura
+## Project structure
 ```text
 src/
-  app/                         # rutas de Next.js
-    page.tsx                   # home
-    lab/spline/page.tsx        # sandbox Spline
+  app/
+    page.tsx
+    lab/spline/page.tsx
+    lab/theatre/page.tsx
+    api/web-vitals/route.ts
+    robots.ts
+    sitemap.ts
+    opengraph-image.tsx
   components/
     ErrorBoundary.tsx
+    analytics/WebVitalsReporter.tsx
   features/
     portfolio/
       PortfolioRuntime.tsx
@@ -30,9 +37,16 @@ src/
       components/
       sections/
       three/
-      integrations/spline/
+      integrations/
+        spline/
+        theatre/
+  lib/
+    site-config.ts
   styles/
     globals.css
+scripts/
+  dev-restart.ps1
+  lighthouse-audit.mjs
 ```
 
 ## Scripts
@@ -43,37 +57,40 @@ npm run build
 npm run start
 npm run lint
 npm run typecheck
+npm run audit:lighthouse:desktop
+npm run audit:lighthouse:mobile
 ```
 
-`npm run dev:restart` reinicia limpio el servidor local (mata procesos `next dev` del repo, limpia lock y vuelve a levantar `localhost:3000`).
+`npm run dev:restart` performs a clean local restart:
+- kills stale `next dev` processes for this repo
+- removes stale `.next/dev/lock`
+- starts dev server again on `localhost:3000`
 
-## Entorno (`.env.local`)
+## Environment (`.env.local`)
 ```bash
+NEXT_PUBLIC_SITE_URL=https://manuelgarciallera.com
 NEXT_PUBLIC_SPLINE_SCENE_URL=https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode
 NEXT_PUBLIC_ENABLE_SPLINE=false
 NEXT_PUBLIC_ENABLE_LENIS=false
 NEXT_PUBLIC_ENABLE_THEATRE_STUDIO=false
+NEXT_PUBLIC_ENABLE_WEB_VITALS=true
+NEXT_PUBLIC_WEB_VITALS_ENDPOINT=/api/web-vitals
 ```
 
-## Flujo recomendado
+## Recommended workflow
 1. `npm install`
 2. `npm run dev`
-3. Validación antes de commit:
+3. Before commit:
    - `npm run lint`
    - `npm run typecheck`
    - `npm run build`
 
-Sandbox Spline disponible en: `/lab/spline`
-Sandbox Theatre disponible en: `/lab/theatre`
+## Labs
+- Spline: `/lab/spline`
+- Theatre: `/lab/theatre`
 
-Smooth scroll Lenis (opcional) en la home:
-- activar `NEXT_PUBLIC_ENABLE_LENIS=true`
-
-Theatre Studio (opcional, solo para edición visual):
-- activar `NEXT_PUBLIC_ENABLE_THEATRE_STUDIO=true`
-
-## Objetivos técnicos del proyecto
-- Render 3D pausado fuera de viewport para ahorrar CPU/GPU.
-- Accesibilidad base: `skip-link`, foco visible, `prefers-reduced-motion`.
-- Nomenclatura consistente por dominio (`features/portfolio/...`).
-- Integración preparada para tooling moderno (Spline lab, Three.js, R3F, GSAP).
+## Technical goals
+- Pause heavy 3D animation when sections are offscreen.
+- Keep accessibility baseline strong (`skip-link`, focus-visible, reduced motion support).
+- Keep naming and structure consistent by feature.
+- Keep modern integrations optional via feature flags.
