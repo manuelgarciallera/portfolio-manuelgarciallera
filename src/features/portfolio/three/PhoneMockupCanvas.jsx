@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, RoundedBox } from "@react-three/drei";
+import { ContactShadows, Environment, useGLTF } from "@react-three/drei";
 
 function drawRoundRect(ctx, x, y, width, height, radius) {
   ctx.beginPath();
@@ -15,26 +15,37 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
-function drawCard(ctx, options) {
-  const { x, y, w, h, radius, title, subtitle, accent = "#54e6f4", highlight = false } = options;
-
-  ctx.fillStyle = highlight ? "rgba(22,88,140,.34)" : "rgba(255,255,255,.08)";
-  drawRoundRect(ctx, x, y, w, h, radius);
+function drawGlassCard(ctx, { x, y, w, h, r, title, subtitle, meta, badgeColor = "#5ec4c8", active = false }) {
+  ctx.save();
+  drawRoundRect(ctx, x, y, w, h, r);
+  const grd = ctx.createLinearGradient(x, y, x + w, y + h);
+  if (active) {
+    grd.addColorStop(0, "rgba(23,104,165,.52)");
+    grd.addColorStop(1, "rgba(16,62,114,.42)");
+  } else {
+    grd.addColorStop(0, "rgba(255,255,255,.13)");
+    grd.addColorStop(1, "rgba(255,255,255,.08)");
+  }
+  ctx.fillStyle = grd;
   ctx.fill();
-
-  if (highlight) {
-    ctx.strokeStyle = "rgba(94,196,200,.55)";
-    ctx.lineWidth = 4;
+  if (active) {
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "rgba(94,196,200,.7)";
     ctx.stroke();
   }
+  ctx.restore();
 
-  ctx.fillStyle = accent;
-  ctx.font = "700 38px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText(title, x + 40, y + 72);
+  ctx.fillStyle = badgeColor;
+  ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText(title, x + 28, y + 42);
 
   ctx.fillStyle = "rgba(245,245,247,.95)";
-  ctx.font = "650 52px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText(subtitle, x + 40, y + 144);
+  ctx.font = "640 32px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText(subtitle, x + 28, y + 84);
+
+  ctx.fillStyle = "rgba(245,245,247,.7)";
+  ctx.font = "500 20px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText(meta, x + 28, y + 118);
 }
 
 function buildScreenTexture(isDark) {
@@ -44,139 +55,193 @@ function buildScreenTexture(isDark) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  const gradient = ctx.createLinearGradient(0, 0, 1290, 2796);
+  const bg = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   if (isDark) {
-    gradient.addColorStop(0, "#090f20");
-    gradient.addColorStop(0.45, "#102c54");
-    gradient.addColorStop(1, "#170f27");
+    bg.addColorStop(0, "#08122a");
+    bg.addColorStop(0.55, "#0a2950");
+    bg.addColorStop(1, "#120c23");
   } else {
-    gradient.addColorStop(0, "#0e2545");
-    gradient.addColorStop(0.45, "#18426f");
-    gradient.addColorStop(1, "#26193a");
+    bg.addColorStop(0, "#112544");
+    bg.addColorStop(0.55, "#1d4673");
+    bg.addColorStop(1, "#22183a");
   }
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "rgba(255,255,255,.92)";
-  ctx.font = "650 36px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("9:41", 94, 100);
-  ctx.fillText("5G", 1092, 100);
+  ctx.fillStyle = "rgba(245,245,247,.95)";
+  ctx.font = "640 35px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText("9:41", 96, 88);
+  ctx.fillText("5G", canvas.width - 152, 88);
 
   ctx.fillStyle = "rgba(245,245,247,.95)";
-  ctx.font = "700 128px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("LALIGA", 92, 276);
+  ctx.font = "700 110px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText("LALIGA", 96, 264);
 
-  ctx.fillStyle = "rgba(94,196,200,.95)";
-  ctx.font = "620 42px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("Temporada 2025-26", 94, 352);
+  ctx.fillStyle = "#64d8e6";
+  ctx.font = "600 38px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText("Temporada 2025-26", 96, 324);
 
-  drawCard(ctx, {
-    x: 94,
-    y: 430,
-    w: 1102,
-    h: 380,
-    radius: 46,
+  drawGlassCard(ctx, {
+    x: 86,
+    y: 390,
+    w: 1118,
+    h: 164,
+    r: 34,
     title: "EN DIRECTO",
-    subtitle: "Real Madrid 2 - 1 Bar\u00e7a",
-    highlight: true,
+    subtitle: "Real Madrid 2 - 1 Barça",
+    meta: "Min 73' · Santiago Bernabéu",
+    active: true,
   });
 
-  ctx.fillStyle = "rgba(255,255,255,.64)";
-  ctx.font = "500 36px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("Min 73' \u00b7 Santiago Bernab\u00e9u", 134, 705);
-
-  drawCard(ctx, {
-    x: 94,
-    y: 870,
-    w: 1102,
-    h: 250,
-    radius: 38,
-    title: "\ud83d\udd34",
-    subtitle: "Atl\u00e9tico 1-0 Sevilla",
-    accent: "rgba(255,255,255,.62)",
+  drawGlassCard(ctx, {
+    x: 86,
+    y: 590,
+    w: 1118,
+    h: 132,
+    r: 30,
+    title: "●",
+    subtitle: "Atlético 1-0 Sevilla",
+    meta: "Final",
+    badgeColor: "#ff4d67",
   });
 
-  drawCard(ctx, {
-    x: 94,
-    y: 1160,
-    w: 1102,
-    h: 250,
-    radius: 38,
-    title: "\ud83d\udcca",
-    subtitle: "Clasificaci\u00f3n \u00b7 J30",
-    accent: "rgba(255,255,255,.62)",
+  drawGlassCard(ctx, {
+    x: 86,
+    y: 744,
+    w: 1118,
+    h: 132,
+    r: 30,
+    title: "▣",
+    subtitle: "Clasificación · J30",
+    meta: "Ver tabla",
+    badgeColor: "#8fd6ff",
   });
 
-  drawCard(ctx, {
-    x: 94,
-    y: 1450,
-    w: 1102,
-    h: 250,
-    radius: 38,
-    title: "\u2b50",
-    subtitle: "Mbapp\u00e9 \u2014 15 goles",
-    accent: "rgba(255,255,255,.62)",
+  drawGlassCard(ctx, {
+    x: 86,
+    y: 898,
+    w: 1118,
+    h: 132,
+    r: 30,
+    title: "★",
+    subtitle: "Mbappé — 15 goles",
+    meta: "Top goleador",
+    badgeColor: "#f4d35e",
   });
 
-  ctx.fillStyle = "rgba(255,255,255,.42)";
-  ctx.font = "560 34px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("Inicio", 180, 2610);
-  ctx.fillText("Partidos", 500, 2610);
-  ctx.fillText("Tabla", 820, 2610);
-  ctx.fillText("Perfil", 1080, 2610);
+  ctx.fillStyle = "rgba(255,255,255,.24)";
+  ctx.fillRect(0, 2480, canvas.width, 2);
+
+  ctx.fillStyle = "rgba(255,255,255,.58)";
+  ctx.font = "550 26px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+  ctx.fillText("Inicio", 148, 2624);
+  ctx.fillText("Partidos", 454, 2624);
+  ctx.fillText("Tabla", 782, 2624);
+  ctx.fillText("Perfil", 1080, 2624);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 16;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
   texture.needsUpdate = true;
   return texture;
 }
 
-function DeviceMesh({ isDark, scrollProgressRef, interactive = true }) {
+function PhoneModel({ isDark, scrollProgressRef, interactive = true }) {
   const groupRef = useRef(null);
+  const { nodes, materials } = useGLTF("/models/phone.gltf");
   const screenTexture = useMemo(() => buildScreenTexture(isDark), [isDark]);
 
+  const tunedMaterials = useMemo(() => {
+    const body = materials["Body.editable"]?.clone();
+    const bezel = materials["Bezel.editable"]?.clone();
+    const buttons = materials["Buttons.editable"]?.clone();
+    const lenses = materials.Lenses?.clone();
+    const flash = materials.Flash?.clone();
+
+    if (body) {
+      body.color = new THREE.Color(isDark ? "#1f232a" : "#d7dbe5");
+      body.metalness = 1;
+      body.roughness = 0.2;
+      body.clearcoat = 1;
+      body.clearcoatRoughness = 0.08;
+      body.envMapIntensity = 1.25;
+    }
+
+    if (bezel) {
+      bezel.color = new THREE.Color("#0a0c11");
+      bezel.metalness = 0.7;
+      bezel.roughness = 0.26;
+      bezel.clearcoat = 0.9;
+      bezel.envMapIntensity = 0.9;
+    }
+
+    if (buttons) {
+      buttons.color = new THREE.Color(isDark ? "#20252d" : "#cfd3dc");
+      buttons.metalness = 0.92;
+      buttons.roughness = 0.22;
+    }
+
+    if (lenses) {
+      lenses.color = new THREE.Color("#0c0f16");
+      lenses.metalness = 0.96;
+      lenses.roughness = 0.08;
+      lenses.clearcoat = 1;
+      lenses.clearcoatRoughness = 0.03;
+    }
+
+    if (flash) {
+      flash.color = new THREE.Color("#f2d8b5");
+      flash.emissive = new THREE.Color("#f7d9a4");
+      flash.emissiveIntensity = isDark ? 0.15 : 0.08;
+    }
+
+    return { body, bezel, buttons, lenses, flash };
+  }, [isDark, materials]);
+
   useEffect(() => {
-    return () => screenTexture?.dispose();
-  }, [screenTexture]);
+    return () => {
+      screenTexture?.dispose();
+      Object.values(tunedMaterials).forEach((mat) => mat?.dispose?.());
+    };
+  }, [screenTexture, tunedMaterials]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;
     if (!group) return;
 
     const progress = scrollProgressRef?.current ?? 0;
-    const targetRotY = -0.11 + progress * 0.24;
-    const targetRotX = 0.03 - progress * 0.08;
+    const targetRotY = -0.16 + progress * 0.24;
+    const targetRotX = 0.03 - progress * 0.06;
 
-    group.rotation.y = THREE.MathUtils.damp(group.rotation.y, targetRotY, 6, delta);
-    group.rotation.x = THREE.MathUtils.damp(group.rotation.x, targetRotX, 6, delta);
-    group.rotation.z = THREE.MathUtils.damp(group.rotation.z, interactive ? -0.01 : 0, 6, delta);
+    group.rotation.y = THREE.MathUtils.damp(group.rotation.y, targetRotY, 5.8, delta);
+    group.rotation.x = THREE.MathUtils.damp(group.rotation.x, targetRotX, 5.8, delta);
+    group.rotation.z = THREE.MathUtils.damp(group.rotation.z, interactive ? -0.012 : 0, 5.8, delta);
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.02, 0]}>
-      <RoundedBox args={[1.14, 2.38, 0.1]} radius={0.19} smoothness={6}>
+    <group ref={groupRef} position={[0, -0.09, 0]} scale={1.7}>
+      <mesh castShadow receiveShadow geometry={nodes.Buttons.geometry} material={tunedMaterials.buttons} />
+      <mesh castShadow receiveShadow geometry={nodes.Flash.geometry} material={tunedMaterials.flash} />
+      <mesh castShadow receiveShadow geometry={nodes.Bezel.geometry} material={tunedMaterials.bezel} />
+      <mesh castShadow receiveShadow geometry={nodes.Body.geometry} material={tunedMaterials.body} />
+      <mesh castShadow receiveShadow geometry={nodes.Lenses.geometry} material={tunedMaterials.lenses} />
+      <mesh castShadow receiveShadow geometry={nodes.Screen.geometry}>
         <meshPhysicalMaterial
-          color={isDark ? "#23262e" : "#d8dbe5"}
-          metalness={0.95}
-          roughness={0.2}
+          map={screenTexture ?? undefined}
+          emissiveMap={screenTexture ?? undefined}
+          emissive={new THREE.Color(isDark ? "#4ab0ff" : "#2a78d2")}
+          emissiveIntensity={isDark ? 0.32 : 0.24}
+          metalness={0}
+          roughness={0.08}
+          transmission={0}
           clearcoat={1}
-          clearcoatRoughness={0.05}
-          envMapIntensity={1.1}
+          clearcoatRoughness={0.03}
+          envMapIntensity={0.6}
+          toneMapped={false}
         />
-      </RoundedBox>
-
-      <RoundedBox args={[1.04, 2.27, 0.012]} radius={0.15} smoothness={6} position={[0, 0, 0.048]}>
-        <meshBasicMaterial color="#050608" />
-      </RoundedBox>
-
-      <RoundedBox args={[0.985, 2.16, 0.002]} radius={0.11} smoothness={6} position={[0, 0, 0.055]}>
-        <meshBasicMaterial map={screenTexture ?? undefined} toneMapped={false} />
-      </RoundedBox>
-
-      <RoundedBox args={[0.28, 0.06, 0.012]} radius={0.04} smoothness={6} position={[0, 1.05, 0.058]}>
-        <meshStandardMaterial color="#0b0c10" metalness={0.4} roughness={0.5} />
-      </RoundedBox>
+      </mesh>
     </group>
   );
 }
@@ -184,14 +249,14 @@ function DeviceMesh({ isDark, scrollProgressRef, interactive = true }) {
 function Scene({ isDark, scrollProgressRef, interactive = true }) {
   return (
     <>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[2.8, 3.6, 3.6]} intensity={1.25} color="#cfe6ff" />
-      <pointLight position={[-2.6, 0.8, 2.2]} intensity={0.72} color="#86d7ff" />
-      <pointLight position={[0, -2.2, 1.1]} intensity={0.28} color="#4b76d0" />
+      <ambientLight intensity={0.62} />
+      <directionalLight position={[2.7, 4.2, 3.8]} intensity={1.35} color="#d7e8ff" />
+      <pointLight position={[-2.8, 0.9, 2.4]} intensity={0.9} color="#7ec8ff" />
+      <pointLight position={[0, -2.0, 1.1]} intensity={0.35} color="#7f97d8" />
 
-      <DeviceMesh isDark={isDark} scrollProgressRef={scrollProgressRef} interactive={interactive} />
+      <PhoneModel isDark={isDark} scrollProgressRef={scrollProgressRef} interactive={interactive} />
 
-      <ContactShadows position={[0, -1.58, 0]} opacity={0.44} blur={2.8} scale={4.4} far={1.8} />
+      <ContactShadows position={[0, -1.85, 0]} opacity={0.42} blur={2.8} scale={4.8} far={2.1} />
       <Environment preset={isDark ? "night" : "city"} />
     </>
   );
@@ -200,8 +265,8 @@ function Scene({ isDark, scrollProgressRef, interactive = true }) {
 export function PhoneMockupCanvas({ isDark, scrollProgressRef, interactive = true }) {
   return (
     <Canvas
-      camera={{ position: [0, 0.04, 3.25], fov: 30 }}
-      dpr={[1, 1.7]}
+      camera={{ position: [0, 0.06, 3.1], fov: 28 }}
+      dpr={[1, 2]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}>
       <Suspense fallback={null}>
         <Scene isDark={isDark} scrollProgressRef={scrollProgressRef} interactive={interactive} />
@@ -209,3 +274,5 @@ export function PhoneMockupCanvas({ isDark, scrollProgressRef, interactive = tru
     </Canvas>
   );
 }
+
+useGLTF.preload("/models/phone.gltf");
