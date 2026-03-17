@@ -30,8 +30,13 @@ export default function PortfolioPage() {
     return storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
   });
   const [activeNav, setActiveNav] = useState("Trabajo");
+  const [isNavAtTop, setIsNavAtTop] = useState(true);
+  const [isNavVisible, setIsNavVisible] = useState(true);
   const wrapRef = useRef(null);
   const heroSectionRef = useRef(null);
+  const navAtTopRef = useRef(true);
+  const navVisibleRef = useRef(true);
+  const lastScrollTopRef = useRef(0);
   const prefRM = useReducedMotionRef();
   const lenisEnabled = process.env.NEXT_PUBLIC_ENABLE_LENIS === "true";
 
@@ -44,6 +49,62 @@ export default function PortfolioPage() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const scroller = wrapRef.current;
+    if (!scroller) return;
+
+    const autoHideNav = vp.w >= 768;
+    let rafId = 0;
+
+    const applyNavTop = (next) => {
+      if (navAtTopRef.current === next) return;
+      navAtTopRef.current = next;
+      setIsNavAtTop(next);
+    };
+
+    const applyNavVisible = (next) => {
+      if (navVisibleRef.current === next) return;
+      navVisibleRef.current = next;
+      setIsNavVisible(next);
+    };
+
+    const onFrame = () => {
+      rafId = 0;
+      const currentY = scroller.scrollTop;
+      const delta = currentY - lastScrollTopRef.current;
+      const absDelta = Math.abs(delta);
+      const atTop = currentY <= 8;
+
+      applyNavTop(atTop);
+
+      if (!autoHideNav) {
+        applyNavVisible(true);
+      } else if (atTop) {
+        applyNavVisible(true);
+      } else if (absDelta >= 3) {
+        if (delta > 0 && currentY > 90) applyNavVisible(false);
+        if (delta < 0) applyNavVisible(true);
+      }
+
+      lastScrollTopRef.current = currentY;
+    };
+
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(onFrame);
+    };
+
+    lastScrollTopRef.current = scroller.scrollTop;
+    onFrame();
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [vp.w]);
 
   const handleNavSelect = useCallback((link) => {
     setActiveNav(link);
@@ -97,6 +158,8 @@ export default function PortfolioPage() {
         onNavSelect={handleNavSelect}
         onThemeToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
         colors={colors}
+        isAtTop={isNavAtTop}
+        isVisible={isNavVisible}
       />
 
       <main id="main-content">
@@ -170,7 +233,7 @@ export default function PortfolioPage() {
                 fontWeight: 400,
                 color: colors.ctaTextSec,
               }}>
-              Disponible para proyectos de diseño, producto y 3D arquitectónico.
+              {"Disponible para proyectos de diseño, producto y 3D arquitectónico."}
             </p>
             <div
               className="rv"
@@ -183,7 +246,7 @@ export default function PortfolioPage() {
                 alignItems: "center",
               }}>
               <a className="btn-blue" style={{ padding: "13px 28px", textDecoration: "none" }} href={`mailto:${SITE_EMAIL}`}>
-                Contactar →
+                {"Contactar \u2192"}
               </a>
               <a
                 className={`btn-social${isDark ? " btn-social-lt" : ""}`}
