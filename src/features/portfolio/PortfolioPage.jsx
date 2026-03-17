@@ -17,6 +17,7 @@ import { ComparisonSection } from "./sections/ComparisonSection";
 import { DeviceSection } from "./sections/DeviceSection";
 import { FeaturedSection } from "./sections/FeaturedSection";
 import { FullStackSection } from "./sections/FullStackSection";
+import { FooterSection } from "./sections/FooterSection";
 import { HeroGallerySection } from "./sections/HeroGallerySection";
 import { HeroSection } from "./sections/HeroSection";
 import { MiniProjectsSection } from "./sections/MiniProjectsSection";
@@ -246,7 +247,7 @@ export default function PortfolioPage() {
                 alignItems: "center",
               }}>
               <a className="btn-blue" style={{ padding: "13px 28px", textDecoration: "none" }} href={`mailto:${SITE_EMAIL}`}>
-                {"Contactar \u2192"}
+                {"Contactar →"}
               </a>
               <a
                 className={`btn-social${isDark ? " btn-social-lt" : ""}`}
@@ -267,6 +268,8 @@ export default function PortfolioPage() {
             </div>
           </div>
         </section>
+
+        <FooterSection isDark={isDark} C={colors} />
       </main>
     </div>
   );

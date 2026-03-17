@@ -235,6 +235,123 @@
   transform: translateY(-0.4px) scale(1.04);
 }
 
+.pf-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(110% 140% at 18% 0%, rgba(94, 196, 200, 0.09) 0%, transparent 60%);
+}
+
+.pf-footer-inner {
+  position: relative;
+  z-index: 1;
+  width: min(1420px, 100%);
+  margin: 0 auto;
+  padding: 42px var(--page-pad-x, 28px) 46px;
+  display: grid;
+  grid-template-columns: 1.45fr 1fr 1.2fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.pf-footer-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.pf-footer-title {
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.pf-footer-copy {
+  max-width: 62ch;
+  font-size: 14px;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+}
+
+.pf-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pf-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 9px 13px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 520;
+  letter-spacing: -0.01em;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+[data-theme="light"] .pf-footer-link {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.pf-footer-link:hover {
+  transform: translateY(-1.5px);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+[data-theme="light"] .pf-footer-link:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+.pf-footer-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.pf-footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+}
+
+.pf-footer-domain {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.84;
+  transition: opacity 0.2s ease;
+}
+
+.pf-footer-domain:hover {
+  opacity: 1;
+}
+
 .nl {
   text-decoration: none;
   font-size: 13.5px;
@@ -689,6 +806,11 @@
 
   .pf-nav-brand-full {
     font-size: 14.5px;
+  }
+
+  .pf-footer-inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 

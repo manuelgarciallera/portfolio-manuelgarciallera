@@ -42,7 +42,7 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             marginBottom: 20,
             fontWeight: 400,
           }}>
-          {"Portfolio \u00B7 Manuel Garc\u00EDa Llera"}
+          {"Portfolio · Manuel García-Llera Añón"}
         </p>
         <h1
           style={{
@@ -52,10 +52,10 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             letterSpacing: "-.048em",
             marginBottom: 6,
           }}>
-          <span style={{ display: "block", color: "#fff" }}>{"Dise\u00F1o que"}</span>
+          <span style={{ display: "block", color: "#fff" }}>{"Diseño que"}</span>
           <span style={{ display: "block", color: "#fff" }}>
             {"piensa en "}
-            <span className="acc-dk">{"c\u00F3digo."}</span>
+            <span className="acc-dk">{"código."}</span>
           </span>
         </h1>
         <p
@@ -70,11 +70,11 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
           }}>
           {"Visual Design Manager en LALIGA."}
           <br />
-          {"UX, producto, 3D arquitect\u00F3nico y full stack."}
+          {"UX, producto, 3D arquitectónico y full stack."}
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-blue">{"Ver proyectos"}</button>
-          <button className="btn-ghost-dk">{"M\u00E1s sobre m\u00ED"}</button>
+          <button className="btn-ghost-dk">{"Más sobre mí"}</button>
         </div>
       </div>
 
