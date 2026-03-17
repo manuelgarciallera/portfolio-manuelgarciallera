@@ -42,9 +42,12 @@ export function computePortfolioLayout(vp) {
   const closeLookContainerW = Math.min(1420, Math.max(0, heroTrackW - pagePadPx * 2));
   const closeLookContainerLeft = (heroTrackW - closeLookContainerW) / 2;
   const closeLookAlignLeft = Math.max(0, heroLeadX - closeLookContainerLeft);
+  const navPadX = isDesktopDown4k ? clampRange(24, Math.round(vp.w * 0.015), 32) : Math.round(24 * desktopFluid);
+  const navMaxW = isDesktopDown4k ? clampRange(1240, Math.round(vp.w * 0.7), 1440) : 1540;
 
   const rootVars = {
-    "--nav-pad-x": toFluidPx(24),
+    "--nav-pad-x": `${navPadX}px`,
+    "--nav-max-w": `${navMaxW}px`,
     "--hero-side-pad": toFluidPx(24),
     "--hero-min-h": toFluidPx(620),
     "--hero-full-h": "100dvh",
@@ -74,4 +77,3 @@ export function computePortfolioLayout(vp) {
 
   return { rootVars, closeLookAlignLeft };
 }
-

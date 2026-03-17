@@ -58,8 +58,8 @@ export function usePortfolioReveal(wrapRef, reducedMotionRef) {
     if (!el) return;
     if (reducedMotionRef?.current) return;
 
-    const ENTER_RATIO = 0.28;
-    const EXIT_RATIO = 0.12;
+    const ENTER_RATIO = 0.3;
+    const EXIT_RATIO = 0.1;
     const visibleState = new WeakMap();
     const titleNodes = el.querySelectorAll(".ttl-rv");
     titleNodes.forEach((node) => {
@@ -88,8 +88,8 @@ export function usePortfolioReveal(wrapRef, reducedMotionRef) {
         });
       },
       {
-        threshold: [0, EXIT_RATIO, 0.2, ENTER_RATIO, 0.45, 1],
-        rootMargin: "-4% 0px -4% 0px",
+        threshold: [0, EXIT_RATIO, 0.2, ENTER_RATIO, 0.5, 1],
+        rootMargin: "-64px 0px -6% 0px",
         root: el,
       }
     );

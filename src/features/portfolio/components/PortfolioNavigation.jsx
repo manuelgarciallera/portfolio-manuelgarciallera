@@ -4,6 +4,7 @@ export function PortfolioNavigation({
   isDark,
   activeNav,
   onNavSelect,
+  onBrandClick,
   onThemeToggle,
   colors,
   isAtTop = true,
@@ -13,7 +14,7 @@ export function PortfolioNavigation({
 
   return (
     <nav
-      aria-label={"Navegación principal"}
+      aria-label={"Navegacion principal"}
       style={{
         position: "sticky",
         top: 0,
@@ -29,7 +30,7 @@ export function PortfolioNavigation({
       }}>
       <div
         style={{
-          width: "min(1540px,100%)",
+          width: "min(var(--nav-max-w,1540px),100%)",
           height: "100%",
           margin: "0 auto",
           display: "grid",
@@ -41,8 +42,8 @@ export function PortfolioNavigation({
         <div style={{ display: "flex", alignItems: "center", justifySelf: "start", minWidth: 0 }}>
           <button
             type="button"
-            onClick={() => onNavSelect("Trabajo")}
-            aria-label={"Volver al inicio"}
+            onClick={onBrandClick}
+            aria-label={"Volver al hero"}
             className="pf-nav-brand"
             style={{
               color: isDark ? "#f5f5f7" : "#1d1d1f",
@@ -50,7 +51,7 @@ export function PortfolioNavigation({
               border: "none",
             }}>
             <span className={`pf-nav-brand-full${compactBrand ? " is-hidden" : ""}`}>
-              {"Manuel García-Llera Añón"}
+              {"Manuel Garc\u00eda-Llera A\u00f1\u00f3n"}
             </span>
             <span
               className={`pf-nav-brand-pill${compactBrand ? " is-shown" : ""}`}
@@ -59,22 +60,6 @@ export function PortfolioNavigation({
                 borderColor: isDark ? "rgba(255,255,255,.18)" : "rgba(0,0,0,.14)",
                 background: isDark ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.48)",
               }}>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                className="pf-nav-brand-mark"
-                style={{ color: "currentColor" }}>
-                <path
-                  d="M4 16V8l3.4 4.4L10.8 8V16M13 16V8l4.8 8V8"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
               <span style={{ fontWeight: 650, letterSpacing: ".02em" }}>{"MGLA"}</span>
             </span>
           </button>
@@ -131,10 +116,11 @@ export function PortfolioNavigation({
             aria-label={"Cambiar tema de color"}
             className={isDark ? "btn-dk" : "btn-lt"}
             style={{ fontSize: 12.5, padding: "6px 14px" }}>
-            {isDark ? "☀️ Claro" : "🌙 Oscuro"}
+            {isDark ? "\u2600 Claro" : "\u263d Oscuro"}
           </button>
         </div>
       </div>
     </nav>
   );
 }
+

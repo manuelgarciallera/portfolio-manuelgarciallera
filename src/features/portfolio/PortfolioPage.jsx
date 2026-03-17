@@ -115,7 +115,7 @@ export default function PortfolioPage() {
     const sectionMap = {
       Trabajo: "work-section",
       "3D": "section-3d",
-      "Sobre mí": "section-about",
+      "Sobre m\u00ed": "section-about",
       Contacto: "section-contact",
     };
 
@@ -129,6 +129,16 @@ export default function PortfolioPage() {
       behavior: prefRM.current ? "auto" : "smooth",
       block: "start",
       inline: "nearest",
+    });
+  }, [prefRM]);
+
+  const handleBrandClick = useCallback(() => {
+    setActiveNav("Trabajo");
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    wrap.scrollTo({
+      top: 0,
+      behavior: prefRM.current ? "auto" : "smooth",
     });
   }, [prefRM]);
 
@@ -157,6 +167,7 @@ export default function PortfolioPage() {
         isDark={isDark}
         activeNav={activeNav}
         onNavSelect={handleNavSelect}
+        onBrandClick={handleBrandClick}
         onThemeToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
         colors={colors}
         isAtTop={isNavAtTop}
@@ -274,3 +285,4 @@ export default function PortfolioPage() {
     </div>
   );
 }
+
