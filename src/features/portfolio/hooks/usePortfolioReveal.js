@@ -40,7 +40,11 @@ export function usePortfolioReveal(wrapRef, reducedMotionRef) {
     const timer = window.setTimeout(() => {
       el
         .querySelectorAll(".rv,.rv2,.rs,.rl,.rr,.clip-rv")
-        .forEach((node) => revealObserver.observe(node));
+        .forEach((node) => {
+          // Titles are managed by their dedicated observer to avoid class toggle fights.
+          if (node.classList.contains("ttl-rv")) return;
+          revealObserver.observe(node);
+        });
     }, 120);
 
     return () => {
@@ -54,21 +58,40 @@ export function usePortfolioReveal(wrapRef, reducedMotionRef) {
     if (!el) return;
     if (reducedMotionRef?.current) return;
 
+    const ENTER_RATIO = 0.28;
+    const EXIT_RATIO = 0.12;
+    const visibleState = new WeakMap();
     const titleNodes = el.querySelectorAll(".ttl-rv");
-    titleNodes.forEach((node) => node.setAttribute("data-reveal-dir", "down"));
+    titleNodes.forEach((node) => {
+      node.setAttribute("data-reveal-dir", "down");
+      visibleState.set(node, node.classList.contains("in"));
+    });
 
     const titleObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-          } else {
-            entry.target.classList.remove("in");
-            entry.target.setAttribute("data-reveal-dir", scrollDirRef.current);
+          const node = entry.target;
+          const ratio = entry.intersectionRatio ?? 0;
+          const currentlyVisible = visibleState.get(node) ?? false;
+
+          if (!currentlyVisible && ratio >= ENTER_RATIO) {
+            node.classList.add("in");
+            visibleState.set(node, true);
+            return;
+          }
+
+          if (currentlyVisible && ratio <= EXIT_RATIO) {
+            node.classList.remove("in");
+            node.setAttribute("data-reveal-dir", scrollDirRef.current);
+            visibleState.set(node, false);
           }
         });
       },
-      { threshold: 0.2, rootMargin: "-6% 0px -6% 0px", root: el }
+      {
+        threshold: [0, EXIT_RATIO, 0.2, ENTER_RATIO, 0.45, 1],
+        rootMargin: "-4% 0px -4% 0px",
+        root: el,
+      }
     );
 
     titleNodes.forEach((node) => titleObserver.observe(node));
