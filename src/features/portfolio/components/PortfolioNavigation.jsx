@@ -114,7 +114,7 @@ export function PortfolioNavigation({
             onClick={onThemeToggle}
             aria-pressed={!isDark}
             aria-label={"Cambiar tema de color"}
-            className={isDark ? "btn-dk" : "btn-lt"}
+            className={`pf-theme-toggle ${isDark ? "pf-theme-toggle-light" : "pf-theme-toggle-dark"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}>
             {isDark ? "\u2600 Claro" : "\u263d Oscuro"}
           </button>

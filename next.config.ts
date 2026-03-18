@@ -37,6 +37,7 @@ if (isProd) {
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  devIndicators: false,
   images: {
     remotePatterns: [
       {

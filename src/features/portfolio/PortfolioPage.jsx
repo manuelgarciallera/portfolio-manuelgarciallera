@@ -25,11 +25,8 @@ import { UXSection } from "./sections/UXSection";
 import { getPortfolioThemeColors } from "./theme";
 
 export default function PortfolioPage() {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "dark";
-    const storedTheme = localStorage.getItem("theme");
-    return storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
-  });
+  const [theme, setTheme] = useState("dark");
+  const [themeReady, setThemeReady] = useState(false);
   const [activeNav, setActiveNav] = useState("Trabajo");
   const [isNavAtTop, setIsNavAtTop] = useState(true);
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -47,9 +44,21 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const raf = window.requestAnimationFrame(() => {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "light" || storedTheme === "dark") {
+        setTheme(storedTheme);
+      }
+      setThemeReady(true);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
+
+  useEffect(() => {
+    if (!themeReady || typeof window === "undefined") return;
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
-  }, [theme]);
+  }, [theme, themeReady]);
 
   useEffect(() => {
     const scroller = wrapRef.current;
@@ -124,6 +133,24 @@ export default function PortfolioPage() {
 
     const target = wrap.querySelector(`#${targetId}`);
     if (!target) return;
+
+    // "Sobre mí" needs a stable landing point to avoid oscillating the reveal threshold.
+    if (link === "Sobre m\u00ed") {
+      const heading = target.querySelector("h2");
+      const anchor = heading || target;
+      const wrapRect = wrap.getBoundingClientRect();
+      const anchorRect = anchor.getBoundingClientRect();
+      const anchorTop = anchorRect.top - wrapRect.top + wrap.scrollTop;
+      const navHeight = 52;
+      const visualGap = wrap.clientWidth >= 1024 ? 42 : 26;
+      const top = Math.max(0, Math.round(anchorTop - navHeight - visualGap));
+
+      wrap.scrollTo({
+        top,
+        behavior: prefRM.current ? "auto" : "smooth",
+      });
+      return;
+    }
 
     target.scrollIntoView({
       behavior: prefRM.current ? "auto" : "smooth",
@@ -223,7 +250,7 @@ export default function PortfolioPage() {
               Contacto
             </p>
             <h2
-              className="rv ttl-rv"
+              className={`rv ttl-rv ${isDark ? "acc-lt" : "acc-dk"}`}
               style={{
                 transitionDelay: ".14s",
                 fontSize: "clamp(34px,6vw,68px)",
@@ -231,9 +258,8 @@ export default function PortfolioPage() {
                 letterSpacing: "-.046em",
                 lineHeight: 1.02,
                 marginBottom: 20,
-                color: colors.ctaText,
               }}>
-              Construyamos algo <span className={isDark ? "acc-lt" : "acc-dk"}>extraordinario.</span>
+              Construyamos algo extraordinario.
             </h2>
             <p
               className="rv"

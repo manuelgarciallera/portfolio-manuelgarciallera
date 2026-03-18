@@ -20,7 +20,7 @@ export function FeaturedSection({isDark,C}){
     <section style={{background:isDark?"#0a0a0b":"#f5f5f7",transition:"background .5s"}}>
       <div style={{maxWidth:980,margin:"0 auto",padding:"var(--featured-head-pad-top,96px) var(--page-pad-x,28px) var(--featured-head-pad-bottom,56px)"}}>
         <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Proyectos seleccionados</p>
-        <h2 className="rv ttl-rv" style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
+        <h2 className={`rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{transitionDelay:".12s",fontSize:"clamp(34px,5.2vw,64px)",fontWeight:700,letterSpacing:"-.042em",lineHeight:1.03}}>
           <span className={isDark?"acc-dk":"acc-lt"}>El trabajo habla por sí solo.</span>
         </h2>
       </div>
@@ -63,5 +63,4 @@ export function FeaturedSection({isDark,C}){
     </section>
   );
 }
-
 

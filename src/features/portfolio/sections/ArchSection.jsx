@@ -59,9 +59,7 @@ export function ArchSection({isDark,C,prefRM,wrapRef}){
         <div>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:20}}>3D · Arquitectura</p>
           <div style={{overflow:"hidden",marginBottom:22}}>
-            <h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>
-              <span className={isDark?"acc-dk":"acc-lt"}>Del plano al fotorrealismo.</span>
-            </h2>
+            <h2 className={`clip-rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>Del plano al fotorrealismo.</h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
             Pipeline completo desde SketchUp. Modelado arquitectónico, baking en Blender, renders estáticos en UE5 y Twinmotion 2025. Visualización 3D interactiva para web.
@@ -83,5 +81,4 @@ export function ArchSection({isDark,C,prefRM,wrapRef}){
     </section>
   );
 }
-
 

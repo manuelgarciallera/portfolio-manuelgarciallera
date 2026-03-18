@@ -1,4 +1,4 @@
-import { HeroBackgroundCanvas } from "../three/HeroBackgroundCanvas";
+﻿import { HeroBackgroundCanvas } from "../three/HeroBackgroundCanvas";
 
 export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
   return (
@@ -42,9 +42,10 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             marginBottom: 20,
             fontWeight: 400,
           }}>
-          {"Portfolio · Manuel García-Llera Añón"}
+          {"Portfolio \u00b7 Manuel Garc\u00eda-Llera A\u00f1\u00f3n"}
         </p>
         <h1
+          className="acc-dk"
           style={{
             fontSize: "clamp(50px,8.5vw,98px)",
             fontWeight: 700,
@@ -52,10 +53,10 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
             letterSpacing: "-.048em",
             marginBottom: 6,
           }}>
-          <span style={{ display: "block", color: "#fff" }}>{"Diseño que"}</span>
-          <span style={{ display: "block", color: "#fff" }}>
+          <span style={{ display: "block" }}>{"Dise\u00f1o que"}</span>
+          <span style={{ display: "block" }}>
             {"piensa en "}
-            <span className="acc-dk">{"código."}</span>
+            <span className="acc-dk">{"c\u00f3digo."}</span>
           </span>
         </h1>
         <p
@@ -70,11 +71,11 @@ export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
           }}>
           {"Visual Design Manager en LALIGA."}
           <br />
-          {"UX, producto, 3D arquitectónico y full stack."}
+          {"UX, producto, 3D arquitect\u00f3nico y full stack."}
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button className="btn-blue">{"Ver proyectos"}</button>
-          <button className="btn-ghost-dk">{"Más sobre mí"}</button>
+          <button className="btn-ghost-dk">{"M\u00e1s sobre m\u00ed"}</button>
         </div>
       </div>
 

@@ -100,15 +100,14 @@ export function DeviceSection({ isDark, C, wrapRef, prefRM }) {
           </p>
           <div style={{ overflow: "hidden", marginBottom: 20 }}>
             <h2
-              className="clip-rv ttl-rv"
+              className={`clip-rv ttl-rv ${isDark ? "acc-dk" : "acc-lt"}`}
               style={{
                 fontSize: "clamp(26px,4vw,50px)",
                 fontWeight: 700,
                 letterSpacing: "-.036em",
                 lineHeight: 1.1,
               }}>
-              <span style={{ color: C.text }}>{"Dise\u00f1o que vive en "}</span>
-              <span className={isDark ? "acc-dk" : "acc-lt"}>{"iPhone render."}</span>
+              {"Dise\u00f1o que vive en iPhone render."}
             </h2>
           </div>
           <p

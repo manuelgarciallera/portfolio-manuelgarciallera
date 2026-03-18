@@ -16,7 +16,7 @@ export function ComparisonSection({isDark,C}){
       <div style={{maxWidth:980,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:56}}>
           <p className="rv" style={{fontSize:12,color:C.teal,letterSpacing:".1em",textTransform:"uppercase",fontWeight:600,marginBottom:18}}>Pipeline 3D</p>
-          <div style={{overflow:"hidden",marginBottom:16}}><h2 className="clip-rv ttl-rv" style={{fontSize:"clamp(28px,4.8vw,56px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}><span style={{color:C.text}}>Del modelo al </span><span className={isDark?"acc-dk":"acc-lt"}>fotorrealismo.</span></h2></div>
+          <div style={{overflow:"hidden",marginBottom:16}}><h2 className={`clip-rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(28px,4.8vw,56px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>Del modelo al fotorrealismo.</h2></div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:16,color:C.textSec,maxWidth:460,margin:"0 auto",lineHeight:1.6}}>Arrastra para comparar el modelo 3D con el render final en UE5.</p>
         </div>
         <div ref={wRef} className="rs" style={{position:"relative",height:"clamp(260px,44vw,480px)",borderRadius:20,overflow:"hidden",cursor:"ew-resize",userSelect:"none",border:`1px solid ${C.divider}`,boxShadow:isDark?"0 24px 64px rgba(0,0,0,.5)":"0 24px 64px rgba(0,0,0,.09)"}} onMouseDown={onDown} onTouchStart={onDown}>
@@ -37,5 +37,4 @@ export function ComparisonSection({isDark,C}){
     </section>
   );
 }
-
 
