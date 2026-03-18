@@ -142,7 +142,7 @@ export default function PortfolioPage() {
       const anchorRect = anchor.getBoundingClientRect();
       const anchorTop = anchorRect.top - wrapRect.top + wrap.scrollTop;
       const navHeight = 52;
-      const visualGap = wrap.clientWidth >= 1024 ? 42 : 26;
+      const visualGap = wrap.clientWidth >= 1024 ? 50 : 20;
       const top = Math.max(0, Math.round(anchorTop - navHeight - visualGap));
 
       wrap.scrollTo({
