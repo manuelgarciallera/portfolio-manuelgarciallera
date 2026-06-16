@@ -206,7 +206,7 @@ export default function PortfolioPage() {
       />
 
       <main id="main-content">
-        <HeroSection heroSectionRef={heroSectionRef} isDark={isDark} colors={colors} />
+        <HeroSection heroSectionRef={heroSectionRef} isDark={isDark} colors={colors} onNavSelect={handleNavSelect} />
 
         <div id="work-section">
           <WorkSection isDark={isDark} C={colors} projects={PROJECTS} />
@@ -239,12 +239,14 @@ export default function PortfolioPage() {
               Sobre m&iacute;
             </p>
             <h2
-              className={`rv ttl-rv ${isDark ? "acc-dk" : "acc-lt"}`}
+              className="rv"
               style={{
+                fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
                 fontSize: "clamp(30px,4.4vw,52px)",
-                fontWeight: 700,
-                letterSpacing: "-.03em",
-                lineHeight: 1.05,
+                fontWeight: 600,
+                letterSpacing: "-.015em",
+                lineHeight: 1.08,
+                color: colors.text,
                 marginBottom: 32,
                 maxWidth: 860,
               }}>
@@ -353,13 +355,15 @@ export default function PortfolioPage() {
               Contacto
             </p>
             <h2
-              className={`rv ttl-rv ${isDark ? "acc-lt" : "acc-dk"}`}
+              className="rv"
               style={{
                 transitionDelay: ".14s",
+                fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
                 fontSize: "clamp(34px,6vw,68px)",
-                fontWeight: 700,
-                letterSpacing: "-.046em",
-                lineHeight: 1.02,
+                fontWeight: 600,
+                letterSpacing: "-.02em",
+                lineHeight: 1.04,
+                color: colors.ctaText,
                 marginBottom: 20,
               }}>
               Construyamos algo extraordinario.

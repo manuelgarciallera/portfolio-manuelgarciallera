@@ -1,4 +1,4 @@
-export function HeroSection({ heroSectionRef, isDark, colors }) {
+export function HeroSection({ heroSectionRef, isDark, colors, onNavSelect }) {
   const ghostBorder = isDark ? "rgba(255,255,255,.22)" : "rgba(0,0,0,.16)";
 
   return (
@@ -64,6 +64,7 @@ export function HeroSection({ heroSectionRef, isDark, colors }) {
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 42 }}>
           <button
             type="button"
+            onClick={() => onNavSelect && onNavSelect("Trabajo")}
             style={{
               fontSize: 14.5,
               fontWeight: 500,
@@ -79,6 +80,7 @@ export function HeroSection({ heroSectionRef, isDark, colors }) {
           </button>
           <button
             type="button"
+            onClick={() => onNavSelect && onNavSelect("Sobre m\u00ed")}
             style={{
               fontSize: 14.5,
               fontWeight: 500,
