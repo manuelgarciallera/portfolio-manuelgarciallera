@@ -37,7 +37,7 @@ export const HERO_GALLERY = [
   },
   {
     k: "image",
-    title: "Diseño y visualización en LALIGA.\nDesde 2018, en la oficina técnica.",
+    title: "Diseño y visualización en LALIGA.\nDesde 2018, en el Departamento de Infraestructura.",
     src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format",
   },
 ];

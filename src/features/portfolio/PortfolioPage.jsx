@@ -14,15 +14,9 @@ import { useReducedMotionRef } from "@/lib/motion/useReducedMotionRef";
 import { PROFILE_LINKS, SITE_EMAIL } from "@/lib/site-config";
 import { ArchSection } from "./sections/ArchSection";
 import { CloseLookSection } from "./sections/CloseLookSection";
-import { ComparisonSection } from "./sections/ComparisonSection";
-import { DeviceSection } from "./sections/DeviceSection";
-import { FeaturedSection } from "./sections/FeaturedSection";
-import { FullStackSection } from "./sections/FullStackSection";
 import { FooterSection } from "./sections/FooterSection";
-import { HeroGallerySection } from "./sections/HeroGallerySection";
 import { HeroSection } from "./sections/HeroSection";
-import { MiniProjectsSection } from "./sections/MiniProjectsSection";
-import { UXSection } from "./sections/UXSection";
+import { WorkSection } from "./sections/WorkSection";
 import { getPortfolioThemeColors } from "./theme";
 
 const EDUCATION = [
@@ -215,26 +209,14 @@ export default function PortfolioPage() {
         <HeroSection heroSectionRef={heroSectionRef} isDark={isDark} colors={colors} />
 
         <div id="work-section">
-          <HeroGallerySection isDark={isDark} prefRM={prefRM} wrapRef={wrapRef} />
+          <WorkSection isDark={isDark} C={colors} projects={PROJECTS} />
         </div>
 
         <CloseLookSection isDark={isDark} prefRM={prefRM} alignLeft={closeLookAlignLeft} />
 
-        <FeaturedSection isDark={isDark} C={colors} />
-
         <div id="section-3d">
           <ArchSection isDark={isDark} C={colors} prefRM={prefRM} wrapRef={wrapRef} />
         </div>
-
-        <MiniProjectsSection isDark={isDark} C={colors} projects={[PROJECTS[0], PROJECTS[1], PROJECTS[2]]} />
-
-        <UXSection isDark={isDark} C={colors} prefRM={prefRM} wrapRef={wrapRef} />
-
-        <MiniProjectsSection isDark={isDark} C={colors} projects={[PROJECTS[3], PROJECTS[0], PROJECTS[1]]} alt />
-
-        <FullStackSection isDark={isDark} C={colors} prefRM={prefRM} wrapRef={wrapRef} />
-        <DeviceSection isDark={isDark} C={colors} wrapRef={wrapRef} prefRM={prefRM} />
-        <ComparisonSection isDark={isDark} C={colors} />
 
         <section
           id="section-about"
@@ -283,8 +265,8 @@ export default function PortfolioPage() {
                 se ve, c&oacute;mo se siente, c&oacute;mo se construye y por qu&eacute; funciona.
               </p>
               <p style={{ fontSize: 18, lineHeight: 1.65, color: colors.textSec, fontWeight: 400 }}>
-                Desde 2018 trabajo en la oficina t&eacute;cnica de LALIGA, donde cruzo dise&ntilde;o, visualizaci&oacute;n 3D e
-                ingenier&iacute;a en proyectos de infraestructura. Y miro hacia adelante: quiero llevar a la investigaci&oacute;n
+                Desde 2018 trabajo en el Departamento de Infraestructura de LALIGA, donde cruzo dise&ntilde;o, visualizaci&oacute;n 3D e
+                ingenier&iacute;a en proyectos reales. Y miro hacia adelante: quiero llevar a la investigaci&oacute;n
                 la pregunta que me obsesiona &mdash; c&oacute;mo las interfaces ayudan a las personas a decidir y trabajar mejor
                 cuando m&aacute;s hay en juego.
               </p>
