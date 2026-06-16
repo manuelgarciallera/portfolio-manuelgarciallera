@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { PORTFOLIO_NAV_LINKS } from "../theme";
 
 export function PortfolioNavigation({
@@ -11,6 +13,14 @@ export function PortfolioNavigation({
   isVisible = true,
 }) {
   const compactBrand = !isAtTop;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const iconColor = isDark ? "#f5f5f7" : "#1d1d1f";
+
+  const handleMobileSelect = (link) => {
+    onNavSelect(link);
+    setMobileOpen(false);
+  };
 
   return (
     <nav
@@ -109,18 +119,111 @@ export function PortfolioNavigation({
             {"Disponible"}
           </div>
 
+          <div
+            className="pf-theme-switch"
+            role="group"
+            aria-label={"Tema de color"}
+            style={{
+              borderColor: isDark ? "rgba(255,255,255,.16)" : "rgba(0,0,0,.12)",
+              background: isDark ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.035)",
+            }}>
+            <span
+              className="pf-theme-knob"
+              style={{
+                transform: isDark ? "translateX(0)" : "translateX(100%)",
+                background: isDark ? "rgba(255,255,255,.13)" : "#fff",
+                boxShadow: isDark ? "none" : "0 1px 3px rgba(0,0,0,.14)",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => { if (!isDark) onThemeToggle(); }}
+              aria-pressed={isDark}
+              className={`pf-theme-opt${isDark ? " is-active" : ""}`}
+              style={{ color: isDark ? colors.text : colors.textSec }}>
+              <svg className="pf-theme-ico-sw" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+              {"Oscuro"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (isDark) onThemeToggle(); }}
+              aria-pressed={!isDark}
+              className={`pf-theme-opt${!isDark ? " is-active" : ""}`}
+              style={{ color: !isDark ? colors.text : colors.textSec }}>
+              <svg className="pf-theme-ico-sw" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+              {"Claro"}
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={onThemeToggle}
-            aria-pressed={!isDark}
-            aria-label={"Cambiar tema de color"}
-            className={`pf-theme-toggle ${isDark ? "pf-theme-toggle-light" : "pf-theme-toggle-dark"}`}
-            style={{ fontSize: 12.5, padding: "6px 14px" }}>
-            {isDark ? "\u2600 Claro" : "\u263d Oscuro"}
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label={mobileOpen ? "Cerrar men\u00fa" : "Abrir men\u00fa"}
+            aria-expanded={mobileOpen}
+            aria-controls="pf-mobile-menu"
+            className="pf-burger show-m"
+            style={{ color: iconColor }}>
+            {mobileOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
+
+      {mobileOpen && (
+        <div
+          id="pf-mobile-menu"
+          className="pf-mobile-menu show-m"
+          style={{
+            background: isDark ? "rgba(20,20,24,.97)" : "rgba(250,250,252,.98)",
+            borderBottom: `1px solid ${colors.navBorder}`,
+          }}>
+          {PORTFOLIO_NAV_LINKS.map((link) => (
+            <button
+              key={link}
+              type="button"
+              onClick={() => handleMobileSelect(link)}
+              aria-current={activeNav === link ? "page" : undefined}
+              className={`pf-mobile-link${activeNav === link ? " active" : ""}`}
+              style={{ color: iconColor }}>
+              {link}
+            </button>
+          ))}
+          <div
+            className="pf-mobile-available"
+            style={{
+              color: colors.teal,
+              borderColor: `${colors.teal}55`,
+              background: `${colors.teal}12`,
+            }}>
+            <span
+              style={{
+                width: 5.5,
+                height: 5.5,
+                borderRadius: "50%",
+                background: colors.teal,
+                display: "inline-block",
+                animation: "ppulse 2.2s infinite",
+              }}
+            />
+            {"Disponible para nuevos proyectos"}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
-

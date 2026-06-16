@@ -24,9 +24,9 @@ export const SITE_LANGUAGE = "es";
 export const PERSON_LEGAL_NAME = "Manuel Garc\u00EDa-Llera A\u00F1\u00F3n";
 export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa Llera";
 export const SITE_NAME = PERSON_DISPLAY_NAME;
-export const SITE_TITLE = `${PERSON_DISPLAY_NAME} - Visual Design & Full Stack`;
+export const SITE_TITLE = `${PERSON_DISPLAY_NAME} - Dise\u00F1o de producto y desarrollo full stack`;
 export const SITE_DESCRIPTION =
-  "Portfolio profesional de Manuel Garc\u00EDa-Llera A\u00F1\u00F3n. Visual Design, UX/UI, Product Design, Research, Dise\u00F1o 3D arquitect\u00F3nico y desarrollo full stack.";
+  "Portfolio de Manuel Garc\u00EDa-Llera A\u00F1\u00F3n. Dise\u00F1o productos digitales, los construyo con c\u00F3digo y estudio c\u00F3mo mejorarlos. UX/UI, product design, visualizaci\u00F3n 3D arquitect\u00F3nica y desarrollo full stack.";
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hola@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
@@ -72,7 +72,7 @@ export function getPersonJsonLd() {
     image: `${SITE_URL}/opengraph-image`,
     email: SITE_EMAIL,
     sameAs: SITE_SOCIAL_URLS,
-    jobTitle: "Visual Design Manager",
+    jobTitle: "Dise\u00F1ador y especialista en visualizaci\u00F3n",
     worksFor: {
       "@type": "Organization",
       name: "LALIGA",

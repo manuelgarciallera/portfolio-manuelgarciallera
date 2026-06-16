@@ -58,8 +58,10 @@ export function usePortfolioReveal(wrapRef, reducedMotionRef) {
     if (!el) return;
     if (reducedMotionRef?.current) return;
 
-    const ENTER_RATIO = 0.3;
-    const EXIT_RATIO = 0.1;
+    // Lower enter threshold so titles don't remain hidden near section anchors.
+    // Keep hysteresis (ENTER > EXIT) to avoid flicker loops.
+    const ENTER_RATIO = 0.16;
+    const EXIT_RATIO = 0.06;
     const visibleState = new WeakMap();
     const titleNodes = el.querySelectorAll(".ttl-rv");
     titleNodes.forEach((node) => {

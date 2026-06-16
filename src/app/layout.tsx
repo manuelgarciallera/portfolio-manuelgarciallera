@@ -82,6 +82,9 @@ export default function RootLayout({
   return (
     <html lang={SITE_LANGUAGE} data-theme="dark" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />

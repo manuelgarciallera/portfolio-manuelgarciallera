@@ -15,28 +15,29 @@ export const FBK = [
 export const HERO_GALLERY_AUTOPLAY_MS = 5000;
 export const HERO_GALLERY_GRID_MIN = 24;
 
+// Galeria narrativa de Manuel (sustituye el copy de marketing de Apple M5).
+// Imagenes aun de stock: pendiente sustituir por trabajo real.
 export const HERO_GALLERY = [
-  { k: "chips", title: "M5, M5 Pro y M5 Max.\nUna familia con mucho poder." },
   {
     k: "image",
-    title: "Una potente plataforma para la inteligencia artificial.\nCon una mente maravillosa.",
+    title: "Diseño, construyo e investigo.\nProductos digitales de principio a fin.",
     src: "https://images.unsplash.com/photo-1517232115160-ff93364542dd?w=1600&q=80&auto=format",
     zoom: true,
   },
   {
     k: "image",
-    title: "App Teléfono. Sigue en contacto sin tocar el móvil.",
+    title: "Diseño de experiencias y las construyo.\nDel criterio visual al código.",
     src: "https://images.unsplash.com/photo-1517959105821-eaf2591984f8?w=1600&q=80&auto=format",
   },
   {
     k: "image",
-    title: "Rendimiento de estudio para flujos visuales en tiempo real.",
+    title: "Investigo cómo decidimos.\nInterfaces para entornos exigentes.",
     src: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format",
     zoom: true,
   },
   {
     k: "image",
-    title: "Batería para jornadas largas. Rápido cuando lo necesitas.",
+    title: "Diseño y visualización en LALIGA.\nDesde 2018, en la oficina técnica.",
     src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format",
   },
 ];
@@ -84,44 +85,45 @@ export const CLOSE_LOOK_ITEMS = [
   },
 ];
 
+// Slate real (2026-06-15). Imagenes de stock pendientes de sustituir por trabajo real.
 export const PROJECTS = [
   {
     id: 0,
-    cat: "UX · Product Design",
-    title: "LALIGA App",
-    sub: "Experiencia para 20M+ usuarios en 150 países.",
-    tags: ["Figma", "UX Research"],
-    year: "2023–24",
+    cat: "Full-Stack · Marketplace C2C",
+    title: "Buy&Sell",
+    sub: "Marketplace de compraventa de electrónica de segunda mano entre particulares.",
+    tags: ["Angular", "Node.js", "MySQL"],
+    year: "2026",
     src: IMGS[0],
     fb: FBK[0],
   },
   {
     id: 1,
-    cat: "3D · Arquitectura",
-    title: "Estadio Render",
-    sub: "SketchUp → UE5 → fotorrealismo 4K.",
-    tags: ["UE5", "SketchUp"],
-    year: "2024",
+    cat: "UX · Product Design",
+    title: "The UX Union",
+    sub: "MVP de una red de conexión entre diseñadores.",
+    tags: ["Figma", "UX Research", "MVP"],
+    year: "2025",
     src: IMGS[1],
     fb: FBK[1],
   },
   {
     id: 2,
-    cat: "Full Stack",
-    title: "Plataforma Angular",
-    sub: "Angular + Node.js + MongoDB.",
-    tags: ["Angular", "Node.js"],
-    year: "2025",
+    cat: "Full-Stack · Fintech",
+    title: "Proyecto Fintech",
+    sub: "Plataforma fintech en desarrollo.",
+    tags: ["Next.js", "React", "En desarrollo"],
+    year: "2026",
     src: IMGS[2],
     fb: FBK[2],
   },
   {
     id: 3,
-    cat: "Branding · Visual",
-    title: "Sistema Identidad",
-    sub: "Brand system para deporte global.",
-    tags: ["Brand", "Figma"],
-    year: "2022–24",
+    cat: "3D · Visualización arquitectónica",
+    title: "Estadio Render",
+    sub: "Pipeline CAD / SketchUp → Twinmotion → render fotorrealista.",
+    tags: ["Twinmotion", "SketchUp", "AutoCAD"],
+    year: "2024",
     src: IMGS[3],
     fb: FBK[3],
   },

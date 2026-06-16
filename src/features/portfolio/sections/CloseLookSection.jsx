@@ -92,7 +92,7 @@ export function CloseLookSection({ isDark, prefRM, alignLeft = 0 }){
   return(
     <section style={{padding:wide?"var(--close-look-pad-top,10px) var(--page-pad-x,28px) var(--close-look-pad-bottom,170px)":"26px 16px 112px",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:wide?"var(--close-look-section-h,auto)":"auto",boxSizing:"border-box",overflow:wide?"hidden":"visible"}}>
       <div style={{maxWidth:1420,margin:"0 auto"}}>
-        <h2 className={`ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:wide?"var(--close-look-title-mb,42px)":titleMb,marginLeft:titleMl}}>
+        <h2 className={`clip-rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,marginBottom:wide?"var(--close-look-title-mb,42px)":titleMb,marginLeft:titleMl}}>
           {"Más de cerca."}
         </h2>
 

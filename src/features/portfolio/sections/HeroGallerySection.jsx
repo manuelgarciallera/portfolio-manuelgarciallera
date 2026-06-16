@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { HERO_GALLERY, HERO_GALLERY_AUTOPLAY_MS } from "../content";
 import { IcoPause, IcoPlay, IcoReplay } from "../icons";
@@ -105,7 +105,7 @@ export function HeroGallerySection({ isDark, prefRM, wrapRef }){
   return(
     <section ref={sectionRef} style={{padding:"var(--hero-gallery-pad-top,132px) 0 var(--hero-gallery-pad-bottom,0px)",background:isDark?"#1c1c24":"#f0f0f3",transition:"background .5s",height:"var(--hero-gallery-section-h,84vh)",boxSizing:"border-box",overflow:"hidden"}}>
       <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
-        <h2 className={`ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 var(--hero-gallery-title-mb,42px) ${leadX}px`}}>Lo principal.</h2>
+        <h2 className={`clip-rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(34px,4vw,52px)",fontWeight:700,letterSpacing:"-.03em",lineHeight:1.04,margin:`0 0 var(--hero-gallery-title-mb,42px) ${leadX}px`}}>Lo principal.</h2>
       </div>
 
       <div ref={frameRef} style={{overflow:"hidden",width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)"}}>
@@ -197,8 +197,3 @@ export function HeroGallerySection({ isDark, prefRM, wrapRef }){
     </section>
   );
 }
-
-
-
-
-

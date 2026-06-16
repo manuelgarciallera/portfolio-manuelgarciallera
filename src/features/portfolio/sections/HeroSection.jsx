@@ -1,105 +1,97 @@
-﻿import { HeroBackgroundCanvas } from "../three/HeroBackgroundCanvas";
+export function HeroSection({ heroSectionRef, isDark, colors }) {
+  const ghostBorder = isDark ? "rgba(255,255,255,.22)" : "rgba(0,0,0,.16)";
 
-export function HeroSection({ wrapRef, heroSectionRef, prefRM }) {
   return (
     <section
       ref={heroSectionRef}
       style={{
-        height: "var(--hero-full-h,100dvh)",
-        minHeight: "var(--hero-min-h,620px)",
-        position: "relative",
-        marginTop: -52,
-        overflow: "hidden",
+        minHeight: "78vh",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        background: "#000",
+        background: colors.bg,
+        transition: "background .5s",
+        padding: "72px var(--page-pad-x,28px)",
       }}>
-      <HeroBackgroundCanvas wrapRef={wrapRef} heroSectionRef={heroSectionRef} prefRM={prefRM} />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(ellipse 65% 55% at 50% 40%,rgba(94,196,200,.034) 0%,transparent 65%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          padding: "0 var(--hero-side-pad,24px)",
-          maxWidth: 980,
-          width: "100%",
-        }}>
+      <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
         <p
           style={{
-            fontSize: 13.5,
-            color: "rgba(255,255,255,.62)",
-            letterSpacing: ".015em",
-            marginBottom: 20,
-            fontWeight: 400,
-          }}>
-          {"Portfolio \u00b7 Manuel Garc\u00eda-Llera A\u00f1\u00f3n"}
-        </p>
-        <h1
-          className="acc-dk"
-          style={{
-            fontSize: "clamp(50px,8.5vw,98px)",
-            fontWeight: 700,
-            lineHeight: 1.03,
-            letterSpacing: "-.048em",
-            marginBottom: 6,
-          }}>
-          <span style={{ display: "block" }}>{"Dise\u00f1o que"}</span>
-          <span style={{ display: "block" }}>
-            {"piensa en "}
-            <span className="acc-dk">{"c\u00f3digo."}</span>
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: "clamp(17px,1.9vw,20px)",
-            color: "rgba(255,255,255,.7)",
-            lineHeight: 1.58,
-            maxWidth: 500,
-            margin: "28px auto 44px",
-            fontWeight: 400,
+            fontSize: "clamp(22px,2.7vw,34px)",
+            fontWeight: 600,
             letterSpacing: "-.015em",
+            color: colors.text,
+            margin: "0 0 22px",
           }}>
-          {"Visual Design Manager en LALIGA."}
-          <br />
-          {"UX, producto, 3D arquitect\u00f3nico y full stack."}
+          Manuel Garc&iacute;a-Llera A&ntilde;&oacute;n
         </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn-blue">{"Ver proyectos"}</button>
-          <button className="btn-ghost-dk">{"M\u00e1s sobre m\u00ed"}</button>
-        </div>
-      </div>
 
-      <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
-        <div
+        <h1
           style={{
-            width: 20,
-            height: 32,
-            borderRadius: 10,
-            border: "1.5px solid rgba(255,255,255,.18)",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            paddingTop: 4,
+            fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
+            fontSize: "clamp(40px,6.2vw,86px)",
+            lineHeight: 1.05,
+            letterSpacing: "-.01em",
+            fontWeight: 600,
+            color: colors.text,
+            maxWidth: 1000,
+            margin: 0,
           }}>
-          <div
+          Dise&ntilde;o productos digitales, los construyo con c&oacute;digo y estudio c&oacute;mo mejorarlos.
+        </h1>
+
+        <p
+          style={{
+            fontSize: "clamp(16px,1.7vw,19px)",
+            lineHeight: 1.6,
+            color: colors.textSec,
+            maxWidth: 580,
+            margin: "30px 0 0",
+            fontWeight: 400,
+          }}>
+          UX, producto, visualizaci&oacute;n 3D y desarrollo full-stack.
+        </p>
+        <p
+          style={{
+            fontSize: 14,
+            lineHeight: 1.5,
+            color: colors.textSec,
+            margin: "9px 0 0",
+            fontWeight: 400,
+            opacity: 0.82,
+          }}>
+          Departamento de Infraestructura &middot; LALIGA
+        </p>
+
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 42 }}>
+          <button
+            type="button"
             style={{
-              width: 3,
-              height: 7,
-              borderRadius: 2,
-              background: "rgba(255,255,255,.3)",
-              animation: "pscroll 2.2s infinite ease-in-out",
-            }}
-          />
+              fontSize: 14.5,
+              fontWeight: 500,
+              padding: "13px 28px",
+              borderRadius: 980,
+              border: "none",
+              cursor: "pointer",
+              background: colors.text,
+              color: colors.bg,
+              transition: "opacity .2s",
+            }}>
+            Ver proyectos
+          </button>
+          <button
+            type="button"
+            style={{
+              fontSize: 14.5,
+              fontWeight: 500,
+              padding: "13px 28px",
+              borderRadius: 980,
+              border: `1px solid ${ghostBorder}`,
+              cursor: "pointer",
+              background: "transparent",
+              color: colors.text,
+              transition: "border-color .2s",
+            }}>
+            Sobre m&iacute;
+          </button>
         </div>
       </div>
     </section>
