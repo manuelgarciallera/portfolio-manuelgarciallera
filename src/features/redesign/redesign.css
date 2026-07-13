@@ -278,3 +278,131 @@
   }
   .rd-reveal { opacity: 1; transform: none; }
 }
+
+
+/* ============================================================
+   CASO · página de caso con fases navegables
+   ============================================================ */
+
+.rd-page-offset { padding-top: 4rem; }
+.rd-case--draft { opacity: 0.45; }
+.rd-case--draft:hover::after { transform: scaleX(0.25); }
+
+.rd-case-hero { border-top: none; padding-top: clamp(7rem, 16vh, 11rem); }
+.rd-case-page-title {
+  font-size: clamp(2.6rem, 9vw, 8.5rem);
+  line-height: 0.96; font-weight: 700; letter-spacing: var(--track-display);
+  margin: 0 0 0.35em;
+}
+.rd-case-page-title em { font-family: var(--font-serif); font-style: italic; font-weight: 500; }
+.rd-case-claim {
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem); line-height: 1.4; letter-spacing: -0.015em;
+  color: var(--ink-soft); max-width: 46ch; margin: 0 0 var(--space-4);
+}
+
+.rd-meta-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2);
+  margin: 0; border-top: 1px solid var(--hairline-strong); padding-top: var(--space-2);
+}
+.rd-meta-grid dt {
+  font-size: 0.68rem; letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.5em;
+}
+.rd-meta-grid dd { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink); }
+
+/* Sub-navegación sticky de fases */
+.rd-phase-nav {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; gap: clamp(1rem, 3vw, 2.5rem);
+  padding: 0.85rem var(--gutter);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
+  overflow-x: auto; scrollbar-width: none;
+}
+.rd-phase-nav::-webkit-scrollbar { display: none; }
+.rd-phase-nav a {
+  font-size: 0.74rem; letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--muted); text-decoration: none; white-space: nowrap;
+  padding: 0.2em 0; position: relative; transition: color 0.3s ease;
+}
+.rd-phase-nav a::after {
+  content: ""; position: absolute; left: 0; bottom: -0.15em; height: 1px; width: 100%;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s var(--ease-out);
+}
+.rd-phase-nav a.is-active { color: var(--ink); }
+.rd-phase-nav a.is-active::after, .rd-phase-nav a:hover::after { transform: scaleX(1); }
+
+/* Prosa de caso */
+.rd-prose { max-width: 68ch; }
+.rd-prose p {
+  font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.65; letter-spacing: -0.008em;
+  color: var(--ink-soft); margin: 0 0 1.3em;
+}
+.rd-prose p:first-of-type { color: var(--ink); font-weight: 500; }
+.rd-prose-methods {
+  font-size: 0.82rem !important; letter-spacing: 0.02em; color: var(--muted) !important;
+  border-left: 2px solid var(--accent); padding-left: 1em;
+}
+
+/* Bloque IA documentada */
+.rd-ai-grid { margin: var(--space-3) 0 0; max-width: 68ch; border-top: 1px solid var(--hairline-strong); }
+.rd-ai-row {
+  display: grid; grid-template-columns: 11rem 1fr; gap: var(--space-2);
+  padding: 0.9rem 0; border-bottom: 1px solid var(--hairline);
+}
+.rd-ai-row dt {
+  font-size: 0.7rem; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--muted);
+}
+.rd-ai-row dd { margin: 0; font-size: 0.92rem; line-height: 1.55; color: var(--ink-soft); }
+
+/* Del prototipo al componente */
+.rd-compare { display: grid; grid-template-columns: 1fr 1.3fr; gap: var(--space-3); align-items: start; }
+.rd-compare-col h4 {
+  font-size: 0.72rem; letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--muted); margin: 0 0 1em; font-weight: 600;
+}
+.rd-layer-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hairline-strong); }
+.rd-layer-list li {
+  font-size: 0.88rem; line-height: 1.5; color: var(--ink-soft);
+  padding: 0.8rem 0; border-bottom: 1px solid var(--hairline);
+  font-variant-numeric: tabular-nums;
+}
+.rd-code {
+  margin: 0; padding: 1.4rem; overflow-x: auto;
+  background: var(--surface); border: 1px solid var(--hairline);
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  font-size: 0.78rem; line-height: 1.6; color: var(--ink);
+  border-radius: 2px;
+}
+.rd-code-file {
+  font-size: 0.7rem; letter-spacing: 0.04em; color: var(--muted); margin: 0.7em 0 0;
+  font-family: ui-monospace, monospace;
+}
+.rd-compare-caption {
+  margin: var(--space-3) 0 0; max-width: 68ch;
+  font-size: 0.95rem; line-height: 1.6; color: var(--ink-soft);
+}
+.rd-data-mapping {
+  margin: var(--space-2) 0 0; padding: 0.9rem 1.2rem;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.78rem;
+  color: var(--accent-ink); border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  overflow-x: auto; white-space: nowrap;
+}
+
+/* Aprendizajes */
+.rd-learning { border-top: 1px solid var(--hairline); padding-top: 1.1em; }
+.rd-future-question {
+  margin-top: var(--space-3) !important; font-size: clamp(1.15rem, 2.4vw, 1.7rem) !important;
+  color: var(--ink) !important; line-height: 1.4 !important;
+}
+.rd-future-question em { font-family: var(--font-serif); font-style: italic; color: var(--accent-ink); }
+
+@media (max-width: 900px) {
+  .rd-meta-grid { grid-template-columns: 1fr 1fr; }
+  .rd-compare { grid-template-columns: 1fr; }
+  .rd-ai-row { grid-template-columns: 1fr; gap: 0.35rem; }
+}
