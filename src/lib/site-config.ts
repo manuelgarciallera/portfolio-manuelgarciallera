@@ -73,10 +73,6 @@ export function getPersonJsonLd() {
     email: SITE_EMAIL,
     sameAs: SITE_SOCIAL_URLS,
     jobTitle: "Dise\u00F1ador y especialista en visualizaci\u00F3n",
-    worksFor: {
-      "@type": "Organization",
-      name: "LALIGA",
-    },
     knowsAbout: [
       "Visual Design",
       "UX/UI Design",

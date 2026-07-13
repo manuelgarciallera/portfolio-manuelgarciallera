@@ -33,7 +33,7 @@ export default function PortfolioPage() {
   const [themeReady, setThemeReady] = useState(false);
   const [activeNav, setActiveNav] = useState("Trabajo");
   const [isNavAtTop, setIsNavAtTop] = useState(true);
-  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isNavVisible, setIsNavVisible] = useState(false);
   const wrapRef = useRef(null);
   const heroSectionRef = useRef(null);
   const navAtTopRef = useRef(true);
@@ -68,8 +68,8 @@ export default function PortfolioPage() {
     const scroller = wrapRef.current;
     if (!scroller) return;
 
-    const autoHideNav = vp.w >= 768;
     let rafId = 0;
+    let disposed = false;
 
     const applyNavTop = (next) => {
       if (navAtTopRef.current === next) return;
@@ -84,38 +84,23 @@ export default function PortfolioPage() {
     };
 
     const onFrame = () => {
-      rafId = 0;
+      if (disposed) return;
       const currentY = scroller.scrollTop;
-      const delta = currentY - lastScrollTopRef.current;
-      const absDelta = Math.abs(delta);
       const atTop = currentY <= 8;
+      const showAfterHeroBreathes = currentY > 72;
 
       applyNavTop(atTop);
-
-      if (!autoHideNav) {
-        applyNavVisible(true);
-      } else if (atTop) {
-        applyNavVisible(true);
-      } else if (absDelta >= 3) {
-        if (delta > 0 && currentY > 90) applyNavVisible(false);
-        if (delta < 0) applyNavVisible(true);
-      }
+      applyNavVisible(showAfterHeroBreathes);
 
       lastScrollTopRef.current = currentY;
-    };
-
-    const onScroll = () => {
-      if (rafId) return;
       rafId = window.requestAnimationFrame(onFrame);
     };
 
     lastScrollTopRef.current = scroller.scrollTop;
-    onFrame();
-
-    scroller.addEventListener("scroll", onScroll, { passive: true });
+    rafId = window.requestAnimationFrame(onFrame);
 
     return () => {
-      scroller.removeEventListener("scroll", onScroll);
+      disposed = true;
       if (rafId) window.cancelAnimationFrame(rafId);
     };
   }, [vp.w]);
@@ -145,7 +130,7 @@ export default function PortfolioPage() {
       const wrapRect = wrap.getBoundingClientRect();
       const anchorRect = anchor.getBoundingClientRect();
       const anchorTop = anchorRect.top - wrapRect.top + wrap.scrollTop;
-      const navHeight = 52;
+      const navHeight = isNavVisible ? 52 : 0;
       const visualGap = wrap.clientWidth >= 1024 ? 50 : 20;
       const top = Math.max(0, Math.round(anchorTop - navHeight - visualGap));
 
@@ -156,12 +141,15 @@ export default function PortfolioPage() {
       return;
     }
 
-    target.scrollIntoView({
+    const wrapRect = wrap.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const targetTop = targetRect.top - wrapRect.top + wrap.scrollTop;
+
+    wrap.scrollTo({
+      top: Math.max(0, Math.round(targetTop - 52)),
       behavior: prefRM.current ? "auto" : "smooth",
-      block: "start",
-      inline: "nearest",
     });
-  }, [prefRM]);
+  }, [isNavVisible, prefRM]);
 
   const handleBrandClick = useCallback(() => {
     setActiveNav("Trabajo");
@@ -241,7 +229,7 @@ export default function PortfolioPage() {
             <h2
               className="rv"
               style={{
-                fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
+                fontFamily: 'var(--font-playfair), Georgia, "Times New Roman", serif',
                 fontSize: "clamp(30px,4.4vw,52px)",
                 fontWeight: 600,
                 letterSpacing: "-.015em",
@@ -267,8 +255,8 @@ export default function PortfolioPage() {
                 se ve, c&oacute;mo se siente, c&oacute;mo se construye y por qu&eacute; funciona.
               </p>
               <p style={{ fontSize: 18, lineHeight: 1.65, color: colors.textSec, fontWeight: 400 }}>
-                Desde 2018 trabajo en el Departamento de Infraestructura de LALIGA, donde cruzo dise&ntilde;o, visualizaci&oacute;n 3D e
-                ingenier&iacute;a en proyectos reales. Y miro hacia adelante: quiero llevar a la investigaci&oacute;n
+                Desde 2018 trabajo en proyectos de infraestructura donde cruzo dise&ntilde;o, visualizaci&oacute;n 3D e
+                ingenier&iacute;a aplicada en entornos reales. Y miro hacia adelante: quiero llevar a la investigaci&oacute;n
                 la pregunta que me obsesiona &mdash; c&oacute;mo las interfaces ayudan a las personas a decidir y trabajar mejor
                 cuando m&aacute;s hay en juego.
               </p>
@@ -358,7 +346,7 @@ export default function PortfolioPage() {
               className="rv"
               style={{
                 transitionDelay: ".14s",
-                fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
+                fontFamily: 'var(--font-playfair), Georgia, "Times New Roman", serif',
                 fontSize: "clamp(34px,6vw,68px)",
                 fontWeight: 600,
                 letterSpacing: "-.02em",

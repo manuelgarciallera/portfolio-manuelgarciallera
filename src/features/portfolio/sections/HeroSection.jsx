@@ -1,100 +1,33 @@
-export function HeroSection({ heroSectionRef, isDark, colors, onNavSelect }) {
-  const ghostBorder = isDark ? "rgba(255,255,255,.22)" : "rgba(0,0,0,.16)";
-
+export function HeroSection({ heroSectionRef, isDark, onNavSelect }) {
   return (
     <section
       ref={heroSectionRef}
+      className={`pf-hero-orb ${isDark ? "pf-hero-orb-dark" : "pf-hero-orb-light"}`}
       style={{
-        minHeight: "78vh",
-        display: "flex",
-        alignItems: "center",
-        background: colors.bg,
-        transition: "background .5s",
-        padding: "72px var(--page-pad-x,28px)",
+        "--hero-bg": "#fbfbf8",
+        "--hero-text": "#202020",
+        "--hero-muted": "#717171",
       }}>
-      <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
-        <p
-          style={{
-            fontSize: "clamp(22px,2.7vw,34px)",
-            fontWeight: 600,
-            letterSpacing: "-.015em",
-            color: colors.text,
-            margin: "0 0 22px",
-          }}>
-          Manuel Garc&iacute;a-Llera A&ntilde;&oacute;n
-        </p>
+      <h1 className="pf-hero-seo">Manuel Garc&iacute;a-Llera, AI Design Engineer</h1>
 
-        <h1
-          style={{
-            fontFamily: '"Playfair Display", Georgia, "Times New Roman", serif',
-            fontSize: "clamp(40px,6.2vw,86px)",
-            lineHeight: 1.05,
-            letterSpacing: "-.01em",
-            fontWeight: 600,
-            color: colors.text,
-            maxWidth: 1000,
-            margin: 0,
-          }}>
-          Dise&ntilde;o productos digitales, los construyo con c&oacute;digo y estudio c&oacute;mo mejorarlos.
-        </h1>
-
-        <p
-          style={{
-            fontSize: "clamp(16px,1.7vw,19px)",
-            lineHeight: 1.6,
-            color: colors.textSec,
-            maxWidth: 580,
-            margin: "30px 0 0",
-            fontWeight: 400,
-          }}>
-          UX, producto, visualizaci&oacute;n 3D y desarrollo full-stack.
-        </p>
-        <p
-          style={{
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: colors.textSec,
-            margin: "9px 0 0",
-            fontWeight: 400,
-            opacity: 0.82,
-          }}>
-          Departamento de Infraestructura &middot; LALIGA
-        </p>
-
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 42 }}>
-          <button
-            type="button"
-            onClick={() => onNavSelect && onNavSelect("Trabajo")}
-            style={{
-              fontSize: 14.5,
-              fontWeight: 500,
-              padding: "13px 28px",
-              borderRadius: 980,
-              border: "none",
-              cursor: "pointer",
-              background: colors.text,
-              color: colors.bg,
-              transition: "opacity .2s",
-            }}>
-            Ver proyectos
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavSelect && onNavSelect("Sobre m\u00ed")}
-            style={{
-              fontSize: 14.5,
-              fontWeight: 500,
-              padding: "13px 28px",
-              borderRadius: 980,
-              border: `1px solid ${ghostBorder}`,
-              cursor: "pointer",
-              background: "transparent",
-              color: colors.text,
-              transition: "border-color .2s",
-            }}>
-            Sobre m&iacute;
-          </button>
+      <div className="pf-hero-water-stage" aria-hidden="true">
+        <div className="hero-orb-fallback">
+          <span>Manuel Garc&iacute;a-Llera</span>
         </div>
+        <div className="pf-hero-title-lock">
+          <p className="pf-hero-display-name">Manuel Garc&iacute;a-Llera</p>
+          <p className="pf-hero-fields">UX/UI &middot; HCI &middot; Figma prototyping &middot; Frontend development &middot; Human-AI interaction</p>
+        </div>
+        <div className="pf-hero-liquid-proxy" />
+      </div>
+
+      <p className="pf-hero-role">AI Design Engineer</p>
+
+      <div className="pf-hero-aside">
+        <p>I design, prototype and build human-centered AI interfaces.</p>
+        <button type="button" onClick={() => onNavSelect && onNavSelect("Sobre m\u00ed")}>
+          More about me <span aria-hidden="true">-&gt;</span>
+        </button>
       </div>
     </section>
   );

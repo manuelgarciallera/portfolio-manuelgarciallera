@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Playfair_Display } from "next/font/google";
 
 import { WebVitalsReporter } from "@/components/analytics/WebVitalsReporter";
 import {
@@ -16,6 +17,13 @@ import {
 } from "@/lib/site-config";
 import "@/styles/globals.css";
 
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 const websiteJsonLd = JSON.stringify(getWebsiteJsonLd()).replace(/</g, "\\u003c");
 const personJsonLd = JSON.stringify(getPersonJsonLd()).replace(/</g, "\\u003c");
 const profilePageJsonLd = JSON.stringify(getProfilePageJsonLd()).replace(/</g, "\\u003c");
@@ -27,7 +35,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  keywords: ["UX Design", "UI Design", "Full Stack", "Three.js", "ArchViz", "LALIGA", "React", "Angular"],
+  keywords: ["UX Design", "UI Design", "Full Stack", "Three.js", "ArchViz", "HCI", "AI Design", "React", "Angular"],
   authors: [{ name: PERSON_LEGAL_NAME, url: SITE_URL }],
   creator: PERSON_LEGAL_NAME,
   publisher: SITE_NAME,
@@ -80,11 +88,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang={SITE_LANGUAGE} data-theme="dark" suppressHydrationWarning>
+    <html lang={SITE_LANGUAGE} data-theme="dark" className={playfairDisplay.variable} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />

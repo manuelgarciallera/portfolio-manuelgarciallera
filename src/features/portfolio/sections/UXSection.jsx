@@ -229,7 +229,7 @@ export function UXSection({isDark,C,prefRM,wrapRef}){
             <h2 className={`clip-rv ttl-rv ${isDark?"acc-dk":"acc-lt"}`} style={{fontSize:"clamp(30px,4.8vw,58px)",fontWeight:700,letterSpacing:"-.04em",lineHeight:1.06}}>Interfaces que enamoran.</h2>
           </div>
           <p className="rv2" style={{transitionDelay:".16s",fontSize:17,color:C.textSec,lineHeight:1.72,marginBottom:32}}>
-            Once años diseñando para millones de personas. Metodologías de investigación aplicadas a productos de alto impacto. LALIGA, deporte global, plataformas de referencia.
+            Diseño para productos de alto impacto. Metodologías de investigación aplicadas a plataformas exigentes, audiencias amplias y decisiones de experiencia.
           </p>
           <div className="rv2" style={{transitionDelay:".28s",display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className={isDark?"btn-dk":"btn-lt"}>Ver proyectos UX · UI</button>
@@ -237,10 +237,10 @@ export function UXSection({isDark,C,prefRM,wrapRef}){
           </div>
         </div>
         <div className="rs" style={{transitionDelay:".1s",borderRadius:18,overflow:"hidden",background:isDark?"#1c1c1e":"#fff",border:`1px solid ${C.divider}`,boxShadow:isDark?"none":"0 4px 24px rgba(0,0,0,.09)"}}>
-          <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI LALIGA" sizes="(max-width: 920px) 100vw, 420px" style={{height:280}}/>
+          <Img src={IMGS[0]} fb={FBK[0]} alt="UX UI producto digital" sizes="(max-width: 920px) 100vw, 420px" style={{height:280}}/>
           <div style={{padding:"20px 22px 24px"}}>
-            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design · LALIGA</div>
-            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>App LALIGA · 20M+ usuarios</div>
+            <div style={{fontSize:10.5,color:C.teal,letterSpacing:".08em",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Product Design · Plataforma digital</div>
+            <div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:6,letterSpacing:"-.025em"}}>Experiencia móvil · Audiencias amplias</div>
             <div style={{fontSize:13.5,color:C.textSec,letterSpacing:"-.01em"}}>UX Research · Design System · Prototyping</div>
           </div>
         </div>
@@ -249,4 +249,3 @@ export function UXSection({isDark,C,prefRM,wrapRef}){
   );
 }
 // (Effect also saved for individual Full Stack page)
-

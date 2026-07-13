@@ -7,7 +7,7 @@ export function FeaturedSection({isDark,C}){
   const [active,setActive]=useState(0);
   const imgRef=useRef(null);
   const items=[
-    {label:"UX · LALIGA",cat:"Product Design",headline:"Diseño de",accent:"producto.",sub:"Experiencias digitales para 20 millones de seguidores en todo el mundo.",src:IMGS[0],fb:FBK[0]},
+    {label:"UX · Producto",cat:"Product Design",headline:"Diseño de",accent:"producto.",sub:"Experiencias digitales para audiencias amplias y entornos de alta exigencia.",src:IMGS[0],fb:FBK[0]},
     {label:"3D · Estadios",cat:"3D Visualization",headline:"Arquitectura",accent:"fotorrealista.",sub:"Modelos SketchUp, visualización en UE5 y rendering web interactivo.",src:IMGS[1],fb:FBK[1]},
     {label:"Full Stack",cat:"Development",headline:"Del diseño al",accent:"código.",sub:"Angular, Node.js y MongoDB. Interfaces que funcionan en producción real.",src:IMGS[2],fb:FBK[2]},
     {label:"Branding",cat:"Brand Design",headline:"Identidad visual de",accent:"marca.",sub:"Sistemas de diseño coherentes para entidades del deporte global.",src:IMGS[3],fb:FBK[3]},
@@ -63,4 +63,3 @@ export function FeaturedSection({isDark,C}){
     </section>
   );
 }
-

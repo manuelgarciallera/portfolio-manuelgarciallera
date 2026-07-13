@@ -16,6 +16,12 @@ export function PortfolioNavigation({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const iconColor = isDark ? "#f5f5f7" : "#1d1d1f";
+  const navBg = isDark ? "rgba(5,5,5,.94)" : "rgba(255,255,255,.94)";
+  const navText = isDark ? "#f5f5f7" : "#1d1d1f";
+  const navMuted = isDark ? "rgba(245,245,247,.62)" : "rgba(29,29,31,.58)";
+  const navHover = isDark ? "#ffffff" : "#000000";
+  const navActiveBg = isDark ? "rgba(255,255,255,.12)" : "rgba(0,0,0,.075)";
+  const navHoverBg = isDark ? "rgba(255,255,255,.075)" : "rgba(0,0,0,.045)";
 
   const handleMobileSelect = (link) => {
     onNavSelect(link);
@@ -26,16 +32,19 @@ export function PortfolioNavigation({
     <nav
       aria-label={"Navegacion principal"}
       style={{
-        position: "sticky",
+        position: "fixed",
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 200,
         height: 52,
         animation: "pfade .4s ease",
-        background: isDark ? "rgba(24,24,28,.78)" : "rgba(250,250,252,.8)",
+        background: navBg,
         backdropFilter: "blur(14px) saturate(160%)",
         WebkitBackdropFilter: "blur(14px) saturate(160%)",
         borderBottom: `1px solid ${colors.navBorder}`,
         transform: isVisible ? "translateY(0)" : "translateY(calc(-100% - 8px))",
+        pointerEvents: isVisible ? "auto" : "none",
         transition: "background .25s,border-color .25s,transform .42s cubic-bezier(.22,.61,.36,1)",
       }}>
       <div
@@ -56,7 +65,7 @@ export function PortfolioNavigation({
             aria-label={"Volver al hero"}
             className="pf-nav-brand"
             style={{
-              color: isDark ? "#f5f5f7" : "#1d1d1f",
+              color: navText,
               background: "transparent",
               border: "none",
             }}>
@@ -66,7 +75,7 @@ export function PortfolioNavigation({
             <span
               className={`pf-nav-brand-pill${compactBrand ? " is-shown" : ""}`}
               style={{
-                color: isDark ? "#f5f5f7" : "#1d1d1f",
+                color: navText,
                 borderColor: isDark ? "rgba(255,255,255,.18)" : "rgba(0,0,0,.14)",
                 background: isDark ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.48)",
               }}>
@@ -82,10 +91,17 @@ export function PortfolioNavigation({
               type="button"
               onClick={() => onNavSelect(link)}
               aria-current={activeNav === link ? "page" : undefined}
-              className={`nl ${isDark ? "nl-dk" : "nl-lt"}${activeNav === link ? " active" : ""}`}
-              style={{ background: "transparent", border: "none" }}>
+              className={`nl${activeNav === link ? " active" : ""}`}
+              style={{
+                "--nav-link-color": navMuted,
+                "--nav-link-hover": navHover,
+                "--nav-link-active": navText,
+                "--nav-link-hover-bg": navHoverBg,
+                "--nav-link-active-bg": navActiveBg,
+                background: "transparent",
+                border: "none",
+              }}>
               {link}
-              <span className="nl-bar" style={{ background: isDark ? "#fff" : "#1d1d1f" }} />
             </button>
           ))}
         </div>
@@ -189,7 +205,7 @@ export function PortfolioNavigation({
           id="pf-mobile-menu"
           className="pf-mobile-menu show-m"
           style={{
-            background: isDark ? "rgba(20,20,24,.97)" : "rgba(250,250,252,.98)",
+            background: navBg,
             borderBottom: `1px solid ${colors.navBorder}`,
           }}>
           {PORTFOLIO_NAV_LINKS.map((link) => (
@@ -199,7 +215,7 @@ export function PortfolioNavigation({
               onClick={() => handleMobileSelect(link)}
               aria-current={activeNav === link ? "page" : undefined}
               className={`pf-mobile-link${activeNav === link ? " active" : ""}`}
-              style={{ color: iconColor }}>
+              style={{ color: activeNav === link ? navText : navMuted }}>
               {link}
             </button>
           ))}

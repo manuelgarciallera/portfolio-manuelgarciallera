@@ -120,7 +120,7 @@ export function DeviceSection({ isDark, C, wrapRef, prefRM }) {
               marginBottom: 34,
             }}>
             {
-              "Mockup conceptual estilo iPhone 17, fijo y en primer plano, con pantalla de LALIGA optimizada para lectura real en web."
+              "Mockup conceptual estilo iPhone, fijo y en primer plano, con una interfaz deportiva optimizada para lectura real en web."
             }
           </p>
           <div className="rv2" style={{ transitionDelay: ".28s", display: "flex", gap: 12, flexWrap: "wrap" }}>

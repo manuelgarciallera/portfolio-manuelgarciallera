@@ -1,6 +1,6 @@
 import { SmartImage as Img } from "../SmartImage";
 
-const SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif";
+const SERIF = "var(--font-playfair), Georgia, 'Times New Roman', serif";
 
 export function WorkSection({ C, projects }) {
   return (

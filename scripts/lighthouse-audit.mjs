@@ -31,10 +31,10 @@ if (mode === "mobile") {
 
 const child =
   process.platform === "win32"
-    ? spawn("cmd.exe", ["/d", "/s", "/c", `npm exec lighthouse -- ${args.join(" ")}`], {
+    ? spawn("cmd.exe", ["/d", "/s", "/c", `npm exec --yes lighthouse@13.4.0 -- ${args.join(" ")}`], {
         stdio: "inherit",
       })
-    : spawn("npm", ["exec", "lighthouse", "--", ...args], {
+    : spawn("npm", ["exec", "--yes", "lighthouse@13.4.0", "--", ...args], {
         stdio: "inherit",
       });
 

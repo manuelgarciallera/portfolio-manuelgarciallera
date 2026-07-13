@@ -75,7 +75,7 @@ function buildScreenTexture(isDark) {
 
   ctx.fillStyle = "rgba(245,245,247,.95)";
   ctx.font = "700 110px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("LALIGA", 96, 264);
+  ctx.fillText("MATCH HUB", 96, 264);
 
   ctx.fillStyle = "#64d8e6";
   ctx.font = "600 38px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
@@ -88,8 +88,8 @@ function buildScreenTexture(isDark) {
     h: 164,
     r: 34,
     title: "EN DIRECTO",
-    subtitle: "Real Madrid 2 - 1 Barça",
-    meta: "Min 73' · Santiago Bernabéu",
+    subtitle: "Equipo A 2 - 1 Equipo B",
+    meta: "Min 73' · Estadio principal",
     active: true,
   });
 
@@ -100,7 +100,7 @@ function buildScreenTexture(isDark) {
     h: 132,
     r: 30,
     title: "●",
-    subtitle: "Atlético 1-0 Sevilla",
+    subtitle: "Equipo C 1-0 Equipo D",
     meta: "Final",
     badgeColor: "#ff4d67",
   });

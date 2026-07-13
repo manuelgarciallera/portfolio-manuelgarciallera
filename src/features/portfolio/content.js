@@ -15,8 +15,8 @@ export const FBK = [
 export const HERO_GALLERY_AUTOPLAY_MS = 5000;
 export const HERO_GALLERY_GRID_MIN = 24;
 
-// Galeria narrativa de Manuel (sustituye el copy de marketing de Apple M5).
-// Imagenes aun de stock: pendiente sustituir por trabajo real.
+// Galeria narrativa de Manuel. Las imagenes externas son soporte temporal
+// hasta incorporar evidencias visuales propias de cada caso.
 export const HERO_GALLERY = [
   {
     k: "image",
@@ -37,7 +37,7 @@ export const HERO_GALLERY = [
   },
   {
     k: "image",
-    title: "Diseño y visualización en LALIGA.\nDesde 2018, en el Departamento de Infraestructura.",
+    title: "Diseño y visualización para entornos complejos.\nInfraestructura, producto y tecnología aplicada.",
     src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format",
   },
 ];
@@ -85,7 +85,8 @@ export const CLOSE_LOOK_ITEMS = [
   },
 ];
 
-// Slate real (2026-06-15). Imagenes de stock pendientes de sustituir por trabajo real.
+// Slate inicial de casos. Cada ficha debe evolucionar hacia evidencia propia:
+// capturas curadas, video de flujo, prototipo, desarrollo y aprendizajes.
 export const PROJECTS = [
   {
     id: 0,
