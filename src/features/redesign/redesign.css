@@ -1,0 +1,280 @@
+/* ============================================================
+   REDESIGN v2 · Manuel García-Llera — Editorial Tecnológico
+   Sistema de diseño: black & white con personalidad.
+   Light: papel cálido + tinta + ultramar. Dark: tinta + hueso + bermellón.
+   Sans (SF Pro stack) para estructura · Playfair itálica para acento humano.
+   ============================================================ */
+
+:root {
+  --bg: #fafaf6;
+  --ink: #131512;
+  --ink-soft: #4c4e49;
+  --muted: #8a8c84;
+  --hairline: rgba(19, 21, 18, 0.16);
+  --hairline-strong: rgba(19, 21, 18, 0.32);
+  --accent: #2430ec;
+  --accent-ink: #1b25c4;
+  --surface: #f2f2ec;
+
+  --font-sans: -apple-system, "SF Pro Display", "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+  --font-serif: var(--font-playfair, "Playfair Display"), Georgia, serif;
+
+  --track-display: -0.045em;
+  --track-caps: 0.14em;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 4rem;
+  --space-5: 8rem;
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 0.7s;
+}
+
+[data-theme="dark"] {
+  --bg: #0d0e0c;
+  --ink: #f2f1ea;
+  --ink-soft: #b9b8af;
+  --muted: #7c7d75;
+  --hairline: rgba(242, 241, 234, 0.16);
+  --hairline-strong: rgba(242, 241, 234, 0.34);
+  --accent: #f24333;
+  --accent-ink: #ff5b4a;
+  --surface: #151613;
+}
+
+.rd-root {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  transition: background 0.5s ease, color 0.5s ease;
+  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+.rd-root ::selection { background: var(--accent); color: var(--bg); }
+.rd-root :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.rd-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Micro-etiquetas editoriales ---------- */
+.rd-label {
+  font-size: 0.72rem;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 0.75em;
+}
+.rd-label::before {
+  content: attr(data-index);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Header: invisible arriba, aparece al scroll ---------- */
+.rd-header {
+  position: fixed; inset: 0 0 auto 0; z-index: 60;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem var(--gutter);
+  transform: translateY(-110%);
+  transition: transform 0.55s var(--ease-out);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid var(--hairline);
+}
+.rd-header.is-visible { transform: translateY(0); }
+.rd-header a, .rd-header button { color: var(--ink); }
+
+.rd-brand {
+  font-size: 0.85rem; font-weight: 700; letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.rd-brand em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent); }
+
+.rd-nav { display: flex; gap: clamp(1rem, 2.5vw, 2.25rem); align-items: center; }
+.rd-nav a {
+  font-size: 0.8rem; text-decoration: none; position: relative; padding: 0.2em 0;
+}
+.rd-nav a::after {
+  content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s var(--ease-out);
+}
+.rd-nav a:hover::after { transform: scaleX(1); }
+
+.rd-theme-btn {
+  border: 1px solid var(--hairline-strong); background: transparent;
+  font: inherit; font-size: 0.72rem; letter-spacing: var(--track-caps); text-transform: uppercase;
+  padding: 0.45em 0.9em; cursor: pointer; border-radius: 2px;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+.rd-theme-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+/* ---------- Hero ---------- */
+.rd-hero {
+  position: relative; height: 100svh; min-height: 620px; overflow: hidden;
+}
+.rd-hero-canvas { position: absolute; inset: 0; }
+.rd-hero-canvas canvas { display: block; }
+
+.rd-hero-kicker {
+  position: absolute; left: var(--gutter); top: 24%;
+  z-index: 3;
+}
+.rd-hero-name {
+  position: absolute; left: var(--gutter); top: 30%;
+  z-index: 1; margin: 0;
+  font-size: clamp(3.2rem, 12.5vw, 12.5rem);
+  line-height: 0.94; font-weight: 700; letter-spacing: var(--track-display);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.rd-hero.canvas-on .rd-hero-name { opacity: 0; }
+
+.rd-hero-specialties {
+  position: absolute; left: var(--gutter); top: 66%;
+  z-index: 3; max-width: 34ch;
+  font-size: clamp(1rem, 2vw, 1.55rem);
+  line-height: 1.35; font-weight: 500; letter-spacing: -0.015em;
+  color: var(--ink-soft);
+}
+.rd-hero-specialties em {
+  font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--ink);
+}
+
+.rd-hero-corner {
+  position: absolute; right: var(--gutter); bottom: 2rem; z-index: 3;
+  text-align: right; font-size: 0.72rem; letter-spacing: var(--track-caps);
+  text-transform: uppercase; color: var(--muted); line-height: 1.9;
+}
+.rd-hero-corner strong { color: var(--ink); font-weight: 600; }
+
+.rd-hero-scroll {
+  position: absolute; left: var(--gutter); bottom: 2rem; z-index: 3;
+  font-size: 0.72rem; letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--muted); display: flex; align-items: center; gap: 0.9em;
+}
+.rd-hero-scroll::after {
+  content: ""; width: 4.5rem; height: 1px; background: var(--hairline-strong);
+  animation: rd-sweep 2.6s var(--ease-out) infinite;
+  transform-origin: left;
+}
+@keyframes rd-sweep { 0% { transform: scaleX(0); } 55% { transform: scaleX(1); } 100% { transform: scaleX(0); transform-origin: right; } }
+
+/* ---------- Secciones ---------- */
+.rd-section {
+  padding: var(--space-5) var(--gutter);
+  border-top: 1px solid var(--hairline);
+}
+.rd-section .rd-label { margin-bottom: var(--space-4); }
+
+.rd-statement {
+  font-size: clamp(1.6rem, 4.4vw, 3.6rem);
+  line-height: 1.16; font-weight: 600; letter-spacing: -0.03em;
+  max-width: 22ch; margin: 0;
+}
+.rd-statement em {
+  font-family: var(--font-serif); font-style: italic; font-weight: 500;
+  color: var(--accent-ink);
+}
+
+/* ---------- Capacidades (3 ejes) ---------- */
+.rd-axes {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3); margin-top: var(--space-4);
+}
+.rd-axis { border-top: 1px solid var(--hairline-strong); padding-top: var(--space-2); }
+.rd-axis h3 {
+  font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.6em;
+  display: flex; gap: 0.7em; align-items: baseline;
+}
+.rd-axis h3 span { font-size: 0.72rem; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 500; }
+.rd-axis p { font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); margin: 0; max-width: 32ch; }
+
+/* ---------- Casos: índice editorial ---------- */
+.rd-cases { display: flex; flex-direction: column; }
+.rd-case {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto auto;
+  gap: var(--space-2); align-items: baseline;
+  padding: clamp(1.4rem, 3vw, 2.4rem) 0;
+  border-top: 1px solid var(--hairline);
+  text-decoration: none; color: inherit; position: relative;
+}
+.rd-case:last-child { border-bottom: 1px solid var(--hairline); }
+.rd-case-index { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; transition: color 0.3s ease; }
+.rd-case-title {
+  font-size: clamp(1.7rem, 5vw, 4rem);
+  font-weight: 700; letter-spacing: -0.035em; line-height: 1; margin: 0;
+  transition: transform var(--dur) var(--ease-out);
+}
+.rd-case-title em { font-family: var(--font-serif); font-style: italic; font-weight: 500; }
+.rd-case-tags { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.rd-case-arrow {
+  font-size: 1.3rem; color: var(--muted);
+  transition: transform var(--dur) var(--ease-out), color 0.3s ease;
+}
+.rd-case::after {
+  content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur) var(--ease-out);
+}
+.rd-case:hover::after { transform: scaleX(1); }
+.rd-case:hover .rd-case-index { color: var(--accent); }
+.rd-case:hover .rd-case-title { transform: translateX(0.35em); }
+.rd-case:hover .rd-case-arrow { transform: translateX(0.4em); color: var(--accent-ink); }
+
+/* ---------- Contacto ---------- */
+.rd-contact { text-align: left; }
+.rd-contact-mail {
+  display: inline-block; text-decoration: none; color: inherit;
+  font-size: clamp(2.4rem, 9vw, 8rem); font-weight: 700; letter-spacing: var(--track-display);
+  line-height: 1.05; position: relative;
+}
+.rd-contact-mail em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent-ink); }
+.rd-contact-mail::after {
+  content: ""; position: absolute; left: 0; bottom: -0.06em; height: 2px; width: 100%;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur) var(--ease-out);
+}
+.rd-contact-mail:hover::after { transform: scaleX(1); }
+
+.rd-footer {
+  display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem;
+  padding: var(--space-3) var(--gutter);
+  border-top: 1px solid var(--hairline);
+  font-size: 0.72rem; letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--muted);
+}
+
+/* ---------- Reveal ---------- */
+.rd-reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
+.rd-reveal.is-in { opacity: 1; transform: none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .rd-axes { grid-template-columns: 1fr; gap: var(--space-3); }
+  .rd-case { grid-template-columns: 2.2rem 1fr auto; }
+  .rd-case-tags { display: none; }
+  .rd-hero-name { top: 33%; }
+  .rd-hero-specialties { top: 60%; }
+  .rd-nav a:not(:last-child) { display: none; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .rd-root *, .rd-root *::before, .rd-root *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .rd-reveal { opacity: 1; transform: none; }
+}
