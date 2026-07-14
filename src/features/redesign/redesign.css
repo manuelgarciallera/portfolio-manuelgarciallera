@@ -1,8 +1,8 @@
-/* ============================================================
-   REDESIGN v2 · Manuel García-Llera — Editorial Tecnológico
-   Sistema de diseño: black & white con personalidad.
-   Light: papel cálido + tinta + ultramar. Dark: tinta + hueso + bermellón.
-   Sans (SF Pro stack) para estructura · Playfair itálica para acento humano.
+﻿/* ============================================================
+   REDESIGN v2 Â· Manuel GarcÃ­a-Llera â€” Editorial TecnolÃ³gico
+   Sistema de diseÃ±o: black & white con personalidad.
+   Light: papel cÃ¡lido + tinta + ultramar. Dark: tinta + hueso + bermellÃ³n.
+   Sans (SF Pro stack) para estructura Â· Playfair itÃ¡lica para acento humano.
    ============================================================ */
 
 :root {
@@ -133,7 +133,7 @@
 .rd-hero-name {
   position: absolute; left: var(--gutter); top: 30%;
   z-index: 1; margin: 0;
-  font-size: clamp(3.2rem, 12.5vw, 12.5rem);
+  font-size: clamp(3rem, 11.5vw, 9.5rem);
   line-height: 0.94; font-weight: 700; letter-spacing: var(--track-display);
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -144,7 +144,7 @@
 .rd-hero-specialties {
   position: absolute; left: var(--gutter); top: 66%;
   z-index: 3; max-width: 34ch;
-  font-size: clamp(1rem, 2vw, 1.55rem);
+  font-size: clamp(0.95rem, 1.6vw, 1.25rem);
   line-height: 1.35; font-weight: 500; letter-spacing: -0.015em;
   color: var(--ink-soft);
 }
@@ -179,7 +179,7 @@
 .rd-section .rd-label { margin-bottom: var(--space-4); }
 
 .rd-statement {
-  font-size: clamp(1.6rem, 4.4vw, 3.6rem);
+  font-size: clamp(1.45rem, 3.2vw, 2.7rem);
   line-height: 1.16; font-weight: 600; letter-spacing: -0.03em;
   max-width: 22ch; margin: 0;
 }
@@ -201,7 +201,7 @@
 .rd-axis h3 span { font-size: 0.72rem; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 500; }
 .rd-axis p { font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); margin: 0; max-width: 32ch; }
 
-/* ---------- Casos: índice editorial ---------- */
+/* ---------- Casos: Ã­ndice editorial ---------- */
 .rd-cases { display: flex; flex-direction: column; }
 .rd-case {
   display: grid;
@@ -214,7 +214,7 @@
 .rd-case:last-child { border-bottom: 1px solid var(--hairline); }
 .rd-case-index { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; transition: color 0.3s ease; }
 .rd-case-title {
-  font-size: clamp(1.7rem, 5vw, 4rem);
+  font-size: clamp(1.5rem, 3.6vw, 2.9rem);
   font-weight: 700; letter-spacing: -0.035em; line-height: 1; margin: 0;
   transition: transform var(--dur) var(--ease-out);
 }
@@ -238,7 +238,7 @@
 .rd-contact { text-align: left; }
 .rd-contact-mail {
   display: inline-block; text-decoration: none; color: inherit;
-  font-size: clamp(2.4rem, 9vw, 8rem); font-weight: 700; letter-spacing: var(--track-display);
+  font-size: clamp(2.2rem, 6.5vw, 5.5rem); font-weight: 700; letter-spacing: var(--track-display);
   line-height: 1.05; position: relative;
 }
 .rd-contact-mail em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent-ink); }
@@ -281,7 +281,7 @@
 
 
 /* ============================================================
-   CASO · página de caso con fases navegables
+   CASO Â· pÃ¡gina de caso con fases navegables
    ============================================================ */
 
 .rd-page-offset { padding-top: 4rem; }
@@ -290,7 +290,7 @@
 
 .rd-case-hero { border-top: none; padding-top: clamp(7rem, 16vh, 11rem); }
 .rd-case-page-title {
-  font-size: clamp(2.6rem, 9vw, 8.5rem);
+  font-size: clamp(2.4rem, 7vw, 6.5rem);
   line-height: 0.96; font-weight: 700; letter-spacing: var(--track-display);
   margin: 0 0 0.35em;
 }
@@ -310,7 +310,7 @@
 }
 .rd-meta-grid dd { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink); }
 
-/* Sub-navegación sticky de fases */
+/* Sub-navegaciÃ³n sticky de fases */
 .rd-phase-nav {
   position: sticky; top: 0; z-index: 40;
   display: flex; gap: clamp(1rem, 3vw, 2.5rem);

@@ -13,7 +13,9 @@ interface HeroOrbCanvasProps {
   onReady: () => void
 }
 
-/** Dibuja el nombre con la MISMA tipografía y métricas que el h1 del DOM. */
+/** Dibuja el nombre con la MISMA tipografía y métricas que el h1 del DOM,
+ *  sobre fondo OPACO del color del tema: el buffer de transmisión necesita
+ *  ver el papel, no transparencia (que renderiza negro). */
 function createNameTexture(isDark: boolean): CanvasTexture {
   const scale = 2
   const w = Math.min(typeof window !== 'undefined' ? window.innerWidth : 1440, 1920)
@@ -24,8 +26,10 @@ function createNameTexture(isDark: boolean): CanvasTexture {
   const ctx = canvas.getContext('2d')
   if (ctx) {
     ctx.scale(scale, scale)
+    ctx.fillStyle = isDark ? '#0d0e0c' : '#fafaf6'
+    ctx.fillRect(0, 0, w, h)
     const gutter = Math.min(Math.max(20, 0.05 * w), 80)
-    const fontSize = Math.min(Math.max(51.2, 0.125 * w), 200)
+    const fontSize = Math.min(Math.max(48, 0.115 * w), 152)
     const lineHeight = fontSize * 0.94
     const top = 0.3 * h
     ctx.fillStyle = isDark ? '#f2f1ea' : '#131512'
@@ -46,9 +50,9 @@ function NamePlane({ isDark }: { isDark: boolean }) {
   const texture = useMemo(() => createNameTexture(isDark), [isDark])
   useEffect(() => () => texture.dispose(), [texture])
   return (
-    <mesh position={[0, 0, 0]}>
+    <mesh position={[0, 0, 0]} scale={[1.001, 1.001, 1]}>
       <planeGeometry args={[viewport.width, viewport.height]} />
-      <meshBasicMaterial map={texture} transparent toneMapped={false} />
+      <meshBasicMaterial map={texture} toneMapped={false} />
     </mesh>
   )
 }
@@ -56,8 +60,8 @@ function NamePlane({ isDark }: { isDark: boolean }) {
 function WaterOrb({ reduceMotion }: { reduceMotion: boolean }) {
   const groupRef = useRef<Group>(null)
   const { viewport } = useThree()
-  const radius = viewport.height * 0.33
-  const baseX = viewport.width * 0.14
+  const radius = viewport.height * 0.24
+  const baseX = viewport.width * 0.16
 
   useFrame((state, delta) => {
     const group = groupRef.current
@@ -66,29 +70,29 @@ function WaterOrb({ reduceMotion }: { reduceMotion: boolean }) {
     const smoothing = Math.min(1, delta * 2.6)
     group.position.x = MathUtils.lerp(group.position.x, baseX + state.pointer.x * viewport.width * 0.07, smoothing)
     group.position.y = MathUtils.lerp(group.position.y, state.pointer.y * viewport.height * 0.06, smoothing)
-    group.rotation.y += delta * 0.14
-    const breathe = 1 + Math.sin(t * 0.7) * 0.035
+    group.rotation.y += delta * 0.12
+    const breathe = 1 + Math.sin(t * 0.7) * 0.03
     group.scale.setScalar(breathe)
   })
 
   return (
-    <group ref={groupRef} position={[baseX, 0, 1.6]}>
+    <group ref={groupRef} position={[baseX, 0, 1.1]}>
       <mesh>
         <sphereGeometry args={[radius, 96, 96]} />
         <MeshTransmissionMaterial
           transmission={1}
-          ior={1.3}
-          thickness={2.2}
-          roughness={0.02}
-          chromaticAberration={0.05}
-          anisotropicBlur={0.12}
-          distortion={0.22}
-          distortionScale={0.5}
-          temporalDistortion={reduceMotion ? 0 : 0.12}
+          ior={1.25}
+          thickness={1.6}
+          roughness={0}
+          chromaticAberration={0.045}
+          anisotropicBlur={0.08}
+          distortion={0.18}
+          distortionScale={0.45}
+          temporalDistortion={reduceMotion ? 0 : 0.1}
           backside
-          backsideThickness={1}
+          backsideThickness={0.8}
           samples={6}
-          resolution={384}
+          resolution={512}
         />
       </mesh>
     </group>
@@ -107,7 +111,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, onReady }: HeroOrbCanvasPr
       <Suspense fallback={null}>
         <NamePlane isDark={isDark} />
         <WaterOrb reduceMotion={reduceMotion} />
-        <Environment preset="studio" />
+        <Environment preset="city" environmentIntensity={0.35} />
       </Suspense>
     </Canvas>
   )
