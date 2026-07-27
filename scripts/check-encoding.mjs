@@ -9,6 +9,7 @@ const ignoredDirs = new Set([
   "dist",
   "node_modules",
   "coverage",
+  "storybook-static",
 ]);
 const checkedExtensions = new Set([
   ".css",

@@ -64,12 +64,34 @@ npm run audit:security
 npm run audit:lighthouse:desktop
 npm run audit:lighthouse:mobile
 npm run check:all
+npm run storybook
+npm run test:storybook
+npm run build-storybook
 ```
 
 `npm run dev:restart` performs a clean local restart:
 - kills stale `next dev` processes for this repo
 - removes stale `.next/dev/lock`
 - starts dev server again on `localhost:3000`
+
+## Component workshop
+
+Storybook runs locally and does not require an account:
+
+```bash
+npm run storybook
+```
+
+The component contract tests and the production build are:
+
+```bash
+npm run test:storybook
+npm run build-storybook
+```
+
+The first documented production component is
+`src/features/redesign/components/CaseCard.tsx`. Its stories cover published
+and draft states without changing the original Buy&Sell product design.
 
 ## Environment (`.env.local`)
 ```bash

@@ -1,8 +1,8 @@
 ﻿/* ============================================================
-   REDESIGN v2 Â· Manuel GarcÃ­a-Llera â€” Editorial TecnolÃ³gico
-   Sistema de diseÃ±o: black & white con personalidad.
-   Light: papel cÃ¡lido + tinta + ultramar. Dark: tinta + hueso + bermellÃ³n.
-   Sans (SF Pro stack) para estructura Â· Playfair itÃ¡lica para acento humano.
+   REDESIGN v2 · Manuel García-Llera — Editorial Tecnológico
+   Sistema de diseño: black & white con personalidad.
+   Light: papel cálido + tinta + ultramar. Dark: tinta + hueso + bermellón.
+   Sans (SF Pro stack) para estructura · Playfair itálica para acento humano.
    ============================================================ */
 
 :root {
@@ -201,7 +201,7 @@
 .rd-axis h3 span { font-size: 0.72rem; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 500; }
 .rd-axis p { font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); margin: 0; max-width: 32ch; }
 
-/* ---------- Casos: Ã­ndice editorial ---------- */
+/* ---------- Casos: índice editorial ---------- */
 .rd-cases { display: flex; flex-direction: column; }
 .rd-case {
   display: grid;
@@ -281,7 +281,7 @@
 
 
 /* ============================================================
-   CASO Â· pÃ¡gina de caso con fases navegables
+   CASO · página de caso con fases navegables
    ============================================================ */
 
 .rd-page-offset { padding-top: 4rem; }
@@ -310,7 +310,7 @@
 }
 .rd-meta-grid dd { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink); }
 
-/* Sub-navegaciÃ³n sticky de fases */
+/* Sub-navegación sticky de fases */
 .rd-phase-nav {
   position: sticky; top: 0; z-index: 40;
   display: flex; gap: clamp(1rem, 3vw, 2.5rem);
