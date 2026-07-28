@@ -32,6 +32,7 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
         <Link href="/#enfoque">Enfoque</Link>
         <Link href="/#capacidades">Capacidades</Link>
         <Link href="/casos">Casos</Link>
+        <Link href="/proceso">Proceso</Link>
         <Link href="/#contacto">Contacto</Link>
         <button type="button" className="rd-theme-btn" onClick={onToggleTheme}>
           {isDark ? 'Luz' : 'Noche'}
