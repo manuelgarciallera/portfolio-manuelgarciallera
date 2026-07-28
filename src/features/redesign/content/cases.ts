@@ -116,23 +116,124 @@ export class Badge {
       '¿Cómo afecta la arquitectura de la información a la adopción de un sistema de gestión por parte de roles no técnicos?',
   },
   {
-    slug: 'the-ux-union',
+    slug: 'coordination-hub',
     index: '02',
-    title: 'The UX ',
-    titleAccent: 'Union',
-    claim: 'Plataforma y comunidad para perfiles UX: producto, estrategia y MVP.',
-    summary: 'Caso en preparación. Producto propio: plataforma para perfiles UX con estrategia de comunidad.',
+    title: 'Coordination ',
+    titleAccent: 'Hub',
+    claim: 'Dos IAs trabajando como un equipo real: protocolo, evidencia y consenso verificable, sin una persona haciendo de mensajero.',
+    summary:
+      'Herramienta interna que coordina a varias IAs sobre un mismo proyecto. Registro de eventos inmutable, protocolo MCP, niveles de autonomía L0–L3 y un requisito que lo cambia todo: para que algo se llame consenso, tiene que estar revisado por otro y sostenido en evidencia.',
     year: '2026',
-    context: 'Producto propio',
-    role: 'Diseño de producto, estrategia, MVP',
-    stack: ['Figma', 'Next.js'],
-    tags: 'Producto · Comunidad · Estrategia',
-    published: false,
-    phases: [],
-    ai: { tool: '', phase: '', humanInput: '', output: '', criteria: '', limits: '', decision: '' },
-    figmaLayers: [],
-    learnings: [],
-    futureQuestion: '',
+    context: 'Producto propio · infraestructura de método, construida mientras se usaba',
+    role: 'Dirección de producto, arquitectura de decisión, especificación y revisión independiente del código',
+    stack: ['Node.js', 'MCP (Model Context Protocol)', 'Event sourcing · JSONL', 'Zod', 'node:test'],
+    tags: 'Multi-agente · MCP · Gobernanza L0–L3',
+    published: true,
+    phases: [
+      {
+        id: 'research',
+        title: 'Research',
+        paragraphs: [
+          'El problema apareció trabajando, no en un brief: al usar dos IAs sobre el mismo proyecto, la persona acaba convertida en cable de red. Copiar la respuesta de una, pegarla en la otra, volver a empezar. El coste no es el tiempo de copiar: es que las decisiones dejan de tener rastro y nadie sabe quién acordó qué.',
+          'El mercado ya está poblado —marcos de orquestación multiagente de grandes proveedores— pero resuelven otro problema: agentes efímeros dentro de una aplicación. Aquí los agentes son productos distintos, con sesiones separadas, cuotas propias y ventanas de disponibilidad que se agotan. La pregunta de investigación fue esa: cómo coordinar agentes que no comparten memoria ni horario.',
+          'La decisión estructural: no construir un agente soberano que decida por todos. Se separó la inteligencia de la autoridad. Una parte propone y razona; otra, determinista, autoriza. Ninguna IA puede ampliarse a sí misma los permisos.',
+        ],
+        bullets: [
+          'Diagnóstico del coste real de la intermediación humana',
+          'Comparación con marcos existentes y decisión de construir a medida',
+          'Modelo de niveles de autonomía L0–L3, con L3 reservado a la persona',
+          'Criterios de éxito medibles antes de escribir código',
+        ],
+      },
+      {
+        id: 'prototipo',
+        title: 'Prototipo',
+        paragraphs: [
+          'La arquitectura se diseñó antes que la interfaz. Un registro de eventos append-only como única fuente de verdad, proyecciones de lectura por encima, y un motor de políticas que autoriza cada mutación. Nada se borra: el historial es el producto.',
+          'Cada mensaje declara su naturaleza —hecho, inferencia, propuesta, objeción, revisión o resultado— y su clase de visibilidad. La interfaz distingue visualmente lo observado de lo inferido, porque presentar una estimación como dato exacto es el fallo más caro de un sistema de supervisión.',
+          'El principio de diseño que gobierna la pantalla: supervisión por excepción. No una cuadrícula de métricas, sino una secuencia — qué necesita atención, qué trabajo está detenido, qué IA puede actuar, qué evidencia lo demuestra.',
+        ],
+      },
+      {
+        id: 'ia',
+        title: 'IA en el proceso',
+        paragraphs: [
+          'Este caso es particular: la IA no es la herramienta del proyecto, es el sujeto del proyecto. Dos asistentes con fortalezas distintas se repartieron el trabajo por competencia — uno implementa, verifica y despliega; otro especifica, revisa e interroga la integridad — y se coordinaron por el propio Hub mientras lo construían.',
+          'La dirección, los criterios de aceptación y toda decisión irreversible siguieron siendo humanas. El sistema está diseñado para que eso no dependa de la buena voluntad: las acciones irreversibles se reclasifican automáticamente al nivel que exige aprobación de la persona.',
+        ],
+      },
+      {
+        id: 'desarrollo',
+        title: 'Desarrollo',
+        paragraphs: [
+          'El Hub expone sus operaciones como herramientas MCP, de modo que cada IA consulta su bandeja, acusa recibo, publica resultados y cierra temas desde su propia sesión, sin adaptadores a medida por producto.',
+          'La fiabilidad se trató como requisito, no como pulido: claves de idempotencia para que un reenvío no duplique trabajo, control de concurrencia con un único ganador por transición, arrendamientos que expiran y un proceso de recuperación cuya regla es explícita — cero tareas huérfanas tras una caída o un agotamiento de cuota.',
+          'El aislamiento entre proyectos no se confía a convenciones de nombres: cada evento lleva su clave de proyecto y una consulta de un proyecto no puede devolver contenido de otro.',
+        ],
+      },
+      {
+        id: 'validacion',
+        title: 'Validación',
+        paragraphs: [
+          'La prueba real del método llegó cuando la revisión independiente encontró el fallo más grave del sistema en el propio sistema: la función que cerraba un tema como "consenso" no comprobaba que nadie más lo hubiera revisado. Cualquier agente podía declarar acuerdo en solitario, y el nivel de la decisión estaba fijado por código, esquivando el motor de políticas.',
+          'Se corrigió elevando el consenso a contrato verificable: exige la petición original correlacionada, revisión de todos los revisores requeridos, imposibilidad de revisarse a uno mismo, y responsable, evidencia, reversibilidad y fecha de revisión obligatorios. El nivel se deriva; lo irreversible escala solo; lo que requiere aprobación humana únicamente lo cierra la persona.',
+          'Verificación al cierre: 95 pruebas automatizadas en verde, política de seguridad de contenido estricta, ausencia comprobada de secretos y de rutas absolutas en lo que se muestra, sin desbordamiento horizontal entre 320 y 1440 píxeles, y un ensayo de migración sobre los datos reales con recuento e identificadores preservados.',
+        ],
+      },
+    ],
+    ai: {
+      tool: 'Claude · Codex, coordinados entre sí por el propio Hub',
+      phase: 'Todo el ciclo: especificación, implementación, revisión cruzada y verificación',
+      humanInput: 'Problema, criterios de aceptación, arquitectura de decisión, prioridades y toda aprobación irreversible',
+      output: 'Implementación, pruebas, revisiones independientes con hallazgos priorizados y evidencia',
+      criteria: 'Evidencia verificable, reversibilidad, aislamiento entre proyectos, ausencia de secretos, pruebas en verde',
+      limits: 'Ninguna IA amplía sus propios permisos, cierra una decisión irreversible ni declara consenso sin revisión ajena',
+      decision: 'Humana en todo lo irreversible. Las IAs deciden lo reversible y lo dejan trazado',
+    },
+    figmaLayers: [
+      'foundations / niveles de autonomía · estados de disponibilidad · clases de visibilidad',
+      'organisms / cola de atención · línea temporal de conversación · panel de consenso',
+      'organisms / registro de decisiones · inventario de agentes · cadena de evidencia',
+    ],
+    codeEvidence: {
+      caption:
+        'El corazón del sistema: la puerta de consenso. Antes bastaba con que un agente lo declarara; ahora exige revisión independiente de todos los revisores requeridos y deriva el nivel en lugar de fijarlo.',
+      filename: 'src/store.mjs · resolveTopic()',
+      code: `const requiredReviewers = [
+  ...new Set(target.to.filter((agent) => agent !== parsed.from)),
+]
+if (requiredReviewers.length === 0) {
+  throw new Error('Consensus requires an independent review')
+}
+
+const reviewedBy = requiredReviewers.filter((reviewer) =>
+  events.some(
+    (event) =>
+      event.correlationId === target.id &&
+      event.from === reviewer &&
+      ['review', 'objection', 'result'].includes(event.messageKind),
+  ),
+)
+if (reviewedBy.length !== requiredReviewers.length) {
+  throw new Error('Consensus requires an independent review from: ...')
+}
+
+const level =
+  parsed.reversibility === 'irreversible' ? 'L3' : topicLevel
+if (level === 'L3' && parsed.from !== 'manuel') {
+  throw new Error('L3 consensus may only be resolved by Manuel')
+}`,
+    },
+    dataMapping:
+      "consensusState = 'reviewed' | 'provisional' | 'lapsed'  ←  derivado de las revisiones registradas, no declarado por el agente que resuelve",
+    learnings: [
+      'Separar la inteligencia de la autoridad: que una parte proponga y otra determinista autorice es lo que impide que una recomendación se confunda con una decisión.',
+      'Un acuerdo sin revisión ajena no es consenso, es una opinión con sello. Si el sistema no lo comprueba, acabará ocurriendo.',
+      'La indisponibilidad por cuota no es un caso excepcional sino la norma: el diseño debe degradar de forma explícita en lugar de bloquearse.',
+      'La trazabilidad sale gratis si se registra en el momento; reconstruirla después es imposible.',
+    ],
+    futureQuestion:
+      '¿Qué necesita ver una persona para supervisar con confianza el trabajo de varios agentes autónomos sin leer todo lo que producen?',
   },
   {
     slug: 'fintech-app',
