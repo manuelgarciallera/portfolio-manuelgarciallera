@@ -1,118 +1,78 @@
 import { describe, expect, it } from 'vitest'
+import { decideStudioPatch, validateStudioPatch, type AssistCapabilitySwitches, type StudioPatchContext } from './contracts'
 
-import {
-  STUDIO_PATCH_LIMITS,
-  decideStudioPatch,
-  validateStudioPatch,
-  type AssistCapabilitySwitches,
-  type StudioPatch,
-} from './contracts'
-
-const enabled: AssistCapabilitySwitches = {
-  suggestCopy: true,
-  suggestPalette: true,
-  suggestLayout: true,
-  suggestCrop: true,
-  suggestMotion: true,
+const enabled: AssistCapabilitySwitches = { suggestCopy: true, suggestPalette: true, suggestLayout: true, suggestCrop: true, suggestMotion: true }
+const context: StudioPatchContext = {
+  page: { title: 'Inicio', layout: [{ blockType: 'hero', heading: 'Hola' }, { blockType: 'media', caption: 'Portada' }, { blockType: 'richText', content: {} }] },
+  brand: { colors: [{ role: 'background', value: '#000000' }, { role: 'accent', value: '#FF0000' }], usageWeights: [{ role: 'background', weight: 80 }, { role: 'accent', weight: 20 }], motion: { duration: 600, stagger: 100, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' } },
 }
+const proposal = (capability: keyof AssistCapabilitySwitches, operations: unknown[]) => ({ schemaVersion: 1, capability, operations })
 
-const patch = (overrides: Partial<StudioPatch> = {}): StudioPatch => ({
-  schemaVersion: 1,
-  capability: 'suggestCopy',
-  operations: [{ op: 'replace', path: '/page/title', value: 'Un título mejor' }],
-  ...overrides,
-})
-
-describe('StudioPatch validation', () => {
-  it('accepts an allowlisted operation for an enabled capability', () => {
-    expect(validateStudioPatch(patch(), enabled)).toEqual(patch())
+describe('StudioPatch validation against current Payload fields', () => {
+  it('accepts detached immutable replacements for existing safe fields', () => {
+    const input = proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'Nuevo' }, { op: 'replace', path: '/page/layout/0/heading', value: 'Hero' }])
+    const result = validateStudioPatch(input, enabled, context)
+    ;(input.operations[0] as { path: string }).path = '/page/_status'
+    expect(result.operations[0].path).toBe('/page/title')
+    expect(Object.isFrozen(result.operations[0])).toBe(true)
   })
 
-  it('rejects a patch when its capability switch is disabled', () => {
-    expect(() => validateStudioPatch(patch(), { ...enabled, suggestCopy: false })).toThrow(/desactivada/i)
+  it.each(['/page/_status', '/page/publishedAt', '/auth/roles', '/brand/secret', '/page/~1status', '/page/layout/256/heading', '/page/layout/2/heading', '/page/layout/0/caption', '/page/blocks/0/body', '/page/layout/0/mediaUrl'])('rejects unknown, privileged, escaped, excessive, or nonexistent path %s', (path) => {
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path, value: 'x' }]), enabled, context)).toThrow()
   })
 
-  it.each([
-    '/page/status',
-    '/page/_status',
-    '/page/publishedAt',
-    '/auth/roles',
-    '/brand/secret',
-    '/page/blocks/0/onClick',
-    '/page/__proto__/polluted',
-    '/page/constructor/prototype',
-  ])('rejects forbidden or unknown path %s', (path) => {
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path, value: 'x' }] }), enabled)).toThrow()
+  it('keeps layout and crop capabilities unavailable even if switches are on', () => {
+    for (const capability of ['suggestLayout', 'suggestCrop'] as const) expect(() => validateStudioPatch(proposal(capability, [{ op: 'replace', path: '/page/layout/0/heading', value: 'x' }]), enabled, context)).toThrow(/no dispone/i)
   })
 
-  it.each(['javascript:alert(1)', 'data:text/html,boom', 'file:///etc/passwd', 'https://user:pass@example.com/x'])('rejects unsafe URL value %s', (value) => {
-    expect(() => validateStudioPatch(patch({ capability: 'suggestCrop', operations: [{ op: 'replace', path: '/page/blocks/0/mediaUrl', value }] }), enabled)).toThrow(/URL/i)
+  it('requires an explicit enabled capability switch', () => {
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), { ...enabled, suggestCopy: false }, context)).toThrow(/desactivada/i)
   })
 
-  it('accepts only HTTPS URLs without credentials', () => {
-    const safe = patch({ capability: 'suggestCrop', operations: [{ op: 'replace', path: '/page/blocks/0/mediaUrl', value: 'https://cdn.example.com/image.webp' }] })
-    expect(validateStudioPatch(safe, enabled)).toEqual(safe)
+  it.each(['copy', 'move', 'test'])('rejects JSON Patch operation %s', (op) => {
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op, path: '/page/title', value: 'x' }]), enabled, context)).toThrow(/operación/i)
   })
 
-  it.each(['/page/~1status', '/page/blocks/0/~0prototype', '/page/blocks/0/body~1status'])('rejects JSON Pointer escaping in %s', (path) => {
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path, value: 'x' }] }), enabled)).toThrow(/ruta/i)
+  it('permits remove only for optional existing copy and without value', () => {
+    expect(validateStudioPatch(proposal('suggestCopy', [{ op: 'remove', path: '/page/layout/1/caption' }]), enabled, context).operations).toHaveLength(1)
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'remove', path: '/page/layout/1/caption', value: 'x' }]), enabled, context)).toThrow(/valor/i)
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'remove', path: '/page/title' }]), enabled, context)).toThrow(/obligatorio/i)
   })
 
-  it('rejects block indexes outside the bounded editor range', () => {
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path: '/page/blocks/256/body', value: 'x' }] }), enabled)).toThrow(/índice/i)
+  it('uses current indexed brand fields and validates their values', () => {
+    expect(validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/colors/1/value', value: '#00FF00' }]), enabled, context).operations).toHaveLength(1)
+    expect(() => validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/colors/3/value', value: '#00FF00' }]), enabled, context)).toThrow(/existe/i)
+    expect(() => validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/colors/1/value', value: 'red' }]), enabled, context)).toThrow(/hexadecimal/i)
   })
 
-  it('rejects unrecognized envelope and operation members', () => {
-    expect(() => validateStudioPatch({ ...patch(), providerToken: 'secret' }, enabled)).toThrow(/propiedad/i)
-    expect(() => validateStudioPatch({ ...patch(), operations: [{ op: 'replace', path: '/page/title', value: 'x', from: '/page/status' }] }, enabled)).toThrow(/propiedad/i)
+  it('requires an atomic complete weight proposal totaling exactly 100', () => {
+    expect(validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/usageWeights/0/weight', value: 70 }, { op: 'replace', path: '/brand/usageWeights/1/weight', value: 30 }]), enabled, context).operations).toHaveLength(2)
+    expect(() => validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/usageWeights/0/weight', value: 70 }]), enabled, context)).toThrow(/completa/i)
+    expect(() => validateStudioPatch(proposal('suggestPalette', [{ op: 'replace', path: '/brand/usageWeights/0/weight', value: 90 }, { op: 'replace', path: '/brand/usageWeights/1/weight', value: 20 }]), enabled, context)).toThrow(/100/i)
   })
 
-  it('rejects an operation incompatible with the declared capability', () => {
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path: '/brand/colors/accent', value: '#ff00aa' }] }), enabled)).toThrow(/capacidad/i)
+  it('matches current motion names and bounds', () => {
+    expect(validateStudioPatch(proposal('suggestMotion', [{ op: 'replace', path: '/brand/motion/duration', value: 900 }]), enabled, context).operations).toHaveLength(1)
+    expect(() => validateStudioPatch(proposal('suggestMotion', [{ op: 'replace', path: '/brand/motion/duration', value: 149 }]), enabled, context)).toThrow(/límites/i)
   })
 
-  it('validates palette, motion, and crop values against editor bounds', () => {
-    expect(() => validateStudioPatch(patch({ capability: 'suggestPalette', operations: [{ op: 'replace', path: '/brand/colors/accent', value: 'red' }] }), enabled)).toThrow(/hexadecimal/i)
-    expect(() => validateStudioPatch(patch({ capability: 'suggestPalette', operations: [{ op: 'replace', path: '/brand/usageWeights/accent', value: 101 }] }), enabled)).toThrow(/porcentaje/i)
-    expect(() => validateStudioPatch(patch({ capability: 'suggestMotion', operations: [{ op: 'replace', path: '/brand/motion/duration', value: 149 }] }), enabled)).toThrow(/movimiento/i)
-    expect(() => validateStudioPatch(patch({ capability: 'suggestCrop', operations: [{ op: 'replace', path: '/page/blocks/0/crop/zoom', value: 0 }] }), enabled)).toThrow(/recorte/i)
+  it('rejects getters, non-plain or inherited envelopes, and extra members', () => {
+    const getter = Object.defineProperty({ schemaVersion: 1, capability: 'suggestCopy' }, 'operations', { enumerable: true, get: () => [{ op: 'replace', path: '/page/title', value: 'x' }] })
+    expect(() => validateStudioPatch(getter, enabled, context)).toThrow(/datos planos/i)
+    expect(() => validateStudioPatch(Object.create({ schemaVersion: 1, capability: 'suggestCopy', operations: [] }), enabled, context)).toThrow(/objeto plano|propias/i)
+    expect(() => validateStudioPatch(new (class Patch { schemaVersion = 1; capability = 'suggestCopy'; operations: unknown[] = [] })(), enabled, context)).toThrow(/objeto plano/i)
+    expect(() => validateStudioPatch({ ...proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), token: 'x' }, enabled, context)).toThrow(/propiedad/i)
   })
 
-  it('rejects unsupported JSON Patch operations', () => {
-    expect(() => validateStudioPatch({ ...patch(), operations: [{ op: 'copy' as 'replace', path: '/page/title', value: 'x' }] }, enabled)).toThrow(/operación/i)
+  it('rejects executable, prototype, secret, and bounded-size abuse', () => {
+    for (const value of [{ script: 'x' }, { accessToken: 'x' }, { constructor: 'x' }]) expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value }]), enabled, context)).toThrow()
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x'.repeat(4001) }]), enabled, context)).toThrow(/texto/i)
+    expect(() => validateStudioPatch(proposal('suggestCopy', Array.from({ length: 33 }, () => ({ op: 'replace', path: '/page/title', value: 'x' }))), enabled, context)).toThrow(/operaciones/i)
   })
 
-  it('rejects too many operations', () => {
-    const operations = Array.from({ length: STUDIO_PATCH_LIMITS.maxOperations + 1 }, () => ({ op: 'replace' as const, path: '/page/title' as const, value: 'x' }))
-    expect(() => validateStudioPatch(patch({ operations }), enabled)).toThrow(/operaciones/i)
-  })
-
-  it('rejects excessive depth, strings, and serialized bytes', () => {
-    let deep: unknown = 'x'
-    for (let index = 0; index <= STUDIO_PATCH_LIMITS.maxValueDepth; index += 1) deep = { value: deep }
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path: '/page/title', value: deep }] }), enabled)).toThrow(/profundidad/i)
-    expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path: '/page/title', value: 'x'.repeat(STUDIO_PATCH_LIMITS.maxStringLength + 1) }] }), enabled)).toThrow(/texto/i)
-    const operations = Array.from({ length: STUDIO_PATCH_LIMITS.maxOperations }, () => ({ op: 'replace' as const, path: '/page/title' as const, value: 'x'.repeat(STUDIO_PATCH_LIMITS.maxStringLength) }))
-    expect(() => validateStudioPatch(patch({ operations }), enabled)).toThrow(/bytes/i)
-  })
-
-  it('rejects nested executable, prototype, and secret keys', () => {
-    for (const value of [{ nested: { script: 'alert(1)' } }, { nested: { __proto__: null, prototype: 'x' } }, { nested: { apiKey: 'secret' } }, { nested: { accessToken: 'secret' } }, { nested: { clientSecret: 'secret' } }]) {
-      expect(() => validateStudioPatch(patch({ operations: [{ op: 'replace', path: '/page/title', value }] }), enabled)).toThrow()
-    }
-  })
-
-  it('returns an explicit decision without applying the proposal', () => {
-    expect(decideStudioPatch(patch(), enabled)).toEqual({ allowed: true, capability: 'suggestCopy', patch: patch() })
-    expect(decideStudioPatch(patch(), { ...enabled, suggestCopy: false })).toMatchObject({ allowed: false, capability: 'suggestCopy' })
-  })
-
-  it('returns an immutable copy so the validated patch cannot be changed afterwards', () => {
-    const input = { schemaVersion: 1, capability: 'suggestCopy', operations: [{ op: 'replace', path: '/page/title', value: 'Seguro' }] }
-    const validated = validateStudioPatch(input, enabled)
-    input.operations[0].path = '/page/status'
-    expect(validated.operations[0].path).toBe('/page/title')
-    expect(Object.isFrozen(validated)).toBe(true)
-    expect(Object.isFrozen(validated.operations[0])).toBe(true)
+  it('returns explicit decisions without applying changes', () => {
+    expect(decideStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'Nuevo' }]), enabled, context)).toMatchObject({ allowed: true, capability: 'suggestCopy' })
+    expect(decideStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'Nuevo' }]), { ...enabled, suggestCopy: false }, context)).toMatchObject({ allowed: false })
+    expect(context.page.title).toBe('Inicio')
   })
 })

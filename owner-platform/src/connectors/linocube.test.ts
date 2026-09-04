@@ -23,6 +23,22 @@ describe('Linocube published manifest contract', () => {
     expect(() => validatePublishedManifest({ schemaVersion: 1, manifestVersion: 1, digest: `sha256:${'0'.repeat(64)}`, manifest })).toThrow(/coincide/i)
   })
 
+  it('rejects extra keys, secrets, malformed source, arrays, and hash fields', () => {
+    const valid = { schemaVersion: 1 as const, manifestVersion: 3, digest: manifest.hash, manifest }
+    expect(() => validatePublishedManifest({ ...valid, token: 'secret' })).toThrow(/propiedad/i)
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, extra: true } })).toThrow(/propiedad/i)
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, source: { ...manifest.source, extra: true } } })).toThrow(/source|propiedad/i)
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, pageBlocks: {} } })).toThrow(/lista/i)
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, hash: `sha256:${'0'.repeat(64)}` } })).toThrow(/hash|coincide/i)
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, brandTokens: { accessToken: 'secret' } } })).toThrow(/secreta/i)
+  })
+
+  it('rejects getters and prototype-backed envelopes', () => {
+    const getter = Object.defineProperty({ schemaVersion: 1, manifestVersion: 1, digest: manifest.hash }, 'manifest', { enumerable: true, get: () => manifest })
+    expect(() => validatePublishedManifest(getter)).toThrow(/datos planos/i)
+    expect(() => validatePublishedManifest(new (class Envelope { schemaVersion = 1; manifestVersion = 1; digest = manifest.hash; manifest = manifest })())).toThrow(/objeto plano/i)
+  })
+
   it('is disabled by default and never attempts network access', async () => {
     const consumer = createDisabledLinocubeConsumer()
     expect(consumer.enabled).toBe(false)
