@@ -19,6 +19,7 @@ import { AuditEvents } from './collections/AuditEvents'
 import { AssistanceProposals } from './collections/AssistanceProposals'
 import { RestorePlans } from './collections/RestorePlans'
 import { DraftSnapshots } from './collections/DraftSnapshots'
+import { PublicationBundles } from './collections/PublicationBundles'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -61,6 +62,7 @@ export default buildConfig({
     AssistanceProposals,
     RestorePlans,
     DraftSnapshots,
+    PublicationBundles,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

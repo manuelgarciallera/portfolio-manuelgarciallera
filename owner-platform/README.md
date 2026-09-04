@@ -74,6 +74,12 @@ of the page's whitelisted draft fields. It deliberately excludes publication
 state, credentials, server metadata, and unregistered fields. New release
 records bind both snapshot types from the exact same page revision.
 
+Publication Bundles packages an ordered set of verified releases into one
+immutable, hashed artifact. `POST /api/owner/publication-bundles` prepares the
+artifact for inspection only. It does not write files into the public app,
+publish CMS records, call a deployment provider, or add runtime dependencies to
+the portfolio.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

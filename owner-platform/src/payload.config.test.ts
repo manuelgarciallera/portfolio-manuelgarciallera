@@ -37,4 +37,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('draft-snapshots')
   })
+
+  it('registers immutable publication bundles without a public bridge', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('publication-bundles')
+  })
 })

@@ -72,6 +72,9 @@ surface without changing the public portfolio:
 - **Draft Snapshots** contains a canonical, hashed recovery capsule for the
   page's title, slug, brand assignment/overrides, and block layout. It never
   stores published state or arbitrary document fields, and is immutable.
+- **Publication Bundles** stores an ordered, immutable and hashed package made
+  only from releases whose visual and restorable snapshots match exactly. It is
+  review evidence, not a public deployment or content bridge.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the
@@ -400,6 +403,34 @@ snapshot of the restored result, marks the plan `executed`, and appends an audit
 event. Failure in the page update, either snapshot, plan update, or audit event
 rolls back every write. The endpoint does not deploy the public application;
 the existing reviewed publication bridge remains a separate future decision.
+
+## Immutable publication bundles
+
+Prepare an inspectable publication candidate from one release per page:
+
+```http
+POST /api/owner/publication-bundles
+Content-Type: application/json
+
+{
+  "name": "Publicación septiembre",
+  "releaseIds": [44, 45, 46],
+  "confirmation": "PREPARAR PUBLICACIÓN"
+}
+```
+
+The order of `releaseIds` becomes the explicit page order in the bundle. The
+server reloads every release and independently verifies both associated hashes,
+page identity, and source revision. Duplicate releases, duplicate pages,
+mismatched snapshots, more than 100 pages, and packages larger than 5 MiB fail
+closed. The request body itself is limited to 16 KiB.
+
+The resulting **Publication Bundle** contains canonical page capsules plus their
+visual and editorial hashes and is immutable and audited. There is intentionally
+no confirm, publish, apply, filesystem-write, or deployment endpoint. A future
+public bridge must consume a specifically approved bundle through a separate,
+benchmark-gated process; merely creating or reading this record has no effect on
+the portfolio.
 
 ## Disabled integrations
 

@@ -80,6 +80,7 @@ export interface Config {
     'assistance-proposals': AssistanceProposal;
     'restore-plans': RestorePlan;
     'draft-snapshots': DraftSnapshot;
+    'publication-bundles': PublicationBundle;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +101,7 @@ export interface Config {
     'assistance-proposals': AssistanceProposalsSelect<false> | AssistanceProposalsSelect<true>;
     'restore-plans': RestorePlansSelect<false> | RestorePlansSelect<true>;
     'draft-snapshots': DraftSnapshotsSelect<false> | DraftSnapshotsSelect<true>;
+    'publication-bundles': PublicationBundlesSelect<false> | PublicationBundlesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -640,6 +642,29 @@ export interface RestorePlan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-bundles".
+ */
+export interface PublicationBundle {
+  id: number;
+  name: string;
+  schemaVersion: number;
+  pageCount: number;
+  bundle:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  bundleHash: string;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -713,6 +738,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'draft-snapshots';
         value: number | DraftSnapshot;
+      } | null)
+    | ({
+        relationTo: 'publication-bundles';
+        value: number | PublicationBundle;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1161,6 +1190,20 @@ export interface DraftSnapshotsSelect<T extends boolean = true> {
   sourceVersionId?: T;
   capsule?: T;
   capsuleHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-bundles_select".
+ */
+export interface PublicationBundlesSelect<T extends boolean = true> {
+  name?: T;
+  schemaVersion?: T;
+  pageCount?: T;
+  bundle?: T;
+  bundleHash?: T;
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
