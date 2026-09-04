@@ -7,6 +7,7 @@ import { assertCurrentProductionRuntime } from '@/config/runtime'
 import { getOwnerContentHealth } from '@/dashboard/content-health-service'
 import { handleDashboardOverviewRequest } from '@/dashboard/overview-request'
 import { getOwnerDashboardOverview } from '@/dashboard/overview-service'
+import { getOwnerWorkflowSummary } from '@/dashboard/workflow-summary-service'
 import { getOwnerReleaseSummary } from '@/releases/summary-service'
 
 export const GET = async (request: Request): Promise<Response> => {
@@ -22,6 +23,7 @@ export const GET = async (request: Request): Promise<Response> => {
         content: () => getOwnerContentHealth({ payload: payload as never, req }),
         releases: () => getOwnerReleaseSummary({ payload: payload as never, req }),
         user,
+        workflow: () => getOwnerWorkflowSummary({ payload: payload as never, req }),
       })
     },
   })
