@@ -1,11 +1,17 @@
-# Owner platform — isolated foundation
+# Owner platform — isolated editorial slice
 
 This directory is an independent Next.js/Payload application. It does not import
-from, add routes to, or add runtime dependencies to the public portfolio.
+from, add routes to, or add runtime dependencies to the public portfolio. It is
+an authenticated local editorial slice, not a deployed production service; the
+public portfolio still reads its existing checked-in content.
+
+The complete operational runbook is in
+[`../docs/owner-platform/operations.md`](../docs/owner-platform/operations.md).
 
 ## Local development
 
-Run `npm install` and then `npm run dev` from this directory. The development
+From the repository root, run `npm run owner:install` and then
+`npm --prefix owner-platform run dev`. The development
 command creates the ignored `.data/` directory and Payload uses
 `.data/owner-platform.db` unless `DATABASE_URL` is explicitly provided. The
 fallback Payload secret is deliberately named and limited to development; it
@@ -62,6 +68,11 @@ npm test
 npm run typecheck
 npm run build
 ```
+
+From the repository root, `npm run check:owner:clean` performs a lockfile-clean
+install and all owner checks. After a fresh public build,
+`npm run check:owner-isolation` verifies the root runtime dependency boundary,
+public import graph, and public bundle budget against the immutable baseline.
 
 `npm run generate:importmap` and `npm run generate:types` refresh Payload's
 generated shims after schema or admin-component changes.

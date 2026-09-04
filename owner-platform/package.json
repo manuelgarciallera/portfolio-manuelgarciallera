@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node ./scripts/dev.mjs",
     "build": "node ./scripts/build.mjs",
+    "check": "npm run test && npm run typecheck && npm run build",
     "generate:importmap": "payload generate:importmap",
     "generate:types": "payload generate:types",
     "start": "next start",

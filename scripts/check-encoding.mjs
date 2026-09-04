@@ -5,6 +5,7 @@ const root = process.cwd();
 const ignoredDirs = new Set([
   ".git",
   ".next",
+  ".data",
   "build",
   "dist",
   "node_modules",
