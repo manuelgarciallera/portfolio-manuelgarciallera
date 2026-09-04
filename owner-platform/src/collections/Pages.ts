@@ -4,6 +4,7 @@ import { MOTION_EASINGS, REDUCED_MOTION_BEHAVIORS, BRAND_COLOR_ROLES } from '../
 import { normalizePageBrandOverrides, resolvePageBrand } from '../brand/inheritance'
 import { validateBrandProfile } from '../brand/validation'
 import { editorialAccess, editorialVersions, slugField } from './shared'
+import { seoField } from './seo'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -205,5 +206,6 @@ export const Pages: CollectionConfig = {
       ],
     },
     { name: 'layout', type: 'blocks', blocks: pageBlocks, required: true },
+    seoField,
   ],
 }

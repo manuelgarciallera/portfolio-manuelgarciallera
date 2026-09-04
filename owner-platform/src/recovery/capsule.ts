@@ -15,6 +15,7 @@ export type DraftPageState = Readonly<{
   brandOverrides?: RecoveryJSON
   brandProfile: string | number
   layout: readonly RecoveryJSON[]
+  seo?: RecoveryJSON
   slug: string
   title: string
 }>
@@ -26,7 +27,7 @@ export type DraftCapsule = Readonly<{
 }>
 
 const blockedKey = /(?:^__proto__$|^prototype$|^constructor$|^script$|^javascript$|^html$|^css$|^on[a-z]+$|secret|token|password|authorization|credential|private[-_]?key|api[-_]?key|cookie|session)/i
-const stateFields = new Set(['brandOverrides', 'brandProfile', 'layout', 'slug', 'title'])
+const stateFields = new Set(['brandOverrides', 'brandProfile', 'layout', 'seo', 'slug', 'title'])
 const sourceFields = new Set(['collection', 'documentId', 'versionId'])
 type Budget = { nodes: number }
 
@@ -121,6 +122,7 @@ export const createDraftCapsule = (input: unknown): DraftCapsule => {
     ...(Object.hasOwn(input.state, 'brandOverrides') ? { brandOverrides: input.state.brandOverrides } : {}),
     brandProfile: relation(input.state.brandProfile),
     layout: input.state.layout,
+    ...(Object.hasOwn(input.state, 'seo') ? { seo: input.state.seo } : {}),
     slug: text(input.state.slug, 'El slug', 200),
     title: text(input.state.title, 'El título', 200),
   }, new Set(), 0, { nodes: 0 }) as unknown as DraftPageState

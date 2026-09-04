@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { editorialAccess, editorialVersions, slugField } from './shared'
+import { seoField } from './seo'
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -19,5 +20,6 @@ export const Articles: CollectionConfig = {
     { name: 'coverImage', type: 'upload', relationTo: 'media' },
     { name: 'content', type: 'richText', required: true },
     { name: 'publishedAt', type: 'date' },
+    seoField,
   ],
 }

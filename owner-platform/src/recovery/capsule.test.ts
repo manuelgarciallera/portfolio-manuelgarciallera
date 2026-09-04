@@ -8,6 +8,7 @@ const input = {
     brandOverrides: { accent: '#FF4B44', motion: { duration: 600 } },
     brandProfile: 3,
     layout: [{ blockType: 'hero', heading: 'Hola', image: 9 }],
+    seo: { canonicalUrl: 'https://portfolio.example/', description: 'Portfolio', noIndex: false, title: 'Inicio' },
     slug: 'inicio',
     title: 'Inicio',
   },
@@ -17,13 +18,14 @@ describe('draft recovery capsule', () => {
   it('creates a deterministic immutable capsule from whitelisted draft fields', () => {
     const first = createDraftCapsule(input)
     const second = createDraftCapsule({
-      state: { title: 'Inicio', layout: input.state.layout, slug: 'inicio', brandProfile: 3, brandOverrides: input.state.brandOverrides },
+      state: { title: 'Inicio', layout: input.state.layout, slug: 'inicio', seo: input.state.seo, brandProfile: 3, brandOverrides: input.state.brandOverrides },
       source: input.source,
     })
     expect(first.hash).toMatch(/^sha256:[a-f0-9]{64}$/)
     expect(second.hash).toBe(first.hash)
     expect(hashDraftCapsule(first)).toBe(first.hash)
     expect(Object.isFrozen(first.state)).toBe(true)
+    expect(first.state.seo).toEqual(input.state.seo)
   })
 
   it('excludes publication state and rejects unknown or credential-shaped data', () => {

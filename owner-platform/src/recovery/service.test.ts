@@ -17,6 +17,7 @@ describe('createPageDraftSnapshot', () => {
         brandProfile: 3,
         id: 7,
         layout: [{ blockType: 'hero', heading: 'Hola', image: 9 }],
+        seo: { description: 'Descripción SEO', noIndex: false },
         secretDraftNote: 'must-not-leak',
         slug: 'inicio',
         title: 'Inicio',
@@ -28,7 +29,7 @@ describe('createPageDraftSnapshot', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({
       collection: 'draft-snapshots',
       data: expect.objectContaining({
-        capsule: expect.objectContaining({ state: expect.objectContaining({ title: 'Inicio', slug: 'inicio', brandProfile: 3 }) }),
+        capsule: expect.objectContaining({ state: expect.objectContaining({ title: 'Inicio', slug: 'inicio', brandProfile: 3, seo: { description: 'Descripción SEO', noIndex: false } }) }),
         createdBy: 1,
         sourceDocumentId: '7',
       }),

@@ -6,6 +6,7 @@ import { Media } from './Media'
 import { Pages, pageBlocks, validatePageBrandPublication } from './Pages'
 import { Projects, projectBlocks } from './Projects'
 import { Technologies, validateOfficialTechnologyUrl, validateTechnologyColor } from './Technologies'
+import { seoField, validateCanonicalUrl } from './seo'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const accessArgs = (user: unknown) => ({ req: { user } }) as never
@@ -57,6 +58,28 @@ describe('editorial collections', () => {
     expect(fieldNamed(Articles, 'slug')).toMatchObject({ type: 'text', required: true, unique: true })
     expect(fieldNamed(Pages, 'title')).toMatchObject({ type: 'text', required: true })
     expect(fieldNamed(Pages, 'slug')).toMatchObject({ type: 'text', required: true, unique: true })
+  })
+
+  it('adds optional, shared and bounded SEO metadata without changing publication requirements', () => {
+    for (const collection of [Projects, Articles, Pages]) {
+      const seo = fieldNamed(collection, 'seo')
+      expect(seo).toBe(seoField)
+      expect(seo).toMatchObject({ type: 'group', required: false })
+    }
+    if (seoField.type !== 'group') throw new Error('seoField must be a group')
+    const fields = Object.fromEntries(seoField.fields.filter((field) => 'name' in field).map((field) => [field.name, field]))
+    expect(fields.title).toMatchObject({ type: 'text', maxLength: 70 })
+    expect(fields.description).toMatchObject({ type: 'textarea', maxLength: 180 })
+    expect(fields.socialImage).toMatchObject({ type: 'upload', relationTo: 'media' })
+    expect(fields.noIndex).toMatchObject({ type: 'checkbox', defaultValue: false })
+  })
+
+  it('accepts only credential-free HTTPS canonical URLs without fragments', () => {
+    expect(validateCanonicalUrl(undefined, {} as never)).toBe(true)
+    expect(validateCanonicalUrl('https://portfolio.example/casos/demo', {} as never)).toBe(true)
+    expect(validateCanonicalUrl('http://portfolio.example/demo', {} as never)).toMatch(/https/i)
+    expect(validateCanonicalUrl('https://user:secret@portfolio.example/demo', {} as never)).toMatch(/credencial/i)
+    expect(validateCanonicalUrl('https://portfolio.example/demo#private', {} as never)).toMatch(/fragmento/i)
   })
 
   it('allows project and page media to opt into reusable non-destructive placement recipes', () => {

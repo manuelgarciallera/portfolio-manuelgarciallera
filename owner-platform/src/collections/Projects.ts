@@ -1,6 +1,7 @@
 import type { Block, CollectionConfig } from 'payload'
 
 import { editorialAccess, editorialVersions, slugField } from './shared'
+import { seoField } from './seo'
 
 const CaseSectionBlock: Block = {
   slug: 'caseSection',
@@ -135,5 +136,6 @@ export const Projects: CollectionConfig = {
       },
     },
     { name: 'year', type: 'number' },
+    seoField,
   ],
 }

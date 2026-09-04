@@ -48,6 +48,7 @@ export const createPageDraftSnapshot = async ({
         ...(Object.hasOwn(page, 'brandOverrides') ? { brandOverrides: page.brandOverrides } : {}),
         brandProfile: relationId(page.brandProfile),
         layout: page.layout,
+        ...(Object.hasOwn(page, 'seo') ? { seo: page.seo } : {}),
         slug: page.slug,
         title: page.title,
       },
