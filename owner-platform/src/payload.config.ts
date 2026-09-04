@@ -23,6 +23,7 @@ import { PublicationBundles } from './collections/PublicationBundles'
 import { PublicationReviews } from './collections/PublicationReviews'
 import { PublicationArtifacts } from './collections/PublicationArtifacts'
 import { Technologies } from './collections/Technologies'
+import { AnalyticsSnapshots } from './collections/AnalyticsSnapshots'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -69,6 +70,7 @@ export default buildConfig({
     PublicationBundles,
     PublicationReviews,
     PublicationArtifacts,
+    AnalyticsSnapshots,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

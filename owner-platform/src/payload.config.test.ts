@@ -57,4 +57,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('technologies')
   })
+
+  it('registers immutable analytics snapshots without public tracking', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('analytics-snapshots')
+  })
 })
