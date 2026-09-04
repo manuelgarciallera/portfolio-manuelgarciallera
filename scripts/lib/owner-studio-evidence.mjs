@@ -6,7 +6,6 @@ import { join, relative, resolve, sep } from 'node:path'
 const ISOLATION_RECORD = 'docs/owner-platform/isolation-evidence-2026-09-04.json'
 export const OWNER_SURFACE_EXCLUSIONS = [
   'owner-platform/src/payload-types.ts',
-  'owner-platform/src/app/(payload)/admin/importMap.js',
   'owner-platform/next-env.d.ts',
   'owner-platform/.data/',
   'owner-platform/.next/',

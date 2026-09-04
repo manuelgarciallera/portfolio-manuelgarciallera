@@ -312,9 +312,10 @@ The companion
 [`owner-studio-phase-2-evidence.json`](./owner-studio-phase-2-evidence.json)
 binds the tracked owner operational surface and owner lockfile to that passing
 public-isolation record. Its explicit exclusion list contains only generated or
-runtime artifacts such as Payload types/import maps, `.next`, local databases,
-uploads, and secret environment files. It includes owner build/dev scripts and
-configuration. This companion is an integrity binding only: it does not claim
+runtime artifacts such as generated Payload types, `.next`, local databases,
+uploads, and secret environment files. The executable Payload admin import map
+is included, as are owner build/dev scripts and configuration. This companion
+is an integrity binding only: it does not claim
 that tests, lint, typecheck, build, or audits passed. Those outcomes require the
 commands and exit codes above. Verify the binding with
 `node ./scripts/prove-owner-studio-phase2.mjs --verify=docs/owner-platform/owner-studio-phase-2-evidence.json`.

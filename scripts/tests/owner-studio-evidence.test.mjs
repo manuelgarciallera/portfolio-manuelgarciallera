@@ -10,9 +10,11 @@ import { assertEvidenceOnlyChanges, createOwnerStudioEvidence, verifyOwnerStudio
 const fixture = async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'owner-studio-evidence-'))
   await mkdir(join(rootDir, 'owner-platform', 'src', 'brand'), { recursive: true })
+  await mkdir(join(rootDir, 'owner-platform', 'src', 'app', '(payload)', 'admin'), { recursive: true })
   await mkdir(join(rootDir, 'owner-platform', 'scripts'), { recursive: true })
   await mkdir(join(rootDir, 'docs', 'owner-platform'), { recursive: true })
   await writeFile(join(rootDir, 'owner-platform', 'src', 'brand', 'model.ts'), 'export const version = 1\n')
+  await writeFile(join(rootDir, 'owner-platform', 'src', 'app', '(payload)', 'admin', 'importMap.js'), 'export const importMap = {}\n')
   await writeFile(join(rootDir, 'owner-platform', 'package.json'), '{"name":"owner","private":true}\n')
   await writeFile(join(rootDir, 'owner-platform', 'package-lock.json'), '{"lockfileVersion":3}\n')
   await writeFile(join(rootDir, 'owner-platform', 'next.config.mjs'), 'export default {}\n')
@@ -62,6 +64,13 @@ test('changes its tracked surface digest when the owner build script changes', a
   const rootDir = await fixture()
   const before = await createOwnerStudioEvidence({ rootDir })
   await writeFile(join(rootDir, 'owner-platform', 'scripts', 'build.mjs'), 'export const build = false\n')
+  await assert.rejects(verifyOwnerStudioEvidence(before, { rootDir }), /does not match/i)
+})
+
+test('fails verification when the executable Payload admin import map changes', async () => {
+  const rootDir = await fixture()
+  const before = await createOwnerStudioEvidence({ rootDir })
+  await writeFile(join(rootDir, 'owner-platform', 'src', 'app', '(payload)', 'admin', 'importMap.js'), 'export const importMap = { tampered: true }\n')
   await assert.rejects(verifyOwnerStudioEvidence(before, { rootDir }), /does not match/i)
 })
 
