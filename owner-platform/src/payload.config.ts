@@ -21,6 +21,7 @@ import { RestorePlans } from './collections/RestorePlans'
 import { DraftSnapshots } from './collections/DraftSnapshots'
 import { PublicationBundles } from './collections/PublicationBundles'
 import { PublicationReviews } from './collections/PublicationReviews'
+import { PublicationArtifacts } from './collections/PublicationArtifacts'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -65,6 +66,7 @@ export default buildConfig({
     DraftSnapshots,
     PublicationBundles,
     PublicationReviews,
+    PublicationArtifacts,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,
