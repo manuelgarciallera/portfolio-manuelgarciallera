@@ -110,6 +110,22 @@ describe('normalizeMediaPlacement', () => {
 
     expect(() => normalizeMediaPlacement(input)).toThrow(/breakpointOverrides.*object/i)
   })
+
+  it.each(['__proto__', 'constructor', 'prototype'])(
+    'rejects JSON-parsed hazardous breakpoint override key %s',
+    (key) => {
+      const breakpointOverrides = JSON.parse(`{"${key}":{"focalX":0.25}}`) as Record<
+        string,
+        { focalX: number }
+      >
+      const input = { assetId: 'asset-1', breakpointOverrides } as Parameters<
+        typeof normalizeMediaPlacement
+      >[0]
+
+      expect(Object.hasOwn(breakpointOverrides, key)).toBe(true)
+      expect(() => normalizeMediaPlacement(input)).toThrow(key)
+    },
+  )
 })
 
 describe('assertPortfolioDocument', () => {

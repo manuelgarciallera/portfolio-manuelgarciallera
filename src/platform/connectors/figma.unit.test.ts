@@ -68,6 +68,62 @@ describe('parseFigmaUrl', () => {
 })
 
 describe('createFigmaImportProposal', () => {
+  it.each([
+    'http://cdn.test/thumb.png',
+    'https://user:password@cdn.test/thumb.png',
+    'not a URL',
+  ])('rejects a thumbnail URL that is not an allowed HTTPS URL: %s', (thumbnailUrl) => {
+    expect(() =>
+      createFigmaImportProposal({ sourceUrl, candidates: [candidate({ thumbnailUrl })] }),
+    ).toThrow(TypeError)
+  })
+
+  it('rejects candidate source metadata that does not match the proposal provenance', () => {
+    expect(() =>
+      createFigmaImportProposal({
+        sourceUrl,
+        candidates: [
+          candidate({
+            source: {
+              provider: 'figma',
+              fileKey: 'another-file',
+              sourceUrl: 'https://www.figma.com/design/another-file/Other',
+            },
+          }),
+        ],
+      }),
+    ).toThrow(/source.*file|file.*source/i)
+  })
+
+  it('normalizes untrusted nested placement data through the content runtime boundary', () => {
+    const placement = {
+      assetId: 'asset-1',
+      focalX: Number.NaN,
+      focalY: 4,
+      zoom: 0,
+      fit: 'stretch',
+      breakpointOverrides: {
+        mobile: { focalX: -1, focalY: 2, zoom: 99, fit: 'stretch' },
+      },
+    } as unknown as FigmaNodeCandidate['placement']
+    const inputCandidate = candidate({ placement })
+    const original = structuredClone(inputCandidate)
+
+    const result = createFigmaImportProposal({ sourceUrl, candidates: [inputCandidate] })
+
+    expect(result.candidates[0].placement).toEqual({
+      assetId: 'asset-1',
+      focalX: 0.5,
+      focalY: 1,
+      zoom: 1,
+      fit: 'cover',
+      breakpointOverrides: {
+        mobile: { focalX: 0, focalY: 1, zoom: 4, fit: 'cover' },
+      },
+    })
+    expect(inputCandidate).toEqual(original)
+  })
+
   it('normalizes names with locale-independent lowercasing', () => {
     const original = String.prototype.toLocaleLowerCase
     String.prototype.toLocaleLowerCase = () => {

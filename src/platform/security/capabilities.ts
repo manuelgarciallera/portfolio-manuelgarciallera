@@ -11,6 +11,7 @@ export type Capability =
   | 'delete'
   | 'changeCode'
   | 'deploy'
+  | 'replacePublishedAsset'
 
 export type ReasonCode =
   | 'allowed'
@@ -62,15 +63,15 @@ export interface AuthorizationDecision {
   reason: ReasonCode
 }
 
-export type AuditResult = boolean | 'allowed' | 'denied'
+export type AuditResult = boolean
 
 export interface AuditEventInput {
   actor: { id: string; kind: 'owner' | 'ai' }
   connector: ConnectorId | { id: ConnectorId; connected?: boolean; enabled?: boolean }
   capability: Capability
   resource: string
-  result: AuditResult | AuthorizationDecision
-  reason: ReasonCode
+  /** The authorization outcome is the sole source for the recorded result and reason. */
+  decision: AuthorizationDecision
   timestamp: TimestampInput
   correlationId: string
   metadata?: Readonly<Record<string, string | number | boolean | null>>
@@ -97,19 +98,51 @@ const CAPABILITIES: readonly Capability[] = [
   'delete',
   'changeCode',
   'deploy',
+  'replacePublishedAsset',
 ]
 
 const SECRET_KEY = /token|secret|password|authorization|cookie|key/i
 const CONNECTOR_PUBLIC_KEYS = ['id', 'connected', 'enabled'] as const
+const AUDIT_EVENT_INPUT_KEYS = [
+  'actor',
+  'connector',
+  'capability',
+  'resource',
+  'decision',
+  'timestamp',
+  'correlationId',
+  'metadata',
+] as const
+const APPROVAL_REQUIRED_CAPABILITIES = new Set<Capability>([
+  'publish',
+  'delete',
+  'deploy',
+  'replacePublishedAsset',
+])
+const REASON_CODES: readonly ReasonCode[] = [
+  'allowed',
+  'connector_disconnected',
+  'connector_disabled',
+  'missing_grant',
+  'ai_sensitive_action',
+  'approval_required',
+  'approval_expired',
+  'approval_digest_mismatch',
+  'isolation_required',
+]
 
 const assertExactOwnProperties = (
   value: Record<string, unknown>,
   allowedKeys: readonly string[],
   label: string,
 ): void => {
-  const unsupported = Object.getOwnPropertyNames(value).find((key) => !allowedKeys.includes(key))
-  if (unsupported !== undefined) {
-    throw new TypeError(`${label} contains unsupported field "${unsupported}".`)
+  for (const key of Reflect.ownKeys(value)) {
+    if (typeof key !== 'string') {
+      throw new TypeError(`${label} must not contain symbol keys.`)
+    }
+    if (!allowedKeys.includes(key)) {
+      throw new TypeError(`${label} contains unsupported field "${key}".`)
+    }
   }
 }
 
@@ -136,6 +169,13 @@ const requireCapability = (value: unknown, label = 'capability'): Capability => 
   return value
 }
 
+const requireReasonCode = (value: unknown): ReasonCode => {
+  if (typeof value !== 'string' || !REASON_CODES.includes(value as ReasonCode)) {
+    throw new TypeError('reason is unsupported.')
+  }
+  return value as ReasonCode
+}
+
 const parseTimestamp = (value: unknown, label: string): { date: Date; iso: string } => {
   const date = value instanceof Date ? new Date(value.getTime()) : new Date(value as string)
   if (
@@ -156,6 +196,18 @@ const requireActor = (actor: unknown): { id: string; kind: 'owner' | 'ai' } => {
 
 const requireConnectorId = (value: unknown, label = 'connector ID'): ConnectorId =>
   requireNonBlank(value, label) as ConnectorId
+
+const requireAuthorizationDecision = (value: unknown): AuthorizationDecision => {
+  if (!isPlainObject(value)) throw new TypeError('decision must be a plain object.')
+  assertExactOwnProperties(value, ['allowed', 'reason'], 'decision')
+  if (!Object.prototype.hasOwnProperty.call(value, 'allowed') || typeof value.allowed !== 'boolean') {
+    throw new TypeError('decision.allowed must be boolean.')
+  }
+  if (!Object.prototype.hasOwnProperty.call(value, 'reason')) {
+    throw new TypeError('decision.reason is required.')
+  }
+  return { allowed: value.allowed, reason: requireReasonCode(value.reason) }
+}
 
 const readCurrentTimestamp = (context: PolicyContext): { date: Date; iso: string } => {
   const timestamp = context.currentTimestamp ?? context.now
@@ -226,7 +278,7 @@ export function authorizeCapability(context: PolicyContext): AuthorizationDecisi
 
   if (
     context.actor.kind === 'ai' &&
-    (context.capability === 'publish' || context.capability === 'delete' || context.capability === 'deploy')
+    APPROVAL_REQUIRED_CAPABILITIES.has(context.capability)
   ) {
     return { allowed: false, reason: 'ai_sensitive_action' }
   }
@@ -237,7 +289,9 @@ export function authorizeCapability(context: PolicyContext): AuthorizationDecisi
     return authorizeApproval(context, current)
   }
 
-  if (context.capability === 'publish') return authorizeApproval(context, current)
+  if (APPROVAL_REQUIRED_CAPABILITIES.has(context.capability)) {
+    return authorizeApproval(context, current)
+  }
   return { allowed: true, reason: 'allowed' }
 }
 
@@ -245,10 +299,15 @@ const cloneMetadata = (
   metadata: AuditEventInput['metadata'],
 ): Readonly<Record<string, string | number | boolean | null>> | undefined => {
   if (metadata === undefined) return undefined
-  if (!isRecord(metadata)) throw new TypeError('metadata must be an object.')
+  if (!isPlainObject(metadata)) throw new TypeError('metadata must be a plain object.')
   const clone: Record<string, string | number | boolean | null> = {}
-  for (const [key, value] of Object.entries(metadata)) {
+  for (const key of Reflect.ownKeys(metadata)) {
+    if (typeof key !== 'string') throw new TypeError('metadata must not contain symbol keys.')
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      throw new TypeError(`metadata key "${key}" is not permitted.`)
+    }
     if (SECRET_KEY.test(key)) throw new TypeError(`metadata key "${key}" is not permitted.`)
+    const value = metadata[key]
     if (
       value !== null &&
       typeof value !== 'string' &&
@@ -262,15 +321,10 @@ const cloneMetadata = (
   return Object.freeze(clone)
 }
 
-const normalizeResult = (result: AuditEventInput['result']): AuditResult => {
-  if (typeof result === 'boolean' || result === 'allowed' || result === 'denied') return result
-  if (isRecord(result) && typeof result.allowed === 'boolean') return result.allowed
-  throw new TypeError('result must be a boolean or an allowed/denied value.')
-}
-
 /** Construct a deep-frozen, credential-free audit event. */
 export function createAuditEvent(input: AuditEventInput): AuditEvent {
-  if (!isRecord(input)) throw new TypeError('audit event input must be an object.')
+  if (!isPlainObject(input)) throw new TypeError('audit event input must be a plain object.')
+  assertExactOwnProperties(input, AUDIT_EVENT_INPUT_KEYS, 'audit event input')
   const actor = requireActor(input.actor)
   let connectorId: ConnectorId
   if (isRecord(input.connector)) {
@@ -288,20 +342,7 @@ export function createAuditEvent(input: AuditEventInput): AuditEvent {
   }
   const capability = requireCapability(input.capability)
   const resource = requireNonBlank(input.resource, 'resource')
-  const reason = input.reason
-  if (
-    reason !== 'allowed' &&
-    reason !== 'connector_disconnected' &&
-    reason !== 'connector_disabled' &&
-    reason !== 'missing_grant' &&
-    reason !== 'ai_sensitive_action' &&
-    reason !== 'approval_required' &&
-    reason !== 'approval_expired' &&
-    reason !== 'approval_digest_mismatch' &&
-    reason !== 'isolation_required'
-  ) {
-    throw new TypeError('reason is unsupported.')
-  }
+  const decision = requireAuthorizationDecision(input.decision)
   const { iso } = parseTimestamp(input.timestamp, 'timestamp')
   const correlationId = requireNonBlank(input.correlationId, 'correlationId')
   const event: AuditEvent = {
@@ -309,8 +350,8 @@ export function createAuditEvent(input: AuditEventInput): AuditEvent {
     connector: connectorId,
     capability,
     resource,
-    result: normalizeResult(input.result),
-    reason,
+    result: decision.allowed,
+    reason: decision.reason,
     timestamp: iso,
     correlationId,
   }

@@ -26,8 +26,9 @@ Public exports:
 `normalizeMediaPlacement` returns a new placement and applies safe defaults:
 `focalX` and `focalY` default to `0.5` and are clamped to `0..1`; `zoom`
 defaults to `1` and is clamped to `1..4`; and an unsupported fit defaults to
-`cover`. Frame and breakpoint settings are copied as placement data. The source
-asset is never modified.
+`cover`, including nested breakpoint overrides. Frame and breakpoint settings
+are copied as placement data; breakpoint keys named `__proto__`, `constructor`,
+or `prototype` are rejected. The source asset is never modified.
 
 `assertPortfolioDocument` validates untrusted data against schema version 1,
 the supported block kinds, non-negative integer block order, unique asset and
@@ -51,11 +52,13 @@ normalizes `node-id=12-34` to `12:34`, and rejects credentials, unexpected
 hosts, non-HTTPS URLs, malformed file keys, and malformed node IDs. It performs
 no HTTP request.
 
-`createFigmaImportProposal` clones local candidate data, ranks candidates
-deterministically using the supplied name and aspect-ratio signals, clamps
-confidence to `0..1`, records provenance, and always returns
-`requiresConfirmation: true`. It is a proposal boundary, not an import or
-publishing operation.
+`createFigmaImportProposal` validates candidate source metadata against the
+parsed proposal source, accepts only credential-free standard HTTPS thumbnail
+URLs, and routes any nested placement through `normalizeMediaPlacement` before
+returning a cloned candidate. It ranks candidates deterministically using the
+supplied name and aspect-ratio signals, clamps confidence to `0..1`, records
+canonical provenance, and always returns `requiresConfirmation: true`. It is a
+proposal boundary, not an import or publishing operation.
 
 The future integration is a server-side Figma OAuth adapter with the minimum
 required read scope (planned `file_content:read`). It will fetch only the
@@ -74,22 +77,26 @@ Public exports:
 - `createAuditEvent(input)`
 
 The capability set is `read`, `import`, `propose`, `editDraft`, `publish`,
-`delete`, `changeCode`, and `deploy`. Authorization is default-deny: a
-connector must be both connected and enabled, and an explicit grant must
-contain the requested capability. Connector state alone never grants access.
+`delete`, `changeCode`, `deploy`, and `replacePublishedAsset`. Authorization is
+default-deny: a connector must be both connected and enabled, and an explicit
+grant must contain the requested capability. Connector state alone never grants
+access.
 
-AI actors are categorically denied `publish`, `delete`, and `deploy`. A
-`changeCode` decision additionally requires an isolated execution context and
-an unused approval whose operation digest matches the exact requested
-operation. Publishing requires explicit approval as well. The pure policy
-function does not consume approvals or persist state.
+AI actors are categorically denied `publish`, `delete`, `deploy`, and
+`replacePublishedAsset`. Each of those four owner operations requires a valid,
+unused, unexpired approval whose operation digest matches the exact requested
+operation. A `changeCode` decision additionally requires an isolated execution
+context and the same approval semantics. The pure policy function does not
+consume approvals or persist state.
 
 `createAuditEvent` creates a credential-free, immutable event containing the
 actor, connector, capability, resource, result, reason, normalized timestamp,
-and correlation ID. Metadata is limited to JSON-safe scalar values and rejects
-secret-like field names. An append-only ledger and durable one-time approval
-consumption belong to a future persistence adapter; this module only provides
-the validated event and decision contracts.
+and correlation ID. Its input requires one `AuthorizationDecision`; the event
+derives both its boolean result and reason from that decision and rejects
+separate result/reason fields. Metadata is limited to JSON-safe scalar values
+and rejects secret-like and hazardous record field names. An append-only ledger
+and durable one-time approval consumption belong to a future persistence
+adapter; this module only provides the validated event and decision contracts.
 
 ## Data and integration boundaries (next phase)
 
@@ -142,9 +149,9 @@ repository files as untrusted input. The minimum controls are:
   client code, public responses, model context, audit metadata, and logs.
 - **No public imports:** public pages import only public feature code; the
   owner platform remains a server-side boundary and receives no public route.
-- **Explicit publishing approval:** AI cannot publish, delete, or deploy; owner
-  publishing and any replacement of published media require a separate,
-  recorded approval.
+- **Explicit sensitive-operation approval:** AI cannot publish, delete,
+  deploy, or replace a published asset; each corresponding owner operation
+  requires a separate, recorded approval bound to its exact digest.
 - **Immutable originals (future storage boundary):** preserve imported
   originals and use reversible placement/derivative data for presentation
   changes; the current pure contracts do not enforce storage immutability.

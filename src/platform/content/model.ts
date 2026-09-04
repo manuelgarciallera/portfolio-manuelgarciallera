@@ -68,6 +68,8 @@ export interface PortfolioDocument {
   blocks: PortfolioBlock[]
 }
 
+const HAZARDOUS_RECORD_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' &&
   value !== null &&
@@ -174,7 +176,10 @@ const parseOverride = (
     override.zoom = shouldClamp ? clamp(zoom, 1, 1, 4) : zoom
   }
   if (hasOwn(value, 'fit')) {
-    override.fit = requireFit(value.fit, `${path}.fit`)
+    override.fit =
+      shouldClamp && value.fit !== 'cover' && value.fit !== 'contain'
+        ? 'cover'
+        : requireFit(value.fit, `${path}.fit`)
   }
   if (hasOwn(value, 'frame')) override.frame = validateFrame(value.frame, `${path}.frame`)
   return override
@@ -188,6 +193,9 @@ const parseOverrides = (
   if (!isRecord(value)) throw new TypeError(`${path} must be an object.`)
   const overrides: Record<string, MediaPlacementOverride> = {}
   for (const [name, override] of Object.entries(value)) {
+    if (HAZARDOUS_RECORD_KEYS.has(name)) {
+      fail(`${path} contains unsupported breakpoint override name "${name}".`)
+    }
     overrides[name] = parseOverride(override, `${path}.${name} breakpoint override`, shouldClamp)
   }
   return overrides

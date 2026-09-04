@@ -8,11 +8,29 @@ import {
 } from './capabilities'
 
 const now = '2026-09-04T10:00:00.000Z'
+const approvalBoundCapabilities = [
+  'publish',
+  'delete',
+  'deploy',
+  'replacePublishedAsset',
+] as const satisfies readonly Capability[]
 
 const context = (overrides: Partial<PolicyContext> = {}): PolicyContext => ({
   actor: { id: 'owner-1', kind: 'owner' },
   connector: { id: 'figma', connected: true, enabled: true },
-  grants: [{ connectorId: 'figma', capabilities: ['read', 'publish', 'delete', 'deploy', 'changeCode'] }],
+  grants: [
+    {
+      connectorId: 'figma',
+      capabilities: [
+        'read',
+        'publish',
+        'delete',
+        'deploy',
+        'replacePublishedAsset' as Capability,
+        'changeCode',
+      ],
+    },
+  ],
   capability: 'read',
   resource: 'file:abc',
   operationDigest: 'digest-1',
@@ -49,7 +67,7 @@ describe('authorizeCapability', () => {
   })
 
   it('categorically denies sensitive capabilities for AI actors', () => {
-    const capabilities: Capability[] = ['publish', 'delete', 'deploy']
+    const capabilities: Capability[] = ['publish', 'delete', 'deploy', 'replacePublishedAsset' as Capability]
     for (const capability of capabilities) {
       expect(authorizeCapability(context({ actor: { id: 'agent-1', kind: 'ai' }, capability }))).toEqual({
         allowed: false,
@@ -58,33 +76,43 @@ describe('authorizeCapability', () => {
     }
   })
 
-  it('requires owner publish approval', () => {
-    expect(authorizeCapability(context({ capability: 'publish' }))).toEqual({
+  it.each(approvalBoundCapabilities)('requires valid unused, unexpired, digest-bound owner approval to %s', (capability) => {
+    expect(authorizeCapability(context({ capability }))).toEqual({
       allowed: false,
       reason: 'approval_required',
     })
-  })
-
-  it('accepts a current one-time approval bound to the operation digest', () => {
     expect(
       authorizeCapability(
         context({
-          capability: 'publish',
+          capability,
+          approval: { operationDigest: 'digest-1', expiresAt: '2026-09-04T11:00:00.000Z', used: true },
+        }),
+      ),
+    ).toEqual({ allowed: false, reason: 'approval_required' })
+    expect(
+      authorizeCapability(
+        context({
+          capability,
+          approval: { operationDigest: 'digest-1', expiresAt: '2026-09-04T09:59:59.000Z', used: false },
+        }),
+      ),
+    ).toEqual({ allowed: false, reason: 'approval_expired' })
+    expect(
+      authorizeCapability(
+        context({
+          capability,
+          approval: { operationDigest: 'digest-2', expiresAt: '2026-09-04T11:00:00.000Z', used: false },
+        }),
+      ),
+    ).toEqual({ allowed: false, reason: 'approval_digest_mismatch' })
+    expect(
+      authorizeCapability(
+        context({
+          capability,
           approval: { operationDigest: 'digest-1', expiresAt: '2026-09-04T11:00:00.000Z', used: false },
         }),
       ),
     ).toEqual({ allowed: true, reason: 'allowed' })
-  })
-
-  it.each([
-    ['used', { operationDigest: 'digest-1', expiresAt: '2026-09-04T11:00:00.000Z', used: true }, 'approval_required'],
-    ['expired', { operationDigest: 'digest-1', expiresAt: '2026-09-04T09:59:59.000Z', used: false }, 'approval_expired'],
-    ['mismatched', { operationDigest: 'digest-2', expiresAt: '2026-09-04T11:00:00.000Z', used: false }, 'approval_digest_mismatch'],
-  ] as const)('denies %s publish approvals', (_name, approval, reason) => {
-    expect(authorizeCapability(context({ capability: 'publish', approval }))).toEqual({
-      allowed: false,
-      reason,
-    })
   })
 
   it('requires isolation before an approval for code changes', () => {
@@ -186,6 +214,13 @@ describe('authorizeCapability', () => {
         }),
       ),
     ).toThrow(TypeError)
+
+    const symbolConnector = { id: 'figma', connected: true, enabled: true }
+    Object.defineProperty(symbolConnector, Symbol('unexpected'), {
+      value: 'must-not-cross-the-boundary',
+      enumerable: false,
+    })
+    expect(() => authorizeCapability(context({ connector: symbolConnector as never }))).toThrow(TypeError)
   })
 
   it('rejects inherited connector credentials and accepts a null-prototype connector', () => {
@@ -213,8 +248,7 @@ describe('createAuditEvent', () => {
     connector: 'figma' as const,
     capability: 'publish' as const,
     resource: 'file:abc',
-    result: 'denied' as const,
-    reason: 'approval_required' as const,
+    decision: { allowed: false, reason: 'approval_required' as const },
     timestamp: now,
     correlationId: 'correlation-1',
     metadata: { source: 'panel', attempt: 1, dryRun: true, note: null },
@@ -223,7 +257,17 @@ describe('createAuditEvent', () => {
   it('returns an immutable audit event with an ISO timestamp', () => {
     const event = createAuditEvent(input)
 
-    expect(event).toMatchObject(input)
+    expect(event).toMatchObject({
+      actor: input.actor,
+      connector: input.connector,
+      capability: input.capability,
+      resource: input.resource,
+      result: false,
+      reason: 'approval_required',
+      timestamp: input.timestamp,
+      correlationId: input.correlationId,
+      metadata: input.metadata,
+    })
     expect(event.timestamp).toBe(now)
     expect(Object.isFrozen(event)).toBe(true)
     expect(Object.isFrozen(event.actor)).toBe(true)
@@ -241,6 +285,16 @@ describe('createAuditEvent', () => {
     expect(event.metadata).not.toBe(metadata)
   })
 
+  it('rejects separately supplied result and reason fields instead of allowing them to disagree with the decision', () => {
+    expect(() =>
+      createAuditEvent({
+        ...input,
+        result: 'allowed',
+        reason: 'allowed',
+      } as never),
+    ).toThrow(/unsupported field "result"/i)
+  })
+
   it.each([
     { nested: { value: 'nope' } },
     { values: ['nope'] },
@@ -254,6 +308,16 @@ describe('createAuditEvent', () => {
   ])('rejects unsafe metadata %j', (metadata) => {
     expect(() => createAuditEvent({ ...input, metadata } as never)).toThrow(TypeError)
   })
+
+  it.each(['__proto__', 'constructor', 'prototype'])(
+    'rejects JSON-parsed hazardous metadata key %s',
+    (key) => {
+      const metadata = JSON.parse(`{"${key}":"unsafe"}`) as Record<string, string>
+
+      expect(Object.hasOwn(metadata, key)).toBe(true)
+      expect(() => createAuditEvent({ ...input, metadata } as never)).toThrow(key)
+    },
+  )
 
   it('rejects blank IDs, invalid capabilities, and invalid timestamps', () => {
     expect(() => createAuditEvent({ ...input, correlationId: ' ' })).toThrow(TypeError)
@@ -290,6 +354,13 @@ describe('createAuditEvent', () => {
     expect(() =>
       createAuditEvent({ ...input, connector: { id: 'figma', label: 'unexpected' } as never }),
     ).toThrow(TypeError)
+
+    const symbolConnector = { id: 'figma' }
+    Object.defineProperty(symbolConnector, Symbol('unexpected'), {
+      value: 'must-not-cross-the-boundary',
+      enumerable: false,
+    })
+    expect(() => createAuditEvent({ ...input, connector: symbolConnector as never })).toThrow(TypeError)
   })
 
   it('rejects inherited connector credentials and accepts a null-prototype connector', () => {

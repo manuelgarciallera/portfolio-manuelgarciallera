@@ -1,4 +1,4 @@
-import type { MediaPlacement } from '../content/model'
+import { normalizeMediaPlacement, type MediaPlacement } from '../content/model'
 
 const FIGMA_HOSTS = new Set(['figma.com', 'www.figma.com'])
 const FIGMA_PATHS = new Set(['design', 'file', 'proto'])
@@ -53,27 +53,61 @@ export interface FigmaImportProposal {
 const clamp = (value: number, minimum = 0, maximum = 1): number =>
   Math.min(maximum, Math.max(minimum, value))
 
-const clonePlacement = (placement: MediaPlacement): MediaPlacement => {
-  const clone: MediaPlacement = {
-    assetId: placement.assetId,
-    focalX: placement.focalX,
-    focalY: placement.focalY,
-    zoom: placement.zoom,
-    fit: placement.fit,
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  isRecord(value) &&
+  (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+
+const requireAllowedHttpsUrl = (value: unknown, label: string): string => {
+  if (typeof value !== 'string' || value.trim() !== value || value.length === 0) {
+    throw new TypeError(`${label} must be a non-empty HTTPS URL.`)
   }
-  if (placement.frame) clone.frame = { ...placement.frame }
-  if (placement.breakpointOverrides) {
-    clone.breakpointOverrides = Object.fromEntries(
-      Object.entries(placement.breakpointOverrides).map(([breakpoint, override]) => [
-        breakpoint,
-        {
-          ...override,
-          ...(override.frame ? { frame: { ...override.frame } } : {}),
-        },
-      ]),
-    )
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new TypeError(`${label} must be a valid HTTPS URL.`)
   }
-  return clone
+  if (url.protocol !== 'https:' || url.username || url.password || url.port) {
+    throw new TypeError(`${label} must be a credential-free standard HTTPS URL.`)
+  }
+  return value
+}
+
+const validateCandidateSource = (
+  value: unknown,
+  expected: FigmaSourceMetadata,
+  candidateNodeId: string,
+): void => {
+  if (value === undefined) return
+  if (!isPlainObject(value)) throw new TypeError('Figma candidate source must be a plain object.')
+  for (const key of Reflect.ownKeys(value)) {
+    if (
+      typeof key !== 'string' ||
+      !['provider', 'fileKey', 'sourceUrl', 'nodeId'].includes(key)
+    ) {
+      throw new TypeError('Figma candidate source contains an unsupported field.')
+    }
+  }
+  if (value.provider !== undefined && value.provider !== 'figma') {
+    throw new TypeError('Figma candidate source provider must be figma.')
+  }
+  if (value.fileKey !== undefined && value.fileKey !== expected.fileKey) {
+    throw new TypeError('Figma candidate source file key must match the proposal source.')
+  }
+  if (value.sourceUrl !== undefined) {
+    if (typeof value.sourceUrl !== 'string') {
+      throw new TypeError('Figma candidate source URL must be a string.')
+    }
+    if (parseFigmaUrl(value.sourceUrl).fileKey !== expected.fileKey) {
+      throw new TypeError('Figma candidate source URL must match the proposal file.')
+    }
+  }
+  if (value.nodeId !== undefined && value.nodeId !== candidateNodeId) {
+    throw new TypeError('Figma candidate source node ID must match the candidate node ID.')
+  }
 }
 
 const cloneCandidate = (
@@ -100,6 +134,7 @@ const cloneCandidate = (
   ) {
     throw new TypeError('Figma candidate height must be a non-negative finite number.')
   }
+  validateCandidateSource(candidate.source, source, candidate.nodeId)
   const clone: FigmaNodeCandidate = {
     nodeId: candidate.nodeId,
     name: candidate.name,
@@ -112,8 +147,12 @@ const cloneCandidate = (
       nodeId: candidate.nodeId,
     },
   }
-  if (candidate.thumbnailUrl !== undefined) clone.thumbnailUrl = candidate.thumbnailUrl
-  if (candidate.placement !== undefined) clone.placement = clonePlacement(candidate.placement)
+  if (candidate.thumbnailUrl !== undefined) {
+    clone.thumbnailUrl = requireAllowedHttpsUrl(candidate.thumbnailUrl, 'Figma candidate thumbnail URL')
+  }
+  if (candidate.placement !== undefined) {
+    clone.placement = normalizeMediaPlacement(candidate.placement)
+  }
   return clone
 }
 
