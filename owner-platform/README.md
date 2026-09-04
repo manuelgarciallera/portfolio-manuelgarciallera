@@ -80,6 +80,12 @@ artifact for inspection only. It does not write files into the public app,
 publish CMS records, call a deployment provider, or add runtime dependencies to
 the portfolio.
 
+Publication Reviews records a single immutable owner decision for a verified
+bundle. `POST /api/owner/publication-bundles/:id/review` requires the exact
+approval or rejection phrase, re-verifies the bundle hash, and writes an audit
+event. Approval is evidence only: it still cannot publish, deploy, apply, or
+write into the public portfolio.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

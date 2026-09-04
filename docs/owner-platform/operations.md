@@ -426,11 +426,36 @@ mismatched snapshots, more than 100 pages, and packages larger than 5 MiB fail
 closed. The request body itself is limited to 16 KiB.
 
 The resulting **Publication Bundle** contains canonical page capsules plus their
-visual and editorial hashes and is immutable and audited. There is intentionally
-no confirm, publish, apply, filesystem-write, or deployment endpoint. A future
-public bridge must consume a specifically approved bundle through a separate,
-benchmark-gated process; merely creating or reading this record has no effect on
-the portfolio.
+visual and editorial hashes and is immutable and audited. It has no publish,
+apply, filesystem-write, or deployment action; merely creating or reading this
+record has no effect on the portfolio.
+
+### Immutable owner review
+
+After inspecting the package, record one final owner decision:
+
+```http
+POST /api/owner/publication-bundles/80/review
+Content-Type: application/json
+
+{
+  "decision": "approved",
+  "confirmation": "APROBAR PAQUETE",
+  "note": "Contenido, orden y evidencias revisados."
+}
+```
+
+Use `RECHAZAR PAQUETE` with `decision: "rejected"` to reject it. The service
+authenticates before parsing its body, rejects extra fields, limits the request
+to 8 KiB, reloads the immutable bundle, and verifies both its canonical hash
+and stored hash. A unique constraint and server-side lookup allow exactly one
+decision per bundle. The resulting **Publication Review** is itself canonical,
+hashed, immutable, attributed to the owner, and represented in the audit ledger.
+
+An approved review is evidence, not execution. There remains intentionally no
+public bridge, publish, apply, filesystem-write, or deployment endpoint. A
+future bridge must consume a specifically approved bundle through a separate,
+benchmark-gated process and must not weaken this boundary.
 
 ## Disabled integrations
 
