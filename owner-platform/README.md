@@ -46,6 +46,12 @@ ordered catalog through `technologyStack`; their previous inline `technologies`
 data remains available during migration, so this addition does not discard or
 rewrite existing drafts.
 
+Projects also expose an optional reorderable `caseStudyLayout` for structured
+sections, media, galleries, quotes, metrics, and registered product features.
+The existing rich-text `body` remains required and untouched during migration.
+Media blocks require alternative text and can reference reversible Media
+Placements; arbitrary HTML, CSS, JavaScript, embeds, and code are not accepted.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or

@@ -52,6 +52,11 @@ surface without changing the public portfolio:
   corporate color and HTTPS official URL. Projects may select an ordered
   `technologyStack`; the earlier inline `technologies` field remains available
   for migration compatibility.
+- **Projects** includes an optional reorderable `caseStudyLayout` composed from
+  registered section, media, gallery, quote, metric, and product-feature
+  blocks. Existing required rich text remains intact for migration. Media and
+  gallery items require alternative text and may use reversible placements;
+  no arbitrary HTML, CSS, JavaScript, embed, or code block is available.
 - **Releases** is the append-only version ledger. Each record binds a complete
   Git commit to a preview snapshot, a concise change summary, and bounded
   performance, usability, and accessibility measurements for desktop or
