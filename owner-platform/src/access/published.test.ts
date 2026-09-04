@@ -7,7 +7,10 @@ const requestFor = (user: unknown) => ({ req: { user } }) as never
 describe('published content access', () => {
   it('limits anonymous reads to published documents', () => {
     expect(ownerOrPublished(requestFor(null))).toEqual({
-      _status: { equals: 'published' },
+      and: [
+        { _status: { equals: 'published' } },
+        { deletedAt: { exists: false } },
+      ],
     })
   })
 

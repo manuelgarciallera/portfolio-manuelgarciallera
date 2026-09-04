@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Projects } from './collections/Projects'
 import { resolveRuntimeConfig } from './config/runtime'
+import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -38,6 +39,7 @@ export default buildConfig({
     user: Users.slug,
   },
   collections: [Users, Media, Projects, Articles, Pages],
+  bodyParser: multipartBodyParser,
   db,
   editor: lexicalEditor(),
   graphQL: {
@@ -45,6 +47,7 @@ export default buildConfig({
   },
   secret: runtime.payloadSecret,
   sharp,
+  upload: payloadUploadParsing,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

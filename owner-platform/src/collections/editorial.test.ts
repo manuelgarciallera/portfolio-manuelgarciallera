@@ -19,7 +19,10 @@ const expectEditorialPolicy = (collection: CollectionConfig) => {
   })
   expect(collection.trash).toBe(true)
   expect(collection.access?.read?.(accessArgs(null))).toEqual({
-    _status: { equals: 'published' },
+    and: [
+      { _status: { equals: 'published' } },
+      { deletedAt: { exists: false } },
+    ],
   })
   expect(collection.access?.read?.(accessArgs(owner))).toBe(true)
   expect(collection.access?.readVersions?.(accessArgs(null))).toBe(false)
