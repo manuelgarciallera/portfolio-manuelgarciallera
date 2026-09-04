@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'brand-profiles': BrandProfile;
     projects: Project;
     articles: Article;
     pages: Page;
@@ -81,6 +82,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'brand-profiles': BrandProfilesSelect<false> | BrandProfilesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -197,6 +199,58 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-profiles".
+ */
+export interface BrandProfile {
+  id: number;
+  _order?: string | null;
+  name: string;
+  slug: string;
+  /**
+   * Roles semánticos. Se validan completamente al publicar.
+   */
+  colors?:
+    | {
+        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Objetivos compositivos; deben sumar 100 al publicar.
+   */
+  usageWeights?:
+    | {
+        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
+        weight: number;
+        id?: string | null;
+      }[]
+    | null;
+  typography?: {
+    primaryFamily?: string | null;
+    secondaryFamily?: string | null;
+    fontAssets?: (number | Media)[] | null;
+  };
+  assets?: {
+    logos?: (number | Media)[] | null;
+    images?: (number | Media)[] | null;
+    icons?: (number | Media)[] | null;
+  };
+  voiceNotes?: string | null;
+  motion?: {
+    duration?: number | null;
+    stagger?: number | null;
+    travel?: number | null;
+    easing?: ('linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out') | null;
+    reducedMotion?: ('reduce' | 'disable') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -381,6 +435,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'brand-profiles';
+        value: number | BrandProfile;
+      } | null)
+    | ({
         relationTo: 'projects';
         value: number | Project;
       } | null)
@@ -512,6 +570,57 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-profiles_select".
+ */
+export interface BrandProfilesSelect<T extends boolean = true> {
+  _order?: T;
+  name?: T;
+  slug?: T;
+  colors?:
+    | T
+    | {
+        role?: T;
+        value?: T;
+        id?: T;
+      };
+  usageWeights?:
+    | T
+    | {
+        role?: T;
+        weight?: T;
+        id?: T;
+      };
+  typography?:
+    | T
+    | {
+        primaryFamily?: T;
+        secondaryFamily?: T;
+        fontAssets?: T;
+      };
+  assets?:
+    | T
+    | {
+        logos?: T;
+        images?: T;
+        icons?: T;
+      };
+  voiceNotes?: T;
+  motion?:
+    | T
+    | {
+        duration?: T;
+        stagger?: T;
+        travel?: T;
+        easing?: T;
+        reducedMotion?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
