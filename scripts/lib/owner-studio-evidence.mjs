@@ -12,6 +12,15 @@ const SOURCE_FILES = [
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex')
 
+export const assertEvidenceOnlyChanges = (changed, isolationEvidencePath) => {
+  const allowed = new Set([
+    isolationEvidencePath,
+    'docs/owner-platform/owner-studio-phase-2-evidence.json',
+  ])
+  if (changed.some((file) => !allowed.has(file)))
+    throw new Error('Commits after verifiedGitHead contain changes other than the approved evidence records')
+}
+
 const collectFiles = async (rootDir) => {
   const files = SOURCE_FILES.map((path) => join(rootDir, path))
   const visit = async (directory) => {

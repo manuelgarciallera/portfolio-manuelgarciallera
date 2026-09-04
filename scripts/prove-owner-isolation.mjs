@@ -2,6 +2,7 @@ import { proveOwnerIsolation } from './lib/owner-isolation.mjs'
 import { execFileSync } from 'node:child_process'
 import { readFile, writeFile } from 'node:fs/promises'
 import { relative, resolve, sep } from 'node:path'
+import { assertEvidenceOnlyChanges } from './lib/owner-studio-evidence.mjs'
 
 const option = (name) => process.argv.find((argument) => argument.startsWith(`${name}=`))?.slice(name.length + 1)
 const writeTarget = option('--write')
@@ -25,7 +26,7 @@ if (verifyTarget) {
   execFileSync('git', ['merge-base', '--is-ancestor', verifiedGitHead, 'HEAD'], { stdio: 'ignore' })
   const changed = execFileSync('git', ['diff', '--name-only', `${verifiedGitHead}..HEAD`], { encoding: 'utf8' }).trim().split(/\r?\n/).filter(Boolean)
   const expected = relative(process.cwd(), absoluteTarget).split(sep).join('/')
-  if (changed.some((file) => file !== expected)) throw new Error('Commits after verifiedGitHead contain changes other than the evidence record')
+  assertEvidenceOnlyChanges(changed, expected)
 }
 const evidence = await proveOwnerIsolation({ buildDir: process.env.PUBLIC_BUILD_DIR, gitHead: verifiedGitHead })
 const rendered = `${JSON.stringify(evidence, null, 2)}\n`

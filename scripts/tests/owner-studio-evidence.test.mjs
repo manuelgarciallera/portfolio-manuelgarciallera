@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { createOwnerStudioEvidence } from '../lib/owner-studio-evidence.mjs'
+import { assertEvidenceOnlyChanges, createOwnerStudioEvidence } from '../lib/owner-studio-evidence.mjs'
 
 const fixture = async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'owner-studio-evidence-'))
@@ -51,4 +51,15 @@ test('changes its source digest when an owner studio source file changes', async
   await writeFile(join(rootDir, 'owner-platform', 'src', 'brand', 'model.ts'), 'export const version = 2\n')
   const after = await createOwnerStudioEvidence({ rootDir })
   assert.notEqual(before.ownerStudioSourceSha256, after.ownerStudioSourceSha256)
+})
+
+test('allows only the isolation record and its owner-studio companion after the verified commit', () => {
+  assert.doesNotThrow(() => assertEvidenceOnlyChanges([
+    'docs/owner-platform/isolation-evidence-2026-09-04.json',
+    'docs/owner-platform/owner-studio-phase-2-evidence.json',
+  ], 'docs/owner-platform/isolation-evidence-2026-09-04.json'))
+  assert.throws(() => assertEvidenceOnlyChanges([
+    'docs/owner-platform/isolation-evidence-2026-09-04.json',
+    'src/app/page.tsx',
+  ], 'docs/owner-platform/isolation-evidence-2026-09-04.json'), /other than/i)
 })
