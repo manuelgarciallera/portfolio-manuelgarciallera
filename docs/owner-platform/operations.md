@@ -285,6 +285,39 @@ to 1,000 characters. A decision is immutable and audited. Acceptance is review
 state only: it does not apply the patch, mutate the page, publish content, or
 deploy either application.
 
+## Verified release registration
+
+Register a version only after creating its immutable preview snapshot and
+collecting its bounded quality evidence:
+
+```http
+POST /api/owner/releases
+Content-Type: application/json
+
+{
+  "name": "Checkpoint API owner",
+  "changeSummary": "Endpoints owner revisados.",
+  "gitCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "previewSnapshot": 12,
+  "quality": [
+    {
+      "viewport": "desktop",
+      "performance": 96,
+      "usability": 97,
+      "accessibility": 98,
+      "source": "lighthouse",
+      "measuredAt": "2026-09-04T22:00:00.000Z"
+    }
+  ]
+}
+```
+
+The authenticated endpoint is limited to 16 KiB, accepts only the documented
+evidence fields, re-computes the snapshot manifest hash, creates the immutable
+release record, and audits the registration. It records a restorable reference;
+it does not execute a restore. Restoration remains unavailable until it has its
+own preview, confirmation, conflict, and rollback controls.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no

@@ -31,7 +31,9 @@ and rollback.
 Releases records a full Git commit, its source preview snapshot, a concise
 change summary, and bounded desktop/mobile quality measurements. Records are
 immutable evidence; selecting a record does not execute a rollback or mutate
-the public site.
+the public site. `POST /api/owner/releases` is the audited registration path:
+it re-verifies the referenced snapshot before creating the immutable record and
+does not expose restore, apply, publish, or deploy controls.
 
 Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
 or tablet overrides while preserving the uploaded original. Projects and page
