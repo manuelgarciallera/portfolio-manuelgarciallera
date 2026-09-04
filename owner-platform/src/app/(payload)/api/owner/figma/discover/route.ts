@@ -8,7 +8,14 @@ import { handleFigmaDiscoverRequest } from '@/connectors/figma/request'
 export const POST = async (request: Request): Promise<Response> => {
   assertCurrentProductionRuntime()
   const payload = await getPayload({ config })
-  const provider = createFigmaReadProvider({ token: process.env.FIGMA_ACCESS_TOKEN })
+  const plan = process.env.FIGMA_PLAN
+  const provider = createFigmaReadProvider({
+    auth: {
+      kind: 'personal-access-token',
+      token: process.env.FIGMA_PERSONAL_ACCESS_TOKEN,
+      plan: plan === 'enterprise' || plan === 'organization' || plan === 'professional' ? plan : 'starter',
+    },
+  })
   return handleFigmaDiscoverRequest(request, {
     authenticate: (headers) => payload.auth({ headers }),
     discover: provider.discover,

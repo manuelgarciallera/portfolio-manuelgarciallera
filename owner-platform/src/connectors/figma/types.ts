@@ -13,6 +13,15 @@ export type FigmaCandidate = {
   width?: number
   height?: number
   sourceUrl: string
+  /** Figma renders are temporary URLs that expire after 30 days. */
+  preview?: { url: string | null; expiresAfterDays: 30 }
+}
+
+export type FigmaPlan = 'starter' | 'professional' | 'organization' | 'enterprise'
+export type PersonalAccessTokenAuth = {
+  kind: 'personal-access-token'
+  token?: string
+  plan: FigmaPlan
 }
 
 export type FigmaDiscoveryResult =
@@ -21,12 +30,14 @@ export type FigmaDiscoveryResult =
       file: { name: string; lastModified?: string; thumbnail?: { url: string } }
       candidates: FigmaCandidate[]
       truncated: boolean
+      selectedNodeMissing?: boolean
     }
   | {
       ok: false
       code: 'disabled' | 'invalid_response' | 'rate_limited' | 'response_too_large' | 'timeout' | 'upstream_error'
       message: string
       retryAfter?: string
+      stage?: 'previews'
     }
 
 export type FigmaReadProvider = Readonly<{

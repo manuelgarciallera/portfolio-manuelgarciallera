@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { isOwner } from '../../access/owner'
 
 import type { FigmaDiscoveryResult, FigmaReadProvider } from './types'

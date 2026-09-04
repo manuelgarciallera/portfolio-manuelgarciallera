@@ -142,6 +142,28 @@ backup/restore coverage, explicit CORS, and delivery URLs. Validate upload,
 focal point, derivatives, deletion/trash, restore, and authorization in a
 preview environment. Do not use an instance's ephemeral filesystem.
 
+## Read-only Figma discovery
+
+The owner endpoint accepts only Figma `design` or `file` URLs and uses a
+server-side **personal access token** through `X-Figma-Token`. Configure
+`FIGMA_PERSONAL_ACCESS_TOKEN` and set `FIGMA_PLAN` to `starter`,
+`professional`, `organization`, or `enterprise`. This adapter is deliberately
+not described as OAuth: replacing PAT authentication with OAuth requires a
+separate reviewed credential lifecycle.
+
+Discovery requests use `file_content:read` operations only. A selected
+`node-id` uses the file-nodes endpoint; otherwise the bounded file endpoint is
+used. Candidate previews are requested once in a capped batch. There are no
+write methods, background refreshes, retries, or image imports. A Figma `429`
+is returned with its `Retry-After` value so the owner can decide when to retry,
+which is important for low-quota seats and plans.
+
+Preview render URLs are metadata, not durable media: Figma documents that they
+expire after 30 days. They must be refreshed deliberately or imported through
+a future reviewed media workflow. Tokens, upstream bodies, and exception
+details never enter browser output, generated Payload types, or application
+logs.
+
 ## Production prerequisites
 
 - A unique `PAYLOAD_SECRET` of at least 32 characters in server-only secrets.
