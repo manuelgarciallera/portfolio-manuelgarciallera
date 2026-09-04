@@ -10,6 +10,7 @@ export const getOwnerDashboardOverview = async ({
   content,
   integrations,
   media,
+  readiness,
   recent,
   releases,
   user,
@@ -20,6 +21,7 @@ export const getOwnerDashboardOverview = async ({
   content: Loader
   integrations: Loader
   media: Loader
+  readiness: Loader
   recent: Loader
   releases: Loader
   user: unknown
@@ -33,7 +35,7 @@ export const getOwnerDashboardOverview = async ({
       throw error
     },
   )
-  const [contentData, releaseData, analyticsData, activityData, workflowData, integrationData, mediaData, recentData] = await Promise.all([
+  const [contentData, releaseData, analyticsData, activityData, workflowData, integrationData, mediaData, recentData, readinessData] = await Promise.all([
     content(user),
     releases(user),
     analyticsResult,
@@ -42,6 +44,7 @@ export const getOwnerDashboardOverview = async ({
     integrations(user),
     media(user),
     recent(user),
+    readiness(user),
   ])
-  return { activity: activityData, analytics: analyticsData, content: contentData, integrations: integrationData, media: mediaData, recent: recentData, releases: releaseData, workflow: workflowData }
+  return { activity: activityData, analytics: analyticsData, content: contentData, integrations: integrationData, media: mediaData, readiness: readinessData, recent: recentData, releases: releaseData, workflow: workflowData }
 }
