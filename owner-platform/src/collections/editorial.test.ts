@@ -1,7 +1,7 @@
 import { ValidationError, type CollectionConfig, type Field } from 'payload'
 import { describe, expect, it } from 'vitest'
 
-import { Articles } from './Articles'
+import { Articles, articleBlocks } from './Articles'
 import { Media } from './Media'
 import { Pages, pageBlocks, validatePageBrandPublication } from './Pages'
 import { Projects, projectBlocks } from './Projects'
@@ -121,6 +121,25 @@ describe('editorial collections', () => {
 
   it('keeps project media blocks non-destructive and accessible', () => {
     const media = projectBlocks.find((block) => block.slug === 'caseMedia')
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'asset')).toMatchObject({ type: 'upload', relationTo: 'media', required: true })
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'placement')).toMatchObject({ type: 'relationship', relationTo: 'media-placements' })
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'alt')).toMatchObject({ type: 'text', required: true })
+  })
+
+  it('adds a migration-safe reorderable article block canvas', () => {
+    expect(fieldNamed(Articles, 'content')).toMatchObject({ type: 'richText', required: true })
+    const layout = fieldNamed(Articles, 'articleLayout')
+    expect(layout).toMatchObject({ type: 'blocks', required: false })
+    if (!layout || layout.type !== 'blocks') throw new Error('Articles.articleLayout must be blocks')
+    expect(layout.blocks).toBe(articleBlocks)
+    expect(articleBlocks.map((block) => block.slug)).toEqual([
+      'articleText', 'articleMedia', 'articleGallery', 'articleQuote', 'articleCallout', 'relatedProjects',
+    ])
+    expect(JSON.stringify(articleBlocks)).not.toMatch(/\b(?:customCSS|javascript|html|codeEditor|embed)\b/i)
+  })
+
+  it('keeps article media blocks non-destructive and accessible', () => {
+    const media = articleBlocks.find((block) => block.slug === 'articleMedia')
     expect(media?.fields.find((field) => 'name' in field && field.name === 'asset')).toMatchObject({ type: 'upload', relationTo: 'media', required: true })
     expect(media?.fields.find((field) => 'name' in field && field.name === 'placement')).toMatchObject({ type: 'relationship', relationTo: 'media-placements' })
     expect(media?.fields.find((field) => 'name' in field && field.name === 'alt')).toMatchObject({ type: 'text', required: true })
