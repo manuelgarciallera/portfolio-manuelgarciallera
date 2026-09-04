@@ -74,6 +74,11 @@ from the two latest verified snapshots: traffic changes, engagement, ten top
 routes, and Core Web Vitals ratings. It fails closed on hash mismatch and does
 not expose raw provider credentials or visitor data.
 
+`GET /api/owner/content/health` provides an owner-only editorial overview:
+draft/published totals plus bounded issue counts for missing SEO, brand
+assignment, and catalog-based technology stacks. It uses database counts only,
+does not return document bodies, and never mutates content.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or

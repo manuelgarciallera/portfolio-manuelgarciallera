@@ -557,6 +557,13 @@ engagement, the ten most-viewed routes, and LCP/INP/CLS ratings. A zero or
 missing comparison denominator produces `null`, never a misleading infinity.
 No raw provider response, credential, or visitor identifier is returned.
 
+The dashboard can also consume `GET /api/owner/content/health`. This owner-only
+read endpoint counts drafts and published records for Projects, Articles, and
+Pages, then reports missing SEO descriptions, Pages without a brand profile,
+and Projects not yet migrated to the reusable technology catalog. It requests
+database counts rather than document bodies, validates that totals are
+internally consistent, and performs no write or automatic correction.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
