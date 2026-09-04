@@ -73,6 +73,7 @@ export interface Config {
     projects: Project;
     articles: Article;
     pages: Page;
+    'preview-snapshots': PreviewSnapshot;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -429,6 +431,42 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "preview-snapshots".
+ */
+export interface PreviewSnapshot {
+  id: number;
+  /**
+   * Entrada estructurada; se valida y transforma antes de guardar.
+   */
+  input:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  schemaVersion: number;
+  sourceCollection: string;
+  sourceDocumentId: string;
+  sourceVersionId: string;
+  manifest:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  manifestHash: string;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -474,6 +512,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'preview-snapshots';
+        value: number | PreviewSnapshot;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -767,6 +809,22 @@ export interface PagesSelect<T extends boolean = true> {
   createdAt?: T;
   deletedAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "preview-snapshots_select".
+ */
+export interface PreviewSnapshotsSelect<T extends boolean = true> {
+  input?: T;
+  schemaVersion?: T;
+  sourceCollection?: T;
+  sourceDocumentId?: T;
+  sourceVersionId?: T;
+  manifest?: T;
+  manifestHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
