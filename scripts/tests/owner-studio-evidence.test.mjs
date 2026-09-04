@@ -13,7 +13,7 @@ const fixture = async () => {
   await writeFile(join(rootDir, 'owner-platform', 'src', 'brand', 'model.ts'), 'export const version = 1\n')
   await writeFile(join(rootDir, 'owner-platform', 'package.json'), '{"name":"owner","private":true}\n')
   await writeFile(join(rootDir, 'owner-platform', 'package-lock.json'), '{"lockfileVersion":3}\n')
-  await writeFile(join(rootDir, 'owner-platform', 'next.config.ts'), 'export default {}\n')
+  await writeFile(join(rootDir, 'owner-platform', 'next.config.mjs'), 'export default {}\n')
   await writeFile(join(rootDir, 'owner-platform', 'tsconfig.json'), '{}\n')
   const isolation = {
     schemaVersion: 3,

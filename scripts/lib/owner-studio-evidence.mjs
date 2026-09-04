@@ -6,7 +6,7 @@ const ISOLATION_RECORD = 'docs/owner-platform/isolation-evidence-2026-09-04.json
 const SOURCE_ROOTS = ['owner-platform/src']
 const SOURCE_FILES = [
   'owner-platform/package.json',
-  'owner-platform/next.config.ts',
+  'owner-platform/next.config.mjs',
   'owner-platform/tsconfig.json',
 ]
 
