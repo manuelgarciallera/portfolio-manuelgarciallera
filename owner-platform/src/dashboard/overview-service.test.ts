@@ -14,8 +14,9 @@ describe('getOwnerDashboardOverview', () => {
     const workflow = vi.fn(async () => ({ attentionCount: 2 }))
     const integrations = vi.fn(async () => ({ connectors: {} }))
     const media = vi.fn(async () => ({ issueCount: 1 }))
-    const overview = await getOwnerDashboardOverview({ activity, analytics, content, integrations, media, releases, user: owner, workflow })
-    expect(overview).toEqual({ activity: { count: 1, events: [] }, analytics: { available: true, data: { traffic: { visitors: 10 } } }, content: { issueCount: 2 }, integrations: { connectors: {} }, media: { issueCount: 1 }, releases: { count: 3, versions: [] }, workflow: { attentionCount: 2 } })
+    const recent = vi.fn(async () => ({ projects: [] }))
+    const overview = await getOwnerDashboardOverview({ activity, analytics, content, integrations, media, recent, releases, user: owner, workflow })
+    expect(overview).toEqual({ activity: { count: 1, events: [] }, analytics: { available: true, data: { traffic: { visitors: 10 } } }, content: { issueCount: 2 }, integrations: { connectors: {} }, media: { issueCount: 1 }, recent: { projects: [] }, releases: { count: 3, versions: [] }, workflow: { attentionCount: 2 } })
     expect(content).toHaveBeenCalledWith(owner)
     expect(releases).toHaveBeenCalledWith(owner)
     expect(analytics).toHaveBeenCalledWith(owner)
@@ -23,17 +24,18 @@ describe('getOwnerDashboardOverview', () => {
     expect(workflow).toHaveBeenCalledWith(owner)
     expect(integrations).toHaveBeenCalledWith(owner)
     expect(media).toHaveBeenCalledWith(owner)
+    expect(recent).toHaveBeenCalledWith(owner)
   })
 
   it('represents absent analytics without hiding integrity failures', async () => {
-    const base = { activity: async () => ({}), content: async () => ({}), integrations: async () => ({}), media: async () => ({}), releases: async () => ({}), workflow: async () => ({}) }
+    const base = { activity: async () => ({}), content: async () => ({}), integrations: async () => ({}), media: async () => ({}), recent: async () => ({}), releases: async () => ({}), workflow: async () => ({}) }
     await expect(getOwnerDashboardOverview({ ...base, analytics: async () => { throw new APIError('No hay analítica disponible.', 404) }, user: owner })).resolves.toMatchObject({ analytics: { available: false, data: null } })
     await expect(getOwnerDashboardOverview({ ...base, analytics: async () => { throw new APIError('Hash inválido.', 409) }, user: owner })).rejects.toThrow(/hash/i)
   })
 
   it('rejects anonymous access before loading dashboard data', async () => {
     const content = vi.fn()
-    await expect(getOwnerDashboardOverview({ activity: vi.fn(), analytics: vi.fn(), content, integrations: vi.fn(), media: vi.fn(), releases: vi.fn(), user: null, workflow: vi.fn() })).rejects.toThrow(/owner/i)
+    await expect(getOwnerDashboardOverview({ activity: vi.fn(), analytics: vi.fn(), content, integrations: vi.fn(), media: vi.fn(), recent: vi.fn(), releases: vi.fn(), user: null, workflow: vi.fn() })).rejects.toThrow(/owner/i)
     expect(content).not.toHaveBeenCalled()
   })
 })
