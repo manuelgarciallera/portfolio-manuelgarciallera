@@ -5,11 +5,13 @@ import { isOwner } from '../access/owner'
 type Loader = (user: unknown) => Promise<unknown>
 
 export const getOwnerDashboardOverview = async ({
+  activity,
   analytics,
   content,
   releases,
   user,
 }: {
+  activity: Loader
   analytics: Loader
   content: Loader
   releases: Loader
@@ -23,10 +25,11 @@ export const getOwnerDashboardOverview = async ({
       throw error
     },
   )
-  const [contentData, releaseData, analyticsData] = await Promise.all([
+  const [contentData, releaseData, analyticsData, activityData] = await Promise.all([
     content(user),
     releases(user),
     analyticsResult,
+    activity(user),
   ])
-  return { analytics: analyticsData, content: contentData, releases: releaseData }
+  return { activity: activityData, analytics: analyticsData, content: contentData, releases: releaseData }
 }
