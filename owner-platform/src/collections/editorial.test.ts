@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { Articles } from './Articles'
 import { Media } from './Media'
 import { Pages, pageBlocks, validatePageBrandPublication } from './Pages'
-import { Projects } from './Projects'
+import { Projects, projectBlocks } from './Projects'
 import { Technologies, validateOfficialTechnologyUrl, validateTechnologyColor } from './Technologies'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
@@ -82,6 +82,25 @@ describe('editorial collections', () => {
     expect(fieldNamed(Projects, 'technologyStack')).not.toHaveProperty('required', true)
     expect(fieldNamed(Technologies, 'name')).toMatchObject({ type: 'text', required: true })
     expect(fieldNamed(Technologies, 'icon')).toMatchObject({ type: 'upload', relationTo: 'media', required: true })
+  })
+
+  it('adds a migration-safe reorderable project block canvas', () => {
+    expect(fieldNamed(Projects, 'body')).toMatchObject({ type: 'richText', required: true })
+    const layout = fieldNamed(Projects, 'caseStudyLayout')
+    expect(layout).toMatchObject({ type: 'blocks', required: false })
+    if (!layout || layout.type !== 'blocks') throw new Error('Projects.caseStudyLayout must be blocks')
+    expect(layout.blocks).toBe(projectBlocks)
+    expect(projectBlocks.map((block) => block.slug)).toEqual([
+      'caseSection', 'caseMedia', 'caseGallery', 'caseQuote', 'caseMetrics', 'caseFeature',
+    ])
+    expect(JSON.stringify(projectBlocks)).not.toMatch(/\b(?:customCSS|javascript|html|codeEditor|embed)\b/i)
+  })
+
+  it('keeps project media blocks non-destructive and accessible', () => {
+    const media = projectBlocks.find((block) => block.slug === 'caseMedia')
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'asset')).toMatchObject({ type: 'upload', relationTo: 'media', required: true })
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'placement')).toMatchObject({ type: 'relationship', relationTo: 'media-placements' })
+    expect(media?.fields.find((field) => 'name' in field && field.name === 'alt')).toMatchObject({ type: 'text', required: true })
   })
 
   it('constrains technology brand metadata to safe values', () => {

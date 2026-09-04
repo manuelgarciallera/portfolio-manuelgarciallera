@@ -1,6 +1,88 @@
-import type { CollectionConfig } from 'payload'
+import type { Block, CollectionConfig } from 'payload'
 
 import { editorialAccess, editorialVersions, slugField } from './shared'
+
+const CaseSectionBlock: Block = {
+  slug: 'caseSection',
+  fields: [
+    { name: 'eyebrow', type: 'text' },
+    { name: 'heading', type: 'text', required: true },
+    { name: 'content', type: 'richText', required: true },
+  ],
+}
+
+const CaseMediaBlock: Block = {
+  slug: 'caseMedia',
+  fields: [
+    { name: 'asset', type: 'upload', relationTo: 'media', required: true },
+    { name: 'placement', type: 'relationship', relationTo: 'media-placements' },
+    { name: 'alt', type: 'text', required: true },
+    { name: 'caption', type: 'text' },
+  ],
+}
+
+const CaseGalleryBlock: Block = {
+  slug: 'caseGallery',
+  fields: [
+    { name: 'heading', type: 'text' },
+    {
+      name: 'items',
+      type: 'array',
+      required: true,
+      minRows: 2,
+      maxRows: 12,
+      fields: [
+        { name: 'asset', type: 'upload', relationTo: 'media', required: true },
+        { name: 'placement', type: 'relationship', relationTo: 'media-placements' },
+        { name: 'alt', type: 'text', required: true },
+        { name: 'caption', type: 'text' },
+      ],
+    },
+  ],
+}
+
+const CaseQuoteBlock: Block = {
+  slug: 'caseQuote',
+  fields: [
+    { name: 'quote', type: 'textarea', required: true, maxLength: 600 },
+    { name: 'attribution', type: 'text', maxLength: 120 },
+  ],
+}
+
+const CaseMetricsBlock: Block = {
+  slug: 'caseMetrics',
+  fields: [{
+    name: 'items', type: 'array', required: true, minRows: 1, maxRows: 8,
+    fields: [
+      { name: 'value', type: 'text', required: true, maxLength: 40 },
+      { name: 'label', type: 'text', required: true, maxLength: 120 },
+    ],
+  }],
+}
+
+const CaseFeatureBlock: Block = {
+  slug: 'caseFeature',
+  fields: [
+    {
+      name: 'featureKey', type: 'select', required: true,
+      options: [
+        { label: 'Project reel', value: 'project-reel' },
+        { label: 'Process timeline', value: 'process-timeline' },
+        { label: 'Technology stack', value: 'technology-stack' },
+      ],
+    },
+    { name: 'heading', type: 'text' },
+  ],
+}
+
+export const projectBlocks: Block[] = [
+  CaseSectionBlock,
+  CaseMediaBlock,
+  CaseGalleryBlock,
+  CaseQuoteBlock,
+  CaseMetricsBlock,
+  CaseFeatureBlock,
+]
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
@@ -26,6 +108,15 @@ export const Projects: CollectionConfig = {
       },
     },
     { name: 'body', type: 'richText', required: true },
+    {
+      name: 'caseStudyLayout',
+      type: 'blocks',
+      blocks: projectBlocks,
+      required: false,
+      admin: {
+        description: 'Lienzo modular opcional. El cuerpo anterior permanece intacto durante la migración.',
+      },
+    },
     {
       name: 'technologies',
       type: 'array',
