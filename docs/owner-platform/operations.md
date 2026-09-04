@@ -67,7 +67,8 @@ surface without changing the public portfolio:
 - **Restore Plans** stores a two-confirmation, conflict-aware restoration plan.
   It binds an immutable release target to a verified current baseline, and a
   second fresh snapshot must still match that baseline. Plans are owner-readable
-  and immutable after confirmation; no plan can execute a restore in this phase.
+  and immutable after execution. The execution path is draft-only, transactional,
+  conflict-aware, and cannot publish or deploy.
 - **Draft Snapshots** contains a canonical, hashed recovery capsule for the
   page's title, slug, brand assignment/overrides, and block layout. It never
   stores published state or arbitrary document fields, and is immutable.
@@ -323,8 +324,8 @@ Content-Type: application/json
 The authenticated endpoint is limited to 16 KiB, accepts only the documented
 evidence fields, re-computes the snapshot manifest hash, creates the immutable
 release record, and audits the registration. It records a restorable reference;
-it does not execute a restore. Restoration remains unavailable until it has its
-own preview, confirmation, conflict, and rollback controls.
+it does not execute a restore by itself. Restoration is available only through
+the separate plan, confirmation, conflict, execution, and rollback controls.
 
 Before registering a restorable release, create both snapshots from the same
 unchanged page draft:
@@ -375,8 +376,30 @@ Content-Type: application/json
 If the new snapshot hash equals the recorded baseline, the plan becomes
 `confirmed`. If anything changed, it becomes `conflict` and cannot be reused.
 Both outcomes are audited. Neither endpoint contains an execute, apply, publish,
-deploy, or page-mutation operation; a later execution phase must add a separate
-previewed and reversible boundary.
+deploy, or page-mutation operation. Execution remains a separate boundary.
+
+### Transactional draft execution
+
+Only a `confirmed` plan can be executed, using a third exact phrase:
+
+```http
+POST /api/owner/restore-plans/50/execute
+Content-Type: application/json
+
+{ "confirmation": "EJECUTAR RESTAURACIÓN" }
+```
+
+The server opens a database transaction and reloads the current draft inside
+it. The page is updated through a conditional `id + updatedAt` write, so an edit
+that races the restore updates zero documents and rolls the transaction back.
+The recovery capsule never carries `_status`; Payload receives `draft: true`,
+therefore this endpoint cannot publish.
+
+Before committing, the service creates a new visual snapshot and a new draft
+snapshot of the restored result, marks the plan `executed`, and appends an audit
+event. Failure in the page update, either snapshot, plan update, or audit event
+rolls back every write. The endpoint does not deploy the public application;
+the existing reviewed publication bridge remains a separate future decision.
 
 ## Disabled integrations
 

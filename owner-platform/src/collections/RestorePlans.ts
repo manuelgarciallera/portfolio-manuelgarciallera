@@ -15,6 +15,14 @@ const decisionFields = new Set([
   'conflictHash',
   'status',
 ])
+const executionFields = new Set([
+  'executedAt',
+  'executedBy',
+  'resultDraftSnapshot',
+  'resultPreviewSnapshot',
+  'resultVersionId',
+  'status',
+])
 const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/
 
 const immutableError = () => new APIError('El plan de restauración es inmutable fuera de su confirmación.', 403)
@@ -28,9 +36,24 @@ export const prepareRestorePlan: CollectionBeforeChangeHook = async ({ data, ope
       throw new APIError('El plan de restauración no es válido.', 400)
     }
   }
-  if (operation !== 'update' || Object.keys(data).some((key) => !decisionFields.has(key))) {
+  if (operation !== 'update') {
     throw immutableError()
   }
+  if (originalDoc?.status === 'confirmed') {
+    if (Object.keys(data).some((key) => !executionFields.has(key)) || data.status !== 'executed') throw immutableError()
+    if (String(data.executedBy) !== String(req.user.id)) throw new APIError('La identidad de ejecución no puede sustituirse.', 400)
+    if (
+      (typeof data.resultDraftSnapshot !== 'string' && typeof data.resultDraftSnapshot !== 'number') ||
+      (typeof data.resultPreviewSnapshot !== 'string' && typeof data.resultPreviewSnapshot !== 'number') ||
+      typeof data.resultVersionId !== 'string' ||
+      !data.resultVersionId.startsWith('current:') ||
+      typeof data.executedAt !== 'string' ||
+      Number.isNaN(Date.parse(data.executedAt)) ||
+      new Date(data.executedAt).toISOString() !== data.executedAt
+    ) throw new APIError('El resultado de ejecución no es válido.', 400)
+    return data
+  }
+  if (Object.keys(data).some((key) => !decisionFields.has(key))) throw immutableError()
   if (originalDoc?.status !== 'ready') throw new APIError('El plan ya no está preparado para confirmación.', 409)
   if (data.status !== 'confirmed' && data.status !== 'conflict') {
     throw new APIError('El resultado de confirmación no es válido.', 400)
@@ -97,5 +120,10 @@ export const RestorePlans: CollectionConfig = {
     { name: 'conflictHash', type: 'text', admin: { readOnly: true } },
     { name: 'confirmedBy', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
     { name: 'confirmedAt', type: 'date', admin: { readOnly: true } },
+    { name: 'resultDraftSnapshot', type: 'relationship', relationTo: 'draft-snapshots', admin: { readOnly: true } },
+    { name: 'resultPreviewSnapshot', type: 'relationship', relationTo: 'preview-snapshots', admin: { readOnly: true } },
+    { name: 'resultVersionId', type: 'text', admin: { readOnly: true } },
+    { name: 'executedBy', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
+    { name: 'executedAt', type: 'date', admin: { readOnly: true } },
   ],
 }

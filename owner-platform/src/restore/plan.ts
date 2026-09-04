@@ -1,4 +1,4 @@
-export const RESTORE_PLAN_STATUSES = ['ready', 'confirmed', 'conflict'] as const
+export const RESTORE_PLAN_STATUSES = ['ready', 'confirmed', 'conflict', 'executed'] as const
 
 const CREATE_FIELDS = new Set([
   'baselineHash',
@@ -12,6 +12,7 @@ const CREATE_FIELDS = new Set([
   'targetSnapshot',
 ])
 const CONFIRM_FIELDS = new Set(['confirmation', 'currentHash', 'currentSnapshot'])
+const EXECUTE_FIELDS = new Set(['confirmation', 'resultDraftSnapshot', 'resultPreviewSnapshot', 'resultVersionId'])
 const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -80,4 +81,27 @@ export const confirmRestorePlanData = (
   return currentHash === baselineHash
     ? { ...common, status: 'confirmed' as const }
     : { ...common, conflictHash: currentHash, status: 'conflict' as const }
+}
+
+export const executeRestorePlanData = (
+  current: { status?: unknown },
+  input: unknown,
+  actor: { id?: unknown },
+  now = new Date().toISOString(),
+) => {
+  if (current.status !== 'confirmed') throw new TypeError('Solo puede ejecutarse un plan confirmado.')
+  if (!isRecord(input)) throw new TypeError('El resultado de restauración debe ser un objeto.')
+  const unknown = Object.keys(input).find((key) => !EXECUTE_FIELDS.has(key))
+  if (unknown) throw new TypeError(`La ejecución contiene un campo no permitido: ${unknown}.`)
+  if (input.confirmation !== 'EJECUTAR RESTAURACIÓN') throw new TypeError('La confirmación de ejecución no coincide.')
+  return {
+    executedAt: timestamp(now),
+    executedBy: relation(actor.id, 'El owner'),
+    resultDraftSnapshot: relation(input.resultDraftSnapshot, 'El snapshot de borrador resultante'),
+    resultPreviewSnapshot: relation(input.resultPreviewSnapshot, 'El snapshot visual resultante'),
+    resultVersionId: typeof input.resultVersionId === 'string' && input.resultVersionId.startsWith('current:')
+      ? input.resultVersionId
+      : (() => { throw new TypeError('La revisión resultante no es válida.') })(),
+    status: 'executed' as const,
+  }
 }

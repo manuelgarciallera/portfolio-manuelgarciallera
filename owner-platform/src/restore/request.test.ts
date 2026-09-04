@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   handleRestoreConfirmationRequest,
+  handleRestoreExecutionRequest,
   handleRestorePlanRequest,
   parseRestoreConfirmationRequest,
+  parseRestoreExecutionRequest,
   parseRestorePlanRequest,
 } from './request'
 
@@ -54,5 +56,19 @@ describe('restore plan HTTP boundary', () => {
     )
     expect(response.status).toBe(413)
     expect(create).not.toHaveBeenCalled()
+  })
+
+  it('exposes execution only through an exact third confirmation without publish controls', async () => {
+    expect(parseRestoreExecutionRequest({ confirmation: 'EJECUTAR RESTAURACIÓN' })).toEqual({ confirmation: 'EJECUTAR RESTAURACIÓN' })
+    expect(() => parseRestoreExecutionRequest({ confirmation: 'EJECUTAR RESTAURACIÓN', publish: true })).toThrow(/campo|permitido/i)
+    const execute = vi.fn(async () => ({ id: 50, status: 'executed' }))
+    const response = await handleRestoreExecutionRequest(
+      new Request('https://owner.test/api/50/execute', { method: 'POST', body: JSON.stringify({ confirmation: 'EJECUTAR RESTAURACIÓN' }) }),
+      50,
+      { authenticate: async () => ({ user: owner }), execute },
+    )
+    expect(response.status).toBe(200)
+    expect(execute).toHaveBeenCalledWith({ confirmation: 'EJECUTAR RESTAURACIÓN', planId: 50 }, owner)
+    expect(JSON.stringify(execute.mock.calls)).not.toMatch(/publish|deploy/)
   })
 })

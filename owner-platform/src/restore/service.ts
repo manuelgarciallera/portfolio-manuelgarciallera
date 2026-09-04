@@ -6,7 +6,7 @@ import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 import { hashDraftCapsule, type DraftCapsule } from '../recovery/capsule'
 import { confirmRestorePlanData } from './plan'
 
-type RestorePayload = {
+export type RestorePayload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
   findByID(args: Record<string, unknown>): Promise<Record<string, unknown>>
   update?(args: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -24,7 +24,7 @@ const relationId = (value: unknown, label: string): string | number => {
   throw new APIError(`${label} no tiene identificador.`, 400)
 }
 
-const verifiedSnapshot = async (
+export const verifiedSnapshot = async (
   payload: RestorePayload,
   req: { user?: unknown },
   snapshotId: string | number,
@@ -43,7 +43,7 @@ const verifiedSnapshot = async (
   return { id: relationId(snapshot, 'El snapshot'), manifest, manifestHash }
 }
 
-const verifiedDraftSnapshot = async (
+export const verifiedDraftSnapshot = async (
   payload: RestorePayload,
   req: { user?: unknown },
   snapshotId: string | number,

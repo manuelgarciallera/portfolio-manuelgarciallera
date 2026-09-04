@@ -7,6 +7,7 @@ class RequestTooLarge extends Error {}
 
 type PlanRequest = { baselineSnapshot: string | number; confirmation: string; releaseId: string | number }
 type ConfirmationRequest = { confirmation: string; currentSnapshot: string | number }
+type ExecutionRequest = { confirmation: string }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -67,6 +68,13 @@ export const parseRestoreConfirmationRequest = (value: unknown): ConfirmationReq
   }
 }
 
+export const parseRestoreExecutionRequest = (value: unknown): ExecutionRequest => {
+  if (!isRecord(value)) throw new TypeError('La ejecución no es válida.')
+  exact(value, ['confirmation'])
+  if (value.confirmation !== 'EJECUTAR RESTAURACIÓN') throw new TypeError('La confirmación de ejecución no coincide.')
+  return { confirmation: value.confirmation }
+}
+
 const errorResponse = (error: unknown): Response => {
   if (error instanceof RequestTooLarge) return Response.json({ error: 'Request too large.' }, { status: 413 })
   if (error instanceof SyntaxError || error instanceof TypeError) return Response.json({ error: 'Invalid restore request.' }, { status: 400 })
@@ -107,6 +115,24 @@ export const handleRestoreConfirmationRequest = async (
     if (!isOwner(authentication.user)) return Response.json({ error: 'Owner authentication required.' }, { status: 403 })
     const input = parseRestoreConfirmationRequest(JSON.parse(await readBoundedBody(request)) as unknown)
     return Response.json({ plan: await dependencies.confirm({ ...input, planId }, authentication.user) })
+  } catch (error) {
+    return errorResponse(error)
+  }
+}
+
+export const handleRestoreExecutionRequest = async (
+  request: Request,
+  planId: string | number,
+  dependencies: {
+    authenticate: (headers: Headers) => Promise<{ user: unknown }>
+    execute: (input: ExecutionRequest & { planId: string | number }, user: unknown) => Promise<unknown>
+  },
+): Promise<Response> => {
+  try {
+    const authentication = await dependencies.authenticate(request.headers)
+    if (!isOwner(authentication.user)) return Response.json({ error: 'Owner authentication required.' }, { status: 403 })
+    const input = parseRestoreExecutionRequest(JSON.parse(await readBoundedBody(request)) as unknown)
+    return Response.json({ plan: await dependencies.execute({ ...input, planId }, authentication.user) })
   } catch (error) {
     return errorResponse(error)
   }

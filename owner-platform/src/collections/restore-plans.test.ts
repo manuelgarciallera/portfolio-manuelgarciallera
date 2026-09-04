@@ -49,4 +49,23 @@ describe('RestorePlans collection', () => {
     await expect(prepareRestorePlan({ data: base, operation: 'create', req: { user: null } } as never)).rejects.toThrow(/owner/i)
     await expect(enforceRestorePlanDelete({} as never)).rejects.toThrow(/eliminar|inmutable/i)
   })
+
+  it('permits only one trusted confirmed-to-executed transition', async () => {
+    await expect(prepareRestorePlan({
+      data: {
+        executedAt: '2026-09-04T23:15:01.000Z',
+        executedBy: 1,
+        resultDraftSnapshot: 71,
+        resultPreviewSnapshot: 72,
+        resultVersionId: 'current:2026-09-04T23:15:00.000Z',
+        status: 'executed',
+      },
+      operation: 'update',
+      originalDoc: { status: 'confirmed' },
+      req: { user: owner },
+    } as never)).resolves.toMatchObject({ status: 'executed', executedBy: 1 })
+    await expect(prepareRestorePlan({
+      data: { status: 'executed' }, operation: 'update', originalDoc: { status: 'executed' }, req: { user: owner },
+    } as never)).rejects.toThrow(/ejecut|inmutable|confirmado|confirmación/i)
+  })
 })

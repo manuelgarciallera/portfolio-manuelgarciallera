@@ -64,7 +64,9 @@ Restore Plans provides the safety boundary for future version restoration. An
 owner first prepares a plan from a release and a verified current snapshot,
 then confirms it against a newly generated snapshot. A changed page produces a
 conflict record instead of confirmation. This phase intentionally records only
-the plan and its two confirmations; it cannot execute a restore.
+the plan and its two confirmations. A separately authenticated execution endpoint
+can restore the verified capsule only as a draft and only inside an atomic
+transaction; it cannot publish or deploy.
 
 Draft Snapshots is the restorable companion to visual Preview Snapshots.
 `POST /api/owner/draft-snapshots` captures a canonical, immutable, hashed copy

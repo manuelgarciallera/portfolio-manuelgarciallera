@@ -624,12 +624,17 @@ export interface RestorePlan {
   targetCapsuleHash: string;
   baselineSnapshot: number | PreviewSnapshot;
   baselineHash: string;
-  status: 'ready' | 'confirmed' | 'conflict';
+  status: 'ready' | 'confirmed' | 'conflict' | 'executed';
   createdBy: number | User;
   confirmationSnapshot?: (number | null) | PreviewSnapshot;
   conflictHash?: string | null;
   confirmedBy?: (number | null) | User;
   confirmedAt?: string | null;
+  resultDraftSnapshot?: (number | null) | DraftSnapshot;
+  resultPreviewSnapshot?: (number | null) | PreviewSnapshot;
+  resultVersionId?: string | null;
+  executedBy?: (number | null) | User;
+  executedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1138,6 +1143,11 @@ export interface RestorePlansSelect<T extends boolean = true> {
   conflictHash?: T;
   confirmedBy?: T;
   confirmedAt?: T;
+  resultDraftSnapshot?: T;
+  resultPreviewSnapshot?: T;
+  resultVersionId?: T;
+  executedBy?: T;
+  executedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

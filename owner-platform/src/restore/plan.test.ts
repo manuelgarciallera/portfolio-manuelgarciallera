@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { confirmRestorePlanData, createRestorePlanData } from './plan'
+import { confirmRestorePlanData, createRestorePlanData, executeRestorePlanData } from './plan'
 
 const owner = { id: 1 }
 const input = {
@@ -73,5 +73,29 @@ describe('restore plan contract', () => {
       { confirmation: 'restaurar', currentHash: input.baselineHash, currentSnapshot: 13 },
       owner,
     )).toThrow(/confirmación/i)
+  })
+
+  it('creates one immutable execution result only from a confirmed plan', () => {
+    expect(executeRestorePlanData(
+      { status: 'confirmed' },
+      {
+        confirmation: 'EJECUTAR RESTAURACIÓN',
+        resultDraftSnapshot: 71,
+        resultPreviewSnapshot: 72,
+        resultVersionId: 'current:2026-09-04T23:15:00.000Z',
+      },
+      owner,
+      '2026-09-04T23:15:01.000Z',
+    )).toEqual({
+      executedAt: '2026-09-04T23:15:01.000Z',
+      executedBy: 1,
+      resultDraftSnapshot: 71,
+      resultPreviewSnapshot: 72,
+      resultVersionId: 'current:2026-09-04T23:15:00.000Z',
+      status: 'executed',
+    })
+    expect(() => executeRestorePlanData({ status: 'ready' }, {
+      confirmation: 'EJECUTAR RESTAURACIÓN', resultDraftSnapshot: 71, resultPreviewSnapshot: 72, resultVersionId: 'current:x',
+    }, owner)).toThrow(/confirmado/i)
   })
 })
