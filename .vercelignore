@@ -1,0 +1,12 @@
+.codex-remote-attachments/
+artifacts/
+coverage/
+docs/
+storybook-static/
+tmp/
+.lighthouse/
+
+**/*.stories.*
+**/*.unit.test.*
+vitest*.config.*
+design-qa.md

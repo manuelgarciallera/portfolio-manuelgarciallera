@@ -1,117 +1,116 @@
 'use client'
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Environment, MeshTransmissionMaterial } from '@react-three/drei'
-import { Suspense, useEffect, useMemo, useRef } from 'react'
-import { CanvasTexture, Group, LinearFilter, MathUtils } from 'three'
-
-const NAME_LINES = ['Manuel', 'García-Llera'] as const
+import { MeshDistortMaterial, MeshTransmissionMaterial, Text } from '@react-three/drei'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Suspense, useRef } from 'react'
+import { Group, MathUtils } from 'three'
 
 interface HeroOrbCanvasProps {
   isDark: boolean
   reduceMotion: boolean
-  onReady: () => void
+  onReady?: () => void
 }
 
-/** Dibuja el nombre con la MISMA tipografía y métricas que el h1 del DOM,
- *  sobre fondo OPACO del color del tema: el buffer de transmisión necesita
- *  ver el papel, no transparencia (que renderiza negro). */
-function createNameTexture(isDark: boolean): CanvasTexture {
-  const scale = 2
-  const w = Math.min(typeof window !== 'undefined' ? window.innerWidth : 1440, 1920)
-  const h = typeof window !== 'undefined' ? window.innerHeight : 900
-  const canvas = document.createElement('canvas')
-  canvas.width = w * scale
-  canvas.height = h * scale
-  const ctx = canvas.getContext('2d')
-  if (ctx) {
-    ctx.scale(scale, scale)
-    ctx.fillStyle = isDark ? '#0d0e0c' : '#fafaf6'
-    ctx.fillRect(0, 0, w, h)
-    const gutter = Math.min(Math.max(20, 0.05 * w), 80)
-    const fontSize = Math.min(Math.max(48, 0.115 * w), 152)
-    const lineHeight = fontSize * 0.94
-    const top = 0.3 * h
-    ctx.fillStyle = isDark ? '#f2f1ea' : '#131512'
-    ctx.textBaseline = 'top'
-    ctx.font = `700 ${fontSize}px -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif`
-    const ctxWithSpacing = ctx as CanvasRenderingContext2D & { letterSpacing?: string }
-    ctxWithSpacing.letterSpacing = `${-0.045 * fontSize}px`
-    NAME_LINES.forEach((line, i) => ctx.fillText(line, gutter, top + i * lineHeight))
-  }
-  const texture = new CanvasTexture(canvas)
-  texture.minFilter = LinearFilter
-  texture.anisotropy = 4
-  return texture
-}
-
-function NamePlane({ isDark }: { isDark: boolean }) {
-  const { viewport } = useThree()
-  const texture = useMemo(() => createNameTexture(isDark), [isDark])
-  useEffect(() => () => texture.dispose(), [texture])
-  return (
-    <mesh position={[0, 0, 0]} scale={[1.001, 1.001, 1]}>
-      <planeGeometry args={[viewport.width, viewport.height]} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
-    </mesh>
-  )
-}
-
-function WaterOrb({ reduceMotion }: { reduceMotion: boolean }) {
+function LiquidOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion'>) {
   const groupRef = useRef<Group>(null)
-  const { viewport } = useThree()
-  const radius = viewport.height * 0.24
-  const baseX = viewport.width * 0.16
 
   useFrame((state, delta) => {
     const group = groupRef.current
     if (!group || reduceMotion) return
-    const t = state.clock.elapsedTime
-    const smoothing = Math.min(1, delta * 2.6)
-    group.position.x = MathUtils.lerp(group.position.x, baseX + state.pointer.x * viewport.width * 0.07, smoothing)
-    group.position.y = MathUtils.lerp(group.position.y, state.pointer.y * viewport.height * 0.06, smoothing)
-    group.rotation.y += delta * 0.12
-    const breathe = 1 + Math.sin(t * 0.7) * 0.03
-    group.scale.setScalar(breathe)
+
+    const smoothing = Math.min(1, delta * 2.5)
+    group.rotation.x = MathUtils.lerp(group.rotation.x, -0.08 + state.pointer.y * 0.12, smoothing)
+    group.rotation.y += delta * 0.16
+    group.rotation.z = MathUtils.lerp(group.rotation.z, state.pointer.x * 0.18, smoothing)
+    group.position.x = MathUtils.lerp(group.position.x, state.pointer.x * 0.08, smoothing)
+    group.position.y = MathUtils.lerp(group.position.y, state.pointer.y * 0.05, smoothing)
   })
 
   return (
-    <group ref={groupRef} position={[baseX, 0, 1.1]}>
+    <group
+      ref={groupRef}
+      position={[0, -0.02, 0.28]}
+      scale={[1, 1, 1]}
+    >
       <mesh>
-        <sphereGeometry args={[radius, 96, 96]} />
+        <sphereGeometry args={[1, 96, 64]} />
         <MeshTransmissionMaterial
-          transmission={1}
-          ior={1.25}
-          thickness={1.6}
-          roughness={0}
-          chromaticAberration={0.045}
-          anisotropicBlur={0.08}
-          distortion={0.18}
-          distortionScale={0.45}
-          temporalDistortion={reduceMotion ? 0 : 0.1}
           backside
-          backsideThickness={0.8}
-          samples={6}
-          resolution={512}
+          backsideThickness={0.48}
+          chromaticAberration={0.01}
+          distortion={0.09}
+          distortionScale={0.16}
+          temporalDistortion={reduceMotion ? 0 : 0.055}
+          roughness={0.015}
+          samples={3}
+          resolution={192}
+          thickness={1.28}
+          transmission={1}
+          anisotropicBlur={0.12}
+          attenuationColor={isDark ? '#f7f7f3' : '#ffffff'}
+          attenuationDistance={1.35}
+        />
+      </mesh>
+      <mesh scale={[1.006, 1.004, 1.006]}>
+        <sphereGeometry args={[1, 96, 64]} />
+        <MeshDistortMaterial
+          color="#f3f3ee"
+          transparent
+          opacity={0.62}
+          roughness={0.18}
+          metalness={0.02}
+          distort={0.22}
+          speed={reduceMotion ? 0 : 0.42}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh scale={[1.026, 1.02, 1.026]}>
+        <sphereGeometry args={[1, 96, 64]} />
+        <MeshDistortMaterial
+          color="#d8d8d1"
+          transparent
+          opacity={0.18}
+          distort={0.24}
+          speed={reduceMotion ? 0 : 0.35}
+          depthWrite={false}
         />
       </mesh>
     </group>
   )
 }
 
+function SceneReady({ onReady }: Pick<HeroOrbCanvasProps, 'onReady'>) {
+  const reported = useRef(false)
+
+  useFrame(() => {
+    if (reported.current) return
+    reported.current = true
+    onReady?.()
+  })
+
+  return null
+}
+
 export function HeroOrbCanvas({ isDark, reduceMotion, onReady }: HeroOrbCanvasProps) {
   return (
     <Canvas
-      dpr={[1, 1.75]}
-      camera={{ position: [0, 0, 6], fov: 38 }}
-      gl={{ alpha: true, antialias: true }}
-      onCreated={onReady}
+      className="rd-hero-canvas"
+      dpr={[1, 1.2]}
+      camera={{ position: [0, 0, 5], fov: 38 }}
+      gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
       aria-hidden="true"
     >
       <Suspense fallback={null}>
-        <NamePlane isDark={isDark} />
-        <WaterOrb reduceMotion={reduceMotion} />
-        <Environment preset="city" environmentIntensity={0.35} />
+        <color attach="background" args={[isDark ? '#0d0e0c' : '#fafaf6']} />
+        <ambientLight intensity={isDark ? 0.9 : 1.5} />
+        <directionalLight position={[3, 4, 4]} intensity={isDark ? 2.2 : 1.8} />
+        <pointLight position={[-3, 1.5, 3]} color="#9fe6ff" intensity={isDark ? 5 : 3.4} distance={7} />
+        <pointLight position={[3, -2, 2.5]} color="#ff6dcf" intensity={isDark ? 3.2 : 2} distance={6} />
+        <Text position={[0, -0.04, -0.82]} color={isDark ? '#f4f1ec' : '#171717'} fontSize={0.46} anchorX="center" anchorY="middle" textAlign="center">
+          Manuel García-Llera
+        </Text>
+        <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} />
+        <SceneReady onReady={onReady} />
       </Suspense>
     </Canvas>
   )

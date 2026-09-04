@@ -9,6 +9,7 @@ const contentSecurityPolicy = [
   "img-src 'self' https: data: blob:",
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+  "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline' https:",
   "connect-src 'self' https:",
   "frame-ancestors 'self'",
@@ -39,10 +40,15 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   images: {
+    qualities: [75, 92],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
       },
     ],
   },

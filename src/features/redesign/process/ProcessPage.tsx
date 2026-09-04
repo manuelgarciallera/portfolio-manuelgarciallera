@@ -1,8 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import Link from 'next/link'
 
 import { SiteHeader } from '../components/SiteHeader'
+import { Breadcrumbs } from '../components/Breadcrumbs'
+import { Footer } from '../components/Sections'
+import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import {
   PROCESS_AI_LAYER,
   PROCESS_INTRO,
@@ -13,15 +17,7 @@ import {
 import '../redesign.css'
 
 export function ProcessPage() {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.localStorage.getItem('rd-theme') === 'dark'
-  })
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
-    window.localStorage.setItem('rd-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
+  const [isDark, toggleTheme] = usePortfolioTheme()
 
   useEffect(() => {
     document
@@ -33,12 +29,13 @@ export function ProcessPage() {
     <div className="rd-root">
       <SiteHeader
         isDark={isDark}
-        onToggleTheme={() => setIsDark((value) => !value)}
+        onToggleTheme={toggleTheme}
         forceVisible
       />
 
-      <main className="rd-page-offset">
+      <main className="rd-page-offset" id="main-content">
         <section className="rd-section">
+          <Breadcrumbs items={[{ label: 'Proceso' }]} />
           <p className="rd-label rd-reveal" data-index="00">
             Proceso
           </p>
@@ -122,12 +119,13 @@ export function ProcessPage() {
             con sus artefactos y su deuda declarada.
           </p>
           <p className="rd-prose rd-reveal">
-            <a className="rd-contact-mail" href="/casos">
+            <Link className="rd-contact-mail" href="/casos">
               Ver los casos
-            </a>
+            </Link>
           </p>
         </section>
       </main>
+      <Footer />
     </div>
   )
 }

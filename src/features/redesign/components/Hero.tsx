@@ -1,52 +1,57 @@
 'use client'
 
+import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-const HeroOrbCanvas = dynamic(
-  () => import('./HeroOrbCanvas').then((m) => m.HeroOrbCanvas),
-  { ssr: false },
-)
+const HeroOrbCanvas = dynamic(() => import('./HeroOrbCanvas').then((module) => module.HeroOrbCanvas), {
+  ssr: false,
+})
 
 interface HeroProps {
-  isDark: boolean
-  reduceMotion: boolean
+  isDark?: boolean
 }
 
-export function Hero({ isDark, reduceMotion }: HeroProps) {
+export function Hero({ isDark = true }: HeroProps) {
   const [canvasReady, setCanvasReady] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduceMotion(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
   return (
-    <section className={`rd-hero${canvasReady ? ' canvas-on' : ''}`} id="inicio">
-      <div className="rd-hero-canvas">
-        <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} onReady={() => setCanvasReady(true)} />
+    <section className="rd-hero" id="inicio">
+      <div className="rd-hero-copy">
+        <h1>
+          Diseño sistemas digitales que conectan investigación, interfaz y código.
+        </h1>
+        <a href="#casos">Ver proyectos</a>
       </div>
 
-      <p className="rd-hero-kicker rd-label" data-index="—">
-        AI Design Engineer
-      </p>
-
-      {/* Nombre visible como fallback; el lienzo 3D lo sustituye con la misma tipografía */}
-      <h1 className="rd-hero-name" aria-hidden={canvasReady}>
-        Manuel
-        <br />
-        García-Llera
-      </h1>
-      <span className="rd-sr-only">Manuel García-Llera — AI Design Engineer</span>
-
-      <p className="rd-hero-specialties">
-        UX/UI · HCI · <em>Figma prototyping</em> · Frontend development · <em>Human-AI interaction</em>
-      </p>
-
-      <p className="rd-hero-corner">
-        <strong>Madrid, ES</strong>
-        <br />
-        Diseño · Prototipado · Desarrollo
-        <br />
-        Disponible para colaborar
-      </p>
-
-      <p className="rd-hero-scroll">Scroll</p>
+      <div
+        className="rd-hero-art"
+        data-ready={canvasReady ? 'true' : 'false'}
+        aria-hidden="true"
+      >
+        <Image
+          className="rd-hero-art-fallback"
+          src="/art/hero-refractive-orb-fallback-v2.webp"
+          alt=""
+          width={1400}
+          height={1400}
+          sizes="(max-width: 767px) 78vw, 42vw"
+          fetchPriority="high"
+          priority
+        />
+        <div className="rd-hero-canvas-stage">
+          <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} onReady={() => setCanvasReady(true)} />
+        </div>
+      </div>
     </section>
   )
 }

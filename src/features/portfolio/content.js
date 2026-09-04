@@ -101,7 +101,7 @@ export const PROJECTS = [
   {
     id: 1,
     cat: "UX · Product Design",
-    title: "The UX Union",
+    title: "TheUXUnion",
     sub: "MVP de una red de conexión entre diseñadores.",
     tags: ["Figma", "UX Research", "MVP"],
     year: "2025",

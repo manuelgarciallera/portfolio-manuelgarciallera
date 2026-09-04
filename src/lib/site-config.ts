@@ -22,14 +22,15 @@ export const SITE_LOCALE = "es_ES";
 export const SITE_LANGUAGE = "es";
 
 export const PERSON_LEGAL_NAME = "Manuel Garc\u00EDa-Llera A\u00F1\u00F3n";
-export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa Llera";
+export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa-Llera";
 export const SITE_NAME = PERSON_DISPLAY_NAME;
-export const SITE_TITLE = `${PERSON_DISPLAY_NAME} - Dise\u00F1o de producto y desarrollo full stack`;
+export const SITE_TITLE = `${PERSON_DISPLAY_NAME} — Product Designer, Design Systems y HCI`;
 export const SITE_DESCRIPTION =
-  "Portfolio de Manuel Garc\u00EDa-Llera A\u00F1\u00F3n. Dise\u00F1o productos digitales, los construyo con c\u00F3digo y estudio c\u00F3mo mejorarlos. UX/UI, product design, visualizaci\u00F3n 3D arquitect\u00F3nica y desarrollo full stack.";
+  "Portfolio de Manuel Garc\u00EDa-Llera: Product Designer y Design Engineer especializado en sistemas de dise\u00F1o, HCI e interacci\u00F3n humano-IA. De la investigaci\u00F3n y el prototipo a productos digitales implementados.";
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hola@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
+export const PROFILE_IMAGE_URL = "https://avatars.githubusercontent.com/u/244682559?s=320&v=4";
 
 export const PROFILE_LINKS = {
   linkedin: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_LINKEDIN) || "https://www.linkedin.com/in/manuelgarciallera/",
@@ -69,19 +70,20 @@ export function getPersonJsonLd() {
     givenName: "Manuel",
     familyName: "Garc\u00EDa-Llera A\u00F1\u00F3n",
     url: SITE_URL,
-    image: `${SITE_URL}/opengraph-image`,
-    email: SITE_EMAIL,
+    image: PROFILE_IMAGE_URL,
     sameAs: SITE_SOCIAL_URLS,
-    jobTitle: "Dise\u00F1ador y especialista en visualizaci\u00F3n",
+    jobTitle: "Product Designer y Design Engineer especializado en HCI",
     knowsAbout: [
-      "Visual Design",
-      "UX/UI Design",
       "Product Design",
-      "Research",
-      "Usability Studies",
-      "Graphic Design",
-      "3D Architecture Visualization",
-      "Three.js",
+      "Design Systems",
+      "Human-Computer Interaction",
+      "Human-AI Interaction",
+      "User Experience Research",
+      "Human-Centered Design",
+      "Usability",
+      "Interaction Design",
+      "Design Engineering",
+      "Figma",
       "React",
       "Angular",
       "Full Stack Development",

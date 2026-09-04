@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display } from "next/font/google";
+import Script from "next/script";
 
 import { WebVitalsReporter } from "@/components/analytics/WebVitalsReporter";
 import {
@@ -35,7 +36,24 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  keywords: ["UX Design", "UI Design", "Full Stack", "Three.js", "ArchViz", "HCI", "AI Design", "React", "Angular"],
+  keywords: [
+    "Product Designer",
+    "Diseñador de producto",
+    "Design Systems",
+    "Sistemas de diseño",
+    "Design Engineer",
+    "Ingeniería de diseño",
+    "HCI",
+    "Human-Computer Interaction",
+    "Human-AI Interaction",
+    "Interacción humano-IA",
+    "UX Research",
+    "Interaction Design",
+    "Figma",
+    "Frontend Development",
+    "Portfolio UX",
+    "Diseño de producto Madrid",
+  ],
   authors: [{ name: PERSON_LEGAL_NAME, url: SITE_URL }],
   creator: PERSON_LEGAL_NAME,
   publisher: SITE_NAME,
@@ -90,15 +108,17 @@ export default function RootLayout({
   return (
     <html lang={SITE_LANGUAGE} data-theme="dark" className={playfairDisplay.variable} suppressHydrationWarning>
       <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
+        <Script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
+        <Script id="person-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
+        <Script id="profile-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
         {/* Evita el flash de tema incorrecto */}
-        <script
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var t = localStorage.getItem('theme') || 'dark';
+                var t = localStorage.getItem('rd-theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', t);
               } catch(e) {}
             `,

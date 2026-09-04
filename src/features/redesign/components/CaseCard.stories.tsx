@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, within } from 'storybook/test'
 
 import type { CaseStudy } from '../content/types'
 import { CaseCard } from './CaseCard'
@@ -17,6 +17,14 @@ const publishedCase: CaseStudy = {
   stack: ['Figma', 'Angular', 'Node.js', 'MySQL'],
   tags: 'Figma → Angular · CRM · Roles',
   published: true,
+  visual: {
+    theme: 'buy-sell',
+    logoSrc: '/projects/buy-sell/logo-lockup.svg',
+    logoAlt: 'Buy&Sell',
+    kicker: 'Marketplace tecnológico',
+    statement: 'Diseño, producto y sistema full stack.',
+    slides: [{ label: 'Producto final', src: '/projects/buy-sell/home-hd.webp', alt: 'Inicio de Buy&Sell' }],
+  },
   phases: [],
   ai: {
     tool: '',
@@ -67,8 +75,11 @@ export const Published: Story = {
       'href',
       '/casos/buy-sell-marketplace',
     )
-    await userEvent.tab()
-    await expect(link).toHaveFocus()
+    await expect(
+      canvas.getByRole('region', { name: 'Vista previa de Buy&Sell Marketplace' }),
+    ).toBeInTheDocument()
+    await expect(canvas.getByRole('img', { name: 'Buy&Sell' })).toBeInTheDocument()
+    await expect(canvas.getAllByText('Ver caso de estudio').length).toBeGreaterThan(0)
   },
 }
 
@@ -81,6 +92,6 @@ export const Draft: Story = {
     const link = canvas.getByRole('link', { name: 'Caso Caso futuro' })
 
     await expect(link).toHaveAttribute('href', '/casos')
-    await expect(canvas.getByText('En preparación')).toBeInTheDocument()
+    await expect(canvas.getAllByText('En preparación')).toHaveLength(2)
   },
 }

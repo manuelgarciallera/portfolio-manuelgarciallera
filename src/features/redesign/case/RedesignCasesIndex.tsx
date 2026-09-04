@@ -1,21 +1,16 @@
 ﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { CasesSection } from '../components/CasesSection'
+import { Breadcrumbs } from '../components/Breadcrumbs'
 import { SiteHeader } from '../components/SiteHeader'
+import { Footer } from '../components/Sections'
+import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import '../redesign.css'
 
 export function RedesignCasesIndex() {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.localStorage.getItem('rd-theme') === 'dark'
-  })
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
-    window.localStorage.setItem('rd-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
+  const [isDark, toggleTheme] = usePortfolioTheme()
 
   useEffect(() => {
     document.querySelectorAll<HTMLElement>('.rd-reveal').forEach((el) => el.classList.add('is-in'))
@@ -23,10 +18,17 @@ export function RedesignCasesIndex() {
 
   return (
     <div className="rd-root">
-      <SiteHeader isDark={isDark} onToggleTheme={() => setIsDark((value) => !value)} forceVisible />
-      <main className="rd-page-offset">
+      <SiteHeader isDark={isDark} onToggleTheme={toggleTheme} forceVisible />
+      <main className="rd-page-offset" id="main-content">
+        <section className="rd-section rd-cases-intro">
+          <Breadcrumbs items={[{ label: 'Proyectos' }]} />
+          <p className="rd-label rd-reveal" data-index="00">Trabajo seleccionado</p>
+          <h1 className="rd-reveal">El trabajo se entiende mejor cuando se ve cómo fue pensado.</h1>
+          <p className="rd-reveal">Aquí reúno proyectos distintos —académicos, propios y en evolución— y explico mi contribución, las decisiones difíciles, la evidencia disponible y lo que todavía queda abierto.</p>
+        </section>
         <CasesSection />
       </main>
+      <Footer />
     </div>
   )
 }

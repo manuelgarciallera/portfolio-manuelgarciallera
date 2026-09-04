@@ -28,6 +28,49 @@ export interface CaseLink {
   href: string
 }
 
+export type CaseStoryBlockId = 'opening' | 'context' | 'system' | 'journey' | 'implementation'
+export type CaseStoryBlockKind = 'brand-scene' | 'narrative' | 'system' | 'journey' | 'implementation'
+
+export interface CaseStoryLink extends CaseLink {
+  kind: 'product' | 'figma'
+  external?: boolean
+}
+
+export interface CaseStoryBlock {
+  id: CaseStoryBlockId
+  kind: CaseStoryBlockKind
+  eyebrow: string
+  title: string
+  body: string
+  image?: {
+    src: string
+    alt: string
+    fit?: 'cover' | 'contain'
+  }
+  links?: CaseStoryLink[]
+}
+
+export interface CaseVisual {
+  theme: 'buy-sell' | 'laliga' | 'coordination' | 'theuxunion' | 'neutral'
+  logoSrc: string
+  logoAlt: string
+  kicker: string
+  statement: string
+  slides: CaseVisualSlide[]
+}
+
+export interface CaseVisualSlide {
+  label: string
+  src: string
+  alt: string
+  description?: string
+  kind?: 'image' | 'coordination-diagram'
+  diagramVariant?: 'flow' | 'autonomy' | 'consensus' | 'verification'
+  fit?: 'cover' | 'contain'
+}
+
+export type CaseStatus = 'published' | 'experimental' | 'evolving'
+
 export interface CaseStudy {
   slug: string
   index: string
@@ -40,7 +83,12 @@ export interface CaseStudy {
   role: string
   stack: string[]
   tags: string
+  proofPoints?: Array<{ value: string; label: string }>
   published: boolean
+  status?: CaseStatus
+  contribution?: string
+  collaboration?: string
+  disclosure?: string
   phases: CasePhase[]
   ai: CaseAiProcess
   figmaLayers: string[]
@@ -49,4 +97,6 @@ export interface CaseStudy {
   learnings: string[]
   futureQuestion: string
   links?: CaseLink[]
+  visual?: CaseVisual
+  story?: CaseStoryBlock[]
 }

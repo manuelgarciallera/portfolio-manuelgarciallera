@@ -9,12 +9,15 @@
     "start": "next start",
     "check:encoding": "node ./scripts/check-encoding.mjs",
     "check:hero": "node ./scripts/check-hero-structure.mjs",
+    "check:responsive-type": "node ./scripts/check-responsive-typography.mjs",
+    "check:mobile-nav": "node ./scripts/check-mobile-navigation.mjs",
+    "check:responsive": "npm run check:responsive-type && npm run check:mobile-nav",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "audit:security": "npm audit --omit=dev",
     "audit:lighthouse:desktop": "node ./scripts/lighthouse-audit.mjs desktop",
     "audit:lighthouse:mobile": "node ./scripts/lighthouse-audit.mjs mobile",
-    "check:all": "npm run check:encoding && npm run check:hero && npm run lint && npm run typecheck && npm run build && npm run audit:security",
+    "check:all": "npm run check:encoding && npm run check:hero && npm run check:responsive && npm run lint && npm run typecheck && npm run build && npm run audit:security",
     "sync:preview": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-preview.ps1",
     "ship": "bash ./scripts/ship.sh",
     "storybook": "storybook dev -p 6006 --disable-telemetry",
@@ -34,6 +37,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sharp": "0.35.3",
+    "simple-icons": "^16.29.0",
     "three": "^0.183.2",
     "web-vitals": "^5.1.0"
   },
@@ -60,7 +64,11 @@
     "vitest": "^4.1.10"
   },
   "overrides": {
-    "postcss": "8.5.19",
+    "nanoid": "3.3.18",
+    "postcss": "8.5.23",
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.18"
+    },
     "sharp": "0.35.3"
   }
 }

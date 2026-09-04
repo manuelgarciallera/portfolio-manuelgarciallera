@@ -1,8 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import Link from 'next/link'
 
 import { SiteHeader } from '../components/SiteHeader'
+import { Breadcrumbs } from '../components/Breadcrumbs'
+import { Footer } from '../components/Sections'
+import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import {
   ABOUT_CLOSING,
   ABOUT_FACTS,
@@ -14,15 +18,7 @@ import {
 import '../redesign.css'
 
 export function AboutPage() {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.localStorage.getItem('rd-theme') === 'dark'
-  })
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
-    window.localStorage.setItem('rd-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
+  const [isDark, toggleTheme] = usePortfolioTheme()
 
   useEffect(() => {
     document
@@ -34,12 +30,13 @@ export function AboutPage() {
     <div className="rd-root">
       <SiteHeader
         isDark={isDark}
-        onToggleTheme={() => setIsDark((value) => !value)}
+        onToggleTheme={toggleTheme}
         forceVisible
       />
 
-      <main className="rd-page-offset">
+      <main className="rd-page-offset" id="main-content">
         <section className="rd-section">
+          <Breadcrumbs items={[{ label: 'Sobre mí' }]} />
           <p className="rd-label rd-reveal" data-index="00">
             Sobre mí
           </p>
@@ -95,16 +92,17 @@ export function AboutPage() {
             Seguir
           </p>
           <p className="rd-future-question rd-reveal">
-            El método con el que trabajo está documentado, y cada caso lo muestra
-            aplicado sobre un proyecto real.
+            Si quieres saber cómo se convierte esta trayectoria en decisiones concretas,
+            he documentado el método y también sus límites.
           </p>
           <p className="rd-prose rd-reveal">
-            <a className="rd-contact-mail" href="/proceso">
+            <Link className="rd-contact-mail" href="/proceso">
               Ver el proceso
-            </a>
+            </Link>
           </p>
         </section>
       </main>
+      <Footer />
     </div>
   )
 }

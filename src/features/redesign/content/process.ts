@@ -18,11 +18,11 @@ export interface ProcessPrinciple {
  * decide una persona y lo que ejecuta la IA.
  */
 export const PROCESS_STATEMENT =
-  'Un método sirve para algo cuando el segundo proyecto cuesta la mitad que el primero sin perder calidad.'
+  'Trabajo con método para que una intuición pueda explicarse, probarse y mejorar sin perder su parte humana.'
 
 export const PROCESS_INTRO = [
-  'Trabajo con un procedimiento fijo. No porque el diseño sea mecánico, sino justo por lo contrario: cuanto más resueltas están las decisiones repetibles, más tiempo queda para las que no lo son.',
-  'Cada fase produce un artefacto verificable y deja escrito por qué se decidió así. Eso permite auditar el resultado, retomarlo meses después y transferirlo a otro proyecto sin empezar de cero.',
+  'No sigo estas fases como una receta cerrada. Las uso para liberar atención: cuando lo repetible tiene una estructura, puedo dedicar más tiempo a escuchar, interpretar y tomar las decisiones que de verdad cambian el producto.',
+  'Cada fase deja una evidencia y una razón. Así puedo discutir el trabajo con otras personas, retomarlo meses después y reconocer con honestidad qué sabemos, qué estamos suponiendo y qué falta por comprobar.',
 ]
 
 export const PROCESS_PHASES: ProcessPhase[] = [

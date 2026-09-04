@@ -1,16 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
-import type { CaseAiProcess, CaseCodeEvidence, CasePhase } from '../content/types'
-
-const PHASE_LABELS: Record<string, string> = {
-  research: 'Research',
-  prototipo: 'Prototipo',
-  ia: 'IA',
-  desarrollo: 'Desarrollo',
-  validacion: 'Validación',
-}
+import type { CaseAiProcess, CaseCodeEvidence, CasePhase, CaseVisual, CaseVisualSlide } from '../content/types'
+import { CoordinationDiagram } from '../components/CoordinationDiagram'
 
 export function PhaseNav({ phases }: { phases: CasePhase[] }) {
   const [active, setActive] = useState<string>(phases[0]?.id ?? '')
@@ -35,16 +29,31 @@ export function PhaseNav({ phases }: { phases: CasePhase[] }) {
     <nav className="rd-phase-nav" aria-label="Fases del caso">
       {phases.map((phase) => (
         <a key={phase.id} href={`#fase-${phase.id}`} className={active === phase.id ? 'is-active' : ''}>
-          {PHASE_LABELS[phase.id] ?? phase.title}
+          {phase.title}
         </a>
       ))}
     </nav>
   )
 }
 
-export function PhaseSection({ phase, order }: { phase: CasePhase; order: number }) {
+export function PhaseSection({
+  phase,
+  order,
+  visual,
+  theme = 'neutral',
+}: {
+  phase: CasePhase
+  order: number
+  visual?: CaseVisualSlide
+  theme?: CaseVisual['theme']
+}) {
+  const hasVisual = Boolean(visual && (visual.kind === 'coordination-diagram' || visual.src.startsWith('/')))
+
   return (
-    <section className="rd-section rd-case-phase" id={`fase-${phase.id}`}>
+    <section
+      className={`rd-section rd-case-phase${hasVisual ? ' rd-case-phase--with-visual' : ''}${hasVisual && order % 2 === 0 ? ' is-reversed' : ''}`}
+      id={`fase-${phase.id}`}
+    >
       <p className="rd-label rd-reveal" data-index={String(order).padStart(2, '0')}>
         {phase.title}
       </p>
@@ -60,6 +69,28 @@ export function PhaseSection({ phase, order }: { phase: CasePhase; order: number
           </p>
         ) : null}
       </div>
+      {hasVisual && visual ? visual.kind === 'coordination-diagram' ? (
+        <div className={`rd-case-phase__visual rd-case-phase__visual--${theme} rd-reveal`}>
+          <div className={`rd-case-phase__frame rd-case-phase__frame--${theme}`}>
+            <CoordinationDiagram variant={visual.diagramVariant} />
+          </div>
+          <p className="rd-case-phase__visual-label">{visual.label}</p>
+        </div>
+      ) : (
+        <figure className={`rd-case-phase__visual rd-case-phase__visual--${theme} rd-reveal`}>
+          <div className={`rd-case-phase__frame rd-case-phase__frame--${theme}`} data-fit={visual.fit ?? 'cover'}>
+            <Image
+              src={visual.src}
+              alt={visual.alt}
+              width={1600}
+              height={1100}
+              sizes="(max-width: 760px) calc(100vw - 2rem), 56vw"
+              style={{ objectFit: visual.fit ?? 'cover' }}
+            />
+          </div>
+          <figcaption>{visual.label}</figcaption>
+        </figure>
+      ) : null}
     </section>
   )
 }
@@ -102,7 +133,7 @@ export function PrototypeToComponent({
       </p>
       <div className="rd-compare rd-reveal">
         <div className="rd-compare-col">
-          <h4>Figma · sistema atomizado</h4>
+          <h3>Figma · sistema atomizado</h3>
           <ul className="rd-layer-list">
             {figmaLayers.map((layer) => (
               <li key={layer}>{layer}</li>
@@ -111,8 +142,8 @@ export function PrototypeToComponent({
         </div>
         {codeEvidence ? (
           <div className="rd-compare-col">
-            <h4>Angular · componente real</h4>
-            <pre className="rd-code" aria-label={codeEvidence.filename}>
+            <h3>Angular · componente real</h3>
+            <pre className="rd-code" aria-label={codeEvidence.filename} tabIndex={0}>
               <code>{codeEvidence.code}</code>
             </pre>
             <p className="rd-code-file">{codeEvidence.filename}</p>
@@ -120,7 +151,7 @@ export function PrototypeToComponent({
         ) : null}
       </div>
       {codeEvidence ? <p className="rd-compare-caption rd-reveal">{codeEvidence.caption}</p> : null}
-      {dataMapping ? <p className="rd-data-mapping rd-reveal">{dataMapping}</p> : null}
+      {dataMapping ? <p className="rd-data-mapping rd-reveal" aria-label="Mapeo entre interfaz y datos" tabIndex={0}>{dataMapping}</p> : null}
     </section>
   )
 }

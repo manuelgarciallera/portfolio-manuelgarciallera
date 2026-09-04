@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseContactSubmission } from "@/lib/contact";
 
 // POST /api/contact
 // Recibe { nombre, email, mensaje, website } del formulario de contacto y envia un email.
@@ -8,23 +9,54 @@ import { NextResponse } from "next/server";
 //   CONTACT_FROM_EMAIL -> remitente verificado (opcional; por defecto onboarding@resend.dev)
 // Mientras no existan esas variables, la ruta responde 503 y el formulario muestra aviso.
 
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_REQUESTS = 5;
+const MAX_TRACKED_CLIENTS = 1_000;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(request: Request): boolean {
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const key = forwarded || request.headers.get("x-real-ip") || "local";
+  const now = Date.now();
+  const record = attempts.get(key);
+
+  if (!record || record.resetAt <= now) {
+    if (attempts.size >= MAX_TRACKED_CLIENTS) {
+      const oldestKey = attempts.keys().next().value as string | undefined;
+      if (oldestKey) attempts.delete(oldestKey);
+    }
+    attempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+
+  record.count += 1;
+  return record.count > MAX_REQUESTS;
+}
+
 export async function POST(request: Request) {
   try {
+    if (isRateLimited(request)) {
+      return NextResponse.json(
+        { ok: false, error: "Demasiados intentos. Prueba de nuevo en unos minutos." },
+        { status: 429, headers: { "Retry-After": "900", "Cache-Control": "no-store" } },
+      );
+    }
+
+    if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+      return NextResponse.json({ ok: false, error: "Formato no admitido." }, { status: 415 });
+    }
+
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 12_000) {
+      return NextResponse.json({ ok: false, error: "El mensaje es demasiado grande." }, { status: 413 });
+    }
+
     const body = await request.json().catch(() => ({}));
-    const { nombre, email, mensaje, website } = body ?? {};
+    const parsed = parseContactSubmission(body);
+    if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
+    if ("spam" in parsed) return NextResponse.json({ ok: true });
 
-    // Honeypot: si viene relleno, es un bot. Respondemos ok sin enviar.
-    if (website) {
-      return NextResponse.json({ ok: true });
-    }
-
-    if (!nombre?.trim() || !email?.trim() || !mensaje?.trim()) {
-      return NextResponse.json({ ok: false, error: "Campos incompletos." }, { status: 400 });
-    }
-
-    if (!/.+@.+\..+/.test(email)) {
-      return NextResponse.json({ ok: false, error: "Email no válido." }, { status: 400 });
-    }
+    const { name, email, company, message } = parsed.data;
 
     const apiKey = process.env.RESEND_API_KEY;
     const to = process.env.CONTACT_TO_EMAIL;
@@ -32,7 +64,7 @@ export async function POST(request: Request) {
 
     if (!apiKey || !to) {
       return NextResponse.json(
-        { ok: false, error: "El envío de email aún no está configurado." },
+        { ok: false, error: "El formulario está temporalmente indisponible. Puedes contactar por LinkedIn." },
         { status: 503 },
       );
     }
@@ -47,8 +79,8 @@ export async function POST(request: Request) {
         from,
         to: [to],
         reply_to: email,
-        subject: `Nuevo mensaje de ${nombre} — Portfolio`,
-        text: `Nombre: ${nombre}\nEmail: ${email}\n\n${mensaje}`,
+        subject: `Portfolio · mensaje de ${name.replace(/[\r\n]+/g, " ")}`,
+        text: `Nombre: ${name}\nEmail: ${email}${company ? `\nOrganización: ${company}` : ""}\n\n${message}`,
       }),
     });
 
