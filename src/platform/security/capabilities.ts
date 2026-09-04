@@ -66,7 +66,7 @@ export type AuditResult = boolean | 'allowed' | 'denied'
 
 export interface AuditEventInput {
   actor: { id: string; kind: 'owner' | 'ai' }
-  connector: ConnectorId | { id: ConnectorId }
+  connector: ConnectorId | { id: ConnectorId; connected?: boolean; enabled?: boolean }
   capability: Capability
   resource: string
   result: AuditResult | AuthorizationDecision
@@ -100,6 +100,18 @@ const CAPABILITIES: readonly Capability[] = [
 ]
 
 const SECRET_KEY = /token|secret|password|authorization|cookie|key/i
+const CONNECTOR_PUBLIC_KEYS = ['id', 'connected', 'enabled'] as const
+
+const assertExactOwnProperties = (
+  value: Record<string, unknown>,
+  allowedKeys: readonly string[],
+  label: string,
+): void => {
+  const unsupported = Object.getOwnPropertyNames(value).find((key) => !allowedKeys.includes(key))
+  if (unsupported !== undefined) {
+    throw new TypeError(`${label} contains unsupported field "${unsupported}".`)
+  }
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -152,9 +164,7 @@ const validateBaseContext = (context: PolicyContext): { current: Date; connector
   requireActor(context.actor)
   const connector = context.connector
   if (!isRecord(connector)) throw new TypeError('connector must be an object.')
-  if (Object.keys(connector).some((key) => SECRET_KEY.test(key))) {
-    throw new TypeError('connector credentials are not accepted by capability policy.')
-  }
+  assertExactOwnProperties(connector, CONNECTOR_PUBLIC_KEYS, 'connector')
   const connectorId = requireConnectorId(connector.id)
   requireCapability(context.capability)
   requireNonBlank(context.resource, 'resource')
@@ -189,7 +199,9 @@ const authorizeApproval = (
   if (!approval) return { allowed: false, reason: 'approval_required' }
   requireNonBlank(approval.operationDigest, 'approval.operationDigest')
   if (!isNonBlankString(context.operationDigest)) return { allowed: false, reason: 'approval_digest_mismatch' }
-  if (approval.used) return { allowed: false, reason: 'approval_required' }
+  if (typeof approval.used !== 'boolean' || approval.used) {
+    return { allowed: false, reason: 'approval_required' }
+  }
   const expiry = parseTimestamp(approval.expiresAt, 'approval.expiresAt').date
   if (expiry.getTime() <= current.getTime()) return { allowed: false, reason: 'approval_expired' }
   if (approval.operationDigest !== context.operationDigest) {
@@ -258,8 +270,12 @@ export function createAuditEvent(input: AuditEventInput): AuditEvent {
   const actor = requireActor(input.actor)
   let connectorId: ConnectorId
   if (isRecord(input.connector)) {
-    if (Object.keys(input.connector).some((key) => SECRET_KEY.test(key))) {
-      throw new TypeError('connector credentials are not accepted by audit events.')
+    assertExactOwnProperties(input.connector, CONNECTOR_PUBLIC_KEYS, 'audit connector')
+    if ('connected' in input.connector && typeof input.connector.connected !== 'boolean') {
+      throw new TypeError('audit connector.connected must be boolean.')
+    }
+    if ('enabled' in input.connector && typeof input.connector.enabled !== 'boolean') {
+      throw new TypeError('audit connector.enabled must be boolean.')
     }
     connectorId = requireConnectorId(input.connector.id)
   } else {

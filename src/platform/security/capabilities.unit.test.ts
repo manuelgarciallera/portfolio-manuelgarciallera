@@ -106,6 +106,43 @@ describe('authorizeCapability', () => {
     ).toEqual({ allowed: true, reason: 'allowed' })
   })
 
+  it.each([0, null, undefined, 'false'])(
+    'fails closed for a non-boolean publish approval used value: %j',
+    (used) => {
+      expect(
+        authorizeCapability(
+          context({
+            capability: 'publish',
+            approval: {
+              operationDigest: 'digest-1',
+              expiresAt: '2026-09-04T11:00:00.000Z',
+              used,
+            } as never,
+          }),
+        ),
+      ).toEqual({ allowed: false, reason: 'approval_required' })
+    },
+  )
+
+  it.each([0, null, undefined, 'false'])(
+    'fails closed for a non-boolean code approval used value: %j',
+    (used) => {
+      expect(
+        authorizeCapability(
+          context({
+            capability: 'changeCode',
+            isolation: { isolated: true },
+            approval: {
+              operationDigest: 'digest-1',
+              expiresAt: '2026-09-04T11:00:00.000Z',
+              used,
+            } as never,
+          }),
+        ),
+      ).toEqual({ allowed: false, reason: 'approval_required' })
+    },
+  )
+
   it('rejects blank identifiers and invalid timestamps', () => {
     expect(() => authorizeCapability(context({ resource: '   ' }))).toThrow(TypeError)
     expect(() => authorizeCapability(context({ actor: { id: '', kind: 'owner' } }))).toThrow(TypeError)
@@ -133,6 +170,22 @@ describe('authorizeCapability', () => {
         }),
       ),
     ).toThrow(/credential|token|secret/i)
+  })
+
+  it('rejects non-enumerable connector credentials and all extra connector fields', () => {
+    const nonEnumerable = { id: 'figma', connected: true, enabled: true } as Record<string, unknown>
+    Object.defineProperty(nonEnumerable, 'accessToken', {
+      value: 'must-not-cross-the-boundary',
+      enumerable: false,
+    })
+    expect(() => authorizeCapability(context({ connector: nonEnumerable as never }))).toThrow(TypeError)
+    expect(() =>
+      authorizeCapability(
+        context({
+          connector: { id: 'figma', connected: true, enabled: true, label: 'unexpected' } as never,
+        }),
+      ),
+    ).toThrow(TypeError)
   })
 })
 
@@ -198,5 +251,26 @@ describe('createAuditEvent', () => {
         connector: { id: 'figma', accessToken: 'must-not-cross-the-boundary' } as never,
       }),
     ).toThrow(/credential|token|secret/i)
+  })
+
+  it('accepts only public connector state fields at the audit boundary', () => {
+    expect(
+      createAuditEvent({
+        ...input,
+        connector: { id: 'figma', connected: true, enabled: true },
+      }).connector,
+    ).toBe('figma')
+  })
+
+  it('rejects non-enumerable connector credentials and all extra audit connector fields', () => {
+    const nonEnumerable = { id: 'figma' } as Record<string, unknown>
+    Object.defineProperty(nonEnumerable, 'accessToken', {
+      value: 'must-not-cross-the-boundary',
+      enumerable: false,
+    })
+    expect(() => createAuditEvent({ ...input, connector: nonEnumerable as never })).toThrow(TypeError)
+    expect(() =>
+      createAuditEvent({ ...input, connector: { id: 'figma', label: 'unexpected' } as never }),
+    ).toThrow(TypeError)
   })
 })
