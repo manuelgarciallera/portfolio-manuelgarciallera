@@ -1,9 +1,9 @@
-import type { CollectionConfig, Field } from 'payload'
+import { ValidationError, type CollectionConfig, type Field } from 'payload'
 import { describe, expect, it } from 'vitest'
 
 import { Articles } from './Articles'
 import { Media } from './Media'
-import { Pages, pageBlocks } from './Pages'
+import { Pages, pageBlocks, validatePageBrandPublication } from './Pages'
 import { Projects } from './Projects'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
@@ -55,6 +55,147 @@ describe('editorial collections', () => {
     expect(fieldNamed(Articles, 'slug')).toMatchObject({ type: 'text', required: true, unique: true })
     expect(fieldNamed(Pages, 'title')).toMatchObject({ type: 'text', required: true })
     expect(fieldNamed(Pages, 'slug')).toMatchObject({ type: 'text', required: true, unique: true })
+  })
+
+  it('adds a migration-safe brand relationship and controlled page overrides', () => {
+    expect(fieldNamed(Pages, 'brandProfile')).toMatchObject({
+      type: 'relationship',
+      relationTo: 'brand-profiles',
+    })
+    expect(fieldNamed(Pages, 'brandProfile')).not.toHaveProperty('required', true)
+    const overrides = fieldNamed(Pages, 'brandOverrides')
+    expect(overrides).toMatchObject({ type: 'group' })
+    if (!overrides || overrides.type !== 'group') throw new Error('Pages.brandOverrides must be a group')
+    expect(overrides.fields.map((field) => ('name' in field ? field.name : undefined))).toEqual([
+      'accent',
+      'surface',
+      'usageWeights',
+      'motion',
+    ])
+    expect(JSON.stringify(overrides)).not.toMatch(/(?:customCSS|javascript|html|codeEditor)/i)
+  })
+
+  it('requires a brand for newly published pages while preserving legacy pages', async () => {
+    await expect(
+      validatePageBrandPublication({ data: { _status: 'published' } } as never),
+    ).rejects.toBeInstanceOf(Error)
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'published', title: 'Legacy edit' },
+        originalDoc: { id: 7, title: 'Legacy', brandProfile: null },
+      } as never),
+    ).resolves.toMatchObject({ _status: 'published', title: 'Legacy edit' })
+  })
+
+  it('rejects malformed page brand overrides and resolves valid related profiles', async () => {
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'draft', brandOverrides: { customCSS: 'body{}' } },
+      } as never),
+    ).rejects.toBeInstanceOf(Error)
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'draft', brandOverrides: { motion: { duration: 1 } } },
+      } as never),
+    ).rejects.toBeInstanceOf(Error)
+
+    const profile = {
+      colors: [
+        { role: 'background', value: '#000000' },
+        { role: 'surface', value: '#111111' },
+        { role: 'text', value: '#FFFFFF' },
+        { role: 'mutedText', value: '#AAAAAA' },
+        { role: 'accent', value: '#FF4B44' },
+        { role: 'interaction', value: '#00D4E6' },
+        { role: 'success', value: '#21A366' },
+        { role: 'danger', value: '#FF4B44' },
+      ],
+      usageWeights: [
+        { role: 'background', weight: 70 },
+        { role: 'surface', weight: 20 },
+        { role: 'text', weight: 8 },
+        { role: 'accent', weight: 2 },
+      ],
+      motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
+    }
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'published', brandProfile: 3, brandOverrides: { accent: '#0df' } },
+        req: { payload: { findByID: async () => profile } },
+      } as never),
+    ).resolves.toMatchObject({ brandOverrides: { accent: '#00DDFF' } })
+  })
+
+  it('preserves explicit override deletion instead of restoring stale nested values', async () => {
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'draft', brandOverrides: null },
+        originalDoc: { id: 7, brandOverrides: { accent: '#FF4B44' } },
+      } as never),
+    ).resolves.toMatchObject({ brandOverrides: null })
+
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'draft', brandOverrides: { accent: null, motion: { duration: null } } },
+        originalDoc: {
+          id: 7,
+          brandOverrides: { accent: '#FF4B44', motion: { duration: 700, travel: 20 } },
+        },
+      } as never),
+    ).resolves.toMatchObject({
+      brandOverrides: { accent: null, motion: { travel: 20 } },
+    })
+  })
+
+  it('validates create and partial-update publication lifecycles for expanded and id relationships', async () => {
+    const profile = {
+      colors: [
+        { role: 'background', value: '#000000' },
+        { role: 'surface', value: '#111111' },
+        { role: 'text', value: '#FFFFFF' },
+        { role: 'mutedText', value: '#AAAAAA' },
+        { role: 'accent', value: '#FF4B44' },
+        { role: 'interaction', value: '#00D4E6' },
+        { role: 'success', value: '#21A366' },
+        { role: 'danger', value: '#FF4B44' },
+      ],
+      usageWeights: [
+        { role: 'background', weight: 70 },
+        { role: 'surface', weight: 20 },
+        { role: 'text', weight: 8 },
+        { role: 'accent', weight: 2 },
+      ],
+      motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
+    }
+
+    await expect(
+      validatePageBrandPublication({ data: { title: 'Create', brandProfile: profile } } as never),
+    ).resolves.toMatchObject({ title: 'Create', brandProfile: profile })
+
+    await expect(
+      validatePageBrandPublication({
+        data: { title: 'Partial update' },
+        originalDoc: { id: 9, _status: 'published', brandProfile: 3 },
+        req: { payload: { findByID: async ({ id }: { id: number }) => (id === 3 ? profile : null) } },
+      } as never),
+    ).resolves.toMatchObject({ title: 'Partial update' })
+  })
+
+  it('converts relationship lookup failures into a safe validation error', async () => {
+    const attempt = validatePageBrandPublication({
+      data: { _status: 'published', brandProfile: 999 },
+      req: {
+        payload: {
+          findByID: async () => {
+            throw new Error('postgres://owner:secret@private-host')
+          },
+        },
+      },
+    } as never)
+    await expect(attempt).rejects.toBeInstanceOf(ValidationError)
+    await expect(attempt).rejects.not.toMatchObject({
+      data: { errors: [expect.objectContaining({ message: expect.stringContaining('private-host') })] },
+    })
   })
 
   it('uses only the approved page block catalog', () => {

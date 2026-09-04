@@ -331,6 +331,31 @@ export interface Page {
   _order?: string | null;
   title: string;
   slug: string;
+  /**
+   * Obligatorio al publicar páginas nuevas. Las páginas anteriores conservan compatibilidad hasta asignarlo.
+   */
+  brandProfile?: (number | null) | BrandProfile;
+  /**
+   * Variaciones controladas; fondo y texto siempre se heredan.
+   */
+  brandOverrides?: {
+    accent?: string | null;
+    surface?: string | null;
+    usageWeights?:
+      | {
+          role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
+          weight: number;
+          id?: string | null;
+        }[]
+      | null;
+    motion?: {
+      duration?: number | null;
+      stagger?: number | null;
+      travel?: number | null;
+      easing?: ('linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out') | null;
+      reducedMotion?: ('reduce' | 'disable') | null;
+    };
+  };
   layout: (
     | {
         eyebrow?: string | null;
@@ -670,6 +695,29 @@ export interface PagesSelect<T extends boolean = true> {
   _order?: T;
   title?: T;
   slug?: T;
+  brandProfile?: T;
+  brandOverrides?:
+    | T
+    | {
+        accent?: T;
+        surface?: T;
+        usageWeights?:
+          | T
+          | {
+              role?: T;
+              weight?: T;
+              id?: T;
+            };
+        motion?:
+          | T
+          | {
+              duration?: T;
+              stagger?: T;
+              travel?: T;
+              easing?: T;
+              reducedMotion?: T;
+            };
+      };
   layout?:
     | T
     | {
