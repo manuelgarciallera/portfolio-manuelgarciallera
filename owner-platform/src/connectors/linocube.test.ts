@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createPreviewManifest } from '../preview/manifest'
+import { createPreviewManifest, PREVIEW_LIMITS } from '../preview/manifest'
 import { createDisabledLinocubeConsumer, validatePublishedManifest } from './linocube'
 
 const manifest = createPreviewManifest({
@@ -37,6 +37,22 @@ describe('Linocube published manifest contract', () => {
     const getter = Object.defineProperty({ schemaVersion: 1, manifestVersion: 1, digest: manifest.hash }, 'manifest', { enumerable: true, get: () => manifest })
     expect(() => validatePublishedManifest(getter)).toThrow(/datos planos/i)
     expect(() => validatePublishedManifest(new (class Envelope { schemaVersion = 1; manifestVersion = 1; digest = manifest.hash; manifest = manifest })())).toThrow(/objeto plano/i)
+  })
+
+  it('rejects array getters, custom iterators/prototypes, and excessive depth before scanning', () => {
+    const valid = { schemaVersion: 1 as const, manifestVersion: 3, digest: manifest.hash, manifest }
+    const getterBlocks: unknown[] = []
+    Object.defineProperty(getterBlocks, '0', { enumerable: true, get: () => ({ text: 'x' }) })
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, pageBlocks: getterBlocks } })).toThrow(/datos planos/i)
+    const iteratorBlocks: unknown[] = []
+    Object.defineProperty(iteratorBlocks, Symbol.iterator, { value: function* () { yield* [] } })
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, pageBlocks: iteratorBlocks } })).toThrow(/símbolos/i)
+    const prototypeBlocks: unknown[] = []
+    Object.setPrototypeOf(prototypeBlocks, {})
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, pageBlocks: prototypeBlocks } })).toThrow(/prototipo/i)
+    let deep: Record<string, unknown> = { value: 'x' }
+    for (let index = 0; index <= PREVIEW_LIMITS.maxDepth; index += 1) deep = { child: deep }
+    expect(() => validatePublishedManifest({ ...valid, manifest: { ...manifest, brandTokens: deep } })).toThrow(/profundidad/i)
   })
 
   it('is disabled by default and never attempts network access', async () => {

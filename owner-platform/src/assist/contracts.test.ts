@@ -71,6 +71,18 @@ describe('StudioPatch validation against current Payload fields', () => {
     expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), enabled, { ...context, page } as StudioPatchContext)).toThrow(/datos planos/i)
   })
 
+  it('rejects getter, custom iterator, and custom prototype operation arrays', () => {
+    const getterOps: unknown[] = []
+    Object.defineProperty(getterOps, '0', { enumerable: true, get: () => ({ op: 'replace', path: '/page/title', value: 'x' }) })
+    expect(() => validateStudioPatch(proposal('suggestCopy', getterOps), enabled, context)).toThrow(/datos planos/i)
+    const iteratorOps = [{ op: 'replace', path: '/page/title', value: 'x' }]
+    Object.defineProperty(iteratorOps, Symbol.iterator, { value: function* () { yield* [] } })
+    expect(() => validateStudioPatch(proposal('suggestCopy', iteratorOps), enabled, context)).toThrow(/símbolos/i)
+    const prototypeOps = [{ op: 'replace', path: '/page/title', value: 'x' }]
+    Object.setPrototypeOf(prototypeOps, {})
+    expect(() => validateStudioPatch(proposal('suggestCopy', prototypeOps), enabled, context)).toThrow(/prototipo/i)
+  })
+
   it('rejects executable, prototype, secret, and bounded-size abuse', () => {
     for (const value of [{ script: 'x' }, { accessToken: 'x' }, { constructor: 'x' }]) expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value }]), enabled, context)).toThrow()
     expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x'.repeat(4001) }]), enabled, context)).toThrow(/texto/i)

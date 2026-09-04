@@ -40,8 +40,12 @@ const assertSafeValue = (value: unknown, depth = 0, ancestors = new Set<object>(
 const deepFreeze = <T>(value: T): T => { if (value && typeof value === 'object') { Object.freeze(value); for (const child of Object.values(value)) deepFreeze(child) }; return value }
 function assertDataArray(value: unknown, label: string): asserts value is unknown[] {
   if (!Array.isArray(value)) throw new TypeError(`${label} debe ser una lista.`)
-  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value)))
+  if (Object.getPrototypeOf(value) !== Array.prototype) throw new TypeError(`${label} no admite un prototipo personalizado.`)
+  if (Object.getOwnPropertySymbols(value).length) throw new TypeError(`${label} no admite propiedades de símbolos.`)
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
+    if (key !== 'length' && !/^(0|[1-9]\d*)$/.test(key)) throw new TypeError(`${label} contiene una propiedad no permitida.`)
     if (key !== 'length' && !Object.hasOwn(descriptor, 'value')) throw new TypeError(`${label} solo admite datos planos, no getters.`)
+  }
 }
 
 const assertContext = (context: StudioPatchContext): void => {
@@ -94,7 +98,8 @@ export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySw
   const capability = input.capability as AssistCapability
   if (!switches[capability]) throw new TypeError(`La capacidad ${capability} está desactivada.`)
   if (capability === 'suggestLayout' || capability === 'suggestCrop') throw new TypeError(`La capacidad ${capability} no dispone aún de operaciones seguras.`)
-  if (!Array.isArray(input.operations) || input.operations.length < 1 || input.operations.length > STUDIO_PATCH_LIMITS.maxOperations) throw new TypeError('Cantidad de operaciones no permitida.')
+  assertDataArray(input.operations, 'Las operaciones')
+  if (input.operations.length < 1 || input.operations.length > STUDIO_PATCH_LIMITS.maxOperations) throw new TypeError('Cantidad de operaciones no permitida.')
   const weightValues = new Map<number, number>()
   for (const raw of input.operations) {
     assertPlainDataRecord(raw, 'La operación', ['op', 'path'])

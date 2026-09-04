@@ -1,4 +1,4 @@
-import { createPreviewManifest, hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
+import { createPreviewManifest, hashPreviewManifest, PREVIEW_LIMITS, type PreviewManifest } from '../preview/manifest'
 
 export const LINOCUBE_MANIFEST_SCHEMA_VERSION = 1 as const
 export type PublishedManifest = Readonly<{ schemaVersion: 1; manifestVersion: number; digest: string; manifest: PreviewManifest }>
@@ -28,13 +28,40 @@ function assertPlainDataRecord(value: unknown, label: string, required: readonly
   for (const key of required) if (!Object.hasOwn(descriptors, key)) throw new TypeError(`${label} requiere propiedades propias.`)
   for (const descriptor of Object.values(descriptors)) if (!Object.hasOwn(descriptor, 'value')) throw new TypeError(`${label} solo admite datos planos, no getters.`)
 }
-const assertNoSecretsOrAccessors = (value: unknown, ancestors = new Set<object>()): void => {
-  if (!value || typeof value !== 'object') return
-  if (ancestors.has(value)) throw new TypeError('Referencia cíclica rechazada.')
-  const next = new Set(ancestors).add(value)
-  if (Array.isArray(value)) { for (const child of value) assertNoSecretsOrAccessors(child, next); return }
-  assertPlainDataRecord(value, 'El contenido', [])
-  for (const [key, child] of Object.entries(value)) { if (secretKey.test(key)) throw new TypeError('El manifiesto contiene una clave secreta.'); assertNoSecretsOrAccessors(child, next) }
+function assertPlainArray(value: unknown, label: string): asserts value is unknown[] {
+  if (!Array.isArray(value)) throw new TypeError(`${label} debe ser una lista.`)
+  if (Object.getPrototypeOf(value) !== Array.prototype) throw new TypeError(`${label} no admite un prototipo personalizado.`)
+  if (Object.getOwnPropertySymbols(value).length) throw new TypeError(`${label} no admite propiedades de símbolos.`)
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
+    if (key !== 'length' && !/^(0|[1-9]\d*)$/.test(key)) throw new TypeError(`${label} contiene una propiedad no permitida.`)
+    if (key !== 'length' && !Object.hasOwn(descriptor, 'value')) throw new TypeError(`${label} solo admite datos planos, no getters.`)
+  }
+}
+const assertBoundedPlainData = (root: unknown): void => {
+  const stack: Array<{ value: unknown; depth: number; ancestors: Set<object> }> = [{ value: root, depth: 0, ancestors: new Set() }]
+  let nodes = 0
+  while (stack.length) {
+    const { value, depth, ancestors } = stack.pop() as (typeof stack)[number]
+    if (depth > PREVIEW_LIMITS.maxDepth) throw new TypeError('La profundidad máxima del manifiesto ha sido excedida.')
+    nodes += 1
+    if (nodes > PREVIEW_LIMITS.maxNodes) throw new TypeError('El manifiesto excede el máximo de nodos.')
+    if (typeof value === 'string') { if (value.length > PREVIEW_LIMITS.maxStringLength) throw new TypeError('Texto demasiado largo.'); continue }
+    if (value === null || typeof value === 'boolean') continue
+    if (typeof value === 'number') { if (!Number.isFinite(value)) throw new TypeError('Número JSON no válido.'); continue }
+    if (!value || typeof value !== 'object') throw new TypeError('Solo se admiten datos JSON.')
+    if (ancestors.has(value)) throw new TypeError('Referencia cíclica rechazada.')
+    const next = new Set(ancestors).add(value)
+    if (Array.isArray(value)) {
+      assertPlainArray(value, 'La lista del manifiesto')
+      if (value.length > PREVIEW_LIMITS.maxArrayLength) throw new TypeError('Lista demasiado larga.')
+      for (let index = value.length - 1; index >= 0; index -= 1) stack.push({ value: value[index], depth: depth + 1, ancestors: next })
+    } else {
+      assertPlainDataRecord(value, 'El contenido', [])
+      for (const [key, child] of Object.entries(value)) { if (secretKey.test(key)) throw new TypeError('El manifiesto contiene una clave secreta.'); stack.push({ value: child, depth: depth + 1, ancestors: next }) }
+    }
+  }
+  const serialized = JSON.stringify(root)
+  if (Buffer.byteLength(serialized, 'utf8') > PREVIEW_LIMITS.maxSerializedBytes) throw new TypeError('El manifiesto excede el máximo de bytes.')
 }
 const deepFreeze = <T>(value: T): T => { if (value && typeof value === 'object') { Object.freeze(value); for (const child of Object.values(value)) deepFreeze(child) }; return value }
 
@@ -51,11 +78,12 @@ export const validatePublishedManifest = (input: unknown): PublishedManifest => 
   exactKeys(input.manifest.source, ['collection', 'documentId', 'versionId'], 'Source')
   if (input.manifest.source.collection !== 'pages' || typeof input.manifest.source.documentId !== 'string' || !input.manifest.source.documentId || typeof input.manifest.source.versionId !== 'string' || !input.manifest.source.versionId) throw new TypeError('Source del manifiesto no válido.')
   assertPlainDataRecord(input.manifest.brandTokens, 'Brand tokens', [])
-  if (!Array.isArray(input.manifest.pageBlocks) || !Array.isArray(input.manifest.mediaReferences)) throw new TypeError('Los bloques y medios deben ser una lista.')
+  assertPlainArray(input.manifest.pageBlocks, 'Los bloques')
+  assertPlainArray(input.manifest.mediaReferences, 'Los medios')
   if (typeof input.manifest.hash !== 'string' || !digestPattern.test(input.manifest.hash)) throw new TypeError('El hash del manifiesto no es válido.')
-  assertNoSecretsOrAccessors(input.manifest.brandTokens)
-  assertNoSecretsOrAccessors(input.manifest.pageBlocks)
-  assertNoSecretsOrAccessors(input.manifest.mediaReferences)
+  assertBoundedPlainData(input.manifest.brandTokens)
+  assertBoundedPlainData(input.manifest.pageBlocks)
+  assertBoundedPlainData(input.manifest.mediaReferences)
   const projected = createPreviewManifest({ source: input.manifest.source as PreviewManifest['source'], brandTokens: input.manifest.brandTokens, pageBlocks: input.manifest.pageBlocks, mediaReferences: input.manifest.mediaReferences })
   if (projected.hash !== input.manifest.hash || hashPreviewManifest(input.manifest as unknown as PreviewManifest) !== input.digest) throw new TypeError('El hash no coincide con el manifiesto.')
   if (input.digest !== input.manifest.hash) throw new TypeError('El digest no coincide con el manifiesto.')
