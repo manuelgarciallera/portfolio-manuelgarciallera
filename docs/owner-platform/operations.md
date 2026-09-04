@@ -55,6 +55,10 @@ surface without changing the public portfolio:
   switches. All default to disabled. Enabling one permits only schema-validated
   suggestions; it never authorizes applying a patch, publishing content,
   deploying code, or writing to production.
+- **Audit Events** is an immutable owner-only ledger. Direct client creation,
+  updates, and deletion are denied; trusted server workflows append normalized
+  actor, action, subject, outcome, and bounded credential-free metadata. Preview
+  snapshot creation is the first workflow connected to this ledger.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the

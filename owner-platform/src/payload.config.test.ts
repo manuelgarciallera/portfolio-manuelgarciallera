@@ -17,4 +17,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.globals.map((global) => global.slug)).toContain('assistant-settings')
   })
+
+  it('registers the immutable owner audit ledger', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('audit-events')
+  })
 })

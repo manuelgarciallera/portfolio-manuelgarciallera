@@ -76,6 +76,7 @@ export interface Config {
     pages: Page;
     'preview-snapshots': PreviewSnapshot;
     releases: Release;
+    'audit-events': AuditEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
+    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -530,6 +532,29 @@ export interface Release {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events".
+ */
+export interface AuditEvent {
+  id: number;
+  actor: number | User;
+  action: string;
+  subjectCollection: string;
+  subjectId: string;
+  outcome: 'success' | 'denied' | 'failure';
+  metadata:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -587,6 +612,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'releases';
         value: number | Release;
+      } | null)
+    | ({
+        relationTo: 'audit-events';
+        value: number | AuditEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -962,6 +991,20 @@ export interface ReleasesSelect<T extends boolean = true> {
         id?: T;
       };
   createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events_select".
+ */
+export interface AuditEventsSelect<T extends boolean = true> {
+  actor?: T;
+  action?: T;
+  subjectCollection?: T;
+  subjectId?: T;
+  outcome?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }

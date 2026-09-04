@@ -42,6 +42,10 @@ layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
 production-write authority.
 
+Audit Events is an owner-readable, append-only ledger created only by trusted
+server services. Preview creation already records its actor, page, snapshot
+hash, and outcome; credentials and executable metadata are rejected.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

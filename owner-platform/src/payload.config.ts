@@ -15,6 +15,7 @@ import { BrandProfiles } from './collections/BrandProfiles'
 import { PreviewSnapshots } from './collections/PreviewSnapshots'
 import { Releases } from './collections/Releases'
 import { MediaPlacements } from './collections/MediaPlacements'
+import { AuditEvents } from './collections/AuditEvents'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -53,6 +54,7 @@ export default buildConfig({
     Pages,
     PreviewSnapshots,
     Releases,
+    AuditEvents,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

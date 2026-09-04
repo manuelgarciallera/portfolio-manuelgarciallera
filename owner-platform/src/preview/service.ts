@@ -3,6 +3,7 @@ import { APIError, type Payload, type PayloadRequest } from 'payload'
 import { isOwner } from '../access/owner'
 import { resolvePageBrand } from '../brand/inheritance'
 import { createPreviewManifest } from './manifest'
+import { recordAuditEvent } from '../collections/AuditEvents'
 
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new APIError('Datos editoriales no válidos.', 400)
@@ -132,7 +133,7 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
     pageBlocks: projected.blocks,
     mediaReferences,
   })
-  return payload.create({
+  const snapshot = await payload.create({
     collection: 'preview-snapshots',
     overrideAccess: true,
     draft: false,
@@ -147,4 +148,16 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
       createdBy: req.user.id,
     },
   })
+  await recordAuditEvent({
+    input: {
+      action: 'preview.snapshot.created',
+      metadata: { manifestHash: manifest.hash, snapshotId: snapshot.id },
+      outcome: 'success',
+      subject: { collection: 'pages', id: page.id as number | string },
+    },
+    payload: payload as never,
+    req,
+    user: req.user,
+  })
+  return snapshot
 }

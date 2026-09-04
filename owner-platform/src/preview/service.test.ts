@@ -31,6 +31,17 @@ describe('page preview snapshot service', () => {
 
     expect(findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'pages', id: 7, draft: true, depth: 0, overrideAccess: false }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', overrideAccess: true, req: expect.anything() }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      collection: 'audit-events',
+      data: expect.objectContaining({
+        action: 'preview.snapshot.created',
+        actor: 1,
+        outcome: 'success',
+        subjectCollection: 'pages',
+        subjectId: '7',
+      }),
+      overrideAccess: true,
+    }))
     expect((result.manifest as never as { source: unknown }).source).toEqual({ collection: 'pages', documentId: '7', versionId: 'current:2026-09-04T12:00:00Z' })
     expect(JSON.stringify(result.manifest)).not.toMatch(/(?:apiToken|customCSS|page-secret|media-secret)/)
     expect(JSON.stringify(result.manifest)).toContain('"style":""')
