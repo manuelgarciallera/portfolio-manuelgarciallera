@@ -40,6 +40,25 @@ describe('brand validation', () => {
     ).toContain('Los porcentajes de uso deben sumar exactamente 100 (actual: 99).')
   })
 
+  it('uses two-decimal basis points for mathematically exact decimal totals', () => {
+    expect(
+      validateUsageWeights([
+        { role: 'background', weight: 0.1 },
+        { role: 'surface', weight: 64.1 },
+        { role: 'accent', weight: 35.8 },
+      ]),
+    ).toEqual([])
+    expect(
+      validateUsageWeights([
+        { role: 'background', weight: 64.1 },
+        { role: 'accent', weight: 35.89 },
+      ]),
+    ).toContain('Los porcentajes de uso deben sumar exactamente 100 (actual: 99.99).')
+    expect(validateUsageWeights([{ role: 'accent', weight: 99.999 }])).toContain(
+      'El porcentaje de "accent" admite como máximo dos decimales.',
+    )
+  })
+
   it('calculates WCAG contrast and enforces the required pairs', () => {
     expect(contrastRatio('#FFFFFF', '#000000')).toBeCloseTo(21, 5)
     expect(contrastRatio('#777777', '#FFFFFF')).toBeCloseTo(4.478, 2)
@@ -106,5 +125,19 @@ describe('brand validation', () => {
         motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
       }),
     ).toContain('El color "not-a-color" no es un hexadecimal RGB válido.')
+  })
+
+  it('turns malformed containers and entries into validation messages instead of exceptions', () => {
+    expect(() => validateSemanticColors(null)).not.toThrow()
+    expect(() => validateSemanticColors([null, 2, { role: 'background', value: 7 }])).not.toThrow()
+    expect(validateSemanticColors('bad')).toEqual([
+      'Los colores semánticos deben ser una lista.',
+    ])
+    expect(() => validateUsageWeights([null, 'bad', { role: 'accent', weight: 'all' }])).not.toThrow()
+    expect(validateUsageWeights(null)).toEqual(['Los porcentajes de uso deben ser una lista.'])
+    expect(() => validateMotion(null)).not.toThrow()
+    expect(validateMotion('fast')).toEqual(['La configuración de movimiento debe ser un objeto.'])
+    expect(() => validateBrandProfile(null)).not.toThrow()
+    expect(validateBrandProfile(42)).toContain('El perfil de marca debe ser un objeto.')
   })
 })

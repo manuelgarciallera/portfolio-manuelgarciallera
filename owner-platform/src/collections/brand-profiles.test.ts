@@ -111,6 +111,66 @@ describe('BrandProfiles collection', () => {
       validateBrandProfilePublication({ data: { ...publicationData, colors: [] } } as never),
     ).rejects.toBeInstanceOf(ValidationError)
   })
+
+  it.each([null, 'bad', 42, [], { colors: 'bad', usageWeights: {}, motion: [] }])(
+    'returns a Payload validation error for malformed publication data %#',
+    async (data) => {
+      const promise = validateBrandProfilePublication({ data } as never)
+      await expect(promise).rejects.toBeInstanceOf(ValidationError)
+      await expect(promise).rejects.toMatchObject({ status: 400 })
+    },
+  )
+
+  it.each([
+    { _status: 'draft', colors: 'bad' },
+    { _status: 'draft', colors: [null] },
+    { _status: 'draft', usageWeights: [{ role: 'accent', weight: 'all' }] },
+    { _status: 'draft', motion: [] },
+    { _status: 'draft', typography: 'Inter' },
+    { _status: 'draft', assets: [] },
+  ])('rejects malformed draft shapes cleanly while still permitting incomplete drafts %#', async (data) => {
+    await expect(validateBrandProfilePublication({ data } as never)).rejects.toBeInstanceOf(
+      ValidationError,
+    )
+  })
+
+  it('deep-merges controlled groups for publication validation without merging arrays', async () => {
+    await expect(
+      validateBrandProfilePublication({
+        data: {
+          _status: 'published',
+          motion: { duration: 700 },
+          typography: { primaryFamily: 'Arial' },
+          assets: { logos: [3], icons: null },
+        },
+        originalDoc: {
+          ...validProfile,
+          typography: { primaryFamily: 'Inter', secondaryFamily: 'Georgia' },
+          assets: { logos: [1], icons: [2] },
+        },
+      } as never),
+    ).resolves.toMatchObject({
+      motion: { duration: 700, stagger: 80, travel: 24, easing: 'ease-out' },
+      typography: { primaryFamily: 'Arial', secondaryFamily: 'Georgia' },
+      assets: { logos: [3], icons: null },
+    })
+
+    await expect(
+      validateBrandProfilePublication({
+        data: { _status: 'published', colors: [], motion: { duration: 700 } },
+        originalDoc: validProfile,
+      } as never),
+    ).rejects.toBeInstanceOf(ValidationError)
+  })
+
+  it('does not mask explicit nested-group deletion during publication validation', async () => {
+    await expect(
+      validateBrandProfilePublication({
+        data: { _status: 'published', motion: null },
+        originalDoc: validProfile,
+      } as never),
+    ).rejects.toBeInstanceOf(ValidationError)
+  })
 })
 
 const typedCollection: CollectionConfig = BrandProfiles

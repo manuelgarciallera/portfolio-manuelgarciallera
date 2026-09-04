@@ -19,30 +19,81 @@ export const validateBrandProfilePublication: CollectionBeforeValidateHook = asy
   originalDoc,
   req,
 }) => {
-  if (!data) return data
-  const normalized: Record<string, unknown> = { ...data }
-  if (Array.isArray(data.colors)) {
-    normalized.colors = data.colors.map((entry: { role?: string; value?: string }) => {
-      if (typeof entry.value !== 'string') return entry
-      try {
-        return { ...entry, value: normalizeHex(entry.value) }
-      } catch {
-        return entry
-      }
-    })
-  }
-  // Payload explicitly marks draft saves before collection hooks. Publish creates and
-  // updates may arrive without `_status`, so every non-draft path must validate.
-  if (normalized._status === 'draft') return normalized
-
-  const completeDocument = { ...(originalDoc ?? {}), ...normalized }
-  const errors = validateBrandProfile(completeDocument as never)
-  if (errors.length > 0) {
+  const invalidData = (messages: string | string[]): never => {
+    const errors = Array.isArray(messages) ? messages : [messages]
     throw new ValidationError({
       collection: 'brand-profiles',
       errors: errors.map((message) => ({ message, path: 'brandProfile' })),
       req,
     })
+  }
+  if (typeof data !== 'object' || data === null || Array.isArray(data))
+    return invalidData('El perfil de marca debe ser un objeto.')
+  const normalized: Record<string, unknown> = { ...data }
+  if (Array.isArray(data.colors)) {
+    normalized.colors = data.colors.map((entry: unknown) => {
+      if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) return entry
+      if (typeof (entry as Record<string, unknown>).value !== 'string') return entry
+      try {
+        return { ...entry, value: normalizeHex((entry as Record<string, unknown>).value) }
+      } catch {
+        return entry
+      }
+    })
+  }
+  const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+  const shapeErrors: string[] = []
+  if (Object.hasOwn(normalized, 'colors')) {
+    if (!Array.isArray(normalized.colors)) shapeErrors.push('Los colores semánticos deben ser una lista.')
+    else if (
+      normalized.colors.some(
+        (entry) =>
+          !isPlainRecord(entry) || typeof entry.role !== 'string' || typeof entry.value !== 'string',
+      )
+    )
+      shapeErrors.push('Cada color semántico debe ser un objeto con rol y valor de texto.')
+  }
+  if (Object.hasOwn(normalized, 'usageWeights')) {
+    if (!Array.isArray(normalized.usageWeights))
+      shapeErrors.push('Los porcentajes de uso deben ser una lista.')
+    else if (
+      normalized.usageWeights.some(
+        (entry) =>
+          !isPlainRecord(entry) || typeof entry.role !== 'string' || typeof entry.weight !== 'number',
+      )
+    )
+      shapeErrors.push('Cada porcentaje de uso debe ser un objeto con rol y peso numérico.')
+  }
+  for (const key of ['motion', 'typography', 'assets'] as const) {
+    const value = normalized[key]
+    if (Object.hasOwn(normalized, key) && value !== null && !isPlainRecord(value))
+      shapeErrors.push(`El grupo "${key}" debe ser un objeto o null.`)
+  }
+  if (shapeErrors.length > 0) invalidData(shapeErrors)
+  const original =
+    isPlainRecord(originalDoc)
+      ? (originalDoc as Record<string, unknown>)
+      : {}
+  for (const key of ['motion', 'typography', 'assets'] as const) {
+    const incoming = normalized[key]
+    const previous = original[key]
+    if (
+      Object.hasOwn(normalized, key) &&
+      isPlainRecord(incoming) &&
+      isPlainRecord(previous)
+    ) {
+      normalized[key] = { ...previous, ...incoming }
+    }
+  }
+  // Payload explicitly marks draft saves before collection hooks. Publish creates and
+  // updates may arrive without `_status`, so every non-draft path must validate.
+  if (normalized._status === 'draft') return normalized
+
+  const completeDocument = { ...original, ...normalized }
+  const errors = validateBrandProfile(completeDocument)
+  if (errors.length > 0) {
+    invalidData(errors)
   }
   return normalized
 }
