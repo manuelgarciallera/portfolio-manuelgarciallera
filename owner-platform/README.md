@@ -11,18 +11,28 @@ command creates the ignored `.data/` directory and Payload uses
 fallback Payload secret is deliberately named and limited to development; it
 must never be used outside local development.
 
-Payload's `/admin/create-first-user` flow creates the initial authenticated
-owner. The only configured role is `owner`, it is persisted in the JWT, and all
-Users collection access is owner-only. The unauthenticated Users REST endpoint
-therefore responds with `403`.
+The first owner is provisioned privately. Set an unpredictable
+`OWNER_BOOTSTRAP_SECRET` of at least 32 characters, then submit Payload's
+`POST /api/users/first-register` request with the same value in the
+`x-owner-bootstrap-secret` header. Requests without an exact match receive
+`403`; the browser-facing first-user form cannot bypass this gate. Payload only
+permits this operation while the Users collection is empty, so the mechanism is
+one-time. Remove `OWNER_BOOTSTRAP_SECRET` after provisioning. Never put it in a
+public URL, browser bundle, committed file, log, or client-side environment
+variable.
+
+The only configured role is `owner`, it is persisted in the JWT, and all Users
+collection access is owner-only. The unauthenticated Users REST endpoint
+therefore also responds with `403`. Normal login remains available after the
+owner exists and does not use the bootstrap secret.
 
 ## Production build safety gate
 
 `npm run build` launches `next build` with `OWNER_PLATFORM_BUILD_PHASE=1` only
 inside the build child process. This permits Next.js to compile the dynamic
-Payload routes without real credentials by selecting an in-memory SQLite
+Payload routes without real credentials by always selecting an in-memory SQLite
 adapter and a conspicuously build-only secret. Generated runtime handlers do
-not trust that flag: every admin, REST, GraphQL, and Payload server-function
+not trust that flag: every admin, REST, and Payload server-function
 entry point independently calls the production runtime guard.
 
 Consequently, `npm start` under `NODE_ENV=production` fails closed unless both
@@ -35,6 +45,9 @@ conditions are met:
 The build-only values do not constitute a deployable configuration. This slice
 is not deployed or production-ready; migrations, backups, email and deployment
 operations are deliberately deferred.
+
+GraphQL is disabled and no GraphQL route is exposed until a concrete consumer
+requires it. The dependency remains because it is a Payload peer dependency.
 
 ## Environment variables
 

@@ -11,6 +11,7 @@ import {
 } from '@payloadcms/next/routes'
 
 import { assertCurrentProductionRuntime } from '@/config/runtime'
+import { authorizeFirstUserBootstrap, isFirstUserBootstrapPath } from '@/security/bootstrap'
 
 const guarded = <Handler extends (...args: never[]) => unknown>(handler: Handler): Handler =>
   ((...args: Parameters<Handler>) => {
@@ -19,7 +20,24 @@ const guarded = <Handler extends (...args: never[]) => unknown>(handler: Handler
   }) as Handler
 
 export const GET = guarded(REST_GET(config))
-export const POST = guarded(REST_POST(config))
+const post = REST_POST(config)
+
+export const POST: typeof post = async (...args) => {
+  assertCurrentProductionRuntime()
+
+  const [request] = args
+  if (
+    isFirstUserBootstrapPath(request.url) &&
+    !authorizeFirstUserBootstrap(
+      process.env.OWNER_BOOTSTRAP_SECRET,
+      request.headers.get('x-owner-bootstrap-secret'),
+    )
+  ) {
+    return Response.json({ errors: [{ message: 'Owner bootstrap is not authorized.' }] }, { status: 403 })
+  }
+
+  return post(...args)
+}
 export const DELETE = guarded(REST_DELETE(config))
 export const PATCH = guarded(REST_PATCH(config))
 export const PUT = guarded(REST_PUT(config))

@@ -80,6 +80,17 @@ describe('owner platform runtime configuration', () => {
     })
   })
 
+  it('never selects PostgreSQL during a production build, even when DATABASE_URL exists', () => {
+    expect(
+      resolveRuntimeConfig({
+        nodeEnv: 'production',
+        nextPhase: 'phase-production-build',
+        payloadSecret: 'a-real-secret-with-enough-entropy-for-runtime',
+        databaseUrl: 'postgresql://production/owner',
+      }).database,
+    ).toEqual({ kind: 'sqlite', url: 'file::memory:' })
+  })
+
   it('never accepts the build-only escape hatch as a production runtime', () => {
     expect(() =>
       assertProductionRuntimeEnvironment({

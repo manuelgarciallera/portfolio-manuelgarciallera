@@ -60,9 +60,7 @@ export const resolveRuntimeConfig = ({
 
   if (productionBuild) {
     return {
-      database: databaseUrl
-        ? { kind: 'postgres', url: databaseUrl }
-        : { kind: 'sqlite', url: 'file::memory:' },
+      database: { kind: 'sqlite', url: 'file::memory:' },
       payloadSecret: payloadSecret || BUILD_ONLY_PAYLOAD_SECRET,
       productionBuild: true,
     }

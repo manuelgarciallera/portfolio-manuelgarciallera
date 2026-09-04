@@ -37,7 +37,7 @@ export default buildConfig({
   db,
   editor: lexicalEditor(),
   graphQL: {
-    disable: false,
+    disable: true,
   },
   secret: runtime.payloadSecret,
   sharp,
