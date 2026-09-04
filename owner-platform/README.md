@@ -51,6 +51,13 @@ proposal is generated only from a verified preview snapshot and the current
 Assistant Settings. It starts pending and can be accepted or rejected once;
 neither decision applies the patch or publishes content.
 
+Authenticated owners can create a proposal with
+`POST /api/owner/assist/proposals` and record one decision with
+`PATCH /api/owner/assist/proposals/:id`. Both endpoints authenticate before
+reading their bounded request body, reject unknown fields, and expose no apply,
+publish, or deploy control. They are workflow boundaries, not a live model
+integration.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

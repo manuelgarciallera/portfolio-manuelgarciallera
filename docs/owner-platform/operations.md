@@ -244,6 +244,47 @@ a public preview renderer. Inspect the returned snapshot or its owner-only
 collection record while the local app runs. Regenerate a snapshot after changing
 a page—an existing snapshot never mutates.
 
+## Reviewed assistance proposal API
+
+The private proposal workflow has two authenticated owner-only endpoints. To
+record a provider-neutral patch against a verified snapshot:
+
+```http
+POST /api/owner/assist/proposals
+Content-Type: application/json
+
+{
+  "sourceSnapshot": 12,
+  "provider": "codex",
+  "patch": {
+    "schemaVersion": 1,
+    "capability": "suggestCopy",
+    "operations": [
+      { "op": "replace", "path": "/page/title", "value": "Nuevo título" }
+    ]
+  }
+}
+```
+
+The server re-verifies the snapshot hash, resolves the current draft and active
+Assistant Settings itself, validates the patch allowlist, stores a pending
+proposal, and appends an audit event. The body is limited to 64 KiB and unknown
+fields, credential-shaped fields, or disabled capabilities fail closed.
+
+After reviewing the stored proposal, record exactly one decision:
+
+```http
+PATCH /api/owner/assist/proposals/31
+Content-Type: application/json
+
+{ "decision": "accepted", "note": "Preview revisado" }
+```
+
+`decision` accepts only `accepted` or `rejected`; `note` is optional and limited
+to 1,000 characters. A decision is immutable and audited. Acceptance is review
+state only: it does not apply the patch, mutate the page, publish content, or
+deploy either application.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
