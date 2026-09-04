@@ -59,6 +59,11 @@ surface without changing the public portfolio:
   updates, and deletion are denied; trusted server workflows append normalized
   actor, action, subject, outcome, and bounded credential-free metadata. Preview
   snapshot creation is the first workflow connected to this ledger.
+- **Assistance Proposals** stores a provider-neutral, schema-validated patch
+  bound to a verified preview snapshot and target page. Creation derives the
+  active capability switches server-side. A proposal can move once from
+  pending to accepted or rejected and both creation and decision are audited;
+  acceptance does not apply, publish, deploy, or mutate the public portfolio.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the

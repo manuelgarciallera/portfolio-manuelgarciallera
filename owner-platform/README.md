@@ -46,6 +46,11 @@ Audit Events is an owner-readable, append-only ledger created only by trusted
 server services. Preview creation already records its actor, page, snapshot
 hash, and outcome; credentials and executable metadata are rejected.
 
+Assistance Proposals is the review queue for schema-validated patches. A
+proposal is generated only from a verified preview snapshot and the current
+Assistant Settings. It starts pending and can be accepted or rejected once;
+neither decision applies the patch or publishes content.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

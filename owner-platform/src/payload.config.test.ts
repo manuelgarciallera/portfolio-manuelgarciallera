@@ -22,4 +22,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('audit-events')
   })
+
+  it('registers the owner-reviewed assistance proposal queue', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('assistance-proposals')
+  })
 })

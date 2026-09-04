@@ -16,6 +16,7 @@ import { PreviewSnapshots } from './collections/PreviewSnapshots'
 import { Releases } from './collections/Releases'
 import { MediaPlacements } from './collections/MediaPlacements'
 import { AuditEvents } from './collections/AuditEvents'
+import { AssistanceProposals } from './collections/AssistanceProposals'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -55,6 +56,7 @@ export default buildConfig({
     PreviewSnapshots,
     Releases,
     AuditEvents,
+    AssistanceProposals,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

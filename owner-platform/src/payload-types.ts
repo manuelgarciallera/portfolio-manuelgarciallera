@@ -77,6 +77,7 @@ export interface Config {
     'preview-snapshots': PreviewSnapshot;
     releases: Release;
     'audit-events': AuditEvent;
+    'assistance-proposals': AssistanceProposal;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
+    'assistance-proposals': AssistanceProposalsSelect<false> | AssistanceProposalsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -555,6 +557,33 @@ export interface AuditEvent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assistance-proposals".
+ */
+export interface AssistanceProposal {
+  id: number;
+  targetPage: number | Page;
+  sourceSnapshot: number | PreviewSnapshot;
+  capability: 'suggestCopy' | 'suggestPalette' | 'suggestLayout' | 'suggestCrop' | 'suggestMotion';
+  provider: string;
+  patch:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdBy: number | User;
+  decisionNote?: string | null;
+  decidedBy?: (number | null) | User;
+  decidedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -616,6 +645,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-events';
         value: number | AuditEvent;
+      } | null)
+    | ({
+        relationTo: 'assistance-proposals';
+        value: number | AssistanceProposal;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1005,6 +1038,24 @@ export interface AuditEventsSelect<T extends boolean = true> {
   subjectId?: T;
   outcome?: T;
   metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assistance-proposals_select".
+ */
+export interface AssistanceProposalsSelect<T extends boolean = true> {
+  targetPage?: T;
+  sourceSnapshot?: T;
+  capability?: T;
+  provider?: T;
+  patch?: T;
+  status?: T;
+  createdBy?: T;
+  decisionNote?: T;
+  decidedBy?: T;
+  decidedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
