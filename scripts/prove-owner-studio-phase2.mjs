@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { relative, resolve, sep } from 'node:path'
 
-import { createOwnerStudioEvidence } from './lib/owner-studio-evidence.mjs'
+import { createOwnerStudioEvidence, verifyOwnerStudioEvidence } from './lib/owner-studio-evidence.mjs'
 
 const option = (name) => process.argv.find((argument) => argument.startsWith(`${name}=`))?.slice(name.length + 1)
 const writeTarget = option('--write')
@@ -22,5 +22,6 @@ const rendered = `${JSON.stringify(evidence, null, 2)}\n`
 if (writeTarget) await writeFile(assertTarget(writeTarget), rendered, { flag: 'w' })
 else if (verifyTarget) {
   const saved = await readFile(assertTarget(verifyTarget), 'utf8')
-  if (saved !== rendered) throw new Error('Committed owner studio evidence does not match current verified inputs')
+  await verifyOwnerStudioEvidence(JSON.parse(saved))
+  if (saved !== rendered) throw new Error('Committed owner studio evidence does not use canonical formatting')
 } else console.log(rendered.trimEnd())

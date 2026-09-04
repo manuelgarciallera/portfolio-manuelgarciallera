@@ -264,14 +264,26 @@ numbers as permanently current.
 Run from the repository root:
 
 ```powershell
-npm run check:all
+npx vitest run --config vitest.unit.config.ts
+npm run lint
+npm run typecheck
+npm run test:public-guards
+npm run check:public-boundary
 npm run test:owner-isolation
 npm run check:owner:clean
 npm run build:public-proof
 $env:PUBLIC_BUILD_DIR = (Resolve-Path 'owner-platform/.data/verification-artifacts/release-proof').Path
 node ./scripts/prove-owner-isolation.mjs --write=docs/owner-platform/isolation-evidence-2026-09-04.json
 node ./scripts/prove-owner-studio-phase2.mjs --write=docs/owner-platform/owner-studio-phase-2-evidence.json
+npm audit --omit=dev
+npm --prefix owner-platform audit --omit=dev
 ```
+
+Run each command and retain its exit code. `check:all` is not a substitute for
+this sequence: it omits the root unit suite and currently returns non-zero at
+the final audit because the documented advisory remains open. The two audit
+commands are expected to remain release blockers while their totals are
+non-zero; do not reinterpret that exit status as a successful security check.
 
 `check:owner-isolation` combines three fail-closed checks: no owner runtime
 dependency in the root manifest, no forbidden/private import reachable from a
@@ -298,6 +310,11 @@ change.
 
 The companion
 [`owner-studio-phase-2-evidence.json`](./owner-studio-phase-2-evidence.json)
-binds the complete owner source tree and owner lockfile to that passing public
-isolation record. Verify it with
+binds the tracked owner operational surface and owner lockfile to that passing
+public-isolation record. Its explicit exclusion list contains only generated or
+runtime artifacts such as Payload types/import maps, `.next`, local databases,
+uploads, and secret environment files. It includes owner build/dev scripts and
+configuration. This companion is an integrity binding only: it does not claim
+that tests, lint, typecheck, build, or audits passed. Those outcomes require the
+commands and exit codes above. Verify the binding with
 `node ./scripts/prove-owner-studio-phase2.mjs --verify=docs/owner-platform/owner-studio-phase-2-evidence.json`.
