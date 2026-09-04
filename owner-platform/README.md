@@ -97,6 +97,12 @@ at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
 states, publication bundles awaiting review, and approvals awaiting an
 artifact. It uses owner-scoped database counts and returns no document bodies.
 
+`GET /api/owner/integrations/status` adds a credential-free control-plane view:
+Figma read-only readiness and plan, Linocube's disabled state, and every
+assistant capability switch with its effective operational support. Tokens are
+never returned, and apply, publish, deploy, and model-provider readiness remain
+explicitly false until separately implemented and reviewed.
+
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.

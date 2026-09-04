@@ -599,6 +599,17 @@ negative values. Conflicts and every state awaiting an owner decision are
 included in `attentionCount`. No workflow document body is returned and no
 decision, restore, publication, or deployment is executed.
 
+`GET /api/owner/integrations/status` supplies a credential-free status model
+for the integrations panel and is also included in `GET /api/owner/dashboard`.
+It reports whether the server has a non-empty Figma personal access token, its
+normalized plan, and the connector's read-only boundary without returning the
+token. Linocube remains explicitly disabled. Assistant Settings are loaded
+through owner access and each switch is reported separately from operational
+support: copy, palette, and motion proposals are supported, while layout and
+crop remain non-operational even if their switches are enabled. Apply,
+publish, deploy, and model-provider configuration are all reported as false;
+the status route cannot activate any of them.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
