@@ -58,6 +58,8 @@ describe('parseFigmaUrl', () => {
     'https://www.figma.com:8443/design/file_123/Portfolio',
     'https://www.figma.com/design/file%20123/Portfolio',
     'https://www.figma.com/design//Portfolio',
+    'https://www.figma.com/design/file_123/Portfolio?node-id=foo',
+    'https://www.figma.com/design/file_123/Portfolio?node-id=12-34-56',
     'not a URL',
     'https://www.figma.com/community/file_123/Portfolio',
   ])('rejects unsafe or malformed URL %s', (input) => {
@@ -66,6 +68,39 @@ describe('parseFigmaUrl', () => {
 })
 
 describe('createFigmaImportProposal', () => {
+  it('normalizes names with locale-independent lowercasing', () => {
+    const original = String.prototype.toLocaleLowerCase
+    String.prototype.toLocaleLowerCase = () => {
+      throw new Error('locale-dependent normalization is not allowed')
+    }
+
+    try {
+      const result = createFigmaImportProposal({
+        sourceUrl,
+        targetName: 'Homepage Hero',
+        candidates: [candidate({ name: 'homepage hero' })],
+      })
+
+      expect(result.reasons).toContain('Exact normalized name match.')
+    } finally {
+      String.prototype.toLocaleLowerCase = original
+    }
+  })
+
+  it('does not give an empty normalized name a partial-match score', () => {
+    const result = createFigmaImportProposal({
+      sourceUrl,
+      targetName: 'Hero',
+      candidates: [
+        candidate({ name: 'Other', nodeId: 'other' }),
+        candidate({ name: '   ', nodeId: 'empty' }),
+      ],
+    })
+
+    expect(result.candidates.map(({ nodeId }) => nodeId)).toEqual(['other', 'empty'])
+    expect(result.reasons).toContain('No name or aspect-ratio match signal was supplied.')
+  })
+
   it('ranks exact and partial normalized name matches with aspect compatibility', () => {
     const result = createFigmaImportProposal({
       sourceUrl,

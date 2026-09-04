@@ -127,7 +127,9 @@ const decodePathPart = (value: string): string => {
 
 const normalizeNodeId = (value: string): string => {
   const normalized = /^([0-9]+)-([0-9]+)$/.exec(value)
-  return normalized ? `${normalized[1]}:${normalized[2]}` : value
+  if (normalized) return `${normalized[1]}:${normalized[2]}`
+  if (/^[0-9]+:[0-9]+$/.test(value)) return value
+  throw new TypeError('Figma node-id must contain two numeric parts separated by : or - .')
 }
 
 /** Parse and canonicalize a Figma document or prototype URL without network access. */
@@ -172,7 +174,7 @@ export function parseFigmaUrl(input: string): ParsedFigmaUrl {
   }
 }
 
-const normalizeName = (name: string): string => name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+const normalizeName = (name: string): string => name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase()
 
 const ratioFor = (width: number, height: number): number | undefined =>
   width > 0 && height > 0 ? width / height : undefined
@@ -187,7 +189,7 @@ const nameScore = (candidateName: string, targetName: string | undefined): numbe
   if (!targetName) return 0
   const candidate = normalizeName(candidateName)
   const target = normalizeName(targetName)
-  if (!target) return 0
+  if (!candidate || !target) return 0
   if (candidate === target) return 1
   if (candidate.includes(target) || target.includes(candidate)) return 0.6
   return 0
