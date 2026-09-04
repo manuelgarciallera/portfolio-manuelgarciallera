@@ -74,6 +74,7 @@ export interface Config {
     articles: Article;
     pages: Page;
     'preview-snapshots': PreviewSnapshot;
+    releases: Release;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
+    releases: ReleasesSelect<false> | ReleasesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -455,6 +457,29 @@ export interface PreviewSnapshot {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "releases".
+ */
+export interface Release {
+  id: number;
+  name: string;
+  changeSummary: string;
+  gitCommit: string;
+  previewSnapshot: number | PreviewSnapshot;
+  quality: {
+    viewport: 'desktop' | 'mobile';
+    performance: number;
+    usability: number;
+    accessibility: number;
+    source: 'lighthouse' | 'manual';
+    measuredAt: string;
+    id?: string | null;
+  }[];
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -504,6 +529,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'preview-snapshots';
         value: number | PreviewSnapshot;
+      } | null)
+    | ({
+        relationTo: 'releases';
+        value: number | Release;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -809,6 +838,30 @@ export interface PreviewSnapshotsSelect<T extends boolean = true> {
   sourceVersionId?: T;
   manifest?: T;
   manifestHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "releases_select".
+ */
+export interface ReleasesSelect<T extends boolean = true> {
+  name?: T;
+  changeSummary?: T;
+  gitCommit?: T;
+  previewSnapshot?: T;
+  quality?:
+    | T
+    | {
+        viewport?: T;
+        performance?: T;
+        usability?: T;
+        accessibility?: T;
+        source?: T;
+        measuredAt?: T;
+        id?: T;
+      };
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -43,6 +43,10 @@ surface without changing the public portfolio:
 - **Projects**, **Articles**, **Pages**, and **Media** remain the editorial
   collections described below. **Preview Snapshots** is a read-only owner list
   of immutable manifests created through the dedicated endpoint.
+- **Releases** is the append-only version ledger. Each record binds a complete
+  Git commit to a preview snapshot, a concise change summary, and bounded
+  performance, usability, and accessibility measurements for desktop or
+  mobile. It is owner-only and cannot be updated or deleted.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the
@@ -87,6 +91,9 @@ form cannot bypass the server-side header gate.
 - Page composition is limited to the explicit block catalog. Arbitrary scripts,
   HTML, CSS, or owner-side components are not accepted as content.
 - GraphQL is disabled until a reviewed consumer needs it.
+- A release record is evidence and a recovery coordinate, not an executable
+  rollback control. Restoration remains a deliberate, separately verified Git
+  and deployment operation.
 
 ## PostgreSQL migration boundary
 
