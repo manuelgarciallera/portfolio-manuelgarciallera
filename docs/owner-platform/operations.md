@@ -582,6 +582,14 @@ audit activity in parallel. A new installation with no analytics snapshot receiv
 fails closed. This distinction permits a useful first-run dashboard without
 turning missing data into false zeroes or concealing integrity failures.
 
+The generated Payload home consumes that endpoint through a compact native
+extension. It shows content and media issue counts, workflow attention,
+registered versions, conservative runtime readiness, and at most five recent
+edit destinations. Presentation data is validated again in the client before
+rendering; an invalid or unavailable summary degrades to a notice while the
+standard Payload collection cards remain usable. This overview performs no
+mutation and exposes no publish, deploy, restore, or public-bridge control.
+
 `GET /api/owner/audit/activity` exposes the same bounded recent-activity feed
 independently. It loads no more than 20 owner-visible events without expanding
 relationships. The response deliberately excludes actor data and event

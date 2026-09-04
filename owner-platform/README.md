@@ -92,6 +92,12 @@ history is represented as an explicit unavailable state; integrity or
 authorization failures are never silently downgraded. The endpoint performs no
 editorial mutation.
 
+The generated admin home now presents a restrained operational projection of
+that model: issue totals for content and media, workflow attention, registered
+versions, runtime readiness, and the five latest editable records. Links lead
+back to Payload's native editors; malformed data fails closed and the original
+collection dashboard remains available below the extension.
+
 The same overview includes the workflow attention summary exposed independently
 at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
 states, publication bundles awaiting review, and approvals awaiting an
