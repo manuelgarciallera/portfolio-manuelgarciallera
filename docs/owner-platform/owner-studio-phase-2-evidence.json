@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "verifiedGitHead": "8a7830b967d779ce9df786d48763132ed7ff2e99",
+  "isolationEvidencePath": "docs/owner-platform/isolation-evidence-2026-09-04.json",
+  "isolationEvidenceSha256": "17eeb6458c88d2481bbc13f4ac1bc999e7ae06c0195ef7a85dae82425a326b90",
+  "ownerStudioSourceSha256": "f318718e0672f5cee69ef1a122fe49049dc1f61febcb8781b1aeb65ec7f2dda3",
+  "ownerPackageLockSha256": "8056b60b777c8b57751cd211b8ba4dce1af00f7b4b5bbcf23627949b1be1e85f",
+  "publicProof": {
+    "routeCount": 9,
+    "publicBoundaryViolations": 0,
+    "publicBundleRegressions": 0
+  }
+}
