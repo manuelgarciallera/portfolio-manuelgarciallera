@@ -44,7 +44,7 @@ function extractScriptSpecifiers(source, fileName) {
   function visit(node) {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) add(node.moduleSpecifier)
     if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) add(node.moduleReference.expression)
-    if (ts.isCallExpression(node) && node.arguments.length === 1) {
+    if (ts.isCallExpression(node) && node.arguments.length >= 1) {
       if (node.expression.kind === ts.SyntaxKind.ImportKeyword) add(node.arguments[0])
       if (ts.isIdentifier(node.expression) && node.expression.text === 'require') add(node.arguments[0])
     }

@@ -29,6 +29,9 @@ test('public boundary parses TypeScript import forms without regex bypasses', as
       { importer: 'src/features/site/syntax.ts', specifier: 'lexical', reason: 'explicitly forbidden public dependency' },
       { importer: 'src/features/site/syntax.ts', specifier: 'payload', reason: 'explicitly forbidden public dependency' },
       { importer: 'src/features/site/syntax.ts', specifier: 'unreviewed-package', reason: 'public dependency is not allowlisted' },
+      { importer: 'src/features/site/two-arg-dynamic-private.ts', specifier: '@/owner/editor', reason: 'private owner/admin module' },
+      { importer: 'src/features/site/two-arg-dynamic-vendor.ts', specifier: 'payload', reason: 'explicitly forbidden public dependency' },
+      { importer: 'src/features/site/two-arg-require-vendor.ts', specifier: 'payload', reason: 'explicitly forbidden public dependency' },
     ],
   )
   assert.match(result.violations[0].trace.join(' -> '), /src\/app\/page\.tsx/)
@@ -125,6 +128,23 @@ test('bundle comparison rejects malformed baseline metrics and tolerance', () =>
     'baseline route / rawBytes must be a finite nonnegative number',
     'baseline route / gzipBytes must be a finite nonnegative number',
     'baseline route / files must be an array of strings',
+  ])
+})
+
+test('bundle comparison rejects a baseline that widens the fixed tolerance policy', () => {
+  const current = {
+    schemaVersion: 1,
+    tolerance: { percent: 0.01, bytes: 2048 },
+    routes: { '/': { rawBytes: 1, gzipBytes: 1, files: [] } },
+  }
+  const inflated = {
+    ...current,
+    tolerance: { percent: 0.5, bytes: 99_999 },
+  }
+
+  assert.deepEqual(compareBundleSnapshot(current, inflated), [
+    'baseline tolerance.percent must equal the fixed policy value 0.01',
+    'baseline tolerance.bytes must equal the fixed policy value 2048',
   ])
 })
 

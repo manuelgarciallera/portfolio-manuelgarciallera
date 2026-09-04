@@ -2,6 +2,9 @@ import { gzipSync } from 'node:zlib'
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { extname, join, relative, resolve, sep } from 'node:path'
 
+const FIXED_TOLERANCE_PERCENT = 0.01
+const FIXED_TOLERANCE_BYTES = 2048
+
 function toPosix(value) {
   return value.split(sep).join('/')
 }
@@ -110,7 +113,7 @@ export async function createBundleSnapshot({ buildDir = join(process.cwd(), '.ne
   }
   return {
     schemaVersion: 1,
-    tolerance: { percent: 0.01, bytes: 2048 },
+    tolerance: { percent: FIXED_TOLERANCE_PERCENT, bytes: FIXED_TOLERANCE_BYTES },
     routes: Object.fromEntries(Object.entries(routes).sort(([a], [b]) => a.localeCompare(b))),
   }
 }
@@ -123,7 +126,9 @@ function validateSnapshot(snapshot, label) {
     errors.push(`${label} tolerance must be an object`)
   } else {
     if (!Number.isFinite(snapshot.tolerance.percent) || snapshot.tolerance.percent < 0) errors.push(`${label} tolerance.percent must be a finite nonnegative number`)
+    else if (snapshot.tolerance.percent !== FIXED_TOLERANCE_PERCENT) errors.push(`${label} tolerance.percent must equal the fixed policy value ${FIXED_TOLERANCE_PERCENT}`)
     if (!Number.isFinite(snapshot.tolerance.bytes) || snapshot.tolerance.bytes < 0) errors.push(`${label} tolerance.bytes must be a finite nonnegative number`)
+    else if (snapshot.tolerance.bytes !== FIXED_TOLERANCE_BYTES) errors.push(`${label} tolerance.bytes must equal the fixed policy value ${FIXED_TOLERANCE_BYTES}`)
   }
   if (!snapshot.routes || typeof snapshot.routes !== 'object' || Array.isArray(snapshot.routes)) {
     errors.push(`${label} routes must be an object`)
@@ -154,13 +159,11 @@ export function compareBundleSnapshot(current, baseline) {
   for (const route of currentRoutes) {
     if (!(route in baseline.routes)) errors.push(`public route has no baseline: ${route}`)
   }
-  const percent = baseline.tolerance?.percent ?? 0.01
-  const bytes = baseline.tolerance?.bytes ?? 2048
   for (const route of baselineRoutes.filter((item) => item in current.routes)) {
     for (const metric of ['rawBytes', 'gzipBytes']) {
       const label = metric === 'rawBytes' ? 'raw' : 'gzip'
       const increase = current.routes[route][metric] - baseline.routes[route][metric]
-      const limit = Math.max(bytes, Math.ceil(baseline.routes[route][metric] * percent))
+      const limit = Math.max(FIXED_TOLERANCE_BYTES, Math.ceil(baseline.routes[route][metric] * FIXED_TOLERANCE_PERCENT))
       if (increase > limit) errors.push(`${route} ${label} increased by ${increase} B (limit ${limit} B)`)
     }
   }
