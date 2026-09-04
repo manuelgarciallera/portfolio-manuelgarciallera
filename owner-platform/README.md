@@ -113,6 +113,11 @@ recently updated Projects, Pages, and Articles. It returns only navigation
 metadata—ID, title, slug, status, and timestamp—and is included in the owner
 dashboard without loading rich text, blocks, relationships, or media.
 
+`GET /api/owner/system/readiness` reports the credential-free operational
+boundary: runtime mode, SQLite/PostgreSQL durability, secure-secret readiness,
+local media storage, disabled public bridge, and blocked deployment. It remains
+conservative even when some production credentials are present.
+
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.

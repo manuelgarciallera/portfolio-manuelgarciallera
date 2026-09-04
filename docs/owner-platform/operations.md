@@ -627,6 +627,16 @@ slug, draft/published status, and normalized timestamp. Invalid navigation
 metadata fails closed; document bodies, modular blocks, SEO data, media, and
 relationships are never returned by this endpoint.
 
+`GET /api/owner/system/readiness` is included in the owner dashboard and makes
+the local/production distinction explicit without returning connection strings
+or secrets. It reports SQLite as non-durable, PostgreSQL as durable, and accepts
+a Payload secret as configured only when it is at least 32 characters and is
+not one of the known development/build placeholders. The current local media
+adapter, absent public bridge, and required deployment review remain blockers
+in every environment. Consequently `productionReady`, `deploymentAllowed`, and
+`publicBridgeEnabled` remain false; this status endpoint cannot relax runtime
+guards or authorize a release.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
