@@ -37,7 +37,10 @@ surface without changing the public portfolio:
 - **Brand Profiles** is the current Brand Studio. It stores semantic colors,
   usage weights, typography, approved imagery/icons, voice notes, and bounded
   motion settings. Publication validation requires unique roles, usage weights
-  totalling 100, supported contrast, and safe motion values.
+  totalling 100, supported contrast, and safe motion values. Each semantic HEX
+  value is editable through synchronized text and native visual color inputs;
+  the server still normalizes and validates the stored text value, so the UI
+  does not weaken the publication boundary.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
 - **Media Placements** stores reusable, versioned crop recipes: original asset,

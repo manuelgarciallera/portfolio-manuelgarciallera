@@ -19,6 +19,11 @@ Technology catalog are manually orderable. Open
 work with brand tokens; this is Payload's generated owner UI, not yet a custom
 visual canvas.
 
+Semantic brand colors retain their normalized HEX storage and publication
+validation, while the admin field now pairs the text value with a synchronized
+native visual picker. Usage percentages, contrast checks, page overrides, and
+snapshot behavior are unchanged; the picker adds no public dependency.
+
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only
 discovery when `FIGMA_PERSONAL_ACCESS_TOKEN` and `FIGMA_PLAN` are configured
