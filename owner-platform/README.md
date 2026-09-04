@@ -63,6 +63,12 @@ accessible media, galleries, quotes, bounded callouts, and related projects.
 The existing required `content` field is preserved for a gradual migration;
 the modular canvas offers no arbitrary HTML, CSS, JavaScript, embeds, or code.
 
+Analytics Snapshots accepts bounded provider-neutral aggregate exports through
+`POST /api/owner/analytics/snapshots`. It stores period totals, route-level
+traffic, engagement, and LCP/INP/CLS as immutable hashed evidence. The endpoint
+does not add visitor tracking, cookies, provider SDKs, or JavaScript to the
+public portfolio.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or

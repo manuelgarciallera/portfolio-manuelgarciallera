@@ -66,6 +66,10 @@ surface without changing the public portfolio:
   accessible media, galleries, quotes, bounded callouts, and related projects.
   The existing required `content` field remains unchanged for migration, and
   the registered block catalog excludes arbitrary code and remote embeds.
+- **Analytics Snapshots** stores immutable provider-neutral aggregate exports:
+  period, total views/visitors, optional engagement, optional LCP/INP/CLS, and
+  up to 250 route summaries. It contains no visitor identifier and adds no
+  tracker, cookie, SDK, or public dependency.
 - **Releases** is the append-only version ledger. Each record binds a complete
   Git commit to a preview snapshot, a concise change summary, and bounded
   performance, usability, and accessibility measurements for desktop or
@@ -501,6 +505,50 @@ and audited. It deliberately does not duplicate media, write JSON to the public
 repository, update public content, trigger builds, or contact a deployment
 provider. It provides a stable input contract for a future separately tested
 export adapter.
+
+## Provider-neutral analytics imports
+
+Import an aggregate export without connecting a provider account:
+
+```http
+POST /api/owner/analytics/snapshots
+Content-Type: application/json
+
+{
+  "confirmation": "IMPORTAR ANALÍTICA",
+  "data": {
+    "source": "manual-export",
+    "period": {
+      "from": "2026-08-01T00:00:00.000Z",
+      "to": "2026-09-01T00:00:00.000Z"
+    },
+    "totals": {
+      "pageViews": 1300,
+      "visitors": 800,
+      "bounceRatePercent": 37.4,
+      "averageDurationSeconds": 94.2
+    },
+    "vitals": {
+      "lcpMilliseconds": 1850,
+      "inpMilliseconds": 120,
+      "cls": 0.04
+    },
+    "routes": [
+      { "path": "/", "pageViews": 900, "visitors": 500 }
+    ]
+  }
+}
+```
+
+The server authenticates before reading the body, limits it to 256 KiB,
+rejects unknown fields, validates every range and period, prevents duplicate
+routes, creates a canonical hash, and appends an audit event. Snapshots are
+owner-readable and immutable. They contain aggregates only: no IP, user ID,
+cookie, session, URL query, or URL fragment is accepted.
+
+This establishes the dashboard data contract without choosing a paid provider.
+A later read-only adapter for Vercel, Plausible, or another source can map into
+the same schema after separate credential, privacy, rate-limit, and cost review.
 
 ## Disabled integrations
 
