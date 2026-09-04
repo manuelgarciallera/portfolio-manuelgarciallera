@@ -2,6 +2,7 @@ import { ValidationError, type Block, type CollectionBeforeValidateHook, type Co
 
 import { MOTION_EASINGS, REDUCED_MOTION_BEHAVIORS, BRAND_COLOR_ROLES } from '../brand/model'
 import { normalizePageBrandOverrides, resolvePageBrand } from '../brand/inheritance'
+import { validateBrandProfile } from '../brand/validation'
 import { editorialAccess, editorialVersions, slugField } from './shared'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -12,10 +13,10 @@ export const validatePageBrandPublication: CollectionBeforeValidateHook = async 
   originalDoc,
   req,
 }) => {
-  const invalid = (message: string): never => {
+  const invalid = (message: string, path = 'brandOverrides'): never => {
     throw new ValidationError({
       collection: 'pages',
-      errors: [{ message, path: 'brandOverrides' }],
+      errors: [{ message, path }],
       req,
     })
   }
@@ -46,16 +47,14 @@ export const validatePageBrandPublication: CollectionBeforeValidateHook = async 
   const complete = { ...original, ...result }
   if (complete._status === 'draft') return result
   const brandProfile = complete.brandProfile
-  // Transitional compatibility: existing pages created before Brand Studio remain
-  // editable. Every newly published page must choose a brand profile.
-  if ((brandProfile === undefined || brandProfile === null) && !Object.hasOwn(original, 'id')) {
-    return invalid('Selecciona un perfil de marca antes de publicar una página nueva.')
+  if (brandProfile === undefined || brandProfile === null) {
+    return invalid('Selecciona un perfil de marca antes de publicar la página.', 'brandProfile')
   }
-  if (brandProfile === undefined || brandProfile === null) return result
 
   let profile: unknown = brandProfile
   if (!isRecord(brandProfile)) {
-    if (!req?.payload) return invalid('No se pudo validar el perfil de marca relacionado.')
+    if (!req?.payload)
+      return invalid('No se pudo validar el perfil de marca relacionado.', 'brandProfile')
     try {
       profile = await req.payload.findByID({
         collection: 'brand-profiles',
@@ -65,8 +64,12 @@ export const validatePageBrandPublication: CollectionBeforeValidateHook = async 
         req,
       })
     } catch {
-      return invalid('No se pudo validar el perfil de marca relacionado.')
+      return invalid('No se pudo validar el perfil de marca relacionado.', 'brandProfile')
     }
+  }
+  const profileErrors = validateBrandProfile(profile)
+  if (profileErrors.length) {
+    return invalid(`El perfil de marca relacionado no es válido: ${profileErrors.join(' ')}`, 'brandProfile')
   }
   try {
     resolvePageBrand(profile, complete.brandOverrides)
@@ -151,8 +154,7 @@ export const Pages: CollectionConfig = {
       type: 'relationship',
       relationTo: 'brand-profiles',
       admin: {
-        description:
-          'Obligatorio al publicar páginas nuevas. Las páginas anteriores conservan compatibilidad hasta asignarlo.',
+        description: 'Obligatorio al publicar. Los borradores pueden guardarse sin asignarlo.',
       },
     },
     {

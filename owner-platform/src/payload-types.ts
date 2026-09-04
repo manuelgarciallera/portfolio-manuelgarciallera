@@ -332,7 +332,7 @@ export interface Page {
   title: string;
   slug: string;
   /**
-   * Obligatorio al publicar páginas nuevas. Las páginas anteriores conservan compatibilidad hasta asignarlo.
+   * Obligatorio al publicar. Los borradores pueden guardarse sin asignarlo.
    */
   brandProfile?: (number | null) | BrandProfile;
   /**

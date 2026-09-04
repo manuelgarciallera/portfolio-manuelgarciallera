@@ -75,16 +75,26 @@ describe('editorial collections', () => {
     expect(JSON.stringify(overrides)).not.toMatch(/(?:customCSS|javascript|html|codeEditor)/i)
   })
 
-  it('requires a brand for newly published pages while preserving legacy pages', async () => {
+  it('requires a brand for every published page, including draft transitions', async () => {
     await expect(
       validatePageBrandPublication({ data: { _status: 'published' } } as never),
     ).rejects.toBeInstanceOf(Error)
     await expect(
       validatePageBrandPublication({
-        data: { _status: 'published', title: 'Legacy edit' },
-        originalDoc: { id: 7, title: 'Legacy', brandProfile: null },
+        data: { _status: 'published', title: 'Publish draft' },
+        originalDoc: { id: 7, _status: 'draft', title: 'Draft', brandProfile: null },
       } as never),
-    ).resolves.toMatchObject({ _status: 'published', title: 'Legacy edit' })
+    ).rejects.toMatchObject({
+      data: { errors: [expect.objectContaining({ path: 'brandProfile' })] },
+    })
+    await expect(
+      validatePageBrandPublication({
+        data: { brandProfile: null },
+        originalDoc: { id: 8, _status: 'published', brandProfile: 3 },
+      } as never),
+    ).rejects.toMatchObject({
+      data: { errors: [expect.objectContaining({ path: 'brandProfile' })] },
+    })
   })
 
   it('rejects malformed page brand overrides and resolves valid related profiles', async () => {
@@ -92,7 +102,9 @@ describe('editorial collections', () => {
       validatePageBrandPublication({
         data: { _status: 'draft', brandOverrides: { customCSS: 'body{}' } },
       } as never),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toMatchObject({
+      data: { errors: [expect.objectContaining({ path: 'brandOverrides' })] },
+    })
     await expect(
       validatePageBrandPublication({
         data: { _status: 'draft', brandOverrides: { motion: { duration: 1 } } },
@@ -195,6 +207,19 @@ describe('editorial collections', () => {
     await expect(attempt).rejects.toBeInstanceOf(ValidationError)
     await expect(attempt).rejects.not.toMatchObject({
       data: { errors: [expect.objectContaining({ message: expect.stringContaining('private-host') })] },
+    })
+    await expect(attempt).rejects.toMatchObject({
+      data: { errors: [expect.objectContaining({ path: 'brandProfile' })] },
+    })
+  })
+
+  it('attributes malformed related brands to brandProfile', async () => {
+    await expect(
+      validatePageBrandPublication({
+        data: { _status: 'published', brandProfile: { colors: [] } },
+      } as never),
+    ).rejects.toMatchObject({
+      data: { errors: [expect.objectContaining({ path: 'brandProfile' })] },
     })
   })
 
