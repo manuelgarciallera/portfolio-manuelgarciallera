@@ -47,6 +47,11 @@ surface without changing the public portfolio:
 - **Projects**, **Articles**, **Pages**, and **Media** remain the editorial
   collections described below. **Preview Snapshots** is a read-only owner list
   of immutable manifests created through the dedicated endpoint.
+- **Technologies** is the reusable, manually ordered stack catalog. Each entry
+  stores a required accessible name and Media icon plus optional `#RRGGBB`
+  corporate color and HTTPS official URL. Projects may select an ordered
+  `technologyStack`; the earlier inline `technologies` field remains available
+  for migration compatibility.
 - **Releases** is the append-only version ledger. Each record binds a complete
   Git commit to a preview snapshot, a concise change summary, and bounded
   performance, usability, and accessibility measurements for desktop or

@@ -13,7 +13,8 @@ The complete operational runbook is in
 The authenticated admin includes Brand Profiles (the first Brand Studio data
 surface), controlled brand assignment/overrides on Pages, the editorial
 collections, Media, reusable Media Placements, immutable Preview Snapshots, and
-an append-only Releases registry. Open
+an append-only Releases registry. Projects, Pages, Articles, and the reusable
+Technology catalog are manually orderable. Open
 `http://localhost:3001/admin/collections/brand-profiles` after local sign-in to
 work with brand tokens; this is Payload's generated owner UI, not yet a custom
 visual canvas.
@@ -38,6 +39,12 @@ does not expose restore, apply, publish, or deploy controls.
 Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
 or tablet overrides while preserving the uploaded original. Projects and page
 media blocks can reference these recipes without changing existing content.
+
+Technologies centralizes each stack item's accessible name, official icon,
+optional corporate color, and HTTPS reference URL. Projects can adopt the
+ordered catalog through `technologyStack`; their previous inline `technologies`
+data remains available during migration, so this addition does not discard or
+rewrite existing drafts.
 
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
