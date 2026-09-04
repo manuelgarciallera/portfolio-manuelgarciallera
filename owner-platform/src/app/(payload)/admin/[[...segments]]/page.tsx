@@ -1,0 +1,22 @@
+/* THIS FILE FOLLOWS PAYLOAD'S GENERATED EXISTING-APP SHIM. */
+import config from '@payload-config'
+import { generatePageMetadata, RootPage } from '@payloadcms/next/views'
+import type { Metadata } from 'next'
+
+import { assertCurrentProductionRuntime } from '@/config/runtime'
+import { importMap } from '../importMap.js'
+
+type Args = {
+  params: Promise<{ segments: string[] }>
+  searchParams: Promise<Record<string, string | string[]>>
+}
+
+export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> => {
+  assertCurrentProductionRuntime()
+  return generatePageMetadata({ config, params, searchParams })
+}
+
+export default function Page({ params, searchParams }: Args) {
+  assertCurrentProductionRuntime()
+  return RootPage({ config, importMap, params, searchParams })
+}

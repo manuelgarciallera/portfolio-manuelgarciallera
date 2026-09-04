@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+!next-env.d.ts
+.data/
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+media/
+uploads/
