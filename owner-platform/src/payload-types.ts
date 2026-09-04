@@ -435,18 +435,6 @@ export interface Page {
  */
 export interface PreviewSnapshot {
   id: number;
-  /**
-   * Entrada estructurada; se valida y transforma antes de guardar.
-   */
-  input:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   schemaVersion: number;
   sourceCollection: string;
   sourceDocumentId: string;
@@ -815,7 +803,6 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "preview-snapshots_select".
  */
 export interface PreviewSnapshotsSelect<T extends boolean = true> {
-  input?: T;
   schemaVersion?: T;
   sourceCollection?: T;
   sourceDocumentId?: T;

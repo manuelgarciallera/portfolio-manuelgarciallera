@@ -3,36 +3,28 @@ import {
   type CollectionBeforeChangeHook,
   type CollectionBeforeDeleteHook,
   type CollectionConfig,
-  type CollectionBeforeOperationHook,
 } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
-import { createPreviewManifest, type PreviewManifestInput } from '../preview/manifest'
+import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 
 const immutableError = () => new APIError('Los snapshots de preview son inmutables.', 403)
-const ownerError = () => new APIError('Solo el owner puede acceder a snapshots de preview.', 403)
-
-export const enforcePreviewSnapshotOperation: CollectionBeforeOperationHook = async ({ req }) => {
-  if (!isOwner(req.user)) throw ownerError()
-}
+const ownerError = () => new APIError('Solo el owner puede crear snapshots de preview.', 403)
 
 export const prepareImmutablePreviewSnapshot: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
   if (operation !== 'create') throw immutableError()
-  // Payload Local API defaults overrideAccess to true. This hook deliberately repeats
-  // authorization so an untrusted local caller cannot bypass owner-only creation.
   if (!isOwner(req.user)) throw ownerError()
 
-  const input = data.input as PreviewManifestInput | undefined
-  const manifest = createPreviewManifest(input as PreviewManifestInput)
-  return {
-    schemaVersion: manifest.schemaVersion,
-    sourceCollection: manifest.source.collection,
-    sourceDocumentId: manifest.source.documentId,
-    sourceVersionId: manifest.source.versionId,
-    manifest,
-    manifestHash: manifest.hash,
-    createdBy: req.user.id,
-  }
+  const manifest = data.manifest as PreviewManifest
+  const hash = hashPreviewManifest(manifest)
+  if (data.manifestHash !== hash) throw new APIError('El hash persistido no coincide con el manifiesto.', 400)
+  if (
+    data.schemaVersion !== manifest.schemaVersion ||
+    data.sourceCollection !== manifest.source.collection ||
+    String(data.sourceDocumentId) !== manifest.source.documentId ||
+    String(data.sourceVersionId) !== manifest.source.versionId
+  ) throw new APIError('La procedencia persistida no coincide con el manifiesto.', 400)
+  return data
 }
 
 export const enforceImmutablePreviewDelete: CollectionBeforeDeleteHook = async () => {
@@ -46,7 +38,7 @@ export const PreviewSnapshots: CollectionConfig = {
     useAsTitle: 'manifestHash',
   },
   access: {
-    create: ownerOnly,
+    create: () => false,
     read: ownerOnly,
     update: () => false,
     delete: () => false,
@@ -54,16 +46,8 @@ export const PreviewSnapshots: CollectionConfig = {
   hooks: {
     beforeChange: [prepareImmutablePreviewSnapshot],
     beforeDelete: [enforceImmutablePreviewDelete],
-    beforeOperation: [enforcePreviewSnapshotOperation],
   },
   fields: [
-    {
-      name: 'input',
-      type: 'json',
-      required: true,
-      virtual: true,
-      admin: { description: 'Entrada estructurada; se valida y transforma antes de guardar.' },
-    },
     { name: 'schemaVersion', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'sourceCollection', type: 'text', required: true, index: true, admin: { readOnly: true } },
     { name: 'sourceDocumentId', type: 'text', required: true, index: true, admin: { readOnly: true } },

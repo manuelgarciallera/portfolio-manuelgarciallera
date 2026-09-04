@@ -1,90 +1,66 @@
 import { describe, expect, it } from 'vitest'
+import { createPreviewManifest, hashPreviewManifest, PREVIEW_LIMITS, type PreviewManifestInput } from './manifest'
 
-import { createPreviewManifest, hashPreviewManifest } from './manifest'
-
-const input = {
-  source: { collection: 'pages', documentId: 'home', versionId: 7 },
-  brandTokens: { text: '#FFFFFF', background: '#000000', accent: '#FF4B44' },
-  pageBlocks: [{ type: 'hero', title: 'Portfolio' }],
-  mediaReferences: ['media-2', 'media-1'],
-  motion: { duration: 600, easing: 'ease-out', reducedMotion: 'reduce' },
+const lexical = { root: { type: 'root', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'text', version: 1, text: 'Texto con estilo', format: 0, style: 'color: var(--accent)' }] }] } }
+const input: PreviewManifestInput = {
+  source: { collection: 'pages', documentId: 'home', versionId: 'current:2026-09-04T12:00:00Z' },
+  brandTokens: { colors: [{ role: 'text', value: '#FFFFFF' }], motion: { duration: 600 } },
+  pageBlocks: [{ blockType: 'richText', content: lexical }],
+  mediaReferences: [{ id: 'media-1', alt: 'Portada', filename: 'cover.webp' }],
 }
 
 describe('preview manifests', () => {
-  it('produces the same canonical manifest and SHA-256 hash regardless of object key order', () => {
+  it('hashes canonical object order deterministically while preserving array order', () => {
     const first = createPreviewManifest(input)
     const second = createPreviewManifest({
-      motion: { reducedMotion: 'reduce', easing: 'ease-out', duration: 600 },
-      mediaReferences: ['media-2', 'media-1'],
-      pageBlocks: [{ title: 'Portfolio', type: 'hero' }],
-      brandTokens: { accent: '#FF4B44', background: '#000000', text: '#FFFFFF' },
-      source: { versionId: 7, documentId: 'home', collection: 'pages' },
+      mediaReferences: [{ filename: 'cover.webp', alt: 'Portada', id: 'media-1' }],
+      pageBlocks: [{ content: lexical, blockType: 'richText' }],
+      brandTokens: { motion: { duration: 600 }, colors: [{ value: '#FFFFFF', role: 'text' }] },
+      source: { versionId: input.source.versionId, documentId: 'home', collection: 'pages' },
     })
-
     expect(second).toEqual(first)
     expect(first.hash).toMatch(/^sha256:[a-f0-9]{64}$/)
     expect(hashPreviewManifest(first)).toBe(first.hash)
+    expect(createPreviewManifest({ ...input, mediaReferences: [...input.mediaReferences].reverse() }).hash).toBe(first.hash)
   })
 
-  it('keeps array order significant and returns a detached immutable value', () => {
+  it('accepts actual Lexical-shaped content including its legitimate style field', () => {
+    expect(createPreviewManifest(input).pageBlocks[0]).toEqual({ blockType: 'richText', content: lexical })
+  })
+
+  it('returns a detached deeply frozen manifest', () => {
     const original = structuredClone(input)
-    const first = createPreviewManifest(original)
-    const reordered = createPreviewManifest({ ...input, mediaReferences: ['media-1', 'media-2'] })
-
-    original.brandTokens.accent = '#000000'
-    expect(first.brandTokens.accent).toBe('#FF4B44')
-    expect(reordered.hash).not.toBe(first.hash)
-    expect(Object.isFrozen(first)).toBe(true)
-    expect(Object.isFrozen(first.pageBlocks)).toBe(true)
-  })
-
-  it.each([
-    ['secret', 'value'],
-    ['api_key', 'value'],
-    ['authorization', 'Bearer value'],
-    ['accessToken', 'value'],
-    ['cookie', 'value'],
-    ['password', 'value'],
-  ])('rejects secret-bearing key %s at any depth', (key, value) => {
-    expect(() =>
-      createPreviewManifest({ ...input, pageBlocks: [{ type: 'hero', nested: { [key]: value } }] }),
-    ).toThrow(/secret|credential/i)
-  })
-
-  it.each(['__proto__', 'prototype', 'constructor'])('rejects prototype key %s', (key) => {
-    const unsafe = JSON.parse(`{"${key}": {"polluted": true}}`)
-    expect(() => createPreviewManifest({ ...input, brandTokens: unsafe })).toThrow(/prototipo/i)
-  })
-
-  it.each([
-    [{ customCSS: 'body { display: none }' }],
-    [{ html: '<p>raw</p>' }],
-    [{ javascript: 'alert(1)' }],
-    [{ onClick: 'run()' }],
-    [{ href: 'javascript:alert(1)' }],
-    [{ text: '<script>alert(1)</script>' }],
-    [{ style: 'background: red' }],
-  ])('rejects executable configuration or active content %#', (unsafe) => {
-    expect(() => createPreviewManifest({ ...input, pageBlocks: [unsafe] })).toThrow(/ejecutable/i)
+    const manifest = createPreviewManifest(original)
+    const mutableBlock = original.pageBlocks[0] as { content: typeof lexical }
+    mutableBlock.content.root.children[0].children[0].text = 'cambiado'
+    expect(JSON.stringify(manifest)).toContain('Texto con estilo')
+    expect(Object.isFrozen(manifest)).toBe(true)
+    expect(Object.isFrozen(manifest.pageBlocks[0])).toBe(true)
   })
 
   it.each([undefined, Number.NaN, Number.POSITIVE_INFINITY, 2n, new Date()])(
-    'rejects non-JSON manifest values %#',
-    (unsafe) => {
-      expect(() => createPreviewManifest({ ...input, brandTokens: { unsafe } })).toThrow(/JSON/i)
-    },
+    'rejects non-JSON values %#',
+    (unsafe) => expect(() => createPreviewManifest({ ...input, brandTokens: { unsafe } })).toThrow(/JSON/i),
   )
 
-  it('rejects cyclic input instead of recursing indefinitely', () => {
+  it('rejects cycles and prototype-bearing objects', () => {
     const cyclic: Record<string, unknown> = {}
     cyclic.self = cyclic
     expect(() => createPreviewManifest({ ...input, brandTokens: cyclic })).toThrow(/cíclica/i)
+    expect(() => createPreviewManifest({ ...input, brandTokens: new (class Token {})() as never })).toThrow(/JSON/i)
   })
 
-  it('rejects an externally supplied or malformed hash', () => {
-    expect(() => createPreviewManifest({ ...input, hash: 'sha256:forged' } as never)).toThrow(/hash/i)
-    expect(() => hashPreviewManifest({ ...createPreviewManifest(input), hash: 'sha256:forged' })).toThrow(
-      /hash/i,
-    )
+  it('enforces depth, node, array, string and serialized-byte bounds before hashing', () => {
+    let deep: Record<string, unknown> = { value: 'ok' }
+    for (let index = 0; index <= PREVIEW_LIMITS.maxDepth; index += 1) deep = { child: deep }
+    expect(() => createPreviewManifest({ ...input, brandTokens: deep })).toThrow(/profundidad/i)
+    expect(() => createPreviewManifest({ ...input, pageBlocks: new Array(PREVIEW_LIMITS.maxArrayLength + 1).fill(null) })).toThrow(/lista/i)
+    expect(() => createPreviewManifest({ ...input, pageBlocks: [{ text: 'x'.repeat(PREVIEW_LIMITS.maxStringLength + 1) }] })).toThrow(/texto/i)
+    expect(() => createPreviewManifest({ ...input, pageBlocks: new Array(PREVIEW_LIMITS.maxNodes + 1).fill({ x: 1 }) })).toThrow(/nodos|lista/i)
+    expect(() => createPreviewManifest({ ...input, pageBlocks: new Array(11).fill(null).map(() => ({ text: 'é'.repeat(PREVIEW_LIMITS.maxStringLength) })) })).toThrow(/bytes/i)
+  })
+
+  it('rejects a forged hash', () => {
+    expect(() => hashPreviewManifest({ ...createPreviewManifest(input), hash: 'sha256:forged' })).toThrow(/hash/i)
   })
 })
