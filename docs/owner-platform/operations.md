@@ -574,6 +574,14 @@ relationships, or invalid measurements fail the complete response rather than
 showing a version that appears safer than its evidence. This endpoint is
 read-only: it does not prepare, confirm, or execute a restore plan.
 
+The future owner home can consume `GET /api/owner/dashboard` instead of
+coordinating the three read models in the browser. The server authenticates
+once and loads content health, release history, and verified analytics in
+parallel. A new installation with no analytics snapshot receives
+`analytics.available: false`; malformed or hash-mismatched analytics still
+fails closed. This distinction permits a useful first-run dashboard without
+turning missing data into false zeroes or concealing integrity failures.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no

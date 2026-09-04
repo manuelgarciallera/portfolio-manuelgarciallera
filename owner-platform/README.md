@@ -85,6 +85,12 @@ commit, visual/restorable snapshot references, and normalized desktop/mobile
 performance, usability, and accessibility scores. It is owner-only, read-only,
 and fails closed when a stored release cannot be compared reliably.
 
+`GET /api/owner/dashboard` is the bounded read model for the future owner home.
+It authenticates once and combines content health, release history, and the
+verified analytics summary. An empty analytics history is represented as an
+explicit unavailable state; integrity or authorization failures are never
+silently downgraded. The endpoint performs no editorial mutation.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
