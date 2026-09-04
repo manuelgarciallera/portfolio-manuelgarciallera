@@ -92,6 +92,11 @@ history is represented as an explicit unavailable state; integrity or
 authorization failures are never silently downgraded. The endpoint performs no
 editorial mutation.
 
+The same overview includes the workflow attention summary exposed independently
+at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
+states, publication bundles awaiting review, and approvals awaiting an
+artifact. It uses owner-scoped database counts and returns no document bodies.
+
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.

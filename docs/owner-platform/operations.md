@@ -589,6 +589,16 @@ metadata, returning only event ID, normalized action, outcome, subject, and
 timestamp. Invalid stored events fail the response rather than presenting a
 misleading audit trail; the endpoint never modifies the append-only ledger.
 
+`GET /api/owner/workflow/summary` supplies the dashboard attention queue using
+owner-scoped database counts only. It reports pending, accepted, and rejected
+assistance proposals; ready, confirmed, conflicting, and executed restore
+plans; and the publication chain from bundles through reviews to artifacts.
+The server derives bundles awaiting review and approved reviews awaiting an
+artifact, then rejects impossible totals instead of emitting misleading
+negative values. Conflicts and every state awaiting an owner decision are
+included in `attentionCount`. No workflow document body is returned and no
+decision, restore, publication, or deployment is executed.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
