@@ -83,6 +83,23 @@ describe('StudioPatch validation against current Payload fields', () => {
     expect(() => validateStudioPatch(proposal('suggestCopy', prototypeOps), enabled, context)).toThrow(/prototipo/i)
   })
 
+  it('rejects malicious arrays nested inside operation values before traversal', () => {
+    const cases: unknown[][] = []
+    const getter: unknown[] = []
+    Object.defineProperty(getter, '0', { enumerable: true, get: () => 'x' })
+    cases.push(getter)
+    const iterator: unknown[] = []
+    Object.defineProperty(iterator, Symbol.iterator, { value: function* () { yield 'x' } })
+    cases.push(iterator)
+    const prototype: unknown[] = []
+    Object.setPrototypeOf(prototype, {})
+    cases.push(prototype)
+    const symbol: unknown[] = []
+    Object.defineProperty(symbol, Symbol('hidden'), { value: 'x' })
+    cases.push(symbol)
+    for (const value of cases) expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value }]), enabled, context)).toThrow(/datos planos|símbolos|prototipo/i)
+  })
+
   it('rejects executable, prototype, secret, and bounded-size abuse', () => {
     for (const value of [{ script: 'x' }, { accessToken: 'x' }, { constructor: 'x' }]) expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value }]), enabled, context)).toThrow()
     expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x'.repeat(4001) }]), enabled, context)).toThrow(/texto/i)

@@ -33,7 +33,7 @@ const assertSafeValue = (value: unknown, depth = 0, ancestors = new Set<object>(
   if (!value || typeof value !== 'object') throw new TypeError('Solo se admiten valores JSON.')
   if (ancestors.has(value)) throw new TypeError('Referencia cíclica rechazada.')
   const next = new Set(ancestors).add(value)
-  if (Array.isArray(value)) { if (value.length > STUDIO_PATCH_LIMITS.maxArrayLength) throw new TypeError('Lista demasiado larga.'); for (const child of value) assertSafeValue(child, depth + 1, next); return }
+  if (Array.isArray(value)) { assertDataArray(value, 'El valor de lista'); if (value.length > STUDIO_PATCH_LIMITS.maxArrayLength) throw new TypeError('Lista demasiado larga.'); for (const child of value) assertSafeValue(child, depth + 1, next); return }
   assertPlainDataRecord(value, 'El valor')
   for (const [key, child] of Object.entries(value)) { if (blockedKey.test(key)) throw new TypeError(`Clave ${key} no permitida.`); assertSafeValue(child, depth + 1, next) }
 }
