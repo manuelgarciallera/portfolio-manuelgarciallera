@@ -62,4 +62,11 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('analytics-snapshots')
   })
+
+  it('registers the bounded owner search on the generated dashboard', async () => {
+    const config = await configPromise
+    expect(config.admin.components.beforeDashboard).toEqual([
+      './components/OwnerSearch#OwnerSearch',
+    ])
+  })
 })
