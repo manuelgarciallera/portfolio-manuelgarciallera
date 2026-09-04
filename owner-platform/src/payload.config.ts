@@ -14,6 +14,7 @@ import { Projects } from './collections/Projects'
 import { BrandProfiles } from './collections/BrandProfiles'
 import { PreviewSnapshots } from './collections/PreviewSnapshots'
 import { Releases } from './collections/Releases'
+import { MediaPlacements } from './collections/MediaPlacements'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 
@@ -41,7 +42,17 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  collections: [Users, Media, BrandProfiles, Projects, Articles, Pages, PreviewSnapshots, Releases],
+  collections: [
+    Users,
+    Media,
+    MediaPlacements,
+    BrandProfiles,
+    Projects,
+    Articles,
+    Pages,
+    PreviewSnapshots,
+    Releases,
+  ],
   bodyParser: multipartBodyParser,
   db,
   editor: lexicalEditor(),

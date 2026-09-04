@@ -17,6 +17,14 @@ export const Projects: CollectionConfig = {
     slugField,
     { name: 'summary', type: 'textarea', required: true },
     { name: 'heroImage', type: 'upload', relationTo: 'media', required: true },
+    {
+      name: 'heroPlacement',
+      type: 'relationship',
+      relationTo: 'media-placements',
+      admin: {
+        description: 'Encuadre no destructivo opcional para la imagen principal.',
+      },
+    },
     { name: 'body', type: 'richText', required: true },
     {
       name: 'technologies',

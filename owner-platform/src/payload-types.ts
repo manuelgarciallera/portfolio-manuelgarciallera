@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'media-placements': MediaPlacement;
     'brand-profiles': BrandProfile;
     projects: Project;
     articles: Article;
@@ -84,6 +85,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'media-placements': MediaPlacementsSelect<false> | MediaPlacementsSelect<true>;
     'brand-profiles': BrandProfilesSelect<false> | BrandProfilesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
@@ -206,6 +208,42 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-placements".
+ */
+export interface MediaPlacement {
+  id: number;
+  name: string;
+  placement: {
+    asset: number | Media;
+    focalX: number;
+    focalY: number;
+    zoom: number;
+    fit: 'cover' | 'contain';
+    frame: 'auto' | '16:9' | '4:3' | '1:1' | '9:16';
+    overrides?: {
+      mobile?: {
+        focalX?: number | null;
+        focalY?: number | null;
+        zoom?: number | null;
+        fit?: ('cover' | 'contain') | null;
+        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
+      };
+      tablet?: {
+        focalX?: number | null;
+        focalY?: number | null;
+        zoom?: number | null;
+        fit?: ('cover' | 'contain') | null;
+        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
+      };
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand-profiles".
  */
 export interface BrandProfile {
@@ -267,6 +305,10 @@ export interface Project {
   slug: string;
   summary: string;
   heroImage: number | Media;
+  /**
+   * Encuadre no destructivo opcional para la imagen principal.
+   */
+  heroPlacement?: (number | null) | MediaPlacement;
   body: {
     root: {
       type: string;
@@ -413,6 +455,10 @@ export interface Page {
       }
     | {
         asset: number | Media;
+        /**
+         * Encuadre reutilizable opcional; nunca modifica el original.
+         */
+        placement?: (number | null) | MediaPlacement;
         caption?: string | null;
         id?: string | null;
         blockName?: string | null;
@@ -509,6 +555,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'media-placements';
+        value: number | MediaPlacement;
       } | null)
     | ({
         relationTo: 'brand-profiles';
@@ -657,6 +707,49 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-placements_select".
+ */
+export interface MediaPlacementsSelect<T extends boolean = true> {
+  name?: T;
+  placement?:
+    | T
+    | {
+        asset?: T;
+        focalX?: T;
+        focalY?: T;
+        zoom?: T;
+        fit?: T;
+        frame?: T;
+        overrides?:
+          | T
+          | {
+              mobile?:
+                | T
+                | {
+                    focalX?: T;
+                    focalY?: T;
+                    zoom?: T;
+                    fit?: T;
+                    frame?: T;
+                  };
+              tablet?:
+                | T
+                | {
+                    focalX?: T;
+                    focalY?: T;
+                    zoom?: T;
+                    fit?: T;
+                    frame?: T;
+                  };
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand-profiles_select".
  */
 export interface BrandProfilesSelect<T extends boolean = true> {
@@ -716,6 +809,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   slug?: T;
   summary?: T;
   heroImage?: T;
+  heroPlacement?: T;
   body?: T;
   technologies?:
     | T
@@ -809,6 +903,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               asset?: T;
+              placement?: T;
               caption?: T;
               id?: T;
               blockName?: T;

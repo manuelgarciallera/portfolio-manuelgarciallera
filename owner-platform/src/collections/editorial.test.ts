@@ -57,6 +57,21 @@ describe('editorial collections', () => {
     expect(fieldNamed(Pages, 'slug')).toMatchObject({ type: 'text', required: true, unique: true })
   })
 
+  it('allows project and page media to opt into reusable non-destructive placement recipes', () => {
+    expect(fieldNamed(Projects, 'heroPlacement')).toMatchObject({
+      type: 'relationship',
+      relationTo: 'media-placements',
+    })
+    const mediaBlock = pageBlocks.find((block) => block.slug === 'media')
+    const placement = mediaBlock?.fields.find(
+      (field) => 'name' in field && field.name === 'placement',
+    )
+    expect(placement).toMatchObject({
+      type: 'relationship',
+      relationTo: 'media-placements',
+    })
+  })
+
   it('adds a migration-safe brand relationship and controlled page overrides', () => {
     expect(fieldNamed(Pages, 'brandProfile')).toMatchObject({
       type: 'relationship',

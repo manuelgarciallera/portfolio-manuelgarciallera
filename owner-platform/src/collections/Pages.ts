@@ -106,6 +106,12 @@ const MediaBlock: Block = {
   slug: 'media',
   fields: [
     { name: 'asset', type: 'upload', relationTo: 'media', required: true },
+    {
+      name: 'placement',
+      type: 'relationship',
+      relationTo: 'media-placements',
+      admin: { description: 'Encuadre reutilizable opcional; nunca modifica el original.' },
+    },
     { name: 'caption', type: 'text' },
   ],
 }

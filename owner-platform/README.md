@@ -12,8 +12,8 @@ The complete operational runbook is in
 
 The authenticated admin includes Brand Profiles (the first Brand Studio data
 surface), controlled brand assignment/overrides on Pages, the editorial
-collections, Media, immutable Preview Snapshots, and an append-only Releases
-registry. Open
+collections, Media, reusable Media Placements, immutable Preview Snapshots, and
+an append-only Releases registry. Open
 `http://localhost:3001/admin/collections/brand-profiles` after local sign-in to
 work with brand tokens; this is Payload's generated owner UI, not yet a custom
 visual canvas.
@@ -32,6 +32,10 @@ Releases records a full Git commit, its source preview snapshot, a concise
 change summary, and bounded desktop/mobile quality measurements. Records are
 immutable evidence; selecting a record does not execute a rollback or mutate
 the public site.
+
+Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
+or tablet overrides while preserving the uploaded original. Projects and page
+media blocks can reference these recipes without changing existing content.
 
 ## Local development
 

@@ -40,6 +40,10 @@ surface without changing the public portfolio:
   totalling 100, supported contrast, and safe motion values.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
+- **Media Placements** stores reusable, versioned crop recipes: original asset,
+  focal point, zoom, fit, frame ratio, and bounded mobile/tablet overrides. It
+  never rewrites or resizes the uploaded original. Projects and page media
+  blocks may adopt a recipe without invalidating existing entries.
 - **Projects**, **Articles**, **Pages**, and **Media** remain the editorial
   collections described below. **Preview Snapshots** is a read-only owner list
   of immutable manifests created through the dedicated endpoint.

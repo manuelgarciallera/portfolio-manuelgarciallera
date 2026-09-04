@@ -7,4 +7,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('releases')
   })
+
+  it('registers reusable media placement recipes in the owner application', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('media-placements')
+  })
 })
