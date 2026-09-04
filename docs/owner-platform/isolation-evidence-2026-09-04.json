@@ -5,8 +5,8 @@
     "commit": "0f0adf686b2752e23c25d224f8c60815b10fd451",
     "tag": "checkpoint/pre-editor-2026-09-04"
   },
-  "verifiedGitHead": "30407292da907c94ecd43d0f9eab713156f097c1",
-  "publicInputSha256": "c2df3770b7d9bd89fe73251124efd14cf14c92bc33089acfe3b131a4baac51e7",
+  "verifiedGitHead": "427f2322e306fb8229d8c9df55c2d85ad7689ef4",
+  "publicInputSha256": "d1a37d1c6371728546ff096740c3837802c528deefdd901b130453a14dc44348",
   "buildProvenanceMatches": true,
   "rootRuntimeManifestSha256": "ea9abdb7a9d4db0a8c54e7378997e589a33d5b34180b68a6dec609544f1a58ec",
   "rootPackageLockSha256": "529e107038b9aa38e65b39460c4e66bd1ab1bd5455e3a4a9876e44a94a7c373d",
