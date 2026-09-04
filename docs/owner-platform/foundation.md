@@ -31,8 +31,9 @@ asset is never modified.
 
 `assertPortfolioDocument` validates untrusted data against schema version 1,
 the supported block kinds, non-negative integer block order, unique asset and
-block IDs, JSON-safe block data, valid media placement values, and references
-to assets that exist in the document.
+block IDs, JSON-safe block data, and valid media placement values. For media
+blocks, it also validates that direct and placement asset references point to
+assets present in the document.
 
 ### Figma connector contracts: `src/platform/connectors/figma.ts`
 
@@ -109,11 +110,20 @@ support a fallback to the current TypeScript content during migration.
 
 ## Media ownership and reversibility
 
-`MediaAsset` owns the immutable source identity, URL or storage key, metadata,
-dimensions, provenance, and future derivatives. `MediaPlacement` owns how that
-asset is presented in a block: focal point, zoom, fit, frame, and optional
-breakpoint overrides. A single asset can therefore have multiple placements,
-and restoring a placement never requires rewriting the original pixels.
+`MediaAsset` currently models the source identity plus optional source URL,
+alternate text, MIME type, and dimensions. During document validation, the
+current pure contract validates input and reconstructs copied asset values; it
+does not provide an interface-level or persistence-level immutability
+guarantee. `MediaPlacement` owns how that asset is presented in a block: focal
+point, zoom, fit, frame, and optional breakpoint overrides. A single asset can
+therefore have multiple placements, and restoring a placement never requires
+rewriting the original pixels.
+
+In the next phase, the MediaAsset persistence/storage adapter will add and
+enforce the responsibilities for provenance, content hashes, strong
+immutability of originals, and versioned responsive derivatives. Those
+responsibilities are not implemented by the current in-memory TypeScript
+interface.
 
 The future editor will store a placement recipe (crop/ratio, focal X/Y, zoom,
 fit, frame preset, and only necessary breakpoint exceptions). It will generate
@@ -135,8 +145,9 @@ repository files as untrusted input. The minimum controls are:
 - **Explicit publishing approval:** AI cannot publish, delete, or deploy; owner
   publishing and any replacement of published media require a separate,
   recorded approval.
-- **Immutable originals:** preserve imported originals and use reversible
-  placement/derivative data for presentation changes.
+- **Immutable originals (future storage boundary):** preserve imported
+  originals and use reversible placement/derivative data for presentation
+  changes; the current pure contracts do not enforce storage immutability.
 - **Operation-digest binding:** approvals are tied to the exact operation
   digest, expire, and are one-time evidence. Durable consumption is deferred to
   the persistence adapter.
@@ -154,8 +165,8 @@ the UI or by an AI model.
 
 ## Reserved environment-variable names
 
-These names are reserved for later adapters only. They have no values here and
-must not be added to `.env.example` yet:
+These names are reserved for later adapters only. `.env.example` exists, but
+none of these nine names or any values for them have been added there:
 
 `DATABASE_URL`, `PAYLOAD_SECRET`, `FIGMA_CLIENT_ID`, `FIGMA_CLIENT_SECRET`,
 `FIGMA_REDIRECT_URI`, `OPENAI_API_KEY`, `MEDIA_STORAGE_BUCKET`,
