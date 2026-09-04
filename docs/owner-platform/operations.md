@@ -168,9 +168,7 @@ Run from the repository root:
 npm run check:all
 npm run test:owner-isolation
 npm run check:owner:clean
-$env:PORTFOLIO_BUILD_DIR = '.owner-verification-builds/release-proof'
-npm run build
-Move-Item -LiteralPath $env:PORTFOLIO_BUILD_DIR -Destination 'owner-platform/.data/verification-artifacts/release-proof'
+npm run build:public-proof
 $env:PUBLIC_BUILD_DIR = (Resolve-Path 'owner-platform/.data/verification-artifacts/release-proof').Path
 node ./scripts/prove-owner-isolation.mjs --write=docs/owner-platform/isolation-evidence-2026-09-04.json
 ```

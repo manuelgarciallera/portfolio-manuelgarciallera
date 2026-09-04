@@ -14,6 +14,7 @@
     "check:public-boundary": "node ./scripts/check-public-boundary.mjs",
     "check:public-bundle": "node ./scripts/check-public-bundle.mjs",
     "check:owner-isolation": "node ./scripts/prove-owner-isolation.mjs",
+    "build:public-proof": "node ./scripts/build-public-proof.mjs",
     "test:owner-isolation": "node --test ./scripts/tests/owner-isolation.test.mjs",
     "test:public-guards": "node --test ./scripts/tests/public-guards.test.mjs",
     "owner:install": "npm --prefix owner-platform ci",
