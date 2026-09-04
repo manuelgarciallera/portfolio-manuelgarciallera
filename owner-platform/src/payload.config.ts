@@ -18,6 +18,7 @@ import { MediaPlacements } from './collections/MediaPlacements'
 import { AuditEvents } from './collections/AuditEvents'
 import { AssistanceProposals } from './collections/AssistanceProposals'
 import { RestorePlans } from './collections/RestorePlans'
+import { DraftSnapshots } from './collections/DraftSnapshots'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -59,6 +60,7 @@ export default buildConfig({
     AuditEvents,
     AssistanceProposals,
     RestorePlans,
+    DraftSnapshots,
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

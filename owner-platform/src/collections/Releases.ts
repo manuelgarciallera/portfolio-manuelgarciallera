@@ -16,6 +16,7 @@ import {
 const RELEASE_FIELDS = new Set([
   'changeSummary',
   'createdBy',
+  'draftSnapshot',
   'gitCommit',
   'name',
   'previewSnapshot',
@@ -60,6 +61,12 @@ export const validateReleaseRecord: CollectionBeforeChangeHook = async ({ data, 
     String(data.previewSnapshot).trim() === ''
   ) {
     return invalid('Selecciona un snapshot verificable.', 'previewSnapshot')
+  }
+  if (
+    (typeof data.draftSnapshot !== 'string' && typeof data.draftSnapshot !== 'number') ||
+    String(data.draftSnapshot).trim() === ''
+  ) {
+    return invalid('Selecciona un snapshot de borrador restorable.', 'draftSnapshot')
   }
   if (!Array.isArray(data.quality) || data.quality.length === 0 || data.quality.length > 4) {
     return invalid('Añade entre una y cuatro mediciones de calidad.', 'quality')
@@ -106,6 +113,12 @@ export const Releases: CollectionConfig = {
       name: 'previewSnapshot',
       type: 'relationship',
       relationTo: 'preview-snapshots',
+      required: true,
+    },
+    {
+      name: 'draftSnapshot',
+      type: 'relationship',
+      relationTo: 'draft-snapshots',
       required: true,
     },
     {

@@ -3,6 +3,7 @@ import { APIError } from 'payload'
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
+import { hashDraftCapsule, type DraftCapsule } from '../recovery/capsule'
 import { confirmRestorePlanData } from './plan'
 
 type RestorePayload = {
@@ -42,6 +43,25 @@ const verifiedSnapshot = async (
   return { id: relationId(snapshot, 'El snapshot'), manifest, manifestHash }
 }
 
+const verifiedDraftSnapshot = async (
+  payload: RestorePayload,
+  req: { user?: unknown },
+  snapshotId: string | number,
+) => {
+  const snapshot = record(await payload.findByID({
+    collection: 'draft-snapshots', depth: 0, id: snapshotId, overrideAccess: false, req,
+  }), 'El snapshot de borrador')
+  const capsule = snapshot.capsule as DraftCapsule
+  let capsuleHash: string
+  try {
+    capsuleHash = hashDraftCapsule(capsule)
+  } catch {
+    throw new APIError('La cápsula del borrador no supera la verificación de hash.', 400)
+  }
+  if (snapshot.capsuleHash !== capsuleHash) throw new APIError('El snapshot de borrador no coincide con su cápsula.', 400)
+  return { capsule, capsuleHash, id: relationId(snapshot, 'El snapshot de borrador') }
+}
+
 export const createOwnerRestorePlan = async ({
   baselineSnapshot,
   confirmation,
@@ -61,12 +81,19 @@ export const createOwnerRestorePlan = async ({
     collection: 'releases', depth: 0, id: releaseId, overrideAccess: false, req,
   }), 'La versión')
   const target = await verifiedSnapshot(payload, req, relationId(release.previewSnapshot, 'El snapshot objetivo'))
+  const targetDraft = await verifiedDraftSnapshot(payload, req, relationId(release.draftSnapshot, 'El snapshot de borrador objetivo'))
   const baseline = await verifiedSnapshot(payload, req, baselineSnapshot)
   if (target.manifest.source.collection !== 'pages' || baseline.manifest.source.collection !== 'pages') {
     throw new APIError('La restauración solo admite snapshots de páginas.', 400)
   }
   if (target.manifest.source.documentId !== baseline.manifest.source.documentId) {
     throw new APIError('El snapshot actual y la versión no pertenecen a la misma página.', 409)
+  }
+  if (
+    targetDraft.capsule.source.documentId !== target.manifest.source.documentId ||
+    targetDraft.capsule.source.versionId !== target.manifest.source.versionId
+  ) {
+    throw new APIError('Los snapshots objetivo no pertenecen a la misma revisión.', 409)
   }
   const plan = await payload.create({
     collection: 'restore-plans',
@@ -76,6 +103,8 @@ export const createOwnerRestorePlan = async ({
       confirmation,
       release: relationId(release, 'La versión'),
       targetHash: target.manifestHash,
+      targetCapsuleHash: targetDraft.capsuleHash,
+      targetDraftSnapshot: targetDraft.id,
       targetPage: target.manifest.source.documentId,
       targetSnapshot: target.id,
     },
@@ -85,7 +114,7 @@ export const createOwnerRestorePlan = async ({
   await recordAuditEvent({
     input: {
       action: 'restore.plan.created',
-      metadata: { baselineHash: baseline.manifestHash, targetHash: target.manifestHash },
+      metadata: { baselineHash: baseline.manifestHash, targetCapsuleHash: targetDraft.capsuleHash, targetHash: target.manifestHash },
       outcome: 'success',
       subject: { collection: 'restore-plans', id: relationId(plan, 'El plan') },
     },

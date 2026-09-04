@@ -5,6 +5,7 @@ import { handleReleaseRequest, parseReleaseRequest } from './request'
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const valid = {
   changeSummary: 'Nueva API owner.',
+  draftSnapshot: 13,
   gitCommit: 'a'.repeat(40),
   name: 'API owner',
   previewSnapshot: 12,

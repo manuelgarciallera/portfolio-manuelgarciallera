@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createPreviewManifest } from '../preview/manifest'
+import { createDraftCapsule } from '../recovery/capsule'
 import { confirmOwnerRestorePlan, createOwnerRestorePlan } from './service'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
@@ -12,6 +13,10 @@ const makeManifest = (title: string) => createPreviewManifest({
 })
 const targetManifest = makeManifest('target')
 const baselineManifest = makeManifest('baseline')
+const targetCapsule = createDraftCapsule({
+  source: targetManifest.source,
+  state: { brandProfile: 3, layout: [], slug: 'inicio', title: 'Inicio' },
+})
 
 describe('restore plan service', () => {
   it('creates a plan from one release and a verified current baseline', async () => {
@@ -21,7 +26,8 @@ describe('restore plan service', () => {
     const payload = {
       create,
       findByID: vi.fn(async ({ collection, id }) => {
-        if (collection === 'releases') return { id: 44, previewSnapshot: 10 }
+        if (collection === 'releases') return { draftSnapshot: 11, id: 44, previewSnapshot: 10 }
+        if (collection === 'draft-snapshots') return { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
         if (id === 10) return { id: 10, manifest: targetManifest, manifestHash: targetManifest.hash }
         return { id: 12, manifest: baselineManifest, manifestHash: baselineManifest.hash }
       }),
@@ -39,6 +45,8 @@ describe('restore plan service', () => {
         baselineHash: baselineManifest.hash,
         release: 44,
         targetHash: targetManifest.hash,
+        targetCapsuleHash: targetCapsule.hash,
+        targetDraftSnapshot: 11,
         targetPage: '7',
         targetSnapshot: 10,
       }),
@@ -59,7 +67,9 @@ describe('restore plan service', () => {
     const payload = {
       create: vi.fn(),
       findByID: vi.fn(async ({ collection, id }) => collection === 'releases'
-        ? { id: 44, previewSnapshot: 10 }
+        ? { draftSnapshot: 11, id: 44, previewSnapshot: 10 }
+        : collection === 'draft-snapshots'
+          ? { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
         : id === 10
           ? { id: 10, manifest: targetManifest, manifestHash: targetManifest.hash }
           : { id: 12, manifest: other, manifestHash: other.hash }),

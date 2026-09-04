@@ -10,6 +10,7 @@ const fieldNamed = (name: string): Field | undefined =>
 
 const validRelease = {
   changeSummary: 'Checkpoint previo al editor modular',
+  draftSnapshot: 5,
   gitCommit: '2f836c6548b7abdc6ab45e7b771095cffb68e511',
   name: 'Portfolio 2026-09-04',
   previewSnapshot: 4,
@@ -45,6 +46,11 @@ describe('Releases collection', () => {
     expect(fieldNamed('previewSnapshot')).toMatchObject({
       type: 'relationship',
       relationTo: 'preview-snapshots',
+      required: true,
+    })
+    expect(fieldNamed('draftSnapshot')).toMatchObject({
+      type: 'relationship',
+      relationTo: 'draft-snapshots',
       required: true,
     })
     expect(fieldNamed('quality')).toMatchObject({ type: 'array', required: true })

@@ -10,6 +10,8 @@ const base = {
   confirmation: 'PREPARAR RESTAURACIÓN',
   release: 44,
   targetHash: `sha256:${'b'.repeat(64)}`,
+  targetCapsuleHash: `sha256:${'d'.repeat(64)}`,
+  targetDraftSnapshot: 11,
   targetPage: 7,
   targetSnapshot: 10,
 }

@@ -68,6 +68,9 @@ surface without changing the public portfolio:
   It binds an immutable release target to a verified current baseline, and a
   second fresh snapshot must still match that baseline. Plans are owner-readable
   and immutable after confirmation; no plan can execute a restore in this phase.
+- **Draft Snapshots** contains a canonical, hashed recovery capsule for the
+  page's title, slug, brand assignment/overrides, and block layout. It never
+  stores published state or arbitrary document fields, and is immutable.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the
@@ -301,6 +304,7 @@ Content-Type: application/json
 {
   "name": "Checkpoint API owner",
   "changeSummary": "Endpoints owner revisados.",
+  "draftSnapshot": 13,
   "gitCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "previewSnapshot": 12,
   "quality": [
@@ -321,6 +325,22 @@ evidence fields, re-computes the snapshot manifest hash, creates the immutable
 release record, and audits the registration. It records a restorable reference;
 it does not execute a restore. Restoration remains unavailable until it has its
 own preview, confirmation, conflict, and rollback controls.
+
+Before registering a restorable release, create both snapshots from the same
+unchanged page draft:
+
+```http
+POST /api/owner/draft-snapshots
+Content-Type: application/json
+
+{ "pageId": 7, "version": "current-draft" }
+```
+
+The draft endpoint uses the same authenticated, 4 KiB request boundary as the
+visual preview endpoint. Its capsule contains only the registered editorial
+state and has its own deterministic SHA-256 hash. Add the returned relationship
+as `draftSnapshot` when registering the release; the server rejects visual and
+restorable snapshots whose page or source revision differs.
 
 ## Non-destructive restore planning
 

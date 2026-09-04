@@ -81,6 +81,8 @@ export const RestorePlans: CollectionConfig = {
     { name: 'targetPage', type: 'relationship', relationTo: 'pages', required: true, admin: { readOnly: true } },
     { name: 'targetSnapshot', type: 'relationship', relationTo: 'preview-snapshots', required: true, admin: { readOnly: true } },
     { name: 'targetHash', type: 'text', required: true, admin: { readOnly: true } },
+    { name: 'targetDraftSnapshot', type: 'relationship', relationTo: 'draft-snapshots', required: true, admin: { readOnly: true } },
+    { name: 'targetCapsuleHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'baselineSnapshot', type: 'relationship', relationTo: 'preview-snapshots', required: true, admin: { readOnly: true } },
     { name: 'baselineHash', type: 'text', required: true, admin: { readOnly: true } },
     {

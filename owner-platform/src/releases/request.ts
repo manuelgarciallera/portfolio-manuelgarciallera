@@ -3,7 +3,7 @@ import { APIError } from 'payload'
 import { isOwner } from '../access/owner'
 
 const MAX_REQUEST_BYTES = 16 * 1_024
-const RELEASE_REQUEST_FIELDS = ['changeSummary', 'gitCommit', 'name', 'previewSnapshot', 'quality'] as const
+const RELEASE_REQUEST_FIELDS = ['changeSummary', 'draftSnapshot', 'gitCommit', 'name', 'previewSnapshot', 'quality'] as const
 class RequestTooLarge extends Error {}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

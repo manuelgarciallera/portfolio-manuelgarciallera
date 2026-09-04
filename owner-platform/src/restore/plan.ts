@@ -6,6 +6,8 @@ const CREATE_FIELDS = new Set([
   'confirmation',
   'release',
   'targetHash',
+  'targetCapsuleHash',
+  'targetDraftSnapshot',
   'targetPage',
   'targetSnapshot',
 ])
@@ -48,6 +50,8 @@ export const createRestorePlanData = (input: unknown, actor: { id?: unknown }) =
     release: relation(input.release, 'La versión'),
     status: 'ready' as const,
     targetHash: hash(input.targetHash, 'El hash objetivo'),
+    targetCapsuleHash: hash(input.targetCapsuleHash, 'El hash de la cápsula objetivo'),
+    targetDraftSnapshot: relation(input.targetDraftSnapshot, 'El snapshot de borrador objetivo'),
     targetPage: relation(input.targetPage, 'La página'),
     targetSnapshot: relation(input.targetSnapshot, 'El snapshot objetivo'),
   }

@@ -66,6 +66,12 @@ then confirms it against a newly generated snapshot. A changed page produces a
 conflict record instead of confirmation. This phase intentionally records only
 the plan and its two confirmations; it cannot execute a restore.
 
+Draft Snapshots is the restorable companion to visual Preview Snapshots.
+`POST /api/owner/draft-snapshots` captures a canonical, immutable, hashed copy
+of the page's whitelisted draft fields. It deliberately excludes publication
+state, credentials, server metadata, and unregistered fields. New release
+records bind both snapshot types from the exact same page revision.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

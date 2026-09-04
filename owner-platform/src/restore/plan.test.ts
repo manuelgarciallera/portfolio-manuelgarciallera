@@ -9,6 +9,8 @@ const input = {
   confirmation: 'PREPARAR RESTAURACIÓN',
   release: 44,
   targetHash: `sha256:${'b'.repeat(64)}`,
+  targetCapsuleHash: `sha256:${'d'.repeat(64)}`,
+  targetDraftSnapshot: 11,
   targetPage: 7,
   targetSnapshot: 10,
 }
@@ -22,6 +24,8 @@ describe('restore plan contract', () => {
       release: 44,
       status: 'ready',
       targetHash: input.targetHash,
+      targetCapsuleHash: input.targetCapsuleHash,
+      targetDraftSnapshot: 11,
       targetPage: 7,
       targetSnapshot: 10,
     })

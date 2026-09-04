@@ -79,6 +79,7 @@ export interface Config {
     'audit-events': AuditEvent;
     'assistance-proposals': AssistanceProposal;
     'restore-plans': RestorePlan;
+    'draft-snapshots': DraftSnapshot;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +99,7 @@ export interface Config {
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'assistance-proposals': AssistanceProposalsSelect<false> | AssistanceProposalsSelect<true>;
     'restore-plans': RestorePlansSelect<false> | RestorePlansSelect<true>;
+    'draft-snapshots': DraftSnapshotsSelect<false> | DraftSnapshotsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -521,6 +523,7 @@ export interface Release {
   changeSummary: string;
   gitCommit: string;
   previewSnapshot: number | PreviewSnapshot;
+  draftSnapshot: number | DraftSnapshot;
   quality: {
     viewport: 'desktop' | 'mobile';
     performance: number;
@@ -530,6 +533,29 @@ export interface Release {
     measuredAt: string;
     id?: string | null;
   }[];
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "draft-snapshots".
+ */
+export interface DraftSnapshot {
+  id: number;
+  schemaVersion: number;
+  sourceDocumentId: string;
+  sourceVersionId: string;
+  capsule:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  capsuleHash: string;
   createdBy: number | User;
   updatedAt: string;
   createdAt: string;
@@ -594,6 +620,8 @@ export interface RestorePlan {
   targetPage: number | Page;
   targetSnapshot: number | PreviewSnapshot;
   targetHash: string;
+  targetDraftSnapshot: number | DraftSnapshot;
+  targetCapsuleHash: string;
   baselineSnapshot: number | PreviewSnapshot;
   baselineHash: string;
   status: 'ready' | 'confirmed' | 'conflict';
@@ -676,6 +704,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'restore-plans';
         value: number | RestorePlan;
+      } | null)
+    | ({
+        relationTo: 'draft-snapshots';
+        value: number | DraftSnapshot;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1039,6 +1071,7 @@ export interface ReleasesSelect<T extends boolean = true> {
   changeSummary?: T;
   gitCommit?: T;
   previewSnapshot?: T;
+  draftSnapshot?: T;
   quality?:
     | T
     | {
@@ -1095,6 +1128,8 @@ export interface RestorePlansSelect<T extends boolean = true> {
   targetPage?: T;
   targetSnapshot?: T;
   targetHash?: T;
+  targetDraftSnapshot?: T;
+  targetCapsuleHash?: T;
   baselineSnapshot?: T;
   baselineHash?: T;
   status?: T;
@@ -1103,6 +1138,20 @@ export interface RestorePlansSelect<T extends boolean = true> {
   conflictHash?: T;
   confirmedBy?: T;
   confirmedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "draft-snapshots_select".
+ */
+export interface DraftSnapshotsSelect<T extends boolean = true> {
+  schemaVersion?: T;
+  sourceDocumentId?: T;
+  sourceVersionId?: T;
+  capsule?: T;
+  capsuleHash?: T;
+  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

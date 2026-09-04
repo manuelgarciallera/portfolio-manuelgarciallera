@@ -32,4 +32,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('restore-plans')
   })
+
+  it('registers immutable restorable draft snapshots', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('draft-snapshots')
+  })
 })
