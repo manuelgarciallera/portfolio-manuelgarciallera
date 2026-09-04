@@ -22,7 +22,14 @@ const relationId = (value: unknown): number | string | undefined => {
 const lexicalKeys = new Set(['type', 'version', 'direction', 'format', 'indent', 'text', 'detail', 'mode', 'tag', 'listType', 'start', 'language'])
 const safeURL = (value: unknown): string => {
   if (typeof value !== 'string' || /[\u0000-\u001F\u007F]/.test(value)) throw new APIError('URL editorial no válida.', 400)
-  if (value.startsWith('/') || value.startsWith('#')) return value
+  if (value.includes('\\') || value.startsWith('//')) throw new APIError('URL editorial no válida.', 400)
+  if (/^\/(?!\/)/.test(value)) {
+    try {
+      if (decodeURIComponent(value).includes('\\')) throw new Error('encoded backslash')
+      return value
+    } catch { throw new APIError('URL editorial no válida.', 400) }
+  }
+  if (value.startsWith('#')) return value
   try {
     const protocol = new URL(value).protocol
     if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return value
@@ -58,6 +65,14 @@ const projectLexical = (value: unknown, mediaIds: Array<number | string>): unkno
     if (!relationTo || !allowed.includes(relationTo) || value === undefined) throw new APIError('Relación editorial no válida.', 400)
     output.relationTo = relationTo
     output.value = String(value)
+    if (nodeType === 'upload') {
+      if (typeof source.id !== 'string' || source.id.trim() === '') throw new APIError('El nodo Upload necesita un id válido.', 400)
+      record(source.fields)
+      output.id = source.id
+      // No upload subfields are configured in this editor. An explicit empty object
+      // is the canonical, rehydratable shape and prevents arbitrary field storage.
+      output.fields = {}
+    }
     if (relationTo === 'media') mediaIds.push(value)
   }
   return defined(output)
