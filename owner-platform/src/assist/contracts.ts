@@ -38,6 +38,25 @@ const assertSafeValue = (value: unknown, depth = 0, ancestors = new Set<object>(
   for (const [key, child] of Object.entries(value)) { if (blockedKey.test(key)) throw new TypeError(`Clave ${key} no permitida.`); assertSafeValue(child, depth + 1, next) }
 }
 const deepFreeze = <T>(value: T): T => { if (value && typeof value === 'object') { Object.freeze(value); for (const child of Object.values(value)) deepFreeze(child) }; return value }
+function assertDataArray(value: unknown, label: string): asserts value is unknown[] {
+  if (!Array.isArray(value)) throw new TypeError(`${label} debe ser una lista.`)
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value)))
+    if (key !== 'length' && !Object.hasOwn(descriptor, 'value')) throw new TypeError(`${label} solo admite datos planos, no getters.`)
+}
+
+const assertContext = (context: StudioPatchContext): void => {
+  assertPlainDataRecord(context, 'El contexto', ['page', 'brand'])
+  assertPlainDataRecord(context.page, 'La página del contexto', ['title', 'layout'])
+  assertPlainDataRecord(context.brand, 'La marca del contexto', ['colors', 'usageWeights', 'motion'])
+  if (typeof context.page.title !== 'string') throw new TypeError('El contexto proyectado no es válido.')
+  assertDataArray(context.page.layout, 'El layout del contexto')
+  assertDataArray(context.brand.colors, 'Los colores del contexto')
+  assertDataArray(context.brand.usageWeights, 'Los porcentajes del contexto')
+  for (const block of context.page.layout) assertPlainDataRecord(block, 'El bloque del contexto')
+  for (const color of context.brand.colors) assertPlainDataRecord(color, 'El color del contexto', ['role', 'value'])
+  for (const weight of context.brand.usageWeights) assertPlainDataRecord(weight, 'El porcentaje del contexto', ['role', 'weight'])
+  assertPlainDataRecord(context.brand.motion, 'El movimiento del contexto')
+}
 
 const classifyPath = (path: string, context: StudioPatchContext): { capability: AssistCapability; required: boolean; kind: string; index?: number } => {
   if (path === '/page/title') return { capability: 'suggestCopy', required: true, kind: 'text' }
@@ -68,6 +87,7 @@ const assertTypedValue = (kind: string, value: unknown): void => {
 }
 
 export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySwitches, context: StudioPatchContext): StudioPatch => {
+  assertContext(context)
   assertPlainDataRecord(input, 'El patch', ['schemaVersion', 'capability', 'operations'])
   if (Object.keys(input).some((key) => !envelopeKeys.has(key))) throw new TypeError('El patch contiene una propiedad no permitida.')
   if (input.schemaVersion !== 1 || typeof input.capability !== 'string' || !capabilities.has(input.capability)) throw new TypeError('Versión o capacidad no permitida.')

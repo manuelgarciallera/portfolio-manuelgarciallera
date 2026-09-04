@@ -64,6 +64,13 @@ describe('StudioPatch validation against current Payload fields', () => {
     expect(() => validateStudioPatch({ ...proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), token: 'x' }, enabled, context)).toThrow(/propiedad/i)
   })
 
+  it('rejects prototype- or getter-backed Page/Brand context projections', () => {
+    const inherited = { ...context, page: Object.create({ title: 'Inicio', layout: [] }) }
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), enabled, inherited)).toThrow(/contexto|página/i)
+    const page = Object.defineProperty({ title: 'Inicio' }, 'layout', { enumerable: true, get: () => [] })
+    expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x' }]), enabled, { ...context, page } as StudioPatchContext)).toThrow(/datos planos/i)
+  })
+
   it('rejects executable, prototype, secret, and bounded-size abuse', () => {
     for (const value of [{ script: 'x' }, { accessToken: 'x' }, { constructor: 'x' }]) expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value }]), enabled, context)).toThrow()
     expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path: '/page/title', value: 'x'.repeat(4001) }]), enabled, context)).toThrow(/texto/i)
