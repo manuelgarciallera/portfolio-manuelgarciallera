@@ -610,6 +610,15 @@ crop remain non-operational even if their switches are enabled. Apply,
 publish, deploy, and model-provider configuration are all reported as false;
 the status route cannot activate any of them.
 
+`GET /api/owner/media/health` is included in the dashboard overview and can be
+consumed independently by the future media workspace. It uses owner-scoped
+database counts for draft/published Media and Media Placements, then reports
+missing alternative text, dimensions, MIME type, placement assets, and source
+files over 5 MiB. Counts are checked against their inventory totals so corrupt
+or impossible results fail closed. The endpoint does not load binary data,
+generate derivatives, change crop recipes, or optimize originals; the 5 MiB
+threshold is a review signal rather than an automatic transformation.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no

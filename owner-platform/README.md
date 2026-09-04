@@ -103,6 +103,11 @@ assistant capability switch with its effective operational support. Tokens are
 never returned, and apply, publish, deploy, and model-provider readiness remain
 explicitly false until separately implemented and reviewed.
 
+`GET /api/owner/media/health` supplies an owner-only media inventory: draft and
+published originals and placement recipes, plus bounded counts for missing
+accessibility/technical metadata, missing placement assets, and originals over
+5 MiB. It reads counts only and never downloads, rewrites, or optimizes media.
+
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.
