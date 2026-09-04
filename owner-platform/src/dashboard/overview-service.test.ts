@@ -1,0 +1,31 @@
+import { APIError } from 'payload'
+import { describe, expect, it, vi } from 'vitest'
+
+import { getOwnerDashboardOverview } from './overview-service'
+
+const owner = { id: 1, collection: 'users', role: 'owner' }
+
+describe('getOwnerDashboardOverview', () => {
+  it('loads the three owner dashboard domains in parallel', async () => {
+    const content = vi.fn(async () => ({ issueCount: 2 }))
+    const releases = vi.fn(async () => ({ count: 3, versions: [] }))
+    const analytics = vi.fn(async () => ({ traffic: { visitors: 10 } }))
+    const overview = await getOwnerDashboardOverview({ analytics, content, releases, user: owner })
+    expect(overview).toEqual({ analytics: { available: true, data: { traffic: { visitors: 10 } } }, content: { issueCount: 2 }, releases: { count: 3, versions: [] } })
+    expect(content).toHaveBeenCalledWith(owner)
+    expect(releases).toHaveBeenCalledWith(owner)
+    expect(analytics).toHaveBeenCalledWith(owner)
+  })
+
+  it('represents absent analytics without hiding integrity failures', async () => {
+    const base = { content: async () => ({}), releases: async () => ({}) }
+    await expect(getOwnerDashboardOverview({ ...base, analytics: async () => { throw new APIError('No hay analítica disponible.', 404) }, user: owner })).resolves.toMatchObject({ analytics: { available: false, data: null } })
+    await expect(getOwnerDashboardOverview({ ...base, analytics: async () => { throw new APIError('Hash inválido.', 409) }, user: owner })).rejects.toThrow(/hash/i)
+  })
+
+  it('rejects anonymous access before loading dashboard data', async () => {
+    const content = vi.fn()
+    await expect(getOwnerDashboardOverview({ analytics: vi.fn(), content, releases: vi.fn(), user: null })).rejects.toThrow(/owner/i)
+    expect(content).not.toHaveBeenCalled()
+  })
+})
