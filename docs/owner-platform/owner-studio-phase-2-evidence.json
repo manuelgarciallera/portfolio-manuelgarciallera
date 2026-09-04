@@ -1,13 +1,12 @@
 {
   "schemaVersion": 2,
-  "verifiedGitHead": "656ecee5cbb0f349f499c2f94f9e41f2ff10e143",
+  "verifiedGitHead": "30407292da907c94ecd43d0f9eab713156f097c1",
   "isolationEvidencePath": "docs/owner-platform/isolation-evidence-2026-09-04.json",
-  "isolationEvidenceSha256": "bc269de60e5fbe723455c94cabf948f7fc1c63343cd396434ee3eb54ac642421",
-  "ownerTrackedFileCount": 61,
-  "ownerTrackedSurfaceSha256": "ccd43cd3a576c1e7afe4f5c54d7e55e4eaaa6b8c737453fe7da73d633d050730",
+  "isolationEvidenceSha256": "cfaf698b86d901e47e9057ff6b933474ccde36e43aa0af99e57a13c537e5d31f",
+  "ownerTrackedFileCount": 62,
+  "ownerTrackedSurfaceSha256": "bceeea72587bfb6a4ab48e07de73c7a528450279d3ed81ba68bcfb7a849a699c",
   "ownerTrackedSurfaceExclusions": [
     "owner-platform/src/payload-types.ts",
-    "owner-platform/src/app/(payload)/admin/importMap.js",
     "owner-platform/next-env.d.ts",
     "owner-platform/.data/",
     "owner-platform/.next/",
