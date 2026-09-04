@@ -403,3 +403,181 @@ La versión previa al editor se conserva en:
 - tag anotado: \`checkpoint/pre-editor-2026-09-04\`.
 
 Antes de crear el checkpoint se verificaron estructura, responsive, lint, TypeScript, build y 108 pruebas unitarias. La consulta remota de \`npm audit\` no respondió y se interrumpió; debe repetirse con conectividad estable.
+
+## 16. Ampliación — diseño atomizado, editor visual y librerías
+
+### Decisión metodológica
+
+Atomic Design es útil como modelo mental, no como una taxonomía rígida de carpetas. Brad Frost define átomos, moléculas, organismos, plantillas y páginas como etapas concurrentes, no como un proceso lineal. Para este producto emplearemos nombres menos ambiguos:
+
+\`\`\`text
+foundations
+├─ tokens
+├─ primitives
+├─ components
+├─ blocks
+├─ templates
+└─ pages
+\`\`\`
+
+- **Tokens:** color, tipografía, espacio, radios, capas y movimiento.
+- **Primitives:** elementos accesibles sin identidad editorial compleja.
+- **Components:** unidades reutilizables con comportamiento.
+- **Blocks:** secciones editables completas y tipadas.
+- **Templates:** reglas de composición por tipo de página.
+- **Pages:** instancias con contenido real.
+
+No se reorganizará el frontend existente solo para adoptar nombres nuevos. Esta arquitectura se aplicará a los límites nuevos y se irá extrayendo únicamente cuando aporte reutilización o seguridad.
+
+### Editor visual seleccionado
+
+**Puck** es la mejor capa de composición visual para una fase posterior:
+
+- editor React embebible y drag-and-drop;
+- licencia MIT apta para producto comercial;
+- JSON bajo nuestro control;
+- componentes registrados por nosotros;
+- render publicado compatible con Server Components;
+- permisos para insertar, editar, mover, duplicar o borrar;
+- sistema de plugins y overrides;
+- migraciones de datos y props.
+
+Puck no sustituye Payload. La distribución de responsabilidades será:
+
+\`\`\`text
+Payload
+  identidad, permisos, contenido, medios, versiones, publicación
+        ↓
+Puck Data + schemaVersion
+  árbol de composición visual validado
+        ↓
+React renderers propios
+  componentes, responsive, tokens y movimiento
+\`\`\`
+
+Puck permanece en una versión \`0.x\`, por lo que fijaremos versión, guardaremos fixtures históricos de JSON y exigiremos migraciones antes de retirar propiedades. La autorización real seguirá en Payload; ocultar una acción en la interfaz de Puck no es seguridad.
+
+### Texto enriquecido
+
+Se mantendrá **Lexical a través de Payload**. Añadir Tiptap, BlockNote o Plate duplicaría esquemas, serializadores y migraciones sin aportar valor al piloto:
+
+- Tiptap es excelente y muy activo, pero añade otro runtime/editor.
+- BlockNote ofrece una UX de bloques más terminada, pero introduce obligaciones MPL y paquetes avanzados comerciales/GPL.
+- Plate es muy potente, pero excesivo para el contenido editorial previsto.
+
+Lexical ya es la integración nativa de Payload, tiene licencia MIT, estado JSON, nodos personalizados y desarrollo activo. Puck se ocupará de la página; Lexical, del documento textual dentro de los bloques.
+
+### Opciones descartadas como motor principal
+
+| Opción | Razón |
+| --- | --- |
+| Craft.js | Riesgo de mantenimiento y demasiada UX fundamental por construir. |
+| GrapesJS | Excelente para HTML/CSS casi libre, pero su modelo de canvas/DOM permite demasiadas combinaciones y se alinea peor con React tipado. |
+| Builder.io | Experiencia madura, pero editor, datos y operación dependen del SaaS; encaja peor con la intención de producto propio. |
+| Editor propio desde cero | Repetiría selección, drag-and-drop, historial, overlays, accesibilidad y migraciones sin ventaja inicial. |
+
+### Catálogo, pruebas y gobernanza
+
+Adoptar ahora:
+
+- **Storybook**, ya presente, como catálogo ejecutable de componentes y bloques.
+- **Vitest**, ya presente, para reglas, serialización y validadores.
+- **Playwright**, ya presente, para flujos y regresión visual autocontenida.
+- **axe-core para Playwright** para problemas de accesibilidad automatizables.
+- **Dependabot semanal**, agrupando actualizaciones para evitar ruido.
+
+Posponer:
+
+- **Chromatic** hasta necesitar revisión visual cloud, equipo o navegadores múltiples.
+- **Changesets** hasta publicar paquetes reutilizables.
+- **Turborepo** hasta que existan al menos dos apps o paquetes con pipelines compartidos.
+- **Registry de componentes** hasta distribuir bloques o templates a instalaciones externas.
+- **Renovate** hasta que Dependabot resulte insuficiente.
+
+Las capturas de Playwright deben generarse en un entorno CI fijado; las diferencias de sistema operativo, fuentes o navegador pueden alterar los píxeles aunque el código sea idéntico.
+
+### Movimiento
+
+Se conservarán las herramientas actuales —GSAP, Framer Motion y Lenis— y se construirá una capa semántica encima. Añadir otra librería de animación aumentaría el bundle y la superficie de inconsistencias. El contrato de movimiento traducirá presets del editor a las implementaciones existentes.
+
+Cada preset tendrá:
+
+- versión;
+- valores permitidos;
+- presupuesto máximo de duración/stagger;
+- fallback reduced-motion;
+- compatibilidad por componente y viewport;
+- preview y fixture de regresión.
+
+### Automatizaciones y agentes
+
+Para el piloto no se introducirá todavía una plataforma distribuida compleja. Payload Jobs cubre tareas persistentes, reintentos y workflows sencillos; en serverless se ejecutará mediante endpoints autenticados llamados por un scheduler.
+
+Cuando el sistema pase a producto multi-tenant o aloje agentes que esperen aprobaciones:
+
+- **OpenAI Agents SDK JS** para el agente editorial;
+- **Codex App Server** para el agente de código;
+- **Temporal** para trabajos duraderos, reintentos y pausas humanas;
+- **Cedar** como policy engine de producto, u OPA si la política se extiende a infraestructura;
+- **MCP** como protocolo de integración, nunca como frontera de seguridad;
+- **OpenTelemetry y ledger propio** para trazas y auditoría.
+
+No se adoptará la plataforma OpenAI Evals como dependencia del producto: su cierre está anunciado para noviembre de 2026. Los datasets y evaluaciones serán propios, versionados y ejecutados en CI.
+
+### Stack aprobado para el piloto
+
+| Capa | Tecnología |
+| --- | --- |
+| Web pública | Next.js 16, React 19, TypeScript |
+| CMS/backend | Payload CMS 3 |
+| Datos | PostgreSQL |
+| Medios | S3/R2 o adaptador equivalente con objetos versionados |
+| Rich text | Payload Lexical |
+| Composición visual | Payload Blocks primero; Puck tras estabilizar el modelo |
+| Estilos públicos | CSS y tokens existentes; sin migración visual masiva |
+| Movimiento | GSAP, Framer Motion y Lenis existentes |
+| Catálogo | Storybook |
+| Unit/component | Vitest y Storybook Test |
+| E2E/visual | Playwright |
+| Accesibilidad automatizada | axe-core |
+| Analítica | Umami + Vercel Speed Insights mediante adapters |
+| Actualizaciones | Dependabot al inicio |
+| CI | GitHub Actions |
+
+### Stack reservado para la fase de producto
+
+| Necesidad | Tecnología candidata |
+| --- | --- |
+| Paquetes y apps múltiples | pnpm workspaces + Turborepo |
+| Versionado de paquetes | Changesets |
+| Distribución de bloques | registry propio compatible con manifiestos firmados |
+| Workflows de agente durables | Temporal |
+| Autorización de herramientas | Cedar/OPA |
+| Agente editorial | OpenAI Agents SDK |
+| Agente de código | Codex App Server en sandbox |
+| Integraciones | MCP con allowlist |
+| Observabilidad | OpenTelemetry |
+
+No cambiaremos de npm a pnpm ni convertiremos el repositorio en monorepo durante el núcleo editorial. Payload recomienda pnpm, pero el proyecto funciona actualmente con npm; una migración simultánea no mejora al visitante y dificulta aislar errores. Se reconsiderará al separar paquetes.
+
+## 17. Fuentes de la ampliación
+
+- [Atomic Design — metodología original](https://atomicdesign.bradfrost.com/chapter-2/)
+- [Puck — repositorio oficial](https://github.com/puckeditor/puck)
+- [Puck — React Server Components](https://puckeditor.com/docs/integrating-puck/server-components)
+- [Puck — migración de datos](https://puckeditor.com/docs/integrating-puck/data-migration)
+- [Puck — permisos](https://puckeditor.com/docs/api-reference/permissions)
+- [Lexical — repositorio oficial](https://github.com/facebook/lexical)
+- [Payload Website Template](https://github.com/payloadcms/payload/blob/main/templates/website/README.md)
+- [Payload Jobs Queue](https://payloadcms.com/docs/jobs-queue/overview)
+- [Storybook — component testing](https://storybook.js.org/docs/writing-tests/component-testing)
+- [Playwright — comparación visual](https://playwright.dev/docs/test-snapshots)
+- [Playwright — accesibilidad](https://playwright.dev/docs/accessibility-testing)
+- [dnd-kit — repositorio oficial](https://github.com/clauderic/dnd-kit)
+- [Changesets — repositorio oficial](https://github.com/changesets/changesets)
+- [Dependabot — actualizaciones](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependabot-version-updates)
+- [Turborepo — caché](https://turborepo.dev/docs/core-concepts/remote-caching)
+- [OpenAI Agents SDK JS](https://github.com/openai/openai-agents-js)
+- [Temporal — ejecución durable](https://docs.temporal.io/workflow-execution)
+- [Cedar — repositorio oficial](https://github.com/cedar-policy/cedar)
+- [MCP — especificación](https://github.com/modelcontextprotocol/modelcontextprotocol)
