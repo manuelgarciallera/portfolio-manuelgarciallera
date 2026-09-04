@@ -7,6 +7,10 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
+import { Articles } from './collections/Articles'
+import { Media } from './collections/Media'
+import { Pages } from './collections/Pages'
+import { Projects } from './collections/Projects'
 import { resolveRuntimeConfig } from './config/runtime'
 
 const filename = fileURLToPath(import.meta.url)
@@ -33,7 +37,7 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  collections: [Users],
+  collections: [Users, Media, Projects, Articles, Pages],
   db,
   editor: lexicalEditor(),
   graphQL: {
