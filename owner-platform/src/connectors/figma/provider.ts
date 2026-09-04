@@ -9,6 +9,8 @@ type Failure = Extract<FigmaDiscoveryResult, { ok: false }>
 type JsonResult = { ok: true; body: unknown } | { ok: false; failure: Failure }
 const candidateTypes = new Set<FigmaCandidateType>(['FRAME', 'COMPONENT', 'SECTION'])
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+const finiteOr = (value: number | undefined, fallback: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 const failure = (code: Failure['code'], stage: Stage, retryAfter?: string): Failure => ({
   ok: false, code,
@@ -97,11 +99,11 @@ export const createFigmaReadProvider = (config: Config): FigmaReadProvider => ({
     const token = config.auth.kind === 'personal-access-token' ? config.auth.token?.trim() : undefined
     if (!token) return { ok: false, code: 'disabled', message: 'Figma discovery is not configured.' }
     const fetchImpl = config.fetchImpl ?? fetch
-    const timeoutMs = Math.min(Math.max(config.timeoutMs ?? 8_000, 1), 30_000)
-    const cap = Math.min(Math.max(config.maxResponseBytes ?? 2 * 1024 * 1024, 1), 5 * 1024 * 1024)
-    const maxNodes = Math.min(Math.max(config.maxNodes ?? 2_000, 1), 5_000)
-    const maxCandidates = Math.min(Math.max(config.maxCandidates ?? 100, 1), 250)
-    const scale = Math.min(Math.max(config.previewScale ?? 1, 0.01), 4)
+    const timeoutMs = Math.min(Math.max(finiteOr(config.timeoutMs, 8_000), 1), 30_000)
+    const cap = Math.min(Math.max(finiteOr(config.maxResponseBytes, 2 * 1024 * 1024), 1), 5 * 1024 * 1024)
+    const maxNodes = Math.min(Math.max(finiteOr(config.maxNodes, 2_000), 1), 5_000)
+    const maxCandidates = Math.min(Math.max(finiteOr(config.maxCandidates, 100), 1), 250)
+    const scale = Math.min(Math.max(finiteOr(config.previewScale, 1), 0.01), 4)
     const discovered = await requestJson(discoveryUrl(source), token, fetchImpl, timeoutMs, cap, 'discovery')
     if (!discovered.ok) return discovered.failure
     if (!isRecord(discovered.body) || typeof discovered.body.name !== 'string') return failure('invalid_response', 'discovery')

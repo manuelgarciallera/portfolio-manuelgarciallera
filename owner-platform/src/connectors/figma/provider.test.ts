@@ -122,4 +122,29 @@ describe('createFigmaReadProvider', () => {
     const result = await createFigmaReadProvider({ auth, fetchImpl }).discover(fileSource)
     expect(result).toEqual({ ok: false, code: 'invalid_response', message: 'Figma returned an invalid response.', stage: 'previews' })
   })
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY])('defaults a non-finite preview scale: %s', async (previewScale) => {
+    const fetchImpl = vi.fn(async (input: string | URL | Request) => String(input).includes('/images/')
+      ? new Response(JSON.stringify({ images: { '1:1': null } }))
+      : new Response(JSON.stringify({ name: 'File', document: { id: '0:0', type: 'DOCUMENT', children: [{ id: '1:1', name: 'Hero', type: 'FRAME' }] } })))
+    await createFigmaReadProvider({ auth, fetchImpl, previewScale }).discover(fileSource)
+    expect(String(fetchImpl.mock.calls[1]?.[0])).toContain('scale=1')
+  })
+
+  it('defaults non-finite timeout and response-size settings', async () => {
+    const success = await createFigmaReadProvider({ auth, timeoutMs: Number.NaN, fetchImpl: async () => new Response(JSON.stringify({ name: 'File', document: { id: '0:0', type: 'DOCUMENT', children: [] } })) }).discover(fileSource)
+    expect(success).toMatchObject({ ok: true })
+    const oversized = await createFigmaReadProvider({ auth, maxResponseBytes: Number.NaN, fetchImpl: async () => new Response('{}', { headers: { 'content-length': String(3 * 1024 * 1024) } }) }).discover(fileSource)
+    expect(oversized).toMatchObject({ ok: false, code: 'response_too_large' })
+  })
+
+  it('defaults a non-finite candidate cap', async () => {
+    const children = Array.from({ length: 101 }, (_, index) => ({ id: `1:${index}`, name: `Frame ${index}`, type: 'FRAME' }))
+    const fetchImpl = async (input: string | URL | Request) => new Response(JSON.stringify(String(input).includes('/images/')
+      ? { images: Object.fromEntries(children.slice(0, 100).map(({ id }) => [id, null])) }
+      : { name: 'File', document: { id: '0:0', type: 'DOCUMENT', children } }))
+    const result = await createFigmaReadProvider({ auth, fetchImpl, maxCandidates: Number.POSITIVE_INFINITY }).discover(fileSource)
+    expect(result).toMatchObject({ ok: true, truncated: true })
+    if (result.ok) expect(result.candidates).toHaveLength(100)
+  })
 })
