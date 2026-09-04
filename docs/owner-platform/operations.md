@@ -550,6 +550,13 @@ This establishes the dashboard data contract without choosing a paid provider.
 A later read-only adapter for Vercel, Plausible, or another source can map into
 the same schema after separate credential, privacy, rate-limit, and cost review.
 
+The authenticated dashboard can consume `GET /api/owner/analytics/summary`.
+The service reloads at most the two most recent snapshots, verifies each stored
+hash, and returns current traffic, percentage change from the prior period,
+engagement, the ten most-viewed routes, and LCP/INP/CLS ratings. A zero or
+missing comparison denominator produces `null`, never a misleading infinity.
+No raw provider response, credential, or visitor identifier is returned.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no

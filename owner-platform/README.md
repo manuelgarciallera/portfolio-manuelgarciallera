@@ -69,6 +69,11 @@ traffic, engagement, and LCP/INP/CLS as immutable hashed evidence. The endpoint
 does not add visitor tracking, cookies, provider SDKs, or JavaScript to the
 public portfolio.
 
+`GET /api/owner/analytics/summary` supplies a dashboard-ready owner-only view
+from the two latest verified snapshots: traffic changes, engagement, ten top
+routes, and Core Web Vitals ratings. It fails closed on hash mismatch and does
+not expose raw provider credentials or visitor data.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
