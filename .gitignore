@@ -48,5 +48,8 @@ next-env.d.ts
 *storybook.log
 storybook-static
 
+# Superpowers task briefs and reports are local agent artifacts.
+/.superpowers/sdd/
+
 .vercel
 .env*

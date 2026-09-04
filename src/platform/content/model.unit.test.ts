@@ -67,6 +67,12 @@ describe('normalizeMediaPlacement', () => {
     expect(result.zoom).toBe(4)
     expect(result.breakpointOverrides).toEqual(input.breakpointOverrides)
     expect(result.breakpointOverrides).not.toBe(input.breakpointOverrides)
+    expect(result.breakpointOverrides?.mobile).not.toBe(input.breakpointOverrides?.mobile)
+    expect(result.frame).not.toBe(input.frame)
+    result.breakpointOverrides!.mobile!.focalX = 0.9
+    result.frame!.aspectRatio = 1
+    expect(input.breakpointOverrides?.mobile.focalX).toBe(0.1)
+    expect(input.frame?.aspectRatio).toBe(16 / 9)
     expect(input).toEqual(original)
   })
 
@@ -77,13 +83,40 @@ describe('normalizeMediaPlacement', () => {
   it('falls back to cover when an untrusted fit value is supplied', () => {
     expect(normalizeMediaPlacement({ assetId: 'asset-1', fit: 'stretch' }).fit).toBe('cover')
   })
+
+  it('rejects a null breakpoint override with a descriptive TypeError', () => {
+    const input = {
+      assetId: 'asset-1',
+      breakpointOverrides: { mobile: null },
+    } as unknown as Parameters<typeof normalizeMediaPlacement>[0]
+
+    expect(() => normalizeMediaPlacement(input)).toThrow(/breakpoint override.*object/i)
+  })
+
+  it('rejects malformed breakpoint override values', () => {
+    const input = {
+      assetId: 'asset-1',
+      breakpointOverrides: { mobile: { focalX: 'center' } },
+    } as unknown as Parameters<typeof normalizeMediaPlacement>[0]
+
+    expect(() => normalizeMediaPlacement(input)).toThrow(/focalX/i)
+  })
+
+  it('rejects a null breakpoint override collection with a TypeError', () => {
+    const input = {
+      assetId: 'asset-1',
+      breakpointOverrides: null,
+    } as unknown as Parameters<typeof normalizeMediaPlacement>[0]
+
+    expect(() => normalizeMediaPlacement(input)).toThrow(/breakpointOverrides.*object/i)
+  })
 })
 
 describe('assertPortfolioDocument', () => {
   it('returns a typed document for a valid modular document', () => {
     const document = validDocument()
 
-    expect(assertPortfolioDocument(document)).toBe(document)
+    expect(assertPortfolioDocument(document)).toStrictEqual(document)
   })
 
   it('accepts every supported block kind', () => {
@@ -99,12 +132,12 @@ describe('assertPortfolioDocument', () => {
       ),
     }
 
-    expect(assertPortfolioDocument(document)).toBe(document)
+    expect(assertPortfolioDocument(document)).toStrictEqual(document)
   })
 
   it('rejects an unsupported block kind', () => {
     const document = validDocument()
-    const block = document.blocks[0] as Record<string, unknown>
+    const block = document.blocks[0] as unknown as Record<string, unknown>
     block.kind = 'video'
 
     expect(() => assertPortfolioDocument(document)).toThrow(/block kind/i)
@@ -134,7 +167,7 @@ describe('assertPortfolioDocument', () => {
     ['non-numeric', '1'],
   ])('rejects %s block order', (_description, order) => {
     const document = validDocument()
-    const block = document.blocks[0] as Record<string, unknown>
+    const block = document.blocks[0] as unknown as Record<string, unknown>
     block.order = order
 
     expect(() => assertPortfolioDocument(document)).toThrow(/order/i)
@@ -148,5 +181,36 @@ describe('assertPortfolioDocument', () => {
     }
 
     expect(() => assertPortfolioDocument(document)).toThrow(/asset.*missing|missing.*asset/i)
+  })
+
+  it('rejects conflicting asset IDs on a media block and its placement', () => {
+    const document = validDocument()
+    document.assets.push({ id: 'asset-other', src: '/images/other.jpg' })
+    document.blocks[1] = {
+      ...document.blocks[1],
+      assetId: 'asset-cover',
+      placement: { ...placement, assetId: 'asset-other' },
+    }
+
+    expect(() => assertPortfolioDocument(document)).toThrow(/conflict|different.*asset/i)
+  })
+
+  it('rejects malformed nested placement data', () => {
+    const document = validDocument()
+    const block = document.blocks[1] as unknown as Record<string, unknown>
+    block.placement = { ...placement, focalX: 'left' }
+
+    expect(() => assertPortfolioDocument(document)).toThrow(/focalX/i)
+  })
+
+  it('rejects null nested breakpoint overrides', () => {
+    const document = validDocument()
+    const block = document.blocks[1] as unknown as Record<string, unknown>
+    block.placement = {
+      ...placement,
+      breakpointOverrides: { mobile: null },
+    }
+
+    expect(() => assertPortfolioDocument(document)).toThrow(/breakpoint override.*object/i)
   })
 })
