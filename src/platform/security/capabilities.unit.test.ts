@@ -296,6 +296,13 @@ describe('createAuditEvent', () => {
   })
 
   it.each([
+    { allowed: false, reason: 'allowed' as const },
+    { allowed: true, reason: 'approval_required' as const },
+  ])('rejects a contradictory authorization decision %j', (decision) => {
+    expect(() => createAuditEvent({ ...input, decision })).toThrow(TypeError)
+  })
+
+  it.each([
     { nested: { value: 'nope' } },
     { values: ['nope'] },
     { token: 'secret' },

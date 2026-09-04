@@ -206,7 +206,11 @@ const requireAuthorizationDecision = (value: unknown): AuthorizationDecision => 
   if (!Object.prototype.hasOwnProperty.call(value, 'reason')) {
     throw new TypeError('decision.reason is required.')
   }
-  return { allowed: value.allowed, reason: requireReasonCode(value.reason) }
+  const reason = requireReasonCode(value.reason)
+  if ((reason === 'allowed') !== value.allowed) {
+    throw new TypeError('decision.allowed and decision.reason are contradictory.')
+  }
+  return { allowed: value.allowed, reason }
 }
 
 const readCurrentTimestamp = (context: PolicyContext): { date: Date; iso: string } => {
