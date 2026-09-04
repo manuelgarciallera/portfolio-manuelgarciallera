@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict'
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import test from 'node:test'
+
+import { createOwnerStudioEvidence } from '../lib/owner-studio-evidence.mjs'
+
+const fixture = async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'owner-studio-evidence-'))
+  await mkdir(join(rootDir, 'owner-platform', 'src', 'brand'), { recursive: true })
+  await mkdir(join(rootDir, 'docs', 'owner-platform'), { recursive: true })
+  await writeFile(join(rootDir, 'owner-platform', 'src', 'brand', 'model.ts'), 'export const version = 1\n')
+  await writeFile(join(rootDir, 'owner-platform', 'package.json'), '{"name":"owner","private":true}\n')
+  await writeFile(join(rootDir, 'owner-platform', 'package-lock.json'), '{"lockfileVersion":3}\n')
+  await writeFile(join(rootDir, 'owner-platform', 'next.config.ts'), 'export default {}\n')
+  await writeFile(join(rootDir, 'owner-platform', 'tsconfig.json'), '{}\n')
+  const isolation = {
+    schemaVersion: 3,
+    passed: true,
+    verifiedGitHead: 'a'.repeat(40),
+    publicBoundary: { violations: [] },
+    publicBundle: { regressions: [], routeCount: 9 },
+  }
+  await writeFile(join(rootDir, 'docs', 'owner-platform', 'isolation-evidence-2026-09-04.json'), `${JSON.stringify(isolation)}\n`)
+  return rootDir
+}
+
+test('creates deterministic evidence bound to the verified git head and isolation record', async () => {
+  const rootDir = await fixture()
+  const first = await createOwnerStudioEvidence({ rootDir })
+  const second = await createOwnerStudioEvidence({ rootDir })
+  assert.deepEqual(first, second)
+  assert.equal(first.passed, true)
+  assert.equal(first.verifiedGitHead, 'a'.repeat(40))
+  assert.match(first.ownerStudioSourceSha256, /^[a-f0-9]{64}$/)
+  assert.match(first.ownerPackageLockSha256, /^[a-f0-9]{64}$/)
+  assert.match(first.isolationEvidenceSha256, /^[a-f0-9]{64}$/)
+})
+
+test('fails closed when isolation did not pass or is not bound to a commit', async () => {
+  const rootDir = await fixture()
+  const path = join(rootDir, 'docs', 'owner-platform', 'isolation-evidence-2026-09-04.json')
+  await writeFile(path, JSON.stringify({ schemaVersion: 3, passed: false, verifiedGitHead: 'bad' }))
+  await assert.rejects(createOwnerStudioEvidence({ rootDir }), /isolation evidence/i)
+})
+
+test('changes its source digest when an owner studio source file changes', async () => {
+  const rootDir = await fixture()
+  const before = await createOwnerStudioEvidence({ rootDir })
+  await writeFile(join(rootDir, 'owner-platform', 'src', 'brand', 'model.ts'), 'export const version = 2\n')
+  const after = await createOwnerStudioEvidence({ rootDir })
+  assert.notEqual(before.ownerStudioSourceSha256, after.ownerStudioSourceSha256)
+})

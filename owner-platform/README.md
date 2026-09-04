@@ -8,6 +8,25 @@ public portfolio still reads its existing checked-in content.
 The complete operational runbook is in
 [`../docs/owner-platform/operations.md`](../docs/owner-platform/operations.md).
 
+## Current owner surface
+
+The authenticated admin includes Brand Profiles (the first Brand Studio data
+surface), controlled brand assignment/overrides on Pages, the editorial
+collections, Media, and immutable Preview Snapshots. Open
+`http://localhost:3001/admin/collections/brand-profiles` after local sign-in to
+work with brand tokens; this is Payload's generated owner UI, not yet a custom
+visual canvas.
+
+`POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
+current draft. `POST /api/owner/figma/discover` performs bounded, read-only
+discovery when `FIGMA_PERSONAL_ACCESS_TOKEN` and `FIGMA_PLAN` are configured
+server-side. Figma rate limits are returned without automatic retries.
+
+AI and Linocube are disabled contracts only: they have no credentials, SDKs,
+network implementation, autonomous writes, or public publishing path. See the
+runbook for request examples, token handling, preview behavior, verification,
+and rollback.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

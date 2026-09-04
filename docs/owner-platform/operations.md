@@ -29,6 +29,26 @@ Open `http://localhost:3001/admin`. Local development uses the ignored
 is explicitly set. The development command binds to localhost and uses port
 3001 by default so it does not replace the public site.
 
+## What is visible in the owner app
+
+After signing in, Payload's admin navigation exposes the implemented editorial
+surface without changing the public portfolio:
+
+- **Brand Profiles** is the current Brand Studio. It stores semantic colors,
+  usage weights, typography, approved imagery/icons, voice notes, and bounded
+  motion settings. Publication validation requires unique roles, usage weights
+  totalling 100, supported contrast, and safe motion values.
+- **Pages** assigns one brand profile and permits only controlled page-level
+  overrides. Background and text roles continue to inherit from the profile.
+- **Projects**, **Articles**, **Pages**, and **Media** remain the editorial
+  collections described below. **Preview Snapshots** is a read-only owner list
+  of immutable manifests created through the dedicated endpoint.
+
+This phase is a functional data/control foundation, not a bespoke drag-and-drop
+canvas. The public renderer still reads its checked-in content, so edits in the
+owner app are intentionally invisible to visitors until a separately reviewed
+content bridge exists.
+
 Generated databases, uploads, `.env` files, build directories, and dependencies
 are ignored. Never commit them.
 
@@ -158,11 +178,60 @@ write methods, background refreshes, retries, or image imports. A Figma `429`
 is returned with its `Retry-After` value so the owner can decide when to retry,
 which is important for low-quota seats and plans.
 
+Create a scoped personal access token in Figma with file-content read access,
+store it only in `owner-platform/.env`, and restart the local owner app:
+
+```dotenv
+FIGMA_PERSONAL_ACCESS_TOKEN=replace-with-a-server-only-token
+FIGMA_PLAN=professional
+```
+
+Do not prefix either variable with `NEXT_PUBLIC_`. The discovery endpoint is
+`POST /api/owner/figma/discover`; it requires an authenticated owner session and
+a JSON body containing `source`, for example a Figma design/file URL. Without a
+token it fails closed. It performs no automatic retry: if Figma responds `429`,
+the endpoint preserves `Retry-After` and the operator should wait that interval
+before making another explicit request.
+
 Preview render URLs are metadata, not durable media: Figma documents that they
 expire after 30 days. They must be refreshed deliberately or imported through
 a future reviewed media workflow. Tokens, upstream bodies, and exception
 details never enter browser output, generated Payload types, or application
 logs.
+
+## Immutable local preview snapshots
+
+The endpoint `POST /api/owner/preview-snapshots` creates a canonical snapshot
+from the current draft of a page. It accepts only an authenticated owner session
+and this bounded body:
+
+```json
+{ "pageId": 7, "version": "current-draft" }
+```
+
+The server resolves the page's brand inheritance, projects only the registered
+block types and safe relationships, creates a deterministic SHA-256 manifest,
+and appends it to **Preview Snapshots**. Clients cannot submit their own
+manifest, hash, source revision, or executable content. Snapshots cannot be
+updated or deleted through Payload.
+
+This is currently the local preview artifact and audit boundary; it is not yet
+a public preview renderer. Inspect the returned snapshot or its owner-only
+collection record while the local app runs. Regenerate a snapshot after changing
+a page—an existing snapshot never mutates.
+
+## Disabled integrations
+
+- AI assistance is a provider-neutral validation contract only. There is no
+  model SDK, API key, chat UI, autonomous mutation, or publish action in this
+  phase. Capability switches default to denied and accepted patches are limited
+  to the documented Brand Studio allowlist.
+- Linocube is a validated manifest-consumer interface with a deliberately
+  disabled implementation. It makes no network request and cannot publish.
+
+Enabling either integration requires a separate threat model, credentials,
+cost controls, audit trail, preview/approval flow, and explicit deployment
+review. Do not represent these contracts as live integrations.
 
 ## Production prerequisites
 
@@ -181,6 +250,14 @@ logs.
 - A clean owner production-dependency audit. The current verification reports
   11 upstream/transitive advisories (1 low, 7 moderate, 3 high, 0 critical), so
   deployment remains blocked pending compatible fixes and a new full review.
+- The public package audit currently reports 1 transitive moderate advisory
+  (`fflate`). It is also a release blocker until a compatible, benchmarked fix
+  passes the checkpoint comparison. Do not use `npm audit fix --force`.
+
+These counts were produced from the committed lockfiles with
+`npm audit --omit=dev` during the 2026-09-04 verification. Registry advisories
+can change; rerun both audits before any release rather than treating these
+numbers as permanently current.
 
 ## Check, evidence, and rollback
 
@@ -193,6 +270,7 @@ npm run check:owner:clean
 npm run build:public-proof
 $env:PUBLIC_BUILD_DIR = (Resolve-Path 'owner-platform/.data/verification-artifacts/release-proof').Path
 node ./scripts/prove-owner-isolation.mjs --write=docs/owner-platform/isolation-evidence-2026-09-04.json
+node ./scripts/prove-owner-studio-phase2.mjs --write=docs/owner-platform/owner-studio-phase-2-evidence.json
 ```
 
 `check:owner-isolation` combines three fail-closed checks: no owner runtime
@@ -217,3 +295,9 @@ The latest committed verification record is
 [`isolation-evidence-2026-09-04.json`](./isolation-evidence-2026-09-04.json).
 It is evidence for this commit, not a substitute for rerunning checks after a
 change.
+
+The companion
+[`owner-studio-phase-2-evidence.json`](./owner-studio-phase-2-evidence.json)
+binds the complete owner source tree and owner lockfile to that passing public
+isolation record. Verify it with
+`node ./scripts/prove-owner-studio-phase2.mjs --verify=docs/owner-platform/owner-studio-phase-2-evidence.json`.
