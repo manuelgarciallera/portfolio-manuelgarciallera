@@ -79,6 +79,12 @@ draft/published totals plus bounded issue counts for missing SEO, brand
 assignment, and catalog-based technology stacks. It uses database counts only,
 does not return document bodies, and never mutates content.
 
+`GET /api/owner/releases/summary` provides the future versions dashboard with
+the latest 20 immutable releases, their date, concise change summary, full Git
+commit, visual/restorable snapshot references, and normalized desktop/mobile
+performance, usability, and accessibility scores. It is owner-only, read-only,
+and fails closed when a stored release cannot be compared reliably.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or

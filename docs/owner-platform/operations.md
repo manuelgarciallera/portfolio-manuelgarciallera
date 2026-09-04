@@ -564,6 +564,16 @@ and Projects not yet migrated to the reusable technology catalog. It requests
 database counts rather than document bodies, validates that totals are
 internally consistent, and performs no write or automatic correction.
 
+The versions panel can consume `GET /api/owner/releases/summary`. It returns at
+most the 20 latest owner-visible release records in reverse chronological
+order, including their date, change summary, full Git commit, visual preview
+snapshot, restorable draft snapshot, and normalized quality scores. Desktop
+and mobile measurements remain separate, while rounded averages make releases
+quickly comparable. Invalid commits, missing quality evidence, malformed
+relationships, or invalid measurements fail the complete response rather than
+showing a version that appears safer than its evidence. This endpoint is
+read-only: it does not prepare, confirm, or execute a restore plan.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
