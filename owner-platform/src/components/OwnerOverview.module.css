@@ -1,0 +1,27 @@
+.overview { margin-block: -1.5rem 2.5rem; }
+.heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
+.heading h2, .recent h3 { margin: 0; font-size: 1rem; }
+.heading span { color: var(--theme-elevation-600); font-size: 0.8rem; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.metrics li { border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; background: var(--theme-bg); }
+.metrics li[data-tone='attention'] { border-inline-start: 0.2rem solid var(--theme-warning-500); }
+.metrics li[data-tone='healthy'] { border-inline-start: 0.2rem solid var(--theme-success-500); }
+.metrics a { display: flex; align-items: baseline; gap: 0.65rem; padding: 0.85rem; color: inherit; text-decoration: none; }
+.metrics strong { font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.metrics span { color: var(--theme-elevation-700); }
+.metrics a:hover span, .recent a:hover span { text-decoration: underline; text-underline-offset: 0.2em; }
+.recent { margin-top: 1.25rem; }
+.recent > ul { margin: 0.55rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--theme-elevation-150); }
+.recent li { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; padding-block: 0.65rem; border-bottom: 1px solid var(--theme-elevation-150); }
+.recent a { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; color: inherit; text-decoration: none; }
+.recent a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent small, .recent time { color: var(--theme-elevation-600); font-size: 0.75rem; }
+.notice { margin-block: -1.5rem 2.5rem; padding: 0.8rem; color: var(--theme-elevation-700); border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; }
+.metrics a:focus-visible, .recent a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+
+@media (max-width: 64rem) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 34rem) {
+  .overview { margin-top: -0.75rem; }
+  .metrics { grid-template-columns: 1fr; }
+  .heading { align-items: flex-start; flex-direction: column; }
+}

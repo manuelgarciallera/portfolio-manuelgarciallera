@@ -67,6 +67,7 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.admin.components.beforeDashboard).toEqual([
       './components/OwnerSearch#OwnerSearch',
+      './components/OwnerOverview#OwnerOverview',
     ])
   })
 })

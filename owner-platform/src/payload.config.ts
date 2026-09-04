@@ -48,7 +48,10 @@ const db =
 export default buildConfig({
   admin: {
     components: {
-      beforeDashboard: ['./components/OwnerSearch#OwnerSearch'],
+      beforeDashboard: [
+        './components/OwnerSearch#OwnerSearch',
+        './components/OwnerOverview#OwnerOverview',
+      ],
     },
     importMap: {
       baseDir: path.resolve(dirname),
