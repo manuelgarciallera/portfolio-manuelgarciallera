@@ -9,6 +9,7 @@ export const Articles: CollectionConfig = {
     useAsTitle: 'title',
   },
   access: editorialAccess,
+  orderable: true,
   trash: true,
   versions: editorialVersions,
   fields: [

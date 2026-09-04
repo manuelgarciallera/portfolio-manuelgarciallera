@@ -22,6 +22,7 @@ import { DraftSnapshots } from './collections/DraftSnapshots'
 import { PublicationBundles } from './collections/PublicationBundles'
 import { PublicationReviews } from './collections/PublicationReviews'
 import { PublicationArtifacts } from './collections/PublicationArtifacts'
+import { Technologies } from './collections/Technologies'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
@@ -56,6 +57,7 @@ export default buildConfig({
     MediaPlacements,
     BrandProfiles,
     Projects,
+    Technologies,
     Articles,
     Pages,
     PreviewSnapshots,

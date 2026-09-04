@@ -34,6 +34,15 @@ export const Projects: CollectionConfig = {
         { name: 'icon', type: 'upload', relationTo: 'media' },
       ],
     },
+    {
+      name: 'technologyStack',
+      type: 'relationship',
+      relationTo: 'technologies' as never,
+      hasMany: true,
+      admin: {
+        description: 'Catálogo reutilizable y ordenado. El campo technologies anterior se conserva durante la migración.',
+      },
+    },
     { name: 'year', type: 'number' },
   ],
 }

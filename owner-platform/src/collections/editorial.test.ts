@@ -5,6 +5,7 @@ import { Articles } from './Articles'
 import { Media } from './Media'
 import { Pages, pageBlocks, validatePageBrandPublication } from './Pages'
 import { Projects } from './Projects'
+import { Technologies, validateOfficialTechnologyUrl, validateTechnologyColor } from './Technologies'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const accessArgs = (user: unknown) => ({ req: { user } }) as never
@@ -36,15 +37,16 @@ const expectEditorialPolicy = (collection: CollectionConfig) => {
 }
 
 describe('editorial collections', () => {
-  it.each([Projects, Articles, Pages, Media])(
+  it.each([Projects, Articles, Pages, Technologies, Media])(
     '$slug exposes only published documents and keeps bounded owner history',
     (collection) => expectEditorialPolicy(collection),
   )
 
-  it('makes projects and pages manually orderable', () => {
+  it('makes projects, articles, pages and the technology catalog manually orderable', () => {
     expect(Projects.orderable).toBe(true)
     expect(Pages.orderable).toBe(true)
-    expect(Articles.orderable).not.toBe(true)
+    expect(Articles.orderable).toBe(true)
+    expect(Technologies.orderable).toBe(true)
     expect(Media.orderable).not.toBe(true)
   })
 
@@ -70,6 +72,25 @@ describe('editorial collections', () => {
       type: 'relationship',
       relationTo: 'media-placements',
     })
+  })
+
+  it('adds a migration-safe reusable technology stack without removing legacy data', () => {
+    expect(fieldNamed(Projects, 'technologies')).toMatchObject({ type: 'array' })
+    expect(fieldNamed(Projects, 'technologyStack')).toMatchObject({
+      type: 'relationship', relationTo: 'technologies', hasMany: true,
+    })
+    expect(fieldNamed(Projects, 'technologyStack')).not.toHaveProperty('required', true)
+    expect(fieldNamed(Technologies, 'name')).toMatchObject({ type: 'text', required: true })
+    expect(fieldNamed(Technologies, 'icon')).toMatchObject({ type: 'upload', relationTo: 'media', required: true })
+  })
+
+  it('constrains technology brand metadata to safe values', () => {
+    expect(validateTechnologyColor('#61DAFB', {} as never)).toBe(true)
+    expect(validateTechnologyColor(undefined, {} as never)).toBe(true)
+    expect(validateTechnologyColor('red', {} as never)).toMatch(/hex/i)
+    expect(validateOfficialTechnologyUrl('https://react.dev/', {} as never)).toBe(true)
+    expect(validateOfficialTechnologyUrl('http://react.dev/', {} as never)).toMatch(/https/i)
+    expect(validateOfficialTechnologyUrl('javascript:alert(1)', {} as never)).toMatch(/https/i)
   })
 
   it('adds a migration-safe brand relationship and controlled page overrides', () => {

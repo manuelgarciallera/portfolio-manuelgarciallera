@@ -52,4 +52,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('publication-artifacts')
   })
+
+  it('registers the reusable technology catalog', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('technologies')
+  })
 })
