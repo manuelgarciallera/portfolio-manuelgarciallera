@@ -51,6 +51,10 @@ surface without changing the public portfolio:
   Git commit to a preview snapshot, a concise change summary, and bounded
   performance, usability, and accessibility measurements for desktop or
   mobile. It is owner-only and cannot be updated or deleted.
+- **Assistant Settings** contains five independently versioned proposal
+  switches. All default to disabled. Enabling one permits only schema-validated
+  suggestions; it never authorizes applying a patch, publishing content,
+  deploying code, or writing to production.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the

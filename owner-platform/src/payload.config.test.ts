@@ -12,4 +12,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('media-placements')
   })
+
+  it('registers owner-controlled assistant capability switches', async () => {
+    const config = await configPromise
+    expect(config.globals.map((global) => global.slug)).toContain('assistant-settings')
+  })
 })

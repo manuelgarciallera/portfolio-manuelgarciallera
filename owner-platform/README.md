@@ -37,6 +37,11 @@ Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
 or tablet overrides while preserving the uploaded original. Projects and page
 media blocks can reference these recipes without changing existing content.
 
+Assistant Settings exposes independent owner-only switches for copy, palette,
+layout, crop, and motion proposals. Every switch defaults to off. These settings
+grant proposal permission only: no assistant receives apply, publish, deploy, or
+production-write authority.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

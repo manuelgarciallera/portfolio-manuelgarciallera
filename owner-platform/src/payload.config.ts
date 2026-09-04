@@ -17,6 +17,7 @@ import { Releases } from './collections/Releases'
 import { MediaPlacements } from './collections/MediaPlacements'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
+import { AssistantSettings } from './globals/AssistantSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -53,6 +54,7 @@ export default buildConfig({
     PreviewSnapshots,
     Releases,
   ],
+  globals: [AssistantSettings],
   bodyParser: multipartBodyParser,
   db,
   editor: lexicalEditor(),

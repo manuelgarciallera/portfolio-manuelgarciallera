@@ -101,8 +101,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'assistant-settings': AssistantSetting;
+  };
+  globalsSelect: {
+    'assistant-settings': AssistantSettingsSelect<false> | AssistantSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -1000,6 +1004,36 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Permisos para generar propuestas. Aplicar, publicar y desplegar nunca se conceden al asistente.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assistant-settings".
+ */
+export interface AssistantSetting {
+  id: number;
+  suggestCopy?: boolean | null;
+  suggestPalette?: boolean | null;
+  suggestLayout?: boolean | null;
+  suggestCrop?: boolean | null;
+  suggestMotion?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assistant-settings_select".
+ */
+export interface AssistantSettingsSelect<T extends boolean = true> {
+  suggestCopy?: T;
+  suggestPalette?: T;
+  suggestLayout?: T;
+  suggestCrop?: T;
+  suggestMotion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
