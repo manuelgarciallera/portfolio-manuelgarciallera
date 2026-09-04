@@ -113,6 +113,12 @@ recently updated Projects, Pages, and Articles. It returns only navigation
 metadata—ID, title, slug, status, and timestamp—and is included in the owner
 dashboard without loading rich text, blocks, relationships, or media.
 
+`GET /api/owner/search?q=...` searches Projects, Pages, Articles, and Media for
+an authenticated owner. Queries are trimmed and limited to 2–80 characters;
+only one `q` parameter is accepted. Each collection returns at most ten
+lightweight admin destinations, with explicit field selection and no document
+bodies, blocks, relationships, media sizes, credentials, or binary assets.
+
 `GET /api/owner/system/readiness` reports the credential-free operational
 boundary: runtime mode, SQLite/PostgreSQL durability, secure-secret readiness,
 local media storage, disabled public bridge, and blocked deployment. It remains

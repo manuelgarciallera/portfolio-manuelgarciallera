@@ -627,6 +627,16 @@ slug, draft/published status, and normalized timestamp. Invalid navigation
 metadata fails closed; document bodies, modular blocks, SEO data, media, and
 relationships are never returned by this endpoint.
 
+`GET /api/owner/search?q=...` is the bounded global-search contract for the
+owner workspace. Authentication is resolved before the URL is parsed. The
+request accepts exactly one `q` parameter, trims it, and rejects values outside
+2–80 characters or any extra parameter. It searches title/slug in Projects,
+Pages, and Articles and alt/filename in Media, with owner-scoped access, depth
+zero, explicit selects, and a maximum of ten documents per collection. Results
+contain only collection, ID, label, optional slug/status, normalized update
+time, and a safe Payload admin path. Rich text, blocks, media variants, file
+contents, metadata, and secrets are not projected.
+
 `GET /api/owner/system/readiness` is included in the owner dashboard and makes
 the local/production distinction explicit without returning connection strings
 or secrets. It reports SQLite as non-durable, PostgreSQL as durable, and accepts
