@@ -187,6 +187,24 @@ describe('authorizeCapability', () => {
       ),
     ).toThrow(TypeError)
   })
+
+  it('rejects inherited connector credentials and accepts a null-prototype connector', () => {
+    const inherited = Object.assign(
+      Object.create({ accessToken: 'must-not-cross-the-boundary' }),
+      { id: 'figma', connected: true, enabled: true },
+    )
+    expect(() => authorizeCapability(context({ connector: inherited as never }))).toThrow(TypeError)
+
+    const nullPrototype = Object.assign(Object.create(null), {
+      id: 'figma',
+      connected: true,
+      enabled: true,
+    })
+    expect(authorizeCapability(context({ connector: nullPrototype as never }))).toEqual({
+      allowed: true,
+      reason: 'allowed',
+    })
+  })
 })
 
 describe('createAuditEvent', () => {
@@ -272,5 +290,16 @@ describe('createAuditEvent', () => {
     expect(() =>
       createAuditEvent({ ...input, connector: { id: 'figma', label: 'unexpected' } as never }),
     ).toThrow(TypeError)
+  })
+
+  it('rejects inherited connector credentials and accepts a null-prototype connector', () => {
+    const inherited = Object.assign(
+      Object.create({ accessToken: 'must-not-cross-the-boundary' }),
+      { id: 'figma' },
+    )
+    expect(() => createAuditEvent({ ...input, connector: inherited as never })).toThrow(TypeError)
+
+    const nullPrototype = Object.assign(Object.create(null), { id: 'figma' })
+    expect(createAuditEvent({ ...input, connector: nullPrototype as never }).connector).toBe('figma')
   })
 })

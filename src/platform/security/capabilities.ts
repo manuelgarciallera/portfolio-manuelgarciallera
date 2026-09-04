@@ -116,6 +116,10 @@ const assertExactOwnProperties = (
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  isRecord(value) &&
+  (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+
 const isNonBlankString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0
 
@@ -163,7 +167,7 @@ const validateBaseContext = (context: PolicyContext): { current: Date; connector
   if (!isRecord(context)) throw new TypeError('policy context must be an object.')
   requireActor(context.actor)
   const connector = context.connector
-  if (!isRecord(connector)) throw new TypeError('connector must be an object.')
+  if (!isPlainObject(connector)) throw new TypeError('connector must be a plain object.')
   assertExactOwnProperties(connector, CONNECTOR_PUBLIC_KEYS, 'connector')
   const connectorId = requireConnectorId(connector.id)
   requireCapability(context.capability)
@@ -270,6 +274,7 @@ export function createAuditEvent(input: AuditEventInput): AuditEvent {
   const actor = requireActor(input.actor)
   let connectorId: ConnectorId
   if (isRecord(input.connector)) {
+    if (!isPlainObject(input.connector)) throw new TypeError('audit connector must be a plain object.')
     assertExactOwnProperties(input.connector, CONNECTOR_PUBLIC_KEYS, 'audit connector')
     if ('connected' in input.connector && typeof input.connector.connected !== 'boolean') {
       throw new TypeError('audit connector.connected must be boolean.')
