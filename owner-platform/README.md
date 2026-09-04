@@ -58,6 +58,11 @@ image, and `noIndex`. Page draft snapshots include this group, so release and
 restore workflows preserve SEO changes. These fields remain invisible to the
 public site until the separately reviewed content bridge exists.
 
+Articles include an optional reorderable `articleLayout` with rich text,
+accessible media, galleries, quotes, bounded callouts, and related projects.
+The existing required `content` field is preserved for a gradual migration;
+the modular canvas offers no arbitrary HTML, CSS, JavaScript, embeds, or code.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
