@@ -42,4 +42,13 @@ describe('preview HTTP handler', () => {
     expect(missing.status).toBe(404)
     expect(await missing.text()).not.toMatch(/stack|postgres|secret/i)
   })
+
+  it('rejects declared and chunked oversized bodies with 413 before JSON parsing', async () => {
+    const authenticate = async () => ({ user: { id: 1, collection: 'users', role: 'owner' } })
+    const declared = await handlePreviewSnapshotRequest(new Request('https://owner.test/api', { method: 'POST', headers: { 'content-length': '5000' }, body: '{}' }), { authenticate, create: async () => ({}) })
+    expect(declared.status).toBe(413)
+    const stream = new ReadableStream({ start(controller) { controller.enqueue(new Uint8Array(3000)); controller.enqueue(new Uint8Array(3000)); controller.close() } })
+    const chunked = await handlePreviewSnapshotRequest(new Request('https://owner.test/api', { method: 'POST', body: stream, duplex: 'half' } as RequestInit), { authenticate, create: async () => ({}) })
+    expect(chunked.status).toBe(413)
+  })
 })

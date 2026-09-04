@@ -2,7 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { createPagePreviewSnapshot } from './service'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
-const lexical = { root: { type: 'root', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'text', version: 1, text: 'Hola', format: 0, style: 'color: red', apiToken: 'must-not-pass' }] }] } }
+const lexical = { root: { type: 'root', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, children: [
+  { type: 'text', version: 1, text: 'Hola', format: 1, style: 'color: red', apiToken: 'must-not-pass' },
+  { type: 'link', version: 1, fields: { linkType: 'custom', url: 'https://example.com', newTab: true }, children: [{ type: 'text', version: 1, text: 'Web', format: 0 }] },
+  { type: 'autolink', version: 1, fields: { url: '/casos' }, children: [{ type: 'text', version: 1, text: 'Casos', format: 0 }] },
+  { type: 'upload', version: 1, relationTo: 'media', value: 10 },
+  { type: 'relationship', version: 1, relationTo: 'projects', value: 4 },
+  { type: 'link', version: 1, fields: { linkType: 'internal', doc: { relationTo: 'pages', value: 8 } }, children: [{ type: 'text', version: 1, text: 'Interno', format: 0 }] },
+] }] } }
 const brand = {
   id: 3,
   colors: [
@@ -26,8 +33,20 @@ describe('page preview snapshot service', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', overrideAccess: true, req: expect.anything() }))
     expect((result.manifest as never as { source: unknown }).source).toEqual({ collection: 'pages', documentId: '7', versionId: 'current:2026-09-04T12:00:00Z' })
     expect(JSON.stringify(result.manifest)).not.toMatch(/(?:apiToken|customCSS|page-secret|media-secret)/)
-    expect(JSON.stringify(result.manifest)).toContain('color: red')
+    expect(JSON.stringify(result.manifest)).toContain('"style":""')
+    expect(JSON.stringify(result.manifest)).toContain('https://example.com')
+    expect(findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'media', id: 10 }))
+    expect(findByID.mock.calls.filter(([argument]) => argument.collection === 'media' && argument.id === 10)).toHaveLength(1)
   })
+
+  it.each(['javascript:alert(1)', 'data:text/html,<script>1</script>', 'https://example.com/\u0000bad'])(
+    'rejects unsafe authored URL %s',
+    async (url) => {
+      const page = { id: 9, title: 'Unsafe', slug: 'unsafe', updatedAt: 'now', brandProfile: 3, layout: [{ blockType: 'richText', content: { root: { type: 'root', version: 1, children: [{ type: 'link', version: 1, fields: { linkType: 'custom', url }, children: [] }] } } }] }
+      const findByID = vi.fn(async ({ collection }) => collection === 'pages' ? page : brand)
+      await expect(createPagePreviewSnapshot({ payload: { findByID, create: vi.fn() } as never, req: { user: owner } as never, pageId: 9 })).rejects.toThrow(/URL/i)
+    },
+  )
 
   it('rejects missing owner, missing brand and unsupported blocks', async () => {
     await expect(createPagePreviewSnapshot({ payload: {} as never, req: { user: null } as never, pageId: 7 })).rejects.toThrow(/owner/i)

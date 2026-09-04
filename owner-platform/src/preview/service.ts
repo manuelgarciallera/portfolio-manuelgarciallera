@@ -19,14 +19,47 @@ const relationId = (value: unknown): number | string | undefined => {
   }
 }
 
-const lexicalKeys = new Set(['type', 'version', 'children', 'direction', 'format', 'indent', 'text', 'detail', 'mode', 'style', 'tag', 'listType', 'start', 'value', 'language', 'url', 'target', 'rel', 'title'])
-const projectLexical = (value: unknown): unknown => {
-  if (Array.isArray(value)) return value.map(projectLexical)
+const lexicalKeys = new Set(['type', 'version', 'direction', 'format', 'indent', 'text', 'detail', 'mode', 'tag', 'listType', 'start', 'language'])
+const safeURL = (value: unknown): string => {
+  if (typeof value !== 'string' || /[\u0000-\u001F\u007F]/.test(value)) throw new APIError('URL editorial no válida.', 400)
+  if (value.startsWith('/') || value.startsWith('#')) return value
+  try {
+    const protocol = new URL(value).protocol
+    if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return value
+  } catch { /* handled below */ }
+  throw new APIError('URL editorial no permitida.', 400)
+}
+const projectLexical = (value: unknown, mediaIds: Array<number | string>): unknown => {
+  if (Array.isArray(value)) return value.map((entry) => projectLexical(entry, mediaIds))
   if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) return value
   const source = record(value)
-  if (Object.hasOwn(source, 'root')) return { root: projectLexical(source.root) }
+  if (Object.hasOwn(source, 'root')) return { root: projectLexical(source.root, mediaIds) }
   const output: Record<string, unknown> = {}
-  for (const key of lexicalKeys) if (Object.hasOwn(source, key)) output[key] = projectLexical(source[key])
+  for (const key of lexicalKeys) if (Object.hasOwn(source, key)) output[key] = projectLexical(source[key], mediaIds)
+  if (Object.hasOwn(source, 'style')) output.style = ''
+  if (Object.hasOwn(source, 'children')) output.children = projectLexical(source.children, mediaIds)
+  const nodeType = text(source.type)
+  if (nodeType === 'link' || nodeType === 'autolink') {
+    const fields = record(source.fields)
+    const linkType = text(fields.linkType) ?? (nodeType === 'autolink' ? 'custom' : undefined)
+    if (linkType === 'custom') output.fields = defined({ linkType, url: safeURL(fields.url), newTab: typeof fields.newTab === 'boolean' ? fields.newTab : undefined })
+    else if (linkType === 'internal') {
+      const doc = record(fields.doc)
+      const relationTo = text(doc.relationTo)
+      const value = relationId(doc.value)
+      if (!relationTo || !['pages', 'projects', 'articles'].includes(relationTo) || value === undefined) throw new APIError('Enlace interno no válido.', 400)
+      output.fields = { linkType, doc: { relationTo, value: String(value) }, ...(typeof fields.newTab === 'boolean' ? { newTab: fields.newTab } : {}) }
+    } else throw new APIError('Tipo de enlace no permitido.', 400)
+  }
+  if (nodeType === 'upload' || nodeType === 'relationship') {
+    const relationTo = text(source.relationTo)
+    const value = relationId(source.value)
+    const allowed = nodeType === 'upload' ? ['media'] : ['media', 'pages', 'projects', 'articles']
+    if (!relationTo || !allowed.includes(relationTo) || value === undefined) throw new APIError('Relación editorial no válida.', 400)
+    output.relationTo = relationTo
+    output.value = String(value)
+    if (relationTo === 'media') mediaIds.push(value)
+  }
   return defined(output)
 }
 
@@ -40,9 +73,9 @@ const projectLayout = (layout: unknown): { blocks: unknown[]; mediaIds: Array<nu
     if (blockType === 'hero') {
       const image = relationId(block.image)
       if (image !== undefined) mediaIds.push(image)
-      return defined({ ...base, eyebrow: text(block.eyebrow), heading: text(block.heading), body: block.body ? projectLexical(block.body) : undefined, image: image === undefined ? undefined : String(image) })
+      return defined({ ...base, eyebrow: text(block.eyebrow), heading: text(block.heading), body: block.body ? projectLexical(block.body, mediaIds) : undefined, image: image === undefined ? undefined : String(image) })
     }
-    if (blockType === 'richText') return { ...base, content: projectLexical(block.content) }
+    if (blockType === 'richText') return { ...base, content: projectLexical(block.content, mediaIds) }
     if (blockType === 'projectGrid') {
       const projects = Array.isArray(block.projects) ? block.projects.map(relationId).filter((id): id is number | string => id !== undefined).map(String) : []
       return defined({ ...base, heading: text(block.heading), projects })
