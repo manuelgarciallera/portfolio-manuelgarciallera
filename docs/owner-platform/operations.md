@@ -576,11 +576,18 @@ read-only: it does not prepare, confirm, or execute a restore plan.
 
 The future owner home can consume `GET /api/owner/dashboard` instead of
 coordinating the three read models in the browser. The server authenticates
-once and loads content health, release history, and verified analytics in
-parallel. A new installation with no analytics snapshot receives
+once and loads content health, release history, verified analytics, and recent
+audit activity in parallel. A new installation with no analytics snapshot receives
 `analytics.available: false`; malformed or hash-mismatched analytics still
 fails closed. This distinction permits a useful first-run dashboard without
 turning missing data into false zeroes or concealing integrity failures.
+
+`GET /api/owner/audit/activity` exposes the same bounded recent-activity feed
+independently. It loads no more than 20 owner-visible events without expanding
+relationships. The response deliberately excludes actor data and event
+metadata, returning only event ID, normalized action, outcome, subject, and
+timestamp. Invalid stored events fail the response rather than presenting a
+misleading audit trail; the endpoint never modifies the append-only ledger.
 
 ## Disabled integrations
 

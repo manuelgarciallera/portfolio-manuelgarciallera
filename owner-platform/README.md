@@ -87,9 +87,14 @@ and fails closed when a stored release cannot be compared reliably.
 
 `GET /api/owner/dashboard` is the bounded read model for the future owner home.
 It authenticates once and combines content health, release history, and the
-verified analytics summary. An empty analytics history is represented as an
-explicit unavailable state; integrity or authorization failures are never
-silently downgraded. The endpoint performs no editorial mutation.
+verified analytics summary plus recent audit activity. An empty analytics
+history is represented as an explicit unavailable state; integrity or
+authorization failures are never silently downgraded. The endpoint performs no
+editorial mutation.
+
+`GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
+audit events. Its dashboard projection includes only action, outcome, subject,
+and timestamp: actor records and workflow metadata are deliberately omitted.
 
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
