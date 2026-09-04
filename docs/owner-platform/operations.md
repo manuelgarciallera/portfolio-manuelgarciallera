@@ -57,6 +57,11 @@ surface without changing the public portfolio:
   blocks. Existing required rich text remains intact for migration. Media and
   gallery items require alternative text and may use reversible placements;
   no arbitrary HTML, CSS, JavaScript, embed, or code block is available.
+- **Projects**, **Articles**, and **Pages** share an optional SEO group with a
+  70-character title, 180-character description, credential-free HTTPS
+  canonical URL without fragments, Media social image, and `noIndex` switch.
+  Page recovery capsules include this data, so restore and release evidence do
+  not silently omit SEO. It is not consumed by the public renderer yet.
 - **Releases** is the append-only version ledger. Each record binds a complete
   Git commit to a preview snapshot, a concise change summary, and bounded
   performance, usability, and accessibility measurements for desktop or

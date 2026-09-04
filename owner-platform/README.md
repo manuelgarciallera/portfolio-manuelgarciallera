@@ -52,6 +52,12 @@ The existing rich-text `body` remains required and untouched during migration.
 Media blocks require alternative text and can reference reversible Media
 Placements; arbitrary HTML, CSS, JavaScript, embeds, and code are not accepted.
 
+Projects, Articles, and Pages share optional bounded SEO metadata: title,
+description, credential-free HTTPS canonical URL without fragments, social
+image, and `noIndex`. Page draft snapshots include this group, so release and
+restore workflows preserve SEO changes. These fields remain invisible to the
+public site until the separately reviewed content bridge exists.
+
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
