@@ -1,6 +1,6 @@
 import { gzipSync } from 'node:zlib'
-import { readdir, readFile } from 'node:fs/promises'
-import { join, relative, resolve, sep } from 'node:path'
+import { readdir, readFile, stat } from 'node:fs/promises'
+import { extname, join, relative, resolve, sep } from 'node:path'
 
 function toPosix(value) {
   return value.split(sep).join('/')
@@ -39,15 +39,13 @@ function routeFromManifest(manifestPath, appDir) {
   const relativePath = manifestRelativePath === 'page_client-reference-manifest.js'
     ? ''
     : manifestRelativePath.replace(/\/page_client-reference-manifest\.js$/, '')
-  return relativePath ? `/${relativePath}` : '/'
+  const visibleSegments = relativePath.split('/').filter((segment) => segment && !(segment.startsWith('(') && segment.endsWith(')')))
+  return visibleSegments.length ? `/${visibleSegments.join('/')}` : '/'
 }
 
 function isPublicRoute(route) {
   const segments = route.split('/').filter(Boolean)
-  return !segments.some((segment) => {
-    const normalized = segment.replace(/^\(@?/, '').replace(/^@/, '').replace(/\)$/, '')
-    return normalized === 'owner' || normalized === 'admin' || normalized.startsWith('_')
-  })
+  return !segments.some((segment) => segment === 'owner' || segment === 'admin' || segment.startsWith('_'))
 }
 
 function normalizeChunk(chunk) {
@@ -56,15 +54,22 @@ function normalizeChunk(chunk) {
 }
 
 function manifestChunks(manifest) {
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) throw new Error('client reference manifest must be an object')
+  if (!manifest.clientModules || typeof manifest.clientModules !== 'object' || Array.isArray(manifest.clientModules)) throw new Error('clientModules must be an object')
+  if (!manifest.entryJSFiles || typeof manifest.entryJSFiles !== 'object' || Array.isArray(manifest.entryJSFiles)) throw new Error('entryJSFiles must be an object')
   const chunks = new Set()
   for (const clientModule of Object.values(manifest.clientModules ?? {})) {
-    for (const chunk of clientModule.chunks ?? []) {
+    if (!clientModule || typeof clientModule !== 'object' || !Array.isArray(clientModule.chunks)) throw new Error('clientModules chunks must be an array')
+    if (!clientModule.chunks.every((chunk) => typeof chunk === 'string')) throw new Error('clientModules chunks must contain only strings')
+    for (const chunk of clientModule.chunks) {
       const normalized = normalizeChunk(chunk)
       if (normalized) chunks.add(normalized)
     }
   }
   for (const files of Object.values(manifest.entryJSFiles ?? {})) {
-    for (const file of files ?? []) {
+    if (!Array.isArray(files)) throw new Error('entryJSFiles chunks must be an array')
+    if (!files.every((file) => typeof file === 'string')) throw new Error('entryJSFiles chunks must contain only strings')
+    for (const file of files) {
       const normalized = normalizeChunk(file)
       if (normalized) chunks.add(normalized)
     }
@@ -76,12 +81,19 @@ export async function createBundleSnapshot({ buildDir = join(process.cwd(), '.ne
   const absoluteBuild = resolve(buildDir)
   const appDir = join(absoluteBuild, 'server', 'app')
   const manifests = (await findManifests(appDir)).sort()
-  const routes = {}
+  const routeFiles = new Map()
   for (const manifestPath of manifests) {
     const route = routeFromManifest(manifestPath, appDir)
     if (!isPublicRoute(route)) continue
     const manifest = parseManifest(await readFile(manifestPath, 'utf8'), manifestPath)
     const files = manifestChunks(manifest)
+    const accumulated = routeFiles.get(route) ?? new Set()
+    for (const file of files) accumulated.add(file)
+    routeFiles.set(route, accumulated)
+  }
+  const routes = {}
+  for (const [route, fileSet] of routeFiles) {
+    const files = [...fileSet].sort()
     let rawBytes = 0
     let gzipBytes = 0
     for (const file of files) {
@@ -103,8 +115,36 @@ export async function createBundleSnapshot({ buildDir = join(process.cwd(), '.ne
   }
 }
 
+function validateSnapshot(snapshot, label) {
+  const errors = []
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return [`${label} must be an object`]
+  if (snapshot.schemaVersion !== 1) errors.push(`${label} schemaVersion must be 1`)
+  if (!snapshot.tolerance || typeof snapshot.tolerance !== 'object' || Array.isArray(snapshot.tolerance)) {
+    errors.push(`${label} tolerance must be an object`)
+  } else {
+    if (!Number.isFinite(snapshot.tolerance.percent) || snapshot.tolerance.percent < 0) errors.push(`${label} tolerance.percent must be a finite nonnegative number`)
+    if (!Number.isFinite(snapshot.tolerance.bytes) || snapshot.tolerance.bytes < 0) errors.push(`${label} tolerance.bytes must be a finite nonnegative number`)
+  }
+  if (!snapshot.routes || typeof snapshot.routes !== 'object' || Array.isArray(snapshot.routes)) {
+    errors.push(`${label} routes must be an object`)
+    return errors
+  }
+  for (const [route, metrics] of Object.entries(snapshot.routes)) {
+    if (!metrics || typeof metrics !== 'object' || Array.isArray(metrics)) {
+      errors.push(`${label} route ${route} must be an object`)
+      continue
+    }
+    for (const metric of ['rawBytes', 'gzipBytes']) {
+      if (!Number.isFinite(metrics[metric]) || metrics[metric] < 0) errors.push(`${label} route ${route} ${metric} must be a finite nonnegative number`)
+    }
+    if (!Array.isArray(metrics.files) || !metrics.files.every((file) => typeof file === 'string')) errors.push(`${label} route ${route} files must be an array of strings`)
+  }
+  return errors
+}
+
 export function compareBundleSnapshot(current, baseline) {
-  if (baseline.schemaVersion !== 1) return [`unsupported baseline schema: ${baseline.schemaVersion}`]
+  const validationErrors = [...validateSnapshot(current, 'current'), ...validateSnapshot(baseline, 'baseline')]
+  if (validationErrors.length) return validationErrors
   const errors = []
   const baselineRoutes = Object.keys(baseline.routes).sort()
   const currentRoutes = Object.keys(current.routes).sort()
@@ -125,4 +165,41 @@ export function compareBundleSnapshot(current, baseline) {
     }
   }
   return errors
+}
+
+async function newestMtime(directory, filter) {
+  let newest = 0
+  let entries = []
+  try {
+    entries = await readdir(directory, { withFileTypes: true })
+  } catch {
+    return newest
+  }
+  for (const entry of entries) {
+    const fullPath = join(directory, entry.name)
+    if (entry.isDirectory()) newest = Math.max(newest, await newestMtime(fullPath, filter))
+    else if (filter(fullPath)) newest = Math.max(newest, (await stat(fullPath)).mtimeMs)
+  }
+  return newest
+}
+
+export async function assertFreshBuild({ rootDir = process.cwd(), buildDir = join(rootDir, '.next') } = {}) {
+  const absoluteRoot = resolve(rootDir)
+  const stampPath = join(resolve(buildDir), 'BUILD_ID')
+  let buildTime
+  try {
+    buildTime = (await stat(stampPath)).mtimeMs
+  } catch (error) {
+    throw new Error(`production build provenance is missing: ${stampPath}`, { cause: error })
+  }
+  const sourceExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.json'])
+  const relevantTimes = [
+    await newestMtime(join(absoluteRoot, 'src'), (file) => sourceExtensions.has(extname(file))),
+    await newestMtime(join(absoluteRoot, 'content'), () => true),
+    await newestMtime(join(absoluteRoot, 'public'), () => true),
+  ]
+  for (const file of ['package.json', 'package-lock.json', 'next.config.ts', 'postcss.config.mjs', 'tsconfig.json', '.env', '.env.local', '.env.production']) {
+    try { relevantTimes.push((await stat(join(absoluteRoot, file))).mtimeMs) } catch {}
+  }
+  if (Math.max(...relevantTimes) > buildTime) throw new Error('production build is stale: public source or configuration is newer than .next/BUILD_ID')
 }

@@ -1,0 +1,16 @@
+{
+  "packages": [
+    "@react-three/drei",
+    "@react-three/fiber",
+    "@splinetool/react-spline",
+    "framer-motion",
+    "gsap",
+    "lenis",
+    "next",
+    "react",
+    "simple-icons",
+    "tailwindcss",
+    "three",
+    "web-vitals"
+  ]
+}

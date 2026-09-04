@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { compareBundleSnapshot, createBundleSnapshot } from './lib/public-bundle.mjs'
+import { assertFreshBuild, compareBundleSnapshot, createBundleSnapshot } from './lib/public-bundle.mjs'
 
 const baselinePath = join(process.cwd(), 'scripts', 'public-bundle-baseline.json')
 let baseline
@@ -10,6 +10,7 @@ try {
   console.error(`Cannot read public bundle baseline: ${baselinePath}`)
   throw error
 }
+await assertFreshBuild()
 const current = await createBundleSnapshot()
 const errors = compareBundleSnapshot(current, baseline)
 if (errors.length) {

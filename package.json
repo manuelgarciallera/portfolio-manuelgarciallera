@@ -20,7 +20,7 @@
     "audit:security": "npm audit --omit=dev",
     "audit:lighthouse:desktop": "node ./scripts/lighthouse-audit.mjs desktop",
     "audit:lighthouse:mobile": "node ./scripts/lighthouse-audit.mjs mobile",
-    "check:all": "npm run check:encoding && npm run check:hero && npm run check:responsive && npm run lint && npm run typecheck && npm run build && npm run audit:security",
+    "check:all": "npm run test:public-guards && npm run check:public-boundary && npm run check:encoding && npm run check:hero && npm run check:responsive && npm run lint && npm run typecheck && npm run build && npm run check:public-bundle && npm run audit:security",
     "sync:preview": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-preview.ps1",
     "ship": "bash ./scripts/ship.sh",
     "storybook": "storybook dev -p 6006 --disable-telemetry",
