@@ -581,3 +581,88 @@ No cambiaremos de npm a pnpm ni convertiremos el repositorio en monorepo durante
 - [Temporal — ejecución durable](https://docs.temporal.io/workflow-execution)
 - [Cedar — repositorio oficial](https://github.com/cedar-policy/cedar)
 - [MCP — especificación](https://github.com/modelcontextprotocol/modelcontextprotocol)
+
+## 18. Restricción de coste, rendimiento y libertad creativa
+
+### Decisión
+
+El piloto tendrá un objetivo de **cero coste recurrente incremental**, pero no se presentará como una garantía perpetua. Un producto comercial, tráfico alto, retención larga, colaboración o IA intensiva acabarán generando costes de infraestructura. El diseño evitará costes fijos prematuros y permitirá sustituir proveedores.
+
+### Presupuesto inicial
+
+| Recurso | Estrategia del piloto | Coste incremental objetivo |
+| --- | --- | ---: |
+| Payload core | Autohospedado, MIT | 0 |
+| Puck core | OSS MIT; sin Puck Cloud | 0 |
+| Base de datos | Neon Free con scale-to-zero | 0 dentro de límites |
+| Medios | Cloudflare R2 Standard | 0 dentro de límites |
+| Analítica | Vercel incluido o Umami Hobby mediante adapter | 0 dentro de límites |
+| CI y actualizaciones | GitHub Actions/Dependabot | 0 dentro de límites |
+| IA | Desactivada por defecto; presupuesto explícito al activarla | variable |
+
+Payload y Puck ofrecen núcleos MIT gratuitos. Puck Cloud es un producto separado y de pago; no es necesario para el editor visual base. No incorporaremos dependencias cloud de Puck en el piloto.
+
+Neon Free ofrece actualmente 100 CU-horas mensuales y 0,5 GB por proyecto, con scale-to-zero. R2 Standard incluye 10 GB-mes, un millón de operaciones Class A, diez millones Class B y egress a Internet gratuito. Estos márgenes son razonables para un portfolio de bajo tráfico, pero deberán medirse.
+
+Vercel Hobby es gratuito, pero sus condiciones lo restringen a uso personal no comercial. El portfolio piloto puede mantenerse allí mientras siga siendo personal. Al vender el editor o utilizar el despliegue como servicio comercial será necesario Vercel Pro —actualmente desde 20 USD/mes— o migrar el runtime a otro proveedor.
+
+### Cómo impedir coste inesperado
+
+- Adaptadores para base de datos, objetos y analítica.
+- Límites de almacenamiento, uploads y transformaciones.
+- Dashboard de consumo y alertas al 50/75/90 %.
+- Hard limits cuando el proveedor lo permita.
+- Imágenes procesadas una vez y servidas desde caché/CDN.
+- Jobs agrupados y ejecutados fuera del request del visitante.
+- IA opt-in con techo diario/mensual, estimación previa y cancelación.
+- Sin proveedores comerciales como requisito del formato de contenido.
+- Exportación periódica de contenido y medios.
+
+### Cómo impedir peso público
+
+- Rutas y bundles administrativos separados.
+- Puck y Lexical cargados únicamente dentro del panel.
+- Ningún SDK de edición en las páginas públicas.
+- Render de bloques con Server Components cuando proceda.
+- Consultas CMS en build/revalidación o caché, no una consulta completa por visitante.
+- Importaciones dinámicas para componentes 3D y multimedia.
+- Presupuestos CI de JavaScript, imágenes, LCP, INP y CLS.
+- Comparación contra el checkpoint antes de cada migración.
+
+El árbol JSON de composición no obliga a enviar el editor al navegador público. El visitante recibe el resultado renderizado y solo el JavaScript interactivo que ya necesita cada componente.
+
+### Cómo preservar libertad creativa
+
+Habrá dos niveles complementarios:
+
+1. **Modo seguro del owner:** contenido, orden, variantes, tokens y movimiento dentro de contratos probados.
+2. **Bloques de autor:** componentes React completamente personalizados para composiciones singulares.
+
+Una sección experimental o artística no tendrá que reducirse a bloques genéricos. Se registra como 'CustomFeatureBlock', con sus propios campos y controles. El editor puede colocarla y configurarla; su implementación visual sigue teniendo libertad completa.
+
+Los tokens tampoco deben homogenizarlo todo. Tendremos tokens globales, tokens de tema/proyecto y excepciones encapsuladas. El sistema busca consistencia operativa, no uniformidad estética.
+
+### Costes inevitables si el proyecto prospera
+
+- hosting comercial;
+- mayor retención y recuperación de base de datos;
+- almacenamiento y transformaciones de medios;
+- pruebas visuales cloud multi-browser;
+- ejecución de agentes y modelos;
+- colas/workers durables;
+- observabilidad y soporte;
+- correo transaccional;
+- dominios, seguridad y cumplimiento multi-tenant.
+
+El criterio correcto no es “que nunca cueste”, sino que el coste aparezca únicamente cuando exista uso o valor que lo justifique, sea visible en el dashboard y pueda controlarse.
+
+### Fuentes de coste verificadas
+
+- [Payload self-hosted MIT](https://payloadcms.com/get-started)
+- [Puck licencia MIT](https://github.com/puckeditor/puck/blob/main/LICENSE)
+- [Puck Cloud pricing](https://puckeditor.com/pricing)
+- [Vercel pricing](https://vercel.com/pricing)
+- [Vercel Hobby y uso no comercial](https://vercel.com/docs/plans/hobby)
+- [Neon pricing](https://neon.com/pricing)
+- [Cloudflare R2 pricing](https://developers.cloudflare.com/r2/pricing/)
+- [Umami Cloud FAQ](https://docs.umami.is/docs/cloud/faq)
