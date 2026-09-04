@@ -108,6 +108,11 @@ published originals and placement recipes, plus bounded counts for missing
 accessibility/technical metadata, missing placement assets, and originals over
 5 MiB. It reads counts only and never downloads, rewrites, or optimizes media.
 
+`GET /api/owner/content/recent` provides lightweight shortcuts to the five most
+recently updated Projects, Pages, and Articles. It returns only navigation
+metadata—ID, title, slug, status, and timestamp—and is included in the owner
+dashboard without loading rich text, blocks, relationships, or media.
+
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.

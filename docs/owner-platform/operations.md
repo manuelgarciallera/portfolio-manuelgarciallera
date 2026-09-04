@@ -619,6 +619,14 @@ or impossible results fail closed. The endpoint does not load binary data,
 generate derivatives, change crop recipes, or optimize originals; the 5 MiB
 threshold is a review signal rather than an automatic transformation.
 
+`GET /api/owner/content/recent` supplies the future “continue editing” area and
+is also included in `GET /api/owner/dashboard`. It requests at most five
+Projects, Pages, and Articles ordered by `updatedAt`, with relationship depth
+zero and an explicit field selection. The response projects only ID, title,
+slug, draft/published status, and normalized timestamp. Invalid navigation
+metadata fails closed; document bodies, modular blocks, SEO data, media, and
+relationships are never returned by this endpoint.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
