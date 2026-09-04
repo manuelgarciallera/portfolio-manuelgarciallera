@@ -666,3 +666,83 @@ El criterio correcto no es “que nunca cueste”, sino que el coste aparezca ú
 - [Neon pricing](https://neon.com/pricing)
 - [Cloudflare R2 pricing](https://developers.cloudflare.com/r2/pricing/)
 - [Umami Cloud FAQ](https://docs.umami.is/docs/cloud/faq)
+
+## 19. Conector Figma, edición no destructiva y permisos de IA
+
+### Decisión
+
+La importación desde Figma será una función prioritaria del panel. No se tratará como un simple campo de URL ni como una captura automática opaca: será un flujo asistido, trazable y reversible. El owner conecta su cuenta, pega el enlace de un archivo o nodo, revisa las propuestas y confirma qué frame se incorpora.
+
+Para el piloto personal puede utilizarse un token personal con alcance mínimo. La arquitectura definitiva usará una aplicación OAuth 2 de Figma con `file_content:read`; es el mecanismo adecuado para un producto que actúa en nombre de distintos usuarios. La autenticación del panel, la autorización de Figma y la activación de IA son credenciales y permisos independientes.
+
+### Flujo de importación
+
+1. El owner conecta Figma mediante OAuth en el navegador.
+2. Pega una URL de archivo, sección, frame o componente. El backend extrae `file_key` y `node-id`.
+3. El conector consulta únicamente los nodos necesarios, genera miniaturas por lotes y mantiene caché para respetar los límites de Figma.
+4. Una IA puede clasificar candidatos usando nombre del nodo, jerarquía, dimensiones, contexto del proyecto y miniatura renderizada.
+5. La interfaz muestra varias propuestas, explicación breve y nivel de confianza. La selección final siempre es humana.
+6. El nodo elegido se exporta y se copia al almacenamiento propio. No se enlazan directamente las URL temporales de Figma.
+7. Se guarda procedencia: URL, archivo, nodo, nombre, versión, fecha, ajustes de exportación y hash.
+8. Si Figma cambia, “Actualizar desde Figma” prepara una nueva versión y una previsualización; no sustituye lo publicado sin confirmación.
+
+Los endpoints de archivos e imágenes de Figma están sujetos a límites que dependen de plan y asiento. Por eso se agruparán nodos en una petición, se usarán caché, cola y backoff, y la actualización será bajo demanda o por webhook cuando resulte apropiado. Las URL de image fills expiran en un máximo de 14 días, por lo que el activo final debe residir en nuestro almacenamiento.
+
+### Editor de imagen y marco
+
+El original importado será inmutable. El editor guardará una receta de presentación, no píxeles sobrescritos:
+
+- recorte y relación de aspecto;
+- zoom y punto focal X/Y;
+- desplazamiento dentro del marco;
+- modo `cover` o `contain`;
+- tamaño y variante del marco;
+- radios, fondo y preset visual permitidos;
+- excepciones por breakpoint solo cuando sean necesarias.
+
+El modelo separará `MediaAsset` (original, metadatos, procedencia y derivados) de `MediaPlacement` (encuadre aplicado en un bloque). Así una misma imagen puede tener encuadres distintos y restaurarse sin pérdida. Se generarán derivados AVIF/WebP responsivos una sola vez; el panel cargará el editor y la librería de recorte, pero la web pública no cargará ninguna dependencia administrativa.
+
+### Centro de conectores y permisos
+
+Cada conector tendrá estado, identidad conectada, scopes, último uso, caducidad y revocación. Los interruptores no serán meramente visuales: el servidor comprobará la política antes de cada operación.
+
+Permisos separados por capacidad:
+
+- conectado/desconectado;
+- leer/listar;
+- importar/copiar;
+- proponer con IA;
+- modificar borradores;
+- publicar;
+- ejecutar cambios de código.
+
+Los tokens estarán cifrados en servidor y nunca llegarán al navegador público ni se incluirán en el contexto del modelo. Toda acción sensible producirá registro de auditoría. Publicar, borrar, desplegar o sustituir una versión requerirá confirmación explícita, aunque el conector esté activo.
+
+### OpenAI, ChatGPT y Codex
+
+El login del owner seguirá siendo el login del propio panel. Para la IA editorial, la opción sólida es una integración servidor-servidor con la Responses API y una clave de proyecto o cuenta de servicio con scopes y presupuesto limitados. No se basará el producto en asumir que cualquier usuario puede transferir al panel su suscripción de ChatGPT mediante un OAuth universal.
+
+La IA editorial recibirá herramientas pequeñas y tipadas —por ejemplo `listFigmaNodes`, `proposeAsset`, `createDraft` o `updatePlacement`— y no acceso general a la base de datos. La Responses API admite herramientas propias y selección restringida de herramientas, lo que encaja con el panel de capacidades.
+
+Codex se reservará para cambios de código o creación de bloques que excedan los controles del CMS. Se ejecutará fuera del request público, en un checkout aislado, y entregará diff, pruebas y preview antes de poder fusionar. No tendrá acceso directo a producción.
+
+La capa de aplicación será neutral al proveedor (`AIProvider` + catálogo de capacidades). Esto permite evaluar más adelante Claude y Gemini sin rehacer el CMS ni los permisos. Copilot se estudiará como integración de desarrollo, no como requisito del editor editorial.
+
+### Fases recomendadas
+
+1. Conector Figma de solo lectura, explorador de frames, importación manual y procedencia.
+2. Editor no destructivo de encuadre y derivados responsivos.
+3. Sugerencias visuales con IA, siempre con confirmación.
+4. Actualización/diff desde Figma, auditoría y límites de consumo.
+5. Agente editorial; después agente de código aislado.
+6. Adaptadores para otros modelos únicamente tras medir utilidad, coste y seguridad.
+
+### Fuentes verificadas
+
+- [Figma — autenticación REST](https://developers.figma.com/docs/rest-api/authentication/)
+- [Figma — OAuth apps](https://developers.figma.com/docs/rest-api/oauth-apps/)
+- [Figma — scopes](https://developers.figma.com/docs/rest-api/scopes/)
+- [Figma — archivos e imágenes](https://developers.figma.com/docs/rest-api/file-endpoints/)
+- [Figma — límites de uso](https://developers.figma.com/docs/rest-api/rate-limits/)
+- [OpenAI — crear una respuesta con herramientas propias](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
+- [OpenAI — claves de cuenta de servicio por proyecto](https://developers.openai.com/api/reference/cli/resources/admin/subresources/organization/subresources/projects/subresources/service_accounts/subresources/api_keys/methods/create)
