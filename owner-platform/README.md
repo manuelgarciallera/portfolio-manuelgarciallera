@@ -86,6 +86,13 @@ approval or rejection phrase, re-verifies the bundle hash, and writes an audit
 event. Approval is evidence only: it still cannot publish, deploy, apply, or
 write into the public portfolio.
 
+Publication Artifacts creates a canonical handoff manifest only from an
+approved, hash-verified review. `POST
+/api/owner/publication-reviews/:id/artifacts` records the exact bundle/review
+pair and page count for later export tooling. The manifest is immutable,
+audited, and isolated; generating it performs no filesystem or public-site
+write.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

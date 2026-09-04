@@ -457,6 +457,32 @@ public bridge, publish, apply, filesystem-write, or deployment endpoint. A
 future bridge must consume a specifically approved bundle through a separate,
 benchmark-gated process and must not weaken this boundary.
 
+### Isolated publication artifact
+
+Generate a canonical handoff manifest from an approved review:
+
+```http
+POST /api/owner/publication-reviews/90/artifacts
+Content-Type: application/json
+
+{
+  "confirmation": "GENERAR ARTEFACTO"
+}
+```
+
+The service authenticates before parsing its body, rejects extra fields, and
+limits the request to 4 KiB. It reloads and verifies the immutable review,
+requires its decision to be `approved`, reloads and verifies the associated
+bundle, and checks that both hashes still match. Only one **Publication
+Artifact** can be generated per review.
+
+The artifact is a compact canonical manifest joining review hash, bundle hash,
+identifiers, schema version, and page count. It is immutable, owner-readable,
+and audited. It deliberately does not duplicate media, write JSON to the public
+repository, update public content, trigger builds, or contact a deployment
+provider. It provides a stable input contract for a future separately tested
+export adapter.
+
 ## Disabled integrations
 
 - AI assistance is a provider-neutral validation contract only. There is no
