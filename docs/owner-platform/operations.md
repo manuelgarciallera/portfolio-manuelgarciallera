@@ -637,6 +637,12 @@ contain only collection, ID, label, optional slug/status, normalized update
 time, and a safe Payload admin path. Rich text, blocks, media variants, file
 contents, metadata, and secrets are not projected.
 
+The Payload dashboard renders the same search as a small `beforeDashboard`
+extension. It retains Payload's native collection cards and navigation rather
+than introducing a parallel editor shell. The form uses the authenticated
+same-origin endpoint, aborts superseded requests, announces results through a
+polite live region, and links only to server-projected admin destinations.
+
 `GET /api/owner/system/readiness` is included in the owner dashboard and makes
 the local/production distinction explicit without returning connection strings
 or secrets. It reports SQLite as non-durable, PostgreSQL as durable, and accepts

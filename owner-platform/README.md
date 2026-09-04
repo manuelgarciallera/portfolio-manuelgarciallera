@@ -118,6 +118,9 @@ an authenticated owner. Queries are trimmed and limited to 2–80 characters;
 only one `q` parameter is accepted. Each collection returns at most ten
 lightweight admin destinations, with explicit field selection and no document
 bodies, blocks, relationships, media sizes, credentials, or binary assets.
+The generated Payload dashboard exposes this contract through a compact search
+surface with keyboard focus, live status feedback, and direct edit links. It
+does not replace or fork Payload's collection dashboard.
 
 `GET /api/owner/system/readiness` reports the credential-free operational
 boundary: runtime mode, SQLite/PostgreSQL durability, secure-secret readiness,
