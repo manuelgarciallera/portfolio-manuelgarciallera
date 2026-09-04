@@ -118,7 +118,12 @@ export const BrandProfiles: CollectionConfig = {
       admin: { description: 'Roles semánticos. Se validan completamente al publicar.' },
       fields: [
         { name: 'role', type: 'select', options: roleOptions, required: true },
-        { name: 'value', type: 'text', required: true },
+        {
+          name: 'value',
+          type: 'text',
+          required: true,
+          admin: { components: { Field: './components/HexColorField#HexColorField' } },
+        },
       ],
     },
     {

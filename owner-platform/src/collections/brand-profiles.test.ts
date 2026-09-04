@@ -58,6 +58,18 @@ describe('BrandProfiles collection', () => {
     expect(JSON.stringify(BrandProfiles.fields)).not.toMatch(/(?:customCSS|javascript|html|codeEditor)/i)
   })
 
+  it('uses the synchronized visual HEX editor without changing stored color data', () => {
+    const colors = fieldNamed('colors')
+    if (!colors || colors.type !== 'array') throw new Error('BrandProfiles.colors must be an array')
+    const value = colors.fields.find((field) => 'name' in field && field.name === 'value')
+    expect(value).toMatchObject({
+      admin: { components: { Field: './components/HexColorField#HexColorField' } },
+      name: 'value',
+      required: true,
+      type: 'text',
+    })
+  })
+
   it('allows incomplete drafts but rejects invalid publication with actionable errors', async () => {
     await expect(
       validateBrandProfilePublication({ data: { _status: 'draft', colors: [] } } as never),
