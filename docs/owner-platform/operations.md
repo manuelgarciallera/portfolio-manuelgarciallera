@@ -64,6 +64,10 @@ surface without changing the public portfolio:
   active capability switches server-side. A proposal can move once from
   pending to accepted or rejected and both creation and decision are audited;
   acceptance does not apply, publish, deploy, or mutate the public portfolio.
+- **Restore Plans** stores a two-confirmation, conflict-aware restoration plan.
+  It binds an immutable release target to a verified current baseline, and a
+  second fresh snapshot must still match that baseline. Plans are owner-readable
+  and immutable after confirmation; no plan can execute a restore in this phase.
 
 This phase is a functional data/control foundation, not a bespoke drag-and-drop
 canvas. The public renderer still reads its checked-in content, so edits in the
@@ -317,6 +321,42 @@ evidence fields, re-computes the snapshot manifest hash, creates the immutable
 release record, and audits the registration. It records a restorable reference;
 it does not execute a restore. Restoration remains unavailable until it has its
 own preview, confirmation, conflict, and rollback controls.
+
+## Non-destructive restore planning
+
+Create a fresh preview snapshot of the page, then prepare a restore plan:
+
+```http
+POST /api/owner/restore-plans
+Content-Type: application/json
+
+{
+  "releaseId": 44,
+  "baselineSnapshot": 12,
+  "confirmation": "PREPARAR RESTAURACIÓN"
+}
+```
+
+The server verifies the release's target snapshot and the baseline snapshot,
+including both manifest hashes and source page identity. It stores a `ready`
+plan but changes no page. Before the second step, generate another fresh preview
+snapshot and submit:
+
+```http
+PATCH /api/owner/restore-plans/50/confirm
+Content-Type: application/json
+
+{
+  "currentSnapshot": 13,
+  "confirmation": "CONFIRMAR RESTAURACIÓN"
+}
+```
+
+If the new snapshot hash equals the recorded baseline, the plan becomes
+`confirmed`. If anything changed, it becomes `conflict` and cannot be reused.
+Both outcomes are audited. Neither endpoint contains an execute, apply, publish,
+deploy, or page-mutation operation; a later execution phase must add a separate
+previewed and reversible boundary.
 
 ## Disabled integrations
 

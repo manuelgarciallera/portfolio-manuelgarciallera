@@ -60,6 +60,12 @@ reading their bounded request body, reject unknown fields, and expose no apply,
 publish, or deploy control. They are workflow boundaries, not a live model
 integration.
 
+Restore Plans provides the safety boundary for future version restoration. An
+owner first prepares a plan from a release and a verified current snapshot,
+then confirms it against a newly generated snapshot. A changed page produces a
+conflict record instead of confirmation. This phase intentionally records only
+the plan and its two confirmations; it cannot execute a restore.
+
 ## Local development
 
 From the repository root, run `npm run owner:install` and then

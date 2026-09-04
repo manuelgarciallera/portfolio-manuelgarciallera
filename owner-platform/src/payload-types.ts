@@ -78,6 +78,7 @@ export interface Config {
     releases: Release;
     'audit-events': AuditEvent;
     'assistance-proposals': AssistanceProposal;
+    'restore-plans': RestorePlan;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -96,6 +97,7 @@ export interface Config {
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'assistance-proposals': AssistanceProposalsSelect<false> | AssistanceProposalsSelect<true>;
+    'restore-plans': RestorePlansSelect<false> | RestorePlansSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -584,6 +586,27 @@ export interface AssistanceProposal {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restore-plans".
+ */
+export interface RestorePlan {
+  id: number;
+  release: number | Release;
+  targetPage: number | Page;
+  targetSnapshot: number | PreviewSnapshot;
+  targetHash: string;
+  baselineSnapshot: number | PreviewSnapshot;
+  baselineHash: string;
+  status: 'ready' | 'confirmed' | 'conflict';
+  createdBy: number | User;
+  confirmationSnapshot?: (number | null) | PreviewSnapshot;
+  conflictHash?: string | null;
+  confirmedBy?: (number | null) | User;
+  confirmedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -649,6 +672,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'assistance-proposals';
         value: number | AssistanceProposal;
+      } | null)
+    | ({
+        relationTo: 'restore-plans';
+        value: number | RestorePlan;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1056,6 +1083,26 @@ export interface AssistanceProposalsSelect<T extends boolean = true> {
   decisionNote?: T;
   decidedBy?: T;
   decidedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "restore-plans_select".
+ */
+export interface RestorePlansSelect<T extends boolean = true> {
+  release?: T;
+  targetPage?: T;
+  targetSnapshot?: T;
+  targetHash?: T;
+  baselineSnapshot?: T;
+  baselineHash?: T;
+  status?: T;
+  createdBy?: T;
+  confirmationSnapshot?: T;
+  conflictHash?: T;
+  confirmedBy?: T;
+  confirmedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

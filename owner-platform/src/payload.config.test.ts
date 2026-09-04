@@ -27,4 +27,9 @@ describe('owner Payload configuration', () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('assistance-proposals')
   })
+
+  it('registers non-destructive restore plans in the owner application', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('restore-plans')
+  })
 })
