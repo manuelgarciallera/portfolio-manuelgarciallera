@@ -142,3 +142,5 @@ NEXT_PUBLIC_WEB_VITALS_ENDPOINT=/api/web-vitals
 - `docs/PERFORMANCE.md`
 - `docs/QUALITY-GATES.md`
 - `docs/STACK-PLAYBOOK.md`
+- [Owner platform feasibility study](docs/owner-platform-feasibility-study-2026-09-04.md)
+- [Owner platform foundation](docs/owner-platform/foundation.md)
