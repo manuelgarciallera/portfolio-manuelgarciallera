@@ -168,13 +168,22 @@ Run from the repository root:
 npm run check:all
 npm run test:owner-isolation
 npm run check:owner:clean
-npm run check:owner-isolation
+$env:PORTFOLIO_BUILD_DIR = 'owner-platform/.data/verification-artifacts/release-proof'
+npm run build
+$env:PUBLIC_BUILD_DIR = (Resolve-Path $env:PORTFOLIO_BUILD_DIR).Path
+node ./scripts/prove-owner-isolation.mjs --write=docs/owner-platform/isolation-evidence-2026-09-04.json
 ```
 
 `check:owner-isolation` combines three fail-closed checks: no owner runtime
 dependency in the root manifest, no forbidden/private import reachable from a
 public entry, and no public route outside the fixed 1%/2048-byte bundle budget.
-Set `PUBLIC_BUILD_DIR` only when verifying a fresh isolated root build directory.
+The build directory is accepted only as a single dedicated child of
+`owner-platform/.data/verification-artifacts`; arbitrary, linked, missing, or
+stale build paths fail closed. The generated evidence binds the checkpoint and
+current Git HEAD to deterministic hashes of public inputs, the exact root
+runtime manifest, the complete root lockfile, and route bundle outputs. Use
+`--verify=docs/owner-platform/isolation-evidence-2026-09-04.json` to compare a
+committed record byte-for-byte against a newly verified build.
 
 The pre-editor recovery point is Git commit
 `0f0adf686b2752e23c25d224f8c60815b10fd451`, tagged

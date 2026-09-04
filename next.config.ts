@@ -1,6 +1,14 @@
 import type { NextConfig } from 'next'
 
 const isProd = process.env.NODE_ENV === 'production'
+const isolatedBuildDir = process.env.PORTFOLIO_BUILD_DIR
+
+if (
+  isolatedBuildDir &&
+  !/^owner-platform\/[.]data\/verification-artifacts\/[a-z0-9][a-z0-9-]*$/.test(isolatedBuildDir)
+) {
+  throw new Error('PORTFOLIO_BUILD_DIR must name a dedicated owner-platform verification artifact directory')
+}
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -36,6 +44,7 @@ if (isProd) {
 }
 
 const nextConfig: NextConfig = {
+  ...(isolatedBuildDir ? { distDir: isolatedBuildDir } : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   devIndicators: false,

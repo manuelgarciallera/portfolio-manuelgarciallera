@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "node ./scripts/dev.mjs",
     "build": "node ./scripts/build.mjs",
-    "check": "npm run test && npm run typecheck && npm run build",
+    "check": "npm run test && npm run lint && npm run typecheck && npm run build",
     "generate:importmap": "payload generate:importmap",
     "generate:types": "payload generate:types",
+    "lint": "eslint .",
     "start": "next start",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
@@ -29,6 +30,8 @@
     "@types/node": "20.19.14",
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
+    "eslint": "9.39.3",
+    "eslint-config-next": "16.2.11",
     "typescript": "5.9.2",
     "vitest": "4.1.10"
   }
