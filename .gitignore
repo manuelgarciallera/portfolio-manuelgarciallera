@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 /.lighthouse
+/.owner-verification-builds/
 
 # debug
 npm-debug.log*

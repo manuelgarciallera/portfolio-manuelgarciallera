@@ -5,9 +5,9 @@ const isolatedBuildDir = process.env.PORTFOLIO_BUILD_DIR
 
 if (
   isolatedBuildDir &&
-  !/^owner-platform\/[.]data\/verification-artifacts\/[a-z0-9][a-z0-9-]*$/.test(isolatedBuildDir)
+  !/^[.]owner-verification-builds\/[a-z0-9][a-z0-9-]*$/.test(isolatedBuildDir)
 ) {
-  throw new Error('PORTFOLIO_BUILD_DIR must name a dedicated owner-platform verification artifact directory')
+  throw new Error('PORTFOLIO_BUILD_DIR must name a dedicated root-local verification build directory')
 }
 
 const contentSecurityPolicy = [
