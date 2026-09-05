@@ -205,15 +205,18 @@ const workflowPresentation = (value: unknown): WorkflowPresentation => {
   const proposals = workflow.proposals === undefined ? {} : object(workflow.proposals) ?? fail()
   const restores = workflow.restores === undefined ? {} : object(workflow.restores) ?? fail()
   const publication = workflow.publication === undefined ? {} : object(workflow.publication) ?? fail()
+  const preflights = publication.preflights === undefined ? {} : object(publication.preflights) ?? fail()
   const figmaImport = workflow.figmaImport === undefined ? {} : object(workflow.figmaImport) ?? fail()
   const metric = (source: Record<string, unknown>, key: string) => source[key] === undefined ? 0 : count(source[key])
   const pendingProposals = metric(proposals, 'pending')
   const pendingRestores = metric(restores, 'ready') + metric(restores, 'confirmed') + metric(restores, 'conflict')
   const awaitingReview = metric(publication, 'awaitingReview')
   const awaitingArtifact = metric(publication, 'approvedAwaitingArtifact')
+  const awaitingPreflight = metric(publication, 'awaitingPreflight')
+  const preflightIssues = metric(preflights, 'blocked') + metric(preflights, 'ready_with_warnings')
   const pendingFigmaImports = metric(figmaImport, 'awaitingReview')
   const approvedFigmaImports = metric(figmaImport, 'approvedAwaitingImport')
-  const derivedAttention = pendingFigmaImports + approvedFigmaImports + pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
+  const derivedAttention = pendingFigmaImports + approvedFigmaImports + pendingProposals + pendingRestores + awaitingReview + awaitingArtifact + awaitingPreflight + preflightIssues
   const attentionCount = workflow.attentionCount === undefined ? derivedAttention : count(workflow.attentionCount)
   if (attentionCount !== derivedAttention) return fail()
   const item = (href: string, label: string, value: number) => ({ href, label, tone: value > 0 ? 'attention' as const : 'clear' as const, value })
@@ -226,6 +229,8 @@ const workflowPresentation = (value: unknown): WorkflowPresentation => {
       item('/admin/collections/restore-plans', 'Restauraciones por revisar', pendingRestores),
       item('/admin/collections/publication-bundles', 'Paquetes sin revisión', awaitingReview),
       item('/admin/collections/publication-artifacts', 'Aprobaciones sin artefacto', awaitingArtifact),
+      item('/admin/collections/publication-artifacts', 'Artefactos sin preflight', awaitingPreflight),
+      item('/admin/collections/publication-preflights', 'Preflights con incidencias', preflightIssues),
     ],
   }
 }

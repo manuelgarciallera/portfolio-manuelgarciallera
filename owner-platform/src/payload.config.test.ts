@@ -53,6 +53,11 @@ describe('owner Payload configuration', () => {
     expect(config.collections.map((collection) => collection.slug)).toContain('publication-artifacts')
   })
 
+  it('registers immutable publication preflights without a public bridge', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('publication-preflights')
+  })
+
   it('registers the reusable technology catalog', async () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('technologies')
@@ -101,6 +106,7 @@ describe('owner Payload configuration', () => {
       'publication-bundles': 'Workflow',
       'publication-reviews': 'Workflow',
       'publication-artifacts': 'Workflow',
+      'publication-preflights': 'Workflow',
       'figma-import-plans': 'Workflow',
       'figma-import-reviews': 'Workflow',
       users: 'Sistema',

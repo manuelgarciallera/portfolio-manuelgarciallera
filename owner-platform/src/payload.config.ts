@@ -22,6 +22,7 @@ import { DraftSnapshots } from './collections/DraftSnapshots'
 import { PublicationBundles } from './collections/PublicationBundles'
 import { PublicationReviews } from './collections/PublicationReviews'
 import { PublicationArtifacts } from './collections/PublicationArtifacts'
+import { PublicationPreflights } from './collections/PublicationPreflights'
 import { Technologies } from './collections/Technologies'
 import { AnalyticsSnapshots } from './collections/AnalyticsSnapshots'
 import { FigmaImportPlans } from './collections/FigmaImportPlans'
@@ -69,7 +70,7 @@ export default buildConfig({
   collections: [
     ...groupCollections('Contenido', [Projects, Articles, Pages, Technologies]),
     ...groupCollections('Diseño y medios', [Media, MediaPlacements, BrandProfiles]),
-    ...groupCollections('Workflow', [PreviewSnapshots, Releases, AssistanceProposals, RestorePlans, DraftSnapshots, PublicationBundles, PublicationReviews, PublicationArtifacts, FigmaImportPlans, FigmaImportReviews, FigmaImportExecutions]),
+    ...groupCollections('Workflow', [PreviewSnapshots, Releases, AssistanceProposals, RestorePlans, DraftSnapshots, PublicationBundles, PublicationReviews, PublicationArtifacts, PublicationPreflights, FigmaImportPlans, FigmaImportReviews, FigmaImportExecutions]),
     ...groupCollections('Sistema', [Users, AuditEvents, AnalyticsSnapshots]),
   ],
   globals: [AssistantSettings],

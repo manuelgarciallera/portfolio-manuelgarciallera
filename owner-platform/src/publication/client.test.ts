@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { generatePublicationArtifact, listPublicationCandidates, orderPublicationCandidates, preparePublicationBundle, reorderPublicationSelection, reviewPublicationBundle } from './client'
+import { generatePublicationArtifact, listPublicationCandidates, orderPublicationCandidates, preparePublicationBundle, reorderPublicationSelection, reviewPublicationBundle, runPublicationPreflight } from './client'
 
 describe('publication bundle preparation client', () => {
   it('loads a bounded list of immutable release candidates', async () => {
@@ -114,5 +114,24 @@ describe('publication artifact client', () => {
     await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', malformed)).rejects.toThrow('No se pudo generar el artefacto.')
     const invalidJson = vi.fn(async () => new Response('<html>failure</html>', { status: 201 }))
     await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', invalidJson)).rejects.toThrow('No se pudo generar el artefacto.')
+  })
+})
+
+describe('publication preflight client', () => {
+  it('requires explicit validation and returns only a safe immutable report destination', async () => {
+    const request = vi.fn(async (_url: string, init: RequestInit) => {
+      expect(init).toMatchObject({ body: JSON.stringify({ confirmation: 'VALIDAR ARTEFACTO' }), credentials: 'same-origin', method: 'POST' })
+      return new Response(JSON.stringify({ preflight: { href: '/admin/collections/publication-preflights/110', issueCount: 2, status: 'ready_with_warnings' } }), { status: 201 })
+    })
+    await expect(runPublicationPreflight(100, 'VALIDAR ARTEFACTO', request)).resolves.toEqual({ href: '/admin/collections/publication-preflights/110', issueCount: 2, status: 'ready_with_warnings' })
+    await expect(runPublicationPreflight(100, 'validar', request)).rejects.toThrow(/VALIDAR ARTEFACTO/)
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('hides failed or malformed preflight responses', async () => {
+    const failed = vi.fn(async () => new Response('secret leaked', { status: 500 }))
+    await expect(runPublicationPreflight(100, 'VALIDAR ARTEFACTO', failed)).rejects.toThrow('No se pudo validar el artefacto.')
+    const unsafe = vi.fn(async () => new Response(JSON.stringify({ preflight: { href: '/admin/collections/users/1', issueCount: 0, status: 'ready' } }), { status: 201 }))
+    await expect(runPublicationPreflight(100, 'VALIDAR ARTEFACTO', unsafe)).rejects.toThrow('No se pudo validar el artefacto.')
   })
 })

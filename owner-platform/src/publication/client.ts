@@ -134,3 +134,21 @@ export const generatePublicationArtifact = async (
   if ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id))) throw new Error('No se pudo generar el artefacto.')
   return { href: `/admin/collections/publication-artifacts/${encodeURIComponent(String(id))}` }
 }
+
+export const runPublicationPreflight = async (
+  artifactId: string | number,
+  confirmation: string,
+  request: PublicationTransport = fetch,
+): Promise<{ href: string; issueCount: number; status: 'blocked' | 'ready' | 'ready_with_warnings' }> => {
+  if (confirmation !== 'VALIDAR ARTEFACTO') throw new TypeError('Escribe VALIDAR ARTEFACTO para continuar.')
+  const response = await request(`/api/owner/publication-artifacts/${safeId(artifactId)}/preflights`, {
+    body: JSON.stringify({ confirmation }), credentials: 'same-origin', headers: { 'content-type': 'application/json' }, method: 'POST',
+  })
+  const fail = (): never => { throw new Error('No se pudo validar el artefacto.') }
+  if (!response.ok) return fail()
+  let result: unknown
+  try { result = await response.json() as unknown } catch { return fail() }
+  const preflight = isRecord(result) && isRecord(result.preflight) ? result.preflight : undefined
+  if (!preflight || typeof preflight.href !== 'string' || !/^\/admin\/collections\/publication-preflights\/[A-Za-z0-9_-]{1,128}$/.test(preflight.href) || !Number.isInteger(preflight.issueCount) || (preflight.issueCount as number) < 0 || !['blocked', 'ready', 'ready_with_warnings'].includes(String(preflight.status))) return fail()
+  return preflight as { href: string; issueCount: number; status: 'blocked' | 'ready' | 'ready_with_warnings' }
+}

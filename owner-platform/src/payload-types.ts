@@ -82,6 +82,7 @@ export interface Config {
     'publication-bundles': PublicationBundle;
     'publication-reviews': PublicationReview;
     'publication-artifacts': PublicationArtifact;
+    'publication-preflights': PublicationPreflight;
     'figma-import-plans': FigmaImportPlan;
     'figma-import-reviews': FigmaImportReview;
     'figma-import-executions': FigmaImportExecution;
@@ -110,6 +111,7 @@ export interface Config {
     'publication-bundles': PublicationBundlesSelect<false> | PublicationBundlesSelect<true>;
     'publication-reviews': PublicationReviewsSelect<false> | PublicationReviewsSelect<true>;
     'publication-artifacts': PublicationArtifactsSelect<false> | PublicationArtifactsSelect<true>;
+    'publication-preflights': PublicationPreflightsSelect<false> | PublicationPreflightsSelect<true>;
     'figma-import-plans': FigmaImportPlansSelect<false> | FigmaImportPlansSelect<true>;
     'figma-import-reviews': FigmaImportReviewsSelect<false> | FigmaImportReviewsSelect<true>;
     'figma-import-executions': FigmaImportExecutionsSelect<false> | FigmaImportExecutionsSelect<true>;
@@ -911,6 +913,34 @@ export interface PublicationArtifact {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-preflights".
+ */
+export interface PublicationPreflight {
+  id: number;
+  artifact: number | PublicationArtifact;
+  artifactHash: string;
+  exportHash: string;
+  status: 'blocked' | 'ready_with_warnings' | 'ready';
+  issueCount: number;
+  pageCount: number;
+  checkedAt: string;
+  report:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  preflightHash: string;
+  schemaVersion: number;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "figma-import-plans".
  */
 export interface FigmaImportPlan {
@@ -1106,6 +1136,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'publication-artifacts';
         value: number | PublicationArtifact;
+      } | null)
+    | ({
+        relationTo: 'publication-preflights';
+        value: number | PublicationPreflight;
       } | null)
     | ({
         relationTo: 'figma-import-plans';
@@ -1762,6 +1796,25 @@ export interface PublicationArtifactsSelect<T extends boolean = true> {
   pageCount?: T;
   artifact?: T;
   artifactHash?: T;
+  schemaVersion?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-preflights_select".
+ */
+export interface PublicationPreflightsSelect<T extends boolean = true> {
+  artifact?: T;
+  artifactHash?: T;
+  exportHash?: T;
+  status?: T;
+  issueCount?: T;
+  pageCount?: T;
+  checkedAt?: T;
+  report?: T;
+  preflightHash?: T;
   schemaVersion?: T;
   createdBy?: T;
   updatedAt?: T;

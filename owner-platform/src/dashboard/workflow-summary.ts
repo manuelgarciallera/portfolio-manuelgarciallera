@@ -5,6 +5,7 @@ type WorkflowSummaryInput = {
   figmaImportExecutions: number
   figmaImportPlans: number
   figmaImportReviews: { approved: number; rejected: number }
+  preflights: { blocked: number; ready: number; ready_with_warnings: number }
   proposals: { accepted: number; pending: number; rejected: number }
   restores: { confirmed: number; conflict: number; executed: number; ready: number }
   reviews: { approved: number; rejected: number }
@@ -25,22 +26,26 @@ export const buildWorkflowSummary = (input: WorkflowSummaryInput) => {
   const figmaImportReviews = normalized(input.figmaImportReviews)
   const figmaImportReviewTotal = total(figmaImportReviews)
   const proposals = normalized(input.proposals)
+  const preflights = normalized(input.preflights)
   const restores = normalized(input.restores)
   const reviews = normalized(input.reviews)
   const reviewTotal = total(reviews)
   if (reviewTotal > bundles) throw new TypeError('Las revisiones superan los paquetes disponibles.')
   if (artifacts > reviews.approved) throw new TypeError('Los artefactos superan las revisiones aprobadas.')
+  const preflightTotal = total(preflights)
+  if (preflightTotal > artifacts) throw new TypeError('Los informes de preflight superan los artefactos disponibles.')
   if (figmaImportReviewTotal > figmaImportPlans) throw new TypeError('Las revisiones de Figma superan los planes disponibles.')
   if (figmaImportExecutions > figmaImportReviews.approved) throw new TypeError('Las importaciones de Figma superan las revisiones aprobadas.')
   const awaitingReview = bundles - reviewTotal
   const figmaAwaitingReview = figmaImportPlans - figmaImportReviewTotal
   const approvedAwaitingImport = figmaImportReviews.approved - figmaImportExecutions
   const approvedAwaitingArtifact = reviews.approved - artifacts
+  const awaitingPreflight = artifacts - preflightTotal
   return {
-    attentionCount: figmaAwaitingReview + approvedAwaitingImport + proposals.pending + restores.ready + restores.confirmed + restores.conflict + awaitingReview + approvedAwaitingArtifact,
+    attentionCount: figmaAwaitingReview + approvedAwaitingImport + proposals.pending + restores.ready + restores.confirmed + restores.conflict + awaitingReview + approvedAwaitingArtifact + awaitingPreflight + preflights.blocked + preflights.ready_with_warnings,
     figmaImport: { approvedAwaitingImport, awaitingReview: figmaAwaitingReview, executions: figmaImportExecutions, plans: figmaImportPlans, reviews: { ...figmaImportReviews, total: figmaImportReviewTotal } },
     proposals: { ...proposals, total: total(proposals) },
-    publication: { approvedAwaitingArtifact, artifacts, awaitingReview, bundles, reviews: { ...reviews, total: reviewTotal } },
+    publication: { approvedAwaitingArtifact, artifacts, awaitingPreflight, awaitingReview, bundles, preflights: { ...preflights, total: preflightTotal }, reviews: { ...reviews, total: reviewTotal } },
     restores: { ...restores, total: total(restores) },
   }
 }
