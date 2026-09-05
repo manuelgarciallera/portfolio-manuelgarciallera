@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import { presentOwnerDashboard } from '@/dashboard/presentation'
 import styles from './OwnerOverview.module.css'
+import { PublicationPreparation } from './PublicationPreparation'
 import { RestorePreparation } from './RestorePreparation'
 
 type View = ReturnType<typeof presentOwnerDashboard>
@@ -41,6 +42,7 @@ export const OwnerOverview = () => {
       <nav className={styles.actions} aria-label="Crear contenido">
         {view.actions.map((action) => <a href={action.href} key={action.href}>{action.label}</a>)}
       </nav>
+      <PublicationPreparation />
       <ul className={styles.metrics}>
         {view.cards.map((card) => (
           <li key={card.label} data-tone={card.tone}>

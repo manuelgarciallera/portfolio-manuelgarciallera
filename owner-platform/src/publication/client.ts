@@ -7,6 +7,74 @@ const safeId = (value: string | number): string => {
 }
 const failure = (): never => { throw new Error('No se pudo registrar la revisión.') }
 
+export type PublicationCandidate = Readonly<{
+  changeSummary: string
+  createdAt: string
+  id: string | number
+  name: string
+}>
+
+export const reorderPublicationSelection = <T extends string | number>(
+  values: readonly T[],
+  value: T,
+  direction: -1 | 1,
+): T[] => {
+  const next = [...values]
+  const current = next.findIndex((candidate) => String(candidate) === String(value))
+  const target = current + direction
+  if (current < 0 || target < 0 || target >= next.length) return next
+  ;[next[current], next[target]] = [next[target], next[current]]
+  return next
+}
+
+const candidateFailure = (): never => { throw new Error('No se pudieron cargar las versiones.') }
+const bundleFailure = (): never => { throw new Error('No se pudo preparar el paquete.') }
+
+export const listPublicationCandidates = async (
+  request: PublicationTransport = fetch,
+): Promise<PublicationCandidate[]> => {
+  const response = await request('/api/releases?depth=0&limit=100&sort=-createdAt', { credentials: 'same-origin' })
+  if (!response.ok) return candidateFailure()
+  const result = await response.json() as unknown
+  if (!isRecord(result) || !Array.isArray(result.docs) || result.docs.length > 100) return candidateFailure()
+  return result.docs.map((value) => {
+    if (!isRecord(value)) return candidateFailure()
+    const { changeSummary, createdAt, id, name } = value
+    if (
+      (typeof id !== 'string' && typeof id !== 'number') ||
+      !/^[A-Za-z0-9_-]+$/.test(String(id)) ||
+      typeof name !== 'string' || !name.trim() || name.trim().length > 120 ||
+      typeof changeSummary !== 'string' || !changeSummary.trim() || changeSummary.trim().length > 500 ||
+      typeof createdAt !== 'string' || Number.isNaN(Date.parse(createdAt))
+    ) return candidateFailure()
+    return { changeSummary: changeSummary.trim(), createdAt, id, name: name.trim() }
+  })
+}
+
+export const preparePublicationBundle = async (
+  input: { confirmation: string; name: string; releaseIds: Array<string | number> },
+  request: PublicationTransport = fetch,
+): Promise<{ href: string }> => {
+  if (input.confirmation !== 'PREPARAR PUBLICACIÓN') throw new TypeError('Escribe PREPARAR PUBLICACIÓN para continuar.')
+  const name = input.name.trim()
+  if (!name || name.length > 120) throw new TypeError('El nombre del paquete no es válido.')
+  if (!Array.isArray(input.releaseIds) || input.releaseIds.length < 1 || input.releaseIds.length > 100) throw new TypeError('Selecciona entre una y cien versiones.')
+  if (new Set(input.releaseIds.map(String)).size !== input.releaseIds.length) throw new TypeError('La selección contiene versiones duplicadas.')
+  input.releaseIds.forEach(safeId)
+  const response = await request('/api/owner/publication-bundles', {
+    body: JSON.stringify({ confirmation: 'PREPARAR PUBLICACIÓN', name, releaseIds: input.releaseIds }),
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+  if (!response.ok) return bundleFailure()
+  const result = await response.json() as unknown
+  const bundle = isRecord(result) && isRecord(result.bundle) ? result.bundle : undefined
+  const id = bundle?.id
+  if ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id))) return bundleFailure()
+  return { href: `/admin/collections/publication-bundles/${encodeURIComponent(String(id))}` }
+}
+
 export const reviewPublicationBundle = async (
   bundleId: string | number,
   input: { confirmation: string; decision: Decision; note?: string },
