@@ -770,16 +770,17 @@ render actor identity, email, metadata, document bodies, or credentials.
 `GET /api/owner/workflow/summary` supplies the dashboard attention queue using
 owner-scoped database counts only. It reports pending, accepted, and rejected
 assistance proposals; ready, confirmed, conflicting, and executed restore
-plans; and the publication chain from bundles through reviews to artifacts.
+plans; pending Figma import plans; and the publication chain from bundles
+through reviews to artifacts.
 The server derives bundles awaiting review and approved reviews awaiting an
 artifact, then rejects impossible totals instead of emitting misleading
 negative values. Conflicts and every state awaiting an owner decision are
 included in `attentionCount`. No workflow document body is returned and no
 decision, restore, publication, or deployment is executed.
 
-The generated dashboard turns the attention model into four navigable queue
-items: pending proposals, restore plans requiring review, bundles awaiting a
-review, and approved reviews awaiting an artifact. A zero state remains
+The generated dashboard turns the attention model into five navigable queue
+items: Figma import plans, pending proposals, restore plans requiring review,
+bundles awaiting a review, and approved reviews awaiting an artifact. A zero state remains
 visible as clear; non-zero items are marked for attention. The presentation
 recomputes the total and rejects inconsistent data, while every link merely
 opens the relevant Payload collection.
