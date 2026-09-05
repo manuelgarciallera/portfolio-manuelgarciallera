@@ -86,6 +86,8 @@ describe('presentOwnerDashboard', () => {
         { href: '/admin/collections/pages/create', label: 'Nueva página' },
         { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
         { href: '/admin/collections/media/create', label: 'Subir medio' },
+        { href: '/admin/collections/brand-profiles/create', label: 'Nuevo perfil de marca' },
+        { href: '/admin/collections/media-placements/create', label: 'Nuevo encuadre' },
       ],
       activity: [
         { action: 'Versión registrada', createdAt: '2026-09-05T09:00:00.000Z', href: '/admin/collections/audit-events/8', outcome: 'Correcto', subject: 'releases · 7', tone: 'success' },

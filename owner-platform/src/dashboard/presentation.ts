@@ -239,6 +239,8 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
       { href: '/admin/collections/pages/create', label: 'Nueva página' },
       { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
       { href: '/admin/collections/media/create', label: 'Subir medio' },
+      { href: '/admin/collections/brand-profiles/create', label: 'Nuevo perfil de marca' },
+      { href: '/admin/collections/media-placements/create', label: 'Nuevo encuadre' },
     ],
     activity: activityPresentation(overview.activity),
     analytics: analyticsPresentation(overview.analytics),
