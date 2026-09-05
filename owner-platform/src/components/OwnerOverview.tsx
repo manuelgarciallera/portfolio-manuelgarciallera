@@ -9,6 +9,7 @@ import { PublicationPreparation } from './PublicationPreparation'
 import { ReleaseRegistration } from './ReleaseRegistration'
 import { RestorePreparation } from './RestorePreparation'
 import { SnapshotCapture } from './SnapshotCapture'
+import { AssistancePreparation } from './AssistancePreparation'
 
 type View = ReturnType<typeof presentOwnerDashboard>
 
@@ -47,6 +48,7 @@ export const OwnerOverview = () => {
       </nav>
       <PublicationPreparation />
       <SnapshotCapture onCaptured={() => setSnapshotRevision((value) => value + 1)} />
+      <AssistancePreparation />
       <ReleaseRegistration refreshKey={snapshotRevision} />
       <ul className={styles.metrics}>
         {view.cards.map((card) => (

@@ -11,10 +11,12 @@
 .registration input, .registration select, .registration textarea { min-width: 0; padding: 0.5rem 0.6rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-250); }
 .registration textarea { resize: vertical; }
 .confirmation { display: grid; grid-template-columns: minmax(14rem, 1fr) auto; gap: 0.55rem; align-items: end; }
+.proposal { display: grid; grid-template-columns: minmax(14rem, 0.4fr) minmax(20rem, 1fr); gap: 0.55rem; align-items: start; }
+.proposal button { grid-column: 1 / -1; }
 .registration button { padding-inline: 0.8rem; color: var(--theme-elevation-0); white-space: nowrap; background: var(--theme-text); border: 1px solid var(--theme-text); cursor: pointer; }
 .registration button:disabled { cursor: not-allowed; opacity: 0.6; }
 .registration :focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
 .registration .status { min-height: 1rem; }
 .registration > a { display: inline-block; margin-top: 0.35rem; color: inherit; font-size: 0.78rem; }
 @media (max-width: 64rem) { .identity, .registration fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 40rem) { .identity, .registration fieldset, .confirmation { grid-template-columns: 1fr; } }
+@media (max-width: 40rem) { .identity, .registration fieldset, .confirmation, .proposal { grid-template-columns: 1fr; } }

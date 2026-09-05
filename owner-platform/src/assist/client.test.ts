@@ -1,6 +1,35 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { decideAssistanceProposal } from './client'
+import { createAssistanceProposal, decideAssistanceProposal, listAssistanceSnapshots, parseAssistancePatch } from './client'
+
+describe('assistance proposal preparation client', () => {
+  it('loads a bounded list of verified preview snapshots', async () => {
+    const request = vi.fn(async () => new Response(JSON.stringify({ docs: [
+      { id: 12, sourceDocumentId: 'home', sourceVersionId: 'current:2026-09-05T01:00:00.000Z' },
+    ] }), { status: 200 }))
+    await expect(listAssistanceSnapshots(request)).resolves.toEqual([{ id: 12, label: 'Página home · 2026-09-05T01:00:00.000Z' }])
+    expect(request).toHaveBeenCalledWith(expect.stringContaining('/api/preview-snapshots?'), { credentials: 'same-origin' })
+  })
+
+  it('parses a bounded JSON object and creates a pending manual proposal', async () => {
+    const patch = parseAssistancePatch('{"schemaVersion":1,"capability":"suggestMotion","operations":[{"op":"replace","path":"/brand/motion/duration","value":800}]}')
+    const request = vi.fn(async (_url: string, init: RequestInit) => {
+      expect(init.body).toBe(JSON.stringify({ patch, provider: 'manual', sourceSnapshot: 12 }))
+      return new Response(JSON.stringify({ proposal: { capability: 'suggestMotion', id: 31, status: 'pending' } }), { status: 201 })
+    })
+    await expect(createAssistanceProposal(12, patch, request)).resolves.toEqual({ capability: 'suggestMotion', id: 31 })
+  })
+
+  it('rejects malformed, oversized, unsafe, or inconsistent data without leaking responses', async () => {
+    expect(() => parseAssistancePatch('[]')).toThrow(/objeto/i)
+    expect(() => parseAssistancePatch(`{"value":"${'x'.repeat(65_536)}"}`)).toThrow(/grande/i)
+    const request = vi.fn<(url: string, init: RequestInit) => Promise<Response>>()
+    await expect(createAssistanceProposal('../users', {}, request)).rejects.toThrow(/snapshot/i)
+    expect(request).not.toHaveBeenCalled()
+    const malformed = vi.fn(async () => new Response(JSON.stringify({ proposal: { id: 31, status: 'accepted', capability: 'suggestMotion' } }), { status: 201 }))
+    await expect(createAssistanceProposal(12, {}, malformed)).rejects.toThrow('No se pudo crear la propuesta.')
+  })
+})
 
 describe('assistance proposal decision client', () => {
   it.each([
