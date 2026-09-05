@@ -299,6 +299,15 @@ discarded and every plan creation is audited. The resulting record remains
 pending review evidence: it cannot download pixels, create Media, replace an
 asset, crop, publish, deploy, retry automatically, or call any Figma write API.
 
+Open a Figma Import Plan to register exactly one owner decision through
+`POST /api/owner/figma/import-plans/:id/review`. Approval requires
+`APROBAR IMPORTACIÓN FIGMA`; rejection requires
+`RECHAZAR IMPORTACIÓN FIGMA`. The service rejects repeated decisions,
+re-verifies the plan and stored hash, and creates a separate immutable Figma
+Import Review with its own canonical hash and audit event. An approval is only
+review evidence: no render is downloaded and no Media record, placement,
+public content, publication, or deployment is created.
+
 ## Immutable local preview snapshots
 
 The endpoint `POST /api/owner/preview-snapshots` creates a canonical snapshot
@@ -770,12 +779,14 @@ render actor identity, email, metadata, document bodies, or credentials.
 `GET /api/owner/workflow/summary` supplies the dashboard attention queue using
 owner-scoped database counts only. It reports pending, accepted, and rejected
 assistance proposals; ready, confirmed, conflicting, and executed restore
-plans; pending Figma import plans; and the publication chain from bundles
+plans; Figma import plans and reviews; and the publication chain from bundles
 through reviews to artifacts.
 The server derives bundles awaiting review and approved reviews awaiting an
 artifact, then rejects impossible totals instead of emitting misleading
 negative values. Conflicts and every state awaiting an owner decision are
-included in `attentionCount`. No workflow document body is returned and no
+included in `attentionCount`. Reviewed Figma plans leave the queue because the
+server derives the difference between immutable plans and reviews and rejects
+impossible review totals. No workflow document body is returned and no
 decision, restore, publication, or deployment is executed.
 
 The generated dashboard turns the attention model into five navigable queue
