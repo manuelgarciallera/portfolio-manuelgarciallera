@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # The public npm lockfile remains outside automatic version updates while
+  # it is bound to the protected checkpoint. Public upgrades need a review.
+  - package-ecosystem: npm
+    directory: /owner-platform
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Europe/Madrid
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    groups:
+      payload:
+        patterns: ['payload', '@payloadcms/*']
+        update-types: ['minor', 'patch']
+      next:
+        patterns: ['next', 'eslint-config-next']
+        update-types: ['minor', 'patch']
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+        update-types: ['minor', 'patch']
+    commit-message:
+      prefix: chore(owner-deps)
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: chore(ci-deps)

@@ -27,7 +27,7 @@ comunes, no implementaciones separadas por cada mensaje.
 | Analítica dentro del panel | Lectura de snapshots importados | Importador y resumen de métricas/URLs; no es sincronización continua con una cuenta de Analytics |
 | Linocube | Interfaz preparada y desactivada | Sin red ni integración CRM activa; no añade dependencias al editor |
 | Panel acoplable/arrastrable | Diferido expresamente | El diseño aprobado reserva la carcasa dockable para una fase posterior; se conserva la navegación nativa de Payload |
-| Actualizaciones automáticas | No completamente automatizadas | Versiones y lockfiles fijados, pruebas y puertas de calidad; no hay autorización para actualizaciones/despliegues ciegos |
+| Actualizaciones automáticas | Configuración local, pendiente de activar | Dependabot para owner/Actions y CI independiente del CMS; `maintenance-automation-2026-09-05.md`. Sin auto-merge ni despliegue; faltan ejecución remota y reglas obligatorias del repositorio |
 
 Los planes de fundación, vertical slice y fase 2 separan explícitamente el
 funcionamiento local de la integración pública. Las casillas históricas de
