@@ -67,23 +67,24 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    projects: Project;
+    articles: Article;
+    pages: Page;
+    technologies: Technology;
     media: Media;
     'media-placements': MediaPlacement;
     'brand-profiles': BrandProfile;
-    projects: Project;
-    technologies: Technology;
-    articles: Article;
-    pages: Page;
     'preview-snapshots': PreviewSnapshot;
     releases: Release;
-    'audit-events': AuditEvent;
     'assistance-proposals': AssistanceProposal;
     'restore-plans': RestorePlan;
     'draft-snapshots': DraftSnapshot;
     'publication-bundles': PublicationBundle;
     'publication-reviews': PublicationReview;
     'publication-artifacts': PublicationArtifact;
+    'figma-import-plans': FigmaImportPlan;
+    users: User;
+    'audit-events': AuditEvent;
     'analytics-snapshots': AnalyticsSnapshot;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -92,23 +93,24 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'media-placements': MediaPlacementsSelect<false> | MediaPlacementsSelect<true>;
     'brand-profiles': BrandProfilesSelect<false> | BrandProfilesSelect<true>;
-    projects: ProjectsSelect<false> | ProjectsSelect<true>;
-    technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
-    articles: ArticlesSelect<false> | ArticlesSelect<true>;
-    pages: PagesSelect<false> | PagesSelect<true>;
     'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
-    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'assistance-proposals': AssistanceProposalsSelect<false> | AssistanceProposalsSelect<true>;
     'restore-plans': RestorePlansSelect<false> | RestorePlansSelect<true>;
     'draft-snapshots': DraftSnapshotsSelect<false> | DraftSnapshotsSelect<true>;
     'publication-bundles': PublicationBundlesSelect<false> | PublicationBundlesSelect<true>;
     'publication-reviews': PublicationReviewsSelect<false> | PublicationReviewsSelect<true>;
     'publication-artifacts': PublicationArtifactsSelect<false> | PublicationArtifactsSelect<true>;
+    'figma-import-plans': FigmaImportPlansSelect<false> | FigmaImportPlansSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'analytics-snapshots': AnalyticsSnapshotsSelect<false> | AnalyticsSnapshotsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -152,169 +154,6 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  role: 'owner';
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: number;
-  alt: string;
-  caption?: string | null;
-  credit?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    small?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    medium?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media-placements".
- */
-export interface MediaPlacement {
-  id: number;
-  name: string;
-  placement: {
-    asset: number | Media;
-    focalX: number;
-    focalY: number;
-    zoom: number;
-    fit: 'cover' | 'contain';
-    frame: 'auto' | '16:9' | '4:3' | '1:1' | '9:16';
-    overrides?: {
-      mobile?: {
-        focalX?: number | null;
-        focalY?: number | null;
-        zoom?: number | null;
-        fit?: ('cover' | 'contain') | null;
-        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
-      };
-      tablet?: {
-        focalX?: number | null;
-        focalY?: number | null;
-        zoom?: number | null;
-        fit?: ('cover' | 'contain') | null;
-        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
-      };
-    };
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "brand-profiles".
- */
-export interface BrandProfile {
-  id: number;
-  _order?: string | null;
-  name: string;
-  slug: string;
-  /**
-   * Roles semánticos. Se validan completamente al publicar.
-   */
-  colors?:
-    | {
-        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Objetivos compositivos; deben sumar 100 al publicar.
-   */
-  usageWeights?:
-    | {
-        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
-        weight: number;
-        id?: string | null;
-      }[]
-    | null;
-  typography?: {
-    primaryFamily?: string | null;
-    secondaryFamily?: string | null;
-    fontAssets?: (number | Media)[] | null;
-  };
-  assets?: {
-    logos?: (number | Media)[] | null;
-    images?: (number | Media)[] | null;
-    icons?: (number | Media)[] | null;
-  };
-  voiceNotes?: string | null;
-  motion?: {
-    duration?: number | null;
-    stagger?: number | null;
-    travel?: number | null;
-    easing?: ('linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out') | null;
-    reducedMotion?: ('reduce' | 'disable') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -442,6 +281,91 @@ export interface Project {
     canonicalUrl?: string | null;
     socialImage?: (number | null) | Media;
     noIndex?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  alt: string;
+  caption?: string | null;
+  credit?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    small?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    medium?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-placements".
+ */
+export interface MediaPlacement {
+  id: number;
+  name: string;
+  placement: {
+    asset: number | Media;
+    focalX: number;
+    focalY: number;
+    zoom: number;
+    fit: 'cover' | 'contain';
+    frame: 'auto' | '16:9' | '4:3' | '1:1' | '9:16';
+    overrides?: {
+      mobile?: {
+        focalX?: number | null;
+        focalY?: number | null;
+        zoom?: number | null;
+        fit?: ('cover' | 'contain') | null;
+        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
+      };
+      tablet?: {
+        focalX?: number | null;
+        focalY?: number | null;
+        zoom?: number | null;
+        fit?: ('cover' | 'contain') | null;
+        frame?: ('auto' | '16:9' | '4:3' | '1:1' | '9:16') | null;
+      };
+    };
   };
   updatedAt: string;
   createdAt: string;
@@ -713,6 +637,58 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-profiles".
+ */
+export interface BrandProfile {
+  id: number;
+  _order?: string | null;
+  name: string;
+  slug: string;
+  /**
+   * Roles semánticos. Se validan completamente al publicar.
+   */
+  colors?:
+    | {
+        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Objetivos compositivos; deben sumar 100 al publicar.
+   */
+  usageWeights?:
+    | {
+        role: 'background' | 'surface' | 'text' | 'mutedText' | 'accent' | 'interaction' | 'success' | 'danger';
+        weight: number;
+        id?: string | null;
+      }[]
+    | null;
+  typography?: {
+    primaryFamily?: string | null;
+    secondaryFamily?: string | null;
+    fontAssets?: (number | Media)[] | null;
+  };
+  assets?: {
+    logos?: (number | Media)[] | null;
+    images?: (number | Media)[] | null;
+    icons?: (number | Media)[] | null;
+  };
+  voiceNotes?: string | null;
+  motion?: {
+    duration?: number | null;
+    stagger?: number | null;
+    travel?: number | null;
+    easing?: ('linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out') | null;
+    reducedMotion?: ('reduce' | 'disable') | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "preview-snapshots".
  */
 export interface PreviewSnapshot {
@@ -734,6 +710,32 @@ export interface PreviewSnapshot {
   createdBy: number | User;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  role: 'owner';
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -779,29 +781,6 @@ export interface DraftSnapshot {
     | null;
   capsuleHash: string;
   createdBy: number | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audit-events".
- */
-export interface AuditEvent {
-  id: number;
-  actor: number | User;
-  action: string;
-  subjectCollection: string;
-  subjectId: string;
-  outcome: 'success' | 'denied' | 'failure';
-  metadata:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -928,6 +907,55 @@ export interface PublicationArtifact {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "figma-import-plans".
+ */
+export interface FigmaImportPlan {
+  id: number;
+  schemaVersion: number;
+  status: 'pending';
+  sourceFileKey: string;
+  nodeId: string;
+  candidateName: string;
+  candidateType: 'FRAME' | 'COMPONENT' | 'SECTION';
+  plan:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  planHash: string;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events".
+ */
+export interface AuditEvent {
+  id: number;
+  actor: number | User;
+  action: string;
+  subjectCollection: string;
+  subjectId: string;
+  outcome: 'success' | 'denied' | 'failure';
+  metadata:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "analytics-snapshots".
  */
 export interface AnalyticsSnapshot {
@@ -977,8 +1005,20 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'articles';
+        value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'technologies';
+        value: number | Technology;
       } | null)
     | ({
         relationTo: 'media';
@@ -993,32 +1033,12 @@ export interface PayloadLockedDocument {
         value: number | BrandProfile;
       } | null)
     | ({
-        relationTo: 'projects';
-        value: number | Project;
-      } | null)
-    | ({
-        relationTo: 'technologies';
-        value: number | Technology;
-      } | null)
-    | ({
-        relationTo: 'articles';
-        value: number | Article;
-      } | null)
-    | ({
-        relationTo: 'pages';
-        value: number | Page;
-      } | null)
-    | ({
         relationTo: 'preview-snapshots';
         value: number | PreviewSnapshot;
       } | null)
     | ({
         relationTo: 'releases';
         value: number | Release;
-      } | null)
-    | ({
-        relationTo: 'audit-events';
-        value: number | AuditEvent;
       } | null)
     | ({
         relationTo: 'assistance-proposals';
@@ -1043,6 +1063,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'publication-artifacts';
         value: number | PublicationArtifact;
+      } | null)
+    | ({
+        relationTo: 'figma-import-plans';
+        value: number | FigmaImportPlan;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'audit-events';
+        value: number | AuditEvent;
       } | null)
     | ({
         relationTo: 'analytics-snapshots';
@@ -1089,179 +1121,6 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  role?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  caption?: T;
-  credit?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-  _status?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        medium?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media-placements_select".
- */
-export interface MediaPlacementsSelect<T extends boolean = true> {
-  name?: T;
-  placement?:
-    | T
-    | {
-        asset?: T;
-        focalX?: T;
-        focalY?: T;
-        zoom?: T;
-        fit?: T;
-        frame?: T;
-        overrides?:
-          | T
-          | {
-              mobile?:
-                | T
-                | {
-                    focalX?: T;
-                    focalY?: T;
-                    zoom?: T;
-                    fit?: T;
-                    frame?: T;
-                  };
-              tablet?:
-                | T
-                | {
-                    focalX?: T;
-                    focalY?: T;
-                    zoom?: T;
-                    fit?: T;
-                    frame?: T;
-                  };
-            };
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "brand-profiles_select".
- */
-export interface BrandProfilesSelect<T extends boolean = true> {
-  _order?: T;
-  name?: T;
-  slug?: T;
-  colors?:
-    | T
-    | {
-        role?: T;
-        value?: T;
-        id?: T;
-      };
-  usageWeights?:
-    | T
-    | {
-        role?: T;
-        weight?: T;
-        id?: T;
-      };
-  typography?:
-    | T
-    | {
-        primaryFamily?: T;
-        secondaryFamily?: T;
-        fontAssets?: T;
-      };
-  assets?:
-    | T
-    | {
-        logos?: T;
-        images?: T;
-        icons?: T;
-      };
-  voiceNotes?: T;
-  motion?:
-    | T
-    | {
-        duration?: T;
-        stagger?: T;
-        travel?: T;
-        easing?: T;
-        reducedMotion?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1361,22 +1220,6 @@ export interface ProjectsSelect<T extends boolean = true> {
         socialImage?: T;
         noIndex?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "technologies_select".
- */
-export interface TechnologiesSelect<T extends boolean = true> {
-  _order?: T;
-  name?: T;
-  slug?: T;
-  icon?: T;
-  brandColor?: T;
-  officialUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1563,6 +1406,172 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "technologies_select".
+ */
+export interface TechnologiesSelect<T extends boolean = true> {
+  _order?: T;
+  name?: T;
+  slug?: T;
+  icon?: T;
+  brandColor?: T;
+  officialUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  caption?: T;
+  credit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-placements_select".
+ */
+export interface MediaPlacementsSelect<T extends boolean = true> {
+  name?: T;
+  placement?:
+    | T
+    | {
+        asset?: T;
+        focalX?: T;
+        focalY?: T;
+        zoom?: T;
+        fit?: T;
+        frame?: T;
+        overrides?:
+          | T
+          | {
+              mobile?:
+                | T
+                | {
+                    focalX?: T;
+                    focalY?: T;
+                    zoom?: T;
+                    fit?: T;
+                    frame?: T;
+                  };
+              tablet?:
+                | T
+                | {
+                    focalX?: T;
+                    focalY?: T;
+                    zoom?: T;
+                    fit?: T;
+                    frame?: T;
+                  };
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand-profiles_select".
+ */
+export interface BrandProfilesSelect<T extends boolean = true> {
+  _order?: T;
+  name?: T;
+  slug?: T;
+  colors?:
+    | T
+    | {
+        role?: T;
+        value?: T;
+        id?: T;
+      };
+  usageWeights?:
+    | T
+    | {
+        role?: T;
+        weight?: T;
+        id?: T;
+      };
+  typography?:
+    | T
+    | {
+        primaryFamily?: T;
+        secondaryFamily?: T;
+        fontAssets?: T;
+      };
+  assets?:
+    | T
+    | {
+        logos?: T;
+        images?: T;
+        icons?: T;
+      };
+  voiceNotes?: T;
+  motion?:
+    | T
+    | {
+        duration?: T;
+        stagger?: T;
+        travel?: T;
+        easing?: T;
+        reducedMotion?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "preview-snapshots_select".
  */
 export interface PreviewSnapshotsSelect<T extends boolean = true> {
@@ -1598,20 +1607,6 @@ export interface ReleasesSelect<T extends boolean = true> {
         id?: T;
       };
   createdBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audit-events_select".
- */
-export interface AuditEventsSelect<T extends boolean = true> {
-  actor?: T;
-  action?: T;
-  subjectCollection?: T;
-  subjectId?: T;
-  outcome?: T;
-  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1718,6 +1713,60 @@ export interface PublicationArtifactsSelect<T extends boolean = true> {
   artifactHash?: T;
   schemaVersion?: T;
   createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "figma-import-plans_select".
+ */
+export interface FigmaImportPlansSelect<T extends boolean = true> {
+  schemaVersion?: T;
+  status?: T;
+  sourceFileKey?: T;
+  nodeId?: T;
+  candidateName?: T;
+  candidateType?: T;
+  plan?: T;
+  planHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-events_select".
+ */
+export interface AuditEventsSelect<T extends boolean = true> {
+  actor?: T;
+  action?: T;
+  subjectCollection?: T;
+  subjectId?: T;
+  outcome?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }

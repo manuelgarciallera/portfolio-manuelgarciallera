@@ -18,4 +18,5 @@
 .body li > div { display: flex; flex-direction: column; min-width: 0; gap: 0.2rem; }
 .body li strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .body li a { width: max-content; max-width: 100%; color: inherit; font-size: 0.75rem; }
+.body li button { width: max-content; min-height: 2rem; margin-top: 0.2rem; padding-inline: 0.65rem; font-size: 0.75rem; }
 @media (max-width: 34rem) { .body form > div { grid-template-columns: 1fr; } .explorer summary { flex-direction: column; } }
