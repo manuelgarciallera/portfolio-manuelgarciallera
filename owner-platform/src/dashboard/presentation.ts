@@ -1,6 +1,7 @@
 type DashboardCard = { href: string; label: string; tone: 'attention' | 'healthy' | 'neutral'; value: number }
 type RecentItem = { href: string; label: string; meta: string; updatedAt: string }
-type DashboardPresentation = { actions: { href: string; label: string }[]; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string }
+type VersionItem = { createdAt: string; href: string; name: string; scores: { label: string; value: number }[]; summary: string }
+type DashboardPresentation = { actions: { href: string; label: string }[]; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -30,6 +31,29 @@ const recentItems = (recent: Record<string, unknown>): RecentItem[] => {
   }).sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)).slice(0, 5)
 }
 
+const releaseVersions = (releases: Record<string, unknown>): VersionItem[] => {
+  const values = releases.versions ?? []
+  if (!Array.isArray(values) || values.length > 20) return fail()
+  return values.slice(0, 3).map((value) => {
+    const version = object(value) ?? fail()
+    const average = object(object(version.scores)?.average) ?? fail()
+    const createdAt = typeof version.createdAt === 'string' && !Number.isNaN(Date.parse(version.createdAt)) ? version.createdAt : fail()
+    const name = typeof version.name === 'string' && version.name.trim() ? version.name.trim() : fail()
+    const summary = typeof version.changeSummary === 'string' && version.changeSummary.trim() ? version.changeSummary.trim() : fail()
+    return {
+      createdAt,
+      href: `/admin/collections/releases/${encodeURIComponent(String(relationId(version.id)))}`,
+      name,
+      scores: [
+        { label: 'Rendimiento', value: count(average.performance) },
+        { label: 'Usabilidad', value: count(average.usability) },
+        { label: 'Accesibilidad', value: count(average.accessibility) },
+      ],
+      summary,
+    }
+  })
+}
+
 export const presentOwnerDashboard = (value: unknown): DashboardPresentation => {
   const overview = object(value) ?? fail()
   const content = object(overview.content) ?? {}
@@ -56,5 +80,6 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
     ],
     recent: recentItems(object(overview.recent) ?? {}),
     runtimeLabel: readiness.productionReady === true ? 'Preparado para producción' : 'Local protegido',
+    versions: releaseVersions(releases),
   }
 }

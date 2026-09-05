@@ -13,7 +13,23 @@ describe('presentOwnerDashboard', () => {
         pages: [],
         projects: [{ id: 1, title: 'Proyecto', slug: 'proyecto', status: 'published', updatedAt: '2026-09-05T11:00:00.000Z' }],
       },
-      releases: { count: 7 },
+      releases: {
+        count: 7,
+        versions: [{
+          id: 9,
+          name: 'Checkpoint editorial',
+          changeSummary: 'Canvas modular y SEO.',
+          gitCommit: 'a'.repeat(40),
+          createdAt: '2026-09-05T08:00:00.000Z',
+          previewSnapshotId: 11,
+          draftSnapshotId: 12,
+          scores: {
+            average: { accessibility: 97, performance: 92, usability: 93 },
+            desktop: { accessibility: 98, performance: 96, usability: 94 },
+            mobile: { accessibility: 96, performance: 88, usability: 92 },
+          },
+        }],
+      },
       workflow: { attentionCount: 4 },
     })).toEqual({
       actions: [
@@ -33,11 +49,24 @@ describe('presentOwnerDashboard', () => {
         { href: '/admin/collections/articles/3', label: 'Artículo', meta: 'Artículo · Borrador', updatedAt: '2026-09-05T10:00:00.000Z' },
       ],
       runtimeLabel: 'Local protegido',
+      versions: [{
+        createdAt: '2026-09-05T08:00:00.000Z',
+        href: '/admin/collections/releases/9',
+        name: 'Checkpoint editorial',
+        scores: [
+          { label: 'Rendimiento', value: 92 },
+          { label: 'Usabilidad', value: 93 },
+          { label: 'Accesibilidad', value: 97 },
+        ],
+        summary: 'Canvas modular y SEO.',
+      }],
     })
   })
 
   it('rejects malformed or excessive dashboard data', () => {
     expect(() => presentOwnerDashboard({ content: { issueCount: -1 } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ recent: { articles: new Array(6).fill({}) } })).toThrow(/dashboard/i)
+    expect(() => presentOwnerDashboard({ releases: { versions: new Array(21).fill({}) } })).toThrow(/dashboard/i)
+    expect(() => presentOwnerDashboard({ releases: { versions: [{ id: 1, name: 'X', changeSummary: 'Y', createdAt: 'bad', scores: { average: {} } }] } })).toThrow(/dashboard/i)
   })
 })

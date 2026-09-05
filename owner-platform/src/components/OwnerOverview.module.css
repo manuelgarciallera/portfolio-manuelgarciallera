@@ -1,6 +1,6 @@
 .overview { margin-block: -1.5rem 2.5rem; }
 .heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
-.heading h2, .recent h3 { margin: 0; font-size: 1rem; }
+.heading h2, .recent h3, .versions h3 { margin: 0; font-size: 1rem; }
 .heading span { color: var(--theme-elevation-600); font-size: 0.8rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
 .actions a { min-height: 2.25rem; padding: 0.55rem 0.75rem; color: var(--theme-text); text-decoration: none; background: var(--theme-bg); border: 1px solid var(--theme-elevation-250); border-radius: 0.35rem; }
@@ -19,10 +19,24 @@
 .recent a { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; color: inherit; text-decoration: none; }
 .recent a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recent small, .recent time { color: var(--theme-elevation-600); font-size: 0.75rem; }
+.versions { margin-top: 1.25rem; }
+.sectionHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.sectionHeading a { color: var(--theme-elevation-700); font-size: 0.78rem; text-underline-offset: 0.2em; }
+.versions > ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin: 0.55rem 0 0; padding: 0; list-style: none; }
+.versions li { display: grid; gap: 0.7rem; padding: 0.85rem; border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; background: var(--theme-bg); }
+.versionTitle { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; color: inherit; text-decoration: none; }
+.versionTitle span { font-weight: 600; }
+.versionTitle small { overflow: hidden; color: var(--theme-elevation-650); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+.versionTitle:hover span { text-decoration: underline; text-underline-offset: 0.2em; }
+.versions dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; margin: 0; }
+.versions dl div { min-width: 0; }
+.versions dt { overflow: hidden; color: var(--theme-elevation-600); font-size: 0.65rem; text-overflow: ellipsis; white-space: nowrap; }
+.versions dd { margin: 0.15rem 0 0; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.versions time { color: var(--theme-elevation-600); font-size: 0.7rem; }
 .notice { margin-block: -1.5rem 2.5rem; padding: 0.8rem; color: var(--theme-elevation-700); border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; }
-.actions a:focus-visible, .metrics a:focus-visible, .recent a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+.actions a:focus-visible, .metrics a:focus-visible, .recent a:focus-visible, .versions a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
 
-@media (max-width: 64rem) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 64rem) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .versions > ul { grid-template-columns: 1fr; } }
 @media (max-width: 34rem) {
   .overview { margin-top: -0.75rem; }
   .metrics { grid-template-columns: 1fr; }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 import { presentOwnerDashboard } from '@/dashboard/presentation'
 import styles from './OwnerOverview.module.css'
@@ -54,6 +55,30 @@ export const OwnerOverview = () => {
               <li key={item.href}>
                 <a href={item.href}><span>{item.label}</span><small>{item.meta}</small></a>
                 <time dateTime={item.updatedAt}>{new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short' }).format(new Date(item.updatedAt))}</time>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {view.versions.length > 0 && (
+        <div className={styles.versions}>
+          <div className={styles.sectionHeading}>
+            <h3>Versiones verificadas</h3>
+            <Link href="/admin/collections/releases">Ver historial</Link>
+          </div>
+          <ul>
+            {view.versions.map((version) => (
+              <li key={version.href}>
+                <a className={styles.versionTitle} href={version.href}>
+                  <span>{version.name}</span>
+                  <small>{version.summary}</small>
+                </a>
+                <dl>
+                  {version.scores.map((score) => (
+                    <div key={score.label}><dt>{score.label}</dt><dd>{score.value}</dd></div>
+                  ))}
+                </dl>
+                <time dateTime={version.createdAt}>{new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(version.createdAt))}</time>
               </li>
             ))}
           </ul>
