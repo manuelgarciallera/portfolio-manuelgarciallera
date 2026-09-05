@@ -40,7 +40,10 @@ non-authoritative safe demonstration, and `prefers-reduced-motion` disables the
 preview animation without changing the stored policy.
 
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
-current draft. `POST /api/owner/figma/discover` performs bounded, read-only
+current draft. The dashboard can capture the visual manifest and its restorable
+draft capsule together. It rejects the pair if the page revision changes
+between requests, then refreshes the release-registration evidence list.
+`POST /api/owner/figma/discover` performs bounded, read-only
 discovery when `FIGMA_PERSONAL_ACCESS_TOKEN` and `FIGMA_PLAN` are configured
 server-side. Figma rate limits are returned without automatic retries.
 The owner dashboard exposes this through a collapsed explorer: an authenticated

@@ -312,6 +312,15 @@ a public preview renderer. Inspect the returned snapshot or its owner-only
 collection record while the local app runs. Regenerate a snapshot after changing
 a page—an existing snapshot never mutates.
 
+The dashboard action **Capturar revisión de una página** lists at most 100
+owner-readable pages and calls the visual and draft snapshot endpoints with the
+same current-draft selector. It accepts the pair only when both returned records
+identify the same page and exact source revision; a concurrent page edit leaves
+immutable evidence but is reported as a mismatch and cannot feed registration.
+After a matching capture, the release form refreshes its evidence list without
+requiring a dashboard reload. The control never updates page content or the
+public renderer.
+
 ## Reviewed assistance proposal API
 
 The private proposal workflow has two authenticated owner-only endpoints. To
