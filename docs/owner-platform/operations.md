@@ -580,6 +580,14 @@ routes, creates a canonical hash, and appends an audit event. Snapshots are
 owner-readable and immutable. They contain aggregates only: no IP, user ID,
 cookie, session, URL query, or URL fragment is accepted.
 
+The generated owner dashboard exposes this boundary through a collapsed local
+JSON importer. The client rejects non-object JSON and payloads above the 256
+KiB request limit before transport, then submits the literal `IMPORTAR
+ANALÍTICA` confirmation required by the endpoint. It displays only controlled
+success or failure copy, never a raw server error body. A successful import
+links to the immutable Analytics Snapshots collection; no provider connection,
+tracking code, publication, or public-site write occurs.
+
 This establishes the dashboard data contract without choosing a paid provider.
 A later read-only adapter for Vercel, Plausible, or another source can map into
 the same schema after separate credential, privacy, rate-limit, and cost review.

@@ -96,6 +96,11 @@ Analytics Snapshots accepts bounded provider-neutral aggregate exports through
 traffic, engagement, and LCP/INP/CLS as immutable hashed evidence. The endpoint
 does not add visitor tracking, cookies, provider SDKs, or JavaScript to the
 public portfolio.
+The owner dashboard includes a collapsed JSON importer for this endpoint. It
+accepts one local file of at most 256 KiB, validates that it contains a JSON
+object, submits the exact server confirmation envelope, and links to the
+immutable history after success. Server error bodies are never shown to the
+editor, and the importer adds no analytics runtime to the public portfolio.
 
 `GET /api/owner/analytics/summary` supplies a dashboard-ready owner-only view
 from the two latest verified snapshots: traffic changes, engagement, ten top
