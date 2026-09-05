@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util'
 import {
   APIError,
   type CollectionBeforeChangeHook,
@@ -33,19 +34,28 @@ export const prepareAssistanceProposal: CollectionBeforeChangeHook = async ({
     }
     return data
   }
-  if (operation !== 'update' || Object.keys(data).some((key) => !decisionFields.has(key))) {
+  if (operation !== 'update') {
     throw immutableError()
   }
-  if (data.decidedBy !== undefined && String(data.decidedBy) !== String(req.user.id)) {
+  if (data.createdAt !== undefined && data.createdAt !== originalDoc?.createdAt) throw immutableError()
+  // Payload merges stored fields and timestamps into partial updates. Validate
+  // only the changed command, but return complete fields for required validation.
+  const command = Object.fromEntries(Object.entries(data).filter(([key, value]) =>
+    key !== 'createdAt' && key !== 'updatedAt' && value !== undefined &&
+    !(Object.hasOwn(originalDoc ?? {}, key) && isDeepStrictEqual(value, originalDoc[key])),
+  ))
+  if (Object.keys(command).some((key) => !decisionFields.has(key))) throw immutableError()
+  if (command.decidedBy !== undefined && String(command.decidedBy) !== String(req.user.id)) {
     throw new APIError('La identidad de decisión no puede sustituirse.', 400)
   }
   try {
-    return decideProposalData(
+    const decision = decideProposalData(
       { status: originalDoc?.status },
-      { decision: data.status, note: data.decisionNote },
+      { decision: command.status, note: command.decisionNote },
       req.user,
-      data.decidedAt,
+      command.decidedAt as string | undefined,
     )
+    return { ...data, ...decision }
   } catch {
     throw new APIError('La decisión de propuesta no es válida.', 400)
   }

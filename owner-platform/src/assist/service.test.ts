@@ -51,6 +51,20 @@ describe('createOwnerAssistanceContext', () => {
 })
 
 describe('createOwnerAssistanceProposal', () => {
+  it.each([7, 'page-uuid'])('preserves the stored page id type (%s) and rejects mismatched lookups', async (pageId) => {
+    const snapshot = createPreviewManifest({ ...manifest, pageBlocks: [...manifest.pageBlocks], mediaReferences: [...manifest.mediaReferences], source: { ...manifest.source, documentId: String(pageId) } })
+    const create = vi.fn(async ({ data }) => ({ id: 31, ...data }))
+    const payload = { create, findGlobal: async () => ({ suggestCopy: true }), findByID: async ({ collection }: { collection: string }) =>
+      collection === 'preview-snapshots' ? { id: 12, manifest: snapshot, manifestHash: snapshot.hash } : { id: pageId, title: 'Inicio' } }
+    await createOwnerAssistanceProposal({ patch, payload, provider: 'manual', req: { user: owner }, sourceSnapshot: '12' })
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'assistance-proposals', data: expect.objectContaining({ targetPage: pageId }) }))
+    create.mockClear()
+    const mismatched = { ...payload, findByID: async ({ collection }: { collection: string }) =>
+      collection === 'preview-snapshots' ? { id: 12, manifest: snapshot, manifestHash: snapshot.hash } : { id: 'wrong', title: 'Inicio' } }
+    await expect(createOwnerAssistanceProposal({ patch, payload: mismatched, provider: 'manual', req: { user: owner }, sourceSnapshot: 12 })).rejects.toThrow(/no coincide/i)
+    expect(create).not.toHaveBeenCalled()
+  })
+
   it('derives context and switches server-side, persists a pending proposal and audits it', async () => {
     const create = vi.fn(async ({ collection, data }) =>
       collection === 'assistance-proposals' ? { id: 31, ...data } : { id: 32, ...data },
@@ -79,7 +93,7 @@ describe('createOwnerAssistanceProposal', () => {
         createdBy: 1,
         sourceSnapshot: 12,
         status: 'pending',
-        targetPage: '7',
+        targetPage: 7,
       }),
       overrideAccess: true,
     }))

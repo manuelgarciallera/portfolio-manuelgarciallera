@@ -55,12 +55,15 @@ export const executeOwnerFigmaImport = async ({ alt, confirmation, dependencies 
   if (existing.docs.length) throw new APIError('La revisión de Figma ya fue importada.', 409)
 
   const reviewDocument = await payload.findByID({ collection: 'figma-import-reviews', depth: 0, id: reviewId, overrideAccess: false, req })
+  const storedReviewId = id(reviewDocument, 'La revisión')
+  if (String(storedReviewId) !== String(reviewId)) throw new APIError('La revisión no coincide con el identificador solicitado.', 409)
   const planId = id(reviewDocument.plan, 'La revisión')
   let review
   try {
     review = createFigmaImportReview({
       decidedAt: reviewDocument.decidedAt, decidedBy: id(reviewDocument.decidedBy, 'El owner'),
-      decision: reviewDocument.decision as FigmaImportDecision, note: reviewDocument.note,
+      // Optional textarea values are read back as null by Payload/SQLite.
+      decision: reviewDocument.decision as FigmaImportDecision, note: reviewDocument.note ?? undefined,
       planHash: reviewDocument.planHash, planId,
     })
   } catch { throw new APIError('La revisión no supera la verificación de integridad.', 409) }
@@ -103,10 +106,10 @@ export const executeOwnerFigmaImport = async ({ alt, confirmation, dependencies 
       req,
     })
     const placementId = id(placement, 'El encuadre')
-    const execution = createFigmaImportExecution({ contentHash, importedAt: now, importedBy: ownerId, mediaId, mimeType: rendered.mimeType, placementId, planHash, planId, reviewHash: review.hash, reviewId, size: rendered.size })
+    const execution = createFigmaImportExecution({ contentHash, importedAt: now, importedBy: ownerId, mediaId, mimeType: rendered.mimeType, placementId, planHash, planId, reviewHash: review.hash, reviewId: storedReviewId, size: rendered.size })
     const created = await payload.create({
       collection: 'figma-import-executions',
-      data: { contentHash, executionHash: execution.hash, importedAt: execution.importedAt, importedBy: ownerId, media: mediaId, mimeType: execution.mimeType, placement: placementId, plan: planId, planHash, review: reviewId, reviewHash: review.hash, schemaVersion: execution.schemaVersion, size: execution.size },
+      data: { contentHash, executionHash: execution.hash, importedAt: execution.importedAt, importedBy: ownerId, media: mediaId, mimeType: execution.mimeType, placement: placementId, plan: planId, planHash, review: storedReviewId, reviewHash: review.hash, schemaVersion: execution.schemaVersion, size: execution.size },
       overrideAccess: true,
       req,
     })

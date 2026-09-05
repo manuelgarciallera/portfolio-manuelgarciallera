@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { createLocalReq, getPayload, type Payload } from 'payload'
+import sharp from 'sharp'
 import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 
 // This suite runs in Node, outside Next's react-server module condition. Only
@@ -21,11 +22,16 @@ import { createOwnerPublicationBundle } from '../src/publication/service'
 import { createOwnerPublicationReview } from '../src/publication/review-service'
 import { createOwnerPublicationArtifact } from '../src/publication/artifact-service'
 import { createOwnerPublicationPreflight } from '../src/publication/preflight-service'
+import { createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from '../src/assist/service'
+import { createOwnerFigmaImportPlan } from '../src/connectors/figma/import-service'
+import { createOwnerFigmaImportReview } from '../src/connectors/figma/import-review-service'
+import { executeOwnerFigmaImport } from '../src/connectors/figma/import-execution-service'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
 let databaseDirectory: string | undefined
 let rejectRestoreAudit = false
+let rejectFigmaAudit = false
 const databasePrefix = path.join(tmpdir(), 'owner-editorial-qa-')
 
 beforeAll(async () => {
@@ -40,6 +46,7 @@ beforeAll(async () => {
       collections: config.collections.map((collection) => collection.slug === 'media' ? { ...collection, upload: { ...collection.upload, disableLocalStorage: true } } : collection.slug === 'audit-events' ? {
         ...collection, hooks: { ...collection.hooks, beforeChange: [({ data }) => {
           if (rejectRestoreAudit && data.action === 'restore.executed') throw new Error('QA restore audit unavailable')
+          if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
           return data
         }, ...(collection.hooks.beforeChange ?? [])] },
       } : collection),
@@ -98,6 +105,37 @@ it('registers a real immutable release from a matched snapshot pair', async () =
   await expect(payload.find({ collection: 'releases', overrideAccess: false })).rejects.toThrow()
 }, 30_000)
 
+it.each(['accepted', 'rejected'] as const)('persists an assistance proposal and its %s decision without editing the page', async (decision) => {
+  const { page, req } = await createReleaseFixture()
+  const snapshot = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  const before = await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })
+  const input = { payload: payload as never, req, sourceSnapshot: String(snapshot.id), provider: 'manual', patch: {
+    schemaVersion: 1, capability: 'suggestCopy', operations: [{ op: 'replace', path: '/page/title', value: 'Proposed, not applied' }],
+  } }
+  await payload.updateGlobal({ slug: 'assistant-settings', user: owner, overrideAccess: false, data: { suggestCopy: false } })
+  await expect(createOwnerAssistanceProposal(input)).rejects.toThrow(/desactivada/i)
+  await payload.updateGlobal({ slug: 'assistant-settings', user: owner, overrideAccess: false, data: { suggestCopy: true } })
+  const proposal = await createOwnerAssistanceProposal(input).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(proposal.status).toBe('pending')
+  // Bypass collection ACL only in this trusted test to exercise the actual
+  // beforeChange guard after Payload field merging, not merely access denial.
+  for (const mutation of [{ patch: { ...input.patch, operations: [] } }, { createdAt: '2020-01-01T00:00:00.000Z' }]) {
+    await expect(payload.update({ collection: 'assistance-proposals', id: proposal.id as number, req, overrideAccess: true,
+      data: { ...mutation, status: decision, decidedBy: owner.id, decidedAt: new Date().toISOString() },
+    })).rejects.toThrow(/fuera de su decisión/i)
+  }
+  const result = await decideOwnerAssistanceProposal({ payload: payload as never, req, proposalId: String(proposal.id), decision }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(result.status).toBe(decision)
+  const stored = await payload.findByID({ collection: 'assistance-proposals', id: proposal.id as number, depth: 0, user: owner, overrideAccess: false })
+  expect(stored.targetPage).toBe(page.id)
+  expect(stored.sourceSnapshot).toBe(snapshot.id)
+  expect(stored.patch).toEqual(input.patch)
+  expect(stored.decidedBy).toBe(owner.id)
+  await expect(decideOwnerAssistanceProposal({ payload: payload as never, req, proposalId: String(proposal.id), decision })).rejects.toThrow(/pendiente/i)
+  await expect(payload.update({ collection: 'assistance-proposals', id: proposal.id as number, user: owner, overrideAccess: false, data: { status: 'pending' } })).rejects.toThrow()
+  expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
+}, 30_000)
+
 it('reviews a real publication bundle addressed by a URL id and generates its artifact without editing the page', async () => {
   const { page, req, release } = await createReleaseFixture()
   const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'QA publication', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
@@ -111,6 +149,48 @@ it('reviews a real publication bundle addressed by a URL id and generates its ar
   const storedPreflight = await payload.findByID({ collection: 'publication-preflights', id: preflight.id as number, depth: 0, user: owner, overrideAccess: false })
   expect(storedPreflight.artifact).toBe(artifact.id)
   expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
+}, 30_000)
+
+it('imports an approved Figma plan into draft media with URL ids and no optional review note', async () => {
+  const req = await createLocalReq({ user: owner }, payload)
+  // Only the external Figma boundary is substituted; all services, collection
+  // hooks, uploads, relations and transactions use the real application config.
+  const provider = { discover: async () => ({ ok: true as const,
+    file: { name: 'Synthetic design', lastModified: '2026-09-05T04:00:00.000Z' },
+    candidates: [{ id: '12:34', name: 'QA hero', type: 'FRAME' as const, width: 32, height: 32,
+      sourceUrl: 'https://www.figma.com/design/AbCdEf?node-id=12-34',
+      preview: { url: 'https://api-cdn.figma.com/synthetic.png', expiresAfterDays: 30 as const } }], truncated: false,
+  }) }
+  const plan = await createOwnerFigmaImportPlan({ payload: payload as never, req, provider, candidateId: '12:34', source: 'https://www.figma.com/design/AbCdEf', confirmation: 'PREPARAR IMPORTACIÓN FIGMA' })
+  const review = await createOwnerFigmaImportReview({ payload: payload as never, req, planId: String(plan.id), decision: 'approved', confirmation: 'APROBAR IMPORTACIÓN FIGMA' }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect((await payload.findByID({ collection: 'figma-import-reviews', id: review.id as number, depth: 0, user: owner, overrideAccess: false })).note).toBeNull()
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).png().toBuffer()
+  const download = vi.fn(async () => ({ data: bytes, mimeType: 'image/png' as const, size: bytes.length }))
+  const input = { payload: payload as never, req, provider, download, reviewId: String(review.id), alt: 'Synthetic Figma image', confirmation: 'IMPORTAR PNG DE FIGMA' }
+  const counts = async () => Promise.all((['media', 'media-placements', 'figma-import-executions', 'audit-events'] as const).map(async (collection) => (await payload.count({ collection, user: owner, overrideAccess: false })).totalDocs))
+  const beforeCounts = await counts()
+  const versions = async () => Promise.all((['media', 'media-placements'] as const).map(async (collection) => (await payload.findVersions({ collection, user: owner, overrideAccess: false, limit: 1000 })).docs.map(({ id }) => id).sort()))
+  const beforeVersions = await versions()
+  const changedProvider = { discover: async () => { const result = await provider.discover(); return { ...result, file: { ...result.file, lastModified: '2026-09-05T05:00:00.000Z' } } } }
+  await expect(executeOwnerFigmaImport({ ...input, provider: changedProvider })).rejects.toThrow(/cambiado/i)
+  expect(download).not.toHaveBeenCalled()
+  expect(await counts()).toEqual(beforeCounts)
+  rejectFigmaAudit = true
+  try {
+    await expect(executeOwnerFigmaImport(input)).rejects.toThrow('QA Figma audit unavailable')
+  } finally { rejectFigmaAudit = false }
+  expect(await counts()).toEqual(beforeCounts)
+  expect(await versions()).toEqual(beforeVersions)
+  const result = await executeOwnerFigmaImport(input).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  const stored = await payload.findByID({ collection: 'figma-import-executions', id: result.id as number, depth: 0, user: owner, overrideAccess: false })
+  expect(stored.review).toBe(review.id)
+  expect(stored.plan).toBe(plan.id)
+  const media = await payload.findByID({ collection: 'media', id: stored.media as number, draft: true, depth: 0, user: owner, overrideAccess: false })
+  expect(media).toMatchObject({ _status: 'draft', alt: 'Synthetic Figma image', width: 32, height: 32 })
+  const placement = await payload.findByID({ collection: 'media-placements', id: stored.placement as number, draft: true, depth: 0, user: owner, overrideAccess: false })
+  expect(placement).toMatchObject({ _status: 'draft', placement: { asset: media.id } })
+  await expect(executeOwnerFigmaImport(input)).rejects.toThrow(/importada/i)
+  expect(download).toHaveBeenCalledTimes(2)
 }, 30_000)
 
 it('restores the captured page as a draft while preserving the published revision', async () => {

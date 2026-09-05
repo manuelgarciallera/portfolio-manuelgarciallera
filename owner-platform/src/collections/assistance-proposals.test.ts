@@ -75,4 +75,13 @@ describe('AssistanceProposals collection', () => {
     ).rejects.toBeInstanceOf(APIError)
     await expect(enforceAssistanceProposalDelete({} as never)).rejects.toBeInstanceOf(APIError)
   })
+
+  it('accepts Payload merged fields and timestamps while preserving immutable content', async () => {
+    const original = { ...proposal, decisionNote: null, decidedAt: null, decidedBy: null, createdAt: '2026-09-04T19:00:00.000Z' }
+    const data = { ...structuredClone(original), status: 'accepted', decidedBy: 1, decidedAt: '2026-09-04T20:00:00.000Z', updatedAt: '2026-09-04T20:00:00.000Z' }
+    await expect(prepareAssistanceProposal({ operation: 'update', data, originalDoc: original, req: { user: owner } } as never)).resolves.toEqual(data)
+    for (const mutation of [{ targetPage: 8 }, { patch: {} }, { provider: null }, { createdBy: 2 }, { createdAt: '2020-01-01T00:00:00.000Z' }]) {
+      await expect(prepareAssistanceProposal({ operation: 'update', data: { ...data, ...mutation }, originalDoc: original, req: { user: owner } } as never)).rejects.toBeInstanceOf(APIError)
+    }
+  })
 })

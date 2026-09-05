@@ -67,6 +67,10 @@ live credentialed Figma imports and AI-provider execution are not certified by
 these tests. The published portfolio still reads its existing checked-in content.
 No automatic application, publication or deployment has been enabled.
 
+The subsequent [assistance and Figma persistence verification](assistance-figma-persistence-verification.md)
+adds actual SQLite service-path coverage with synthetic external Figma responses;
+it still does not certify live credentialed provider access.
+
 ## Recorded verification
 
 - Browser component matrix: 18 cases passed, including delayed responses and

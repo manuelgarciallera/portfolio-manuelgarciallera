@@ -26,6 +26,17 @@ const setup = () => {
 }
 
 describe('executeOwnerFigmaImport', () => {
+  it.each([45, 'review-uuid'])('preserves stored review ids (%s) and accepts an absent persisted note', async (id) => {
+    const { create, download, payload } = setup()
+    const storedPayload = { ...payload, findByID: async ({ collection }: { collection: string }) =>
+      collection === 'figma-import-reviews' ? { ...reviewDocument, id, note: null } : planDocument }
+    await executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download, payload: storedPayload, provider, req: { user: owner }, reviewId: String(id) })
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'figma-import-executions', data: expect.objectContaining({ review: id }) }))
+    create.mockClear()
+    await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download, payload: storedPayload, provider, req: { user: owner }, reviewId: 'wrong' })).rejects.toThrow(/no coincide/i)
+    expect(create).not.toHaveBeenCalled()
+  })
+
   it('revalidates approved evidence and fresh Figma metadata before creating draft media and immutable execution evidence', async () => {
     const { create, download, payload } = setup()
     const result = await executeOwnerFigmaImport({ alt: 'Vista principal del portfolio', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download, now: '2026-09-05T07:30:00.000Z', payload, provider, req: { user: owner }, reviewId: 45 })
@@ -61,6 +72,12 @@ describe('executeOwnerFigmaImport', () => {
     second.payload.findByID = vi.fn(async ({ collection }: { collection: string }) => collection === 'figma-import-reviews' ? reviewDocument : { ...planDocument, planHash: `sha256:${'0'.repeat(64)}` })
     await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download: second.download, payload: second.payload, provider, req: { user: owner }, reviewId: 45 })).rejects.toThrow(/integridad|hash/i)
     expect(second.download).not.toHaveBeenCalled()
+    const removedNote = setup()
+    const notedReview = createFigmaImportReview({ decidedAt: review.decidedAt, decidedBy: 1, decision: 'approved', note: 'Approved with context', planHash: plan.hash, planId: 44 })
+    const persisted = { ...removedNote.payload, findByID: async ({ collection }: { collection: string }) =>
+      collection === 'figma-import-reviews' ? { ...reviewDocument, reviewHash: notedReview.hash, note: null } : planDocument }
+    await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download: removedNote.download, payload: persisted, provider, req: { user: owner }, reviewId: 45 })).rejects.toThrow(/integridad/i)
+    expect(removedNote.download).not.toHaveBeenCalled()
   })
 
   it('stops when the approved node changed or has no fresh PNG render', async () => {

@@ -116,6 +116,8 @@ export const createOwnerAssistanceProposal = async ({
     'La página',
   )
   if (typeof page.title !== 'string') throw new APIError('La página no tiene un título válido.', 400)
+  const storedPageId = relationId(page, 'La página')
+  if (String(storedPageId) !== String(pageId)) throw new APIError('La página no coincide con el snapshot.', 400)
   const settings = record(
     await payload.findGlobal({ slug: 'assistant-settings', depth: 0, overrideAccess: false, req }),
     'Los permisos del asistente',
@@ -133,7 +135,7 @@ export const createOwnerAssistanceProposal = async ({
     },
   }
   const data = createProposalData(
-    { patch, provider, sourceSnapshot: relationId(snapshot, 'El snapshot'), targetPage: pageId },
+    { patch, provider, sourceSnapshot: relationId(snapshot, 'El snapshot'), targetPage: storedPageId },
     req.user,
     switches,
     context,
