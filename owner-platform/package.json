@@ -20,7 +20,7 @@
     "@payloadcms/next": "3.88.0",
     "@payloadcms/richtext-lexical": "3.88.0",
     "graphql": "16.11.0",
-    "next": "16.2.11",
+    "next": "16.3.4",
     "payload": "3.88.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -32,7 +32,7 @@
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
     "eslint": "9.39.3",
-    "eslint-config-next": "16.2.11",
+    "eslint-config-next": "16.3.4",
     "typescript": "5.9.2",
     "vitest": "4.1.10"
   }
