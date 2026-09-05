@@ -2,6 +2,9 @@
 .heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
 .heading h2, .recent h3 { margin: 0; font-size: 1rem; }
 .heading span { color: var(--theme-elevation-600); font-size: 0.8rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
+.actions a { min-height: 2.25rem; padding: 0.55rem 0.75rem; color: var(--theme-text); text-decoration: none; background: var(--theme-bg); border: 1px solid var(--theme-elevation-250); border-radius: 0.35rem; }
+.actions a:hover { border-color: var(--theme-elevation-500); }
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
 .metrics li { border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; background: var(--theme-bg); }
 .metrics li[data-tone='attention'] { border-inline-start: 0.2rem solid var(--theme-warning-500); }
@@ -17,7 +20,7 @@
 .recent a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recent small, .recent time { color: var(--theme-elevation-600); font-size: 0.75rem; }
 .notice { margin-block: -1.5rem 2.5rem; padding: 0.8rem; color: var(--theme-elevation-700); border: 1px solid var(--theme-elevation-150); border-radius: 0.5rem; }
-.metrics a:focus-visible, .recent a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+.actions a:focus-visible, .metrics a:focus-visible, .recent a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
 
 @media (max-width: 64rem) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 34rem) {

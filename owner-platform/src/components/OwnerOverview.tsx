@@ -36,6 +36,9 @@ export const OwnerOverview = () => {
         <h2 id="owner-overview-title">Estado editorial</h2>
         <span>{view.runtimeLabel}</span>
       </div>
+      <nav className={styles.actions} aria-label="Crear contenido">
+        {view.actions.map((action) => <a href={action.href} key={action.href}>{action.label}</a>)}
+      </nav>
       <ul className={styles.metrics}>
         {view.cards.map((card) => (
           <li key={card.label} data-tone={card.tone}>

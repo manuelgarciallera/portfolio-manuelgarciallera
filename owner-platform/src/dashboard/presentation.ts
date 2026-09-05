@@ -1,6 +1,6 @@
 type DashboardCard = { href: string; label: string; tone: 'attention' | 'healthy' | 'neutral'; value: number }
 type RecentItem = { href: string; label: string; meta: string; updatedAt: string }
-type DashboardPresentation = { cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string }
+type DashboardPresentation = { actions: { href: string; label: string }[]; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -42,6 +42,12 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
   const mediaIssues = metric(media, 'issueCount')
   const attention = metric(workflow, 'attentionCount')
   return {
+    actions: [
+      { href: '/admin/collections/projects/create', label: 'Nuevo proyecto' },
+      { href: '/admin/collections/pages/create', label: 'Nueva página' },
+      { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
+      { href: '/admin/collections/media/create', label: 'Subir medio' },
+    ],
     cards: [
       { href: '/admin/collections/projects', label: 'Contenido', tone: contentIssues ? 'attention' : 'healthy', value: contentIssues },
       { href: '/admin/collections/media', label: 'Medios', tone: mediaIssues ? 'attention' : 'healthy', value: mediaIssues },

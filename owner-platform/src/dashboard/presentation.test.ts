@@ -16,6 +16,12 @@ describe('presentOwnerDashboard', () => {
       releases: { count: 7 },
       workflow: { attentionCount: 4 },
     })).toEqual({
+      actions: [
+        { href: '/admin/collections/projects/create', label: 'Nuevo proyecto' },
+        { href: '/admin/collections/pages/create', label: 'Nueva página' },
+        { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
+        { href: '/admin/collections/media/create', label: 'Subir medio' },
+      ],
       cards: [
         { href: '/admin/collections/projects', label: 'Contenido', tone: 'attention', value: 3 },
         { href: '/admin/collections/media', label: 'Medios', tone: 'attention', value: 2 },
