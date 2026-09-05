@@ -22,7 +22,9 @@ visual canvas.
 Semantic brand colors retain their normalized HEX storage and publication
 validation, while the admin field now pairs the text value with a synchronized
 native visual picker. Usage percentages, contrast checks, page overrides, and
-snapshot behavior are unchanged; the picker adds no public dependency.
+snapshot behavior are unchanged. The same input is reused for page-level
+accent/surface variations and optional technology corporate colors, so every
+editable HEX value behaves consistently without adding a public dependency.
 
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only

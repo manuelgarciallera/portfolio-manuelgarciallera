@@ -40,7 +40,9 @@ surface without changing the public portfolio:
   totalling 100, supported contrast, and safe motion values. Each semantic HEX
   value is editable through synchronized text and native visual color inputs;
   the server still normalizes and validates the stored text value, so the UI
-  does not weaken the publication boundary.
+  does not weaken the publication boundary. Page accent/surface overrides and
+  Technology corporate colors reuse this component while retaining their
+  existing independent validation and persistence contracts.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
 - **Media Placements** stores reusable, versioned crop recipes: original asset,
