@@ -224,6 +224,10 @@ Authenticated owners can create a proposal with
 reading their bounded request body, reject unknown fields, and expose no apply,
 publish, or deploy control. They are workflow boundaries, not a live model
 integration.
+The dashboard's “Importar propuesta asistida” panel provides the same workflow
+without a manual API call: select a verified preview snapshot, paste a bounded
+JSON patch, and open the resulting pending review record. It sends no data to
+an external provider and grants no additional authority.
 
 Restore Plans provides the safety boundary for version restoration. Dashboard
 version cards require the exact `PREPARAR RESTAURACIÓN` phrase; the private

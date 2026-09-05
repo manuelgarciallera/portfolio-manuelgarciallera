@@ -378,6 +378,14 @@ while the proposal is pending, then replaces it with immutable status copy. A
 decision is audited and remains review state only: it does not apply the patch,
 mutate the page, publish content, or deploy either application.
 
+The owner dashboard includes a collapsed manual proposal importer. It loads at
+most the 50 newest verified preview snapshots, accepts one JSON object of at
+most 64 KiB, attributes it to the provider-neutral `manual` source, and sends
+it through the same authenticated server validation path. Successful imports
+link directly to the immutable pending proposal for review. Server bodies and
+internal failures are never reflected into the editor. This is an offline
+handoff surface, not a model connection or autonomous agent.
+
 ## Verified release registration
 
 Register a version only after creating its immutable preview snapshot and
