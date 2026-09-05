@@ -39,6 +39,10 @@ preview animation without changing the stored policy.
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only
 discovery when `FIGMA_PERSONAL_ACCESS_TOKEN` and `FIGMA_PLAN` are configured
 server-side. Figma rate limits are returned without automatic retries.
+The owner dashboard exposes this through a collapsed explorer: an authenticated
+owner can paste a Figma file, prototype, or node URL and inspect bounded frame,
+section, and component candidates with temporary previews. It cannot import,
+replace, crop, save, or publish a candidate.
 
 AI and Linocube are disabled contracts only: they have no credentials, SDKs,
 network implementation, autonomous writes, or public publishing path. See the

@@ -274,6 +274,13 @@ a future reviewed media workflow. Tokens, upstream bodies, and exception
 details never enter browser output, generated Payload types, or application
 logs.
 
+The owner dashboard includes a collapsed, same-origin explorer for this route.
+It displays at most the provider's bounded candidate set, validates every
+returned source/preview URL again before rendering, lazy-loads temporary
+thumbnails, and links back to the exact Figma node. The UI remains inspection
+only: it has no selection persistence, media import, replacement, crop, save,
+publication, or retry loop.
+
 ## Immutable local preview snapshots
 
 The endpoint `POST /api/owner/preview-snapshots` creates a canonical snapshot
