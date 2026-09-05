@@ -31,6 +31,7 @@ describe('MediaPlacements collection', () => {
     expect(serialized).toContain('zoom')
     expect(serialized).toContain('mobile')
     expect(serialized).toContain('tablet')
+    expect(serialized).toContain('./components/MediaPlacementEditor#MediaPlacementEditor')
     expect(serialized).not.toMatch(/(?:customCSS|javascript|html|codeEditor)/i)
   })
 

@@ -72,6 +72,7 @@ export interface Config {
     'media-placements': MediaPlacement;
     'brand-profiles': BrandProfile;
     projects: Project;
+    technologies: Technology;
     articles: Article;
     pages: Page;
     'preview-snapshots': PreviewSnapshot;
@@ -81,6 +82,9 @@ export interface Config {
     'restore-plans': RestorePlan;
     'draft-snapshots': DraftSnapshot;
     'publication-bundles': PublicationBundle;
+    'publication-reviews': PublicationReview;
+    'publication-artifacts': PublicationArtifact;
+    'analytics-snapshots': AnalyticsSnapshot;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -93,6 +97,7 @@ export interface Config {
     'media-placements': MediaPlacementsSelect<false> | MediaPlacementsSelect<true>;
     'brand-profiles': BrandProfilesSelect<false> | BrandProfilesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     'preview-snapshots': PreviewSnapshotsSelect<false> | PreviewSnapshotsSelect<true>;
@@ -102,6 +107,9 @@ export interface Config {
     'restore-plans': RestorePlansSelect<false> | RestorePlansSelect<true>;
     'draft-snapshots': DraftSnapshotsSelect<false> | DraftSnapshotsSelect<true>;
     'publication-bundles': PublicationBundlesSelect<false> | PublicationBundlesSelect<true>;
+    'publication-reviews': PublicationReviewsSelect<false> | PublicationReviewsSelect<true>;
+    'publication-artifacts': PublicationArtifactsSelect<false> | PublicationArtifactsSelect<true>;
+    'analytics-snapshots': AnalyticsSnapshotsSelect<false> | AnalyticsSnapshotsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -338,6 +346,81 @@ export interface Project {
     };
     [k: string]: unknown;
   };
+  /**
+   * Lienzo modular opcional. El cuerpo anterior permanece intacto durante la migración.
+   */
+  caseStudyLayout?:
+    | (
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseSection';
+          }
+        | {
+            asset: number | Media;
+            placement?: (number | null) | MediaPlacement;
+            alt: string;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseMedia';
+          }
+        | {
+            heading?: string | null;
+            items: {
+              asset: number | Media;
+              placement?: (number | null) | MediaPlacement;
+              alt: string;
+              caption?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseGallery';
+          }
+        | {
+            quote: string;
+            attribution?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseQuote';
+          }
+        | {
+            items: {
+              value: string;
+              label: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseMetrics';
+          }
+        | {
+            featureKey: 'project-reel' | 'process-timeline' | 'technology-stack';
+            heading?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caseFeature';
+          }
+      )[]
+    | null;
   technologies?:
     | {
         name: string;
@@ -345,7 +428,38 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Catálogo reutilizable y ordenado. El campo technologies anterior se conserva durante la migración.
+   */
+  technologyStack?: (number | Technology)[] | null;
   year?: number | null;
+  /**
+   * Metadatos opcionales. No afectan al sitio público hasta activar el puente editorial.
+   */
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    canonicalUrl?: string | null;
+    socialImage?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "technologies".
+ */
+export interface Technology {
+  id: number;
+  _order?: string | null;
+  name: string;
+  slug: string;
+  icon: number | Media;
+  brandColor?: string | null;
+  officialUrl?: string | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -357,6 +471,7 @@ export interface Project {
  */
 export interface Article {
   id: number;
+  _order?: string | null;
   title: string;
   slug: string;
   excerpt: string;
@@ -376,7 +491,102 @@ export interface Article {
     };
     [k: string]: unknown;
   };
+  /**
+   * Lienzo modular opcional. El contenido anterior permanece intacto durante la migración.
+   */
+  articleLayout?:
+    | (
+        | {
+            heading?: string | null;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'articleText';
+          }
+        | {
+            asset: number | Media;
+            placement?: (number | null) | MediaPlacement;
+            alt: string;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'articleMedia';
+          }
+        | {
+            items: {
+              asset: number | Media;
+              placement?: (number | null) | MediaPlacement;
+              alt: string;
+              caption?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'articleGallery';
+          }
+        | {
+            quote: string;
+            attribution?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'articleQuote';
+          }
+        | {
+            tone: 'neutral' | 'information' | 'note';
+            heading?: string | null;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'articleCallout';
+          }
+        | {
+            heading?: string | null;
+            projects: (number | Project)[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'relatedProjects';
+          }
+      )[]
+    | null;
   publishedAt?: string | null;
+  /**
+   * Metadatos opcionales. No afectan al sitio público hasta activar el puente editorial.
+   */
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    canonicalUrl?: string | null;
+    socialImage?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -486,6 +696,16 @@ export interface Page {
         blockType: 'customFeature';
       }
   )[];
+  /**
+   * Metadatos opcionales. No afectan al sitio público hasta activar el puente editorial.
+   */
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    canonicalUrl?: string | null;
+    socialImage?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -665,6 +885,75 @@ export interface PublicationBundle {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-reviews".
+ */
+export interface PublicationReview {
+  id: number;
+  bundle: number | PublicationBundle;
+  bundleHash: string;
+  decision: 'approved' | 'rejected';
+  decidedBy: number | User;
+  decidedAt: string;
+  note?: string | null;
+  schemaVersion: number;
+  reviewHash: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-artifacts".
+ */
+export interface PublicationArtifact {
+  id: number;
+  review: number | PublicationReview;
+  reviewHash: string;
+  bundle: number | PublicationBundle;
+  bundleHash: string;
+  pageCount: number;
+  artifact:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  artifactHash: string;
+  schemaVersion: number;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "analytics-snapshots".
+ */
+export interface AnalyticsSnapshot {
+  id: number;
+  source: string;
+  periodFrom: string;
+  periodTo: string;
+  capturedAt: string;
+  routeCount: number;
+  snapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  snapshotHash: string;
+  schemaVersion: number;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -708,6 +997,10 @@ export interface PayloadLockedDocument {
         value: number | Project;
       } | null)
     | ({
+        relationTo: 'technologies';
+        value: number | Technology;
+      } | null)
+    | ({
         relationTo: 'articles';
         value: number | Article;
       } | null)
@@ -742,6 +1035,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'publication-bundles';
         value: number | PublicationBundle;
+      } | null)
+    | ({
+        relationTo: 'publication-reviews';
+        value: number | PublicationReview;
+      } | null)
+    | ({
+        relationTo: 'publication-artifacts';
+        value: number | PublicationArtifact;
+      } | null)
+    | ({
+        relationTo: 'analytics-snapshots';
+        value: number | AnalyticsSnapshot;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -970,6 +1275,74 @@ export interface ProjectsSelect<T extends boolean = true> {
   heroImage?: T;
   heroPlacement?: T;
   body?: T;
+  caseStudyLayout?:
+    | T
+    | {
+        caseSection?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        caseMedia?:
+          | T
+          | {
+              asset?: T;
+              placement?: T;
+              alt?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        caseGallery?:
+          | T
+          | {
+              heading?: T;
+              items?:
+                | T
+                | {
+                    asset?: T;
+                    placement?: T;
+                    alt?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        caseQuote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+        caseMetrics?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    value?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        caseFeature?:
+          | T
+          | {
+              featureKey?: T;
+              heading?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   technologies?:
     | T
     | {
@@ -977,7 +1350,33 @@ export interface ProjectsSelect<T extends boolean = true> {
         icon?: T;
         id?: T;
       };
+  technologyStack?: T;
   year?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        canonicalUrl?: T;
+        socialImage?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "technologies_select".
+ */
+export interface TechnologiesSelect<T extends boolean = true> {
+  _order?: T;
+  name?: T;
+  slug?: T;
+  icon?: T;
+  brandColor?: T;
+  officialUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -988,12 +1387,84 @@ export interface ProjectsSelect<T extends boolean = true> {
  * via the `definition` "articles_select".
  */
 export interface ArticlesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   slug?: T;
   excerpt?: T;
   coverImage?: T;
   content?: T;
+  articleLayout?:
+    | T
+    | {
+        articleText?:
+          | T
+          | {
+              heading?: T;
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        articleMedia?:
+          | T
+          | {
+              asset?: T;
+              placement?: T;
+              alt?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        articleGallery?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    asset?: T;
+                    placement?: T;
+                    alt?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        articleQuote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+        articleCallout?:
+          | T
+          | {
+              tone?: T;
+              heading?: T;
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        relatedProjects?:
+          | T
+          | {
+              heading?: T;
+              projects?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   publishedAt?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        canonicalUrl?: T;
+        socialImage?: T;
+        noIndex?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -1075,6 +1546,15 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        canonicalUrl?: T;
+        socialImage?: T;
+        noIndex?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1204,6 +1684,56 @@ export interface PublicationBundlesSelect<T extends boolean = true> {
   pageCount?: T;
   bundle?: T;
   bundleHash?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-reviews_select".
+ */
+export interface PublicationReviewsSelect<T extends boolean = true> {
+  bundle?: T;
+  bundleHash?: T;
+  decision?: T;
+  decidedBy?: T;
+  decidedAt?: T;
+  note?: T;
+  schemaVersion?: T;
+  reviewHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-artifacts_select".
+ */
+export interface PublicationArtifactsSelect<T extends boolean = true> {
+  review?: T;
+  reviewHash?: T;
+  bundle?: T;
+  bundleHash?: T;
+  pageCount?: T;
+  artifact?: T;
+  artifactHash?: T;
+  schemaVersion?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "analytics-snapshots_select".
+ */
+export interface AnalyticsSnapshotsSelect<T extends boolean = true> {
+  source?: T;
+  periodFrom?: T;
+  periodTo?: T;
+  capturedAt?: T;
+  routeCount?: T;
+  snapshot?: T;
+  snapshotHash?: T;
+  schemaVersion?: T;
   createdBy?: T;
   updatedAt?: T;
   createdAt?: T;

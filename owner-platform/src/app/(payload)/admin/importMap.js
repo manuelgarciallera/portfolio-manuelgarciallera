@@ -1,3 +1,4 @@
+import { MediaPlacementEditor as MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf } from '../../../components/MediaPlacementEditor'
 import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from '../../../components/HexColorField'
 import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf } from '../../../components/BrandPalettePreview'
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
@@ -32,6 +33,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/MediaPlacementEditor#MediaPlacementEditor": MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf,
   "./components/HexColorField#HexColorField": HexColorField_cdf0d4826f4989b67240662e47afca94,
   "./components/BrandPalettePreview#BrandPalettePreview": BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf,
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,

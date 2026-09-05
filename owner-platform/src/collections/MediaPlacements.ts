@@ -109,6 +109,11 @@ export const MediaPlacements: CollectionConfig = {
             { name: 'tablet', type: 'group', fields: overrideFields() },
           ],
         },
+        {
+          name: 'editor',
+          type: 'ui',
+          admin: { components: { Field: './components/MediaPlacementEditor#MediaPlacementEditor' } },
+        },
       ],
     },
   ],
