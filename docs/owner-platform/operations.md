@@ -60,7 +60,12 @@ surface without changing the public portfolio:
 - **Media Placements** stores reusable, versioned crop recipes: original asset,
   focal point, zoom, fit, frame ratio, and bounded mobile/tablet overrides. It
   never rewrites or resizes the uploaded original. Projects and page media
-  blocks may adopt a recipe without invalidating existing entries.
+  blocks may adopt a recipe without invalidating existing entries. Its private
+  editor uses the authenticated local Media URL to preview the real original,
+  with separate Desktop, Tablet, and Mobile views. Range and select controls
+  update only the bounded placement fields already validated by the collection;
+  a breakpoint inherits each unset value from Desktop. The UI performs no
+  binary rewrite, derivative generation, publication, or public-site write.
 - **Projects**, **Articles**, **Pages**, and **Media** remain the editorial
   collections described below. **Preview Snapshots** is a read-only owner list
   of immutable manifests created through the dedicated endpoint.

@@ -59,6 +59,10 @@ does not expose restore, apply, publish, or deploy controls.
 Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
 or tablet overrides while preserving the uploaded original. Projects and page
 media blocks can reference these recipes without changing existing content.
+Its private editor now previews the selected uploaded image and exposes
+reversible Desktop, Tablet, and Mobile controls for focal position, zoom, fit,
+and frame ratio. The preview writes only the existing placement fields, never
+the original pixels, and introduces no dependency into the public portfolio.
 
 Technologies centralizes each stack item's accessible name, official icon,
 optional corporate color, and HTTPS reference URL. Projects can adopt the
