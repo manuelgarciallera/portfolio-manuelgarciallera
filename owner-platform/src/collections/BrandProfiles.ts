@@ -183,5 +183,10 @@ export const BrandProfiles: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'motionPreview',
+      type: 'ui',
+      admin: { components: { Field: './components/BrandMotionPreview#BrandMotionPreview' } },
+    },
   ],
 }

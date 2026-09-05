@@ -86,6 +86,14 @@ describe('BrandProfiles collection', () => {
     })
   })
 
+  it('adds a replayable bounded motion preview to the brand form', () => {
+    expect(fieldNamed('motionPreview')).toMatchObject({
+      admin: { components: { Field: './components/BrandMotionPreview#BrandMotionPreview' } },
+      name: 'motionPreview',
+      type: 'ui',
+    })
+  })
+
   it('allows incomplete drafts but rejects invalid publication with actionable errors', async () => {
     await expect(
       validateBrandProfilePublication({ data: { _status: 'draft', colors: [] } } as never),
