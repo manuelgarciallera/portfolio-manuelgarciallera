@@ -24,6 +24,9 @@ describe('RestorePlans collection', () => {
     expect(RestorePlans.access?.create?.(accessArgs(owner))).toBe(false)
     expect(RestorePlans.access?.update?.(accessArgs(owner))).toBe(false)
     expect(RestorePlans.access?.delete?.(accessArgs(owner))).toBe(false)
+    expect(RestorePlans.admin?.components?.edit?.beforeDocumentControls).toEqual([
+      './components/RestorePlanControls#RestorePlanControls',
+    ])
   })
 
   it('normalizes trusted creation and permits only the one confirmation transition', async () => {

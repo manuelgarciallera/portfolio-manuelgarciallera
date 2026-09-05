@@ -86,6 +86,7 @@ export const enforceRestorePlanDelete: CollectionBeforeDeleteHook = async () => 
 export const RestorePlans: CollectionConfig = {
   slug: 'restore-plans',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/RestorePlanControls#RestorePlanControls'] } },
     defaultColumns: ['release', 'targetPage', 'status', 'createdAt'],
     useAsTitle: 'status',
   },
