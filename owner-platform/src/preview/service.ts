@@ -98,9 +98,10 @@ const projectLayout = (layout: unknown): { blocks: unknown[]; mediaIds: Array<nu
     }
     if (blockType === 'media') {
       const asset = relationId(block.asset)
+      const placement = relationId(block.placement)
       if (asset === undefined) throw new APIError('El bloque media no tiene un recurso válido.', 400)
       mediaIds.push(asset)
-      return defined({ ...base, asset: String(asset), caption: text(block.caption) })
+      return defined({ ...base, asset: String(asset), caption: text(block.caption), placement: placement === undefined ? undefined : String(placement) })
     }
     if (blockType === 'customFeature') {
       const featureKey = text(block.featureKey)

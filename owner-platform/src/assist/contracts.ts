@@ -93,6 +93,10 @@ const assertTypedValue = (kind: string, value: unknown): void => {
   if (ranges[kind] && (typeof value !== 'number' || !Number.isFinite(value) || value < ranges[kind][0] || value > ranges[kind][1])) throw new TypeError('El valor de movimiento está fuera de límites.')
   if (kind === 'easing' && (typeof value !== 'string' || !['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'].includes(value))) throw new TypeError('Curva no permitida.')
   if (kind === 'reducedMotion' && value !== 'reduce' && value !== 'disable') throw new TypeError('Movimiento reducido no permitido.')
+  if ((kind === 'focalX' || kind === 'focalY') && (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)) throw new TypeError('El punto focal está fuera de límites.')
+  if (kind === 'zoom' && (typeof value !== 'number' || !Number.isFinite(value) || value < 1 || value > 4)) throw new TypeError('El zoom está fuera de límites.')
+  if (kind === 'fit' && value !== 'cover' && value !== 'contain') throw new TypeError('El ajuste de imagen no está permitido.')
+  if (kind === 'frame' && !['auto', '16:9', '4:3', '1:1', '9:16'].includes(String(value))) throw new TypeError('La proporción de imagen no está permitida.')
 }
 
 export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySwitches, context: StudioPatchContext): StudioPatch => {
@@ -102,7 +106,6 @@ export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySw
   if (input.schemaVersion !== 1 || typeof input.capability !== 'string' || !capabilities.has(input.capability)) throw new TypeError('Versión o capacidad no permitida.')
   const capability = input.capability as AssistCapability
   if (!switches[capability]) throw new TypeError(`La capacidad ${capability} está desactivada.`)
-  if (capability === 'suggestCrop') throw new TypeError(`La capacidad ${capability} no dispone aún de operaciones seguras.`)
   assertDataArray(input.operations, 'Las operaciones')
   if (input.operations.length < 1 || input.operations.length > STUDIO_PATCH_LIMITS.maxOperations) throw new TypeError('Cantidad de operaciones no permitida.')
   if (capability === 'suggestLayout') {
@@ -117,12 +120,26 @@ export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySw
     if (current.length !== proposed.length || current.some((block, index) => block !== proposed[index])) throw new TypeError('La reordenación debe conservar exactamente los mismos bloques.')
   }
   const weightValues = new Map<number, number>()
+  const placementIds = new Set(context.page.layout.flatMap((block) => {
+    const placement = block.placement
+    return typeof placement === 'string' || typeof placement === 'number' ? [String(placement)] : []
+  }))
   for (const raw of input.operations) {
     assertPlainDataRecord(raw, 'La operación', ['op', 'path'])
     if (Object.keys(raw).some((key) => !operationKeys.has(key))) throw new TypeError('La operación contiene una propiedad no permitida.')
     if (raw.op !== 'add' && raw.op !== 'remove' && raw.op !== 'replace') throw new TypeError('Operación no permitida.')
     if (typeof raw.path !== 'string' || raw.path.length > 256 || raw.path.includes('~')) throw new TypeError('Ruta no permitida.')
     if (capability === 'suggestLayout') continue
+    if (capability === 'suggestCrop') {
+      const match = /^\/media-placements\/([A-Za-z0-9_-]{1,64})\/placement\/(focalX|focalY|zoom|fit|frame)$/.exec(raw.path)
+      if (!match) throw new TypeError('La ruta de encuadre no está permitida.')
+      if (!placementIds.has(match[1])) throw new TypeError('La colocación no pertenece al snapshot verificado.')
+      if (raw.op !== 'replace') throw new TypeError('El encuadre solo admite operaciones replace.')
+      if (!Object.hasOwn(raw, 'value')) throw new TypeError('La operación requiere valor.')
+      assertSafeValue(raw.value)
+      assertTypedValue(match[2], raw.value)
+      continue
+    }
     const field = classifyPath(raw.path, context)
     if (field.capability !== capability) throw new TypeError('La ruta no corresponde a la capacidad declarada.')
     const hasValue = Object.hasOwn(raw, 'value')

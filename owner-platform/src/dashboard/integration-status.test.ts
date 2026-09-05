@@ -14,7 +14,7 @@ describe('buildIntegrationStatus', () => {
         apply: false,
         capabilities: {
           suggestCopy: { enabled: true, operational: true },
-          suggestCrop: { enabled: true, operational: false },
+          suggestCrop: { enabled: true, operational: true },
           suggestLayout: { enabled: true, operational: true },
           suggestMotion: { enabled: true, operational: true },
           suggestPalette: { enabled: false, operational: true },

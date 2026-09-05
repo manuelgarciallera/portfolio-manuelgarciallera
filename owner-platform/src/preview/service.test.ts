@@ -24,7 +24,7 @@ const brand = {
 
 describe('page preview snapshot service', () => {
   it('loads the current draft, brand and media server-side and projects only known fields', async () => {
-    const page = { id: 7, title: 'Inicio', slug: 'inicio', updatedAt: '2026-09-04T12:00:00Z', brandProfile: 3, apiToken: 'page-secret', layout: [{ blockType: 'hero', eyebrow: 'Hola', heading: 'Portfolio', body: lexical, image: 9, customCSS: 'no' }, { blockType: 'richText', content: lexical }] }
+    const page = { id: 7, title: 'Inicio', slug: 'inicio', updatedAt: '2026-09-04T12:00:00Z', brandProfile: 3, apiToken: 'page-secret', layout: [{ blockType: 'hero', eyebrow: 'Hola', heading: 'Portfolio', body: lexical, image: 9, customCSS: 'no' }, { blockType: 'richText', content: lexical }, { blockType: 'media', asset: 9, placement: 14, caption: 'Encuadre controlado' }] }
     const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
     const findByID = vi.fn(async ({ collection, id }) => collection === 'pages' ? page : collection === 'brand-profiles' ? brand : { id, alt: 'Portada', filename: 'cover.webp', mimeType: 'image/webp', width: 1200, height: 800, apiToken: 'media-secret' })
     const result = await createPagePreviewSnapshot({ payload: { findByID, create } as never, req: { user: owner } as never, pageId: 7 })
@@ -50,6 +50,7 @@ describe('page preview snapshot service', () => {
     expect(findByID.mock.calls.filter(([argument]) => argument.collection === 'media' && argument.id === 10)).toHaveLength(1)
     expect(JSON.stringify(result.manifest)).toContain('"id":"upload-node-1"')
     expect(JSON.stringify(result.manifest)).toContain('"fields":{}')
+    expect(JSON.stringify(result.manifest)).toContain('"placement":"14"')
   })
 
   it.each(['javascript:alert(1)', 'data:text/html,<script>1</script>', 'https://example.com/\u0000bad', '//evil.example/x', '/\\evil', '\\evil', '/%5C%5Cevil'])(

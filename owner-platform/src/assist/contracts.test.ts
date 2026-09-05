@@ -3,7 +3,7 @@ import { decideStudioPatch, validateStudioPatch, type AssistCapabilitySwitches, 
 
 const enabled: AssistCapabilitySwitches = { suggestCopy: true, suggestPalette: true, suggestLayout: true, suggestCrop: true, suggestMotion: true }
 const context: StudioPatchContext = {
-  page: { title: 'Inicio', layout: [{ blockType: 'hero', heading: 'Hola' }, { blockType: 'media', caption: 'Portada' }, { blockType: 'richText', content: {} }] },
+  page: { title: 'Inicio', layout: [{ blockType: 'hero', heading: 'Hola' }, { blockType: 'media', caption: 'Portada', placement: 'placement-14' }, { blockType: 'richText', content: {} }] },
   brand: { colors: [{ role: 'background', value: '#000000' }, { role: 'accent', value: '#FF0000' }], usageWeights: [{ role: 'background', weight: 80 }, { role: 'accent', weight: 20 }], motion: { duration: 600, stagger: 100, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' } },
 }
 const proposal = (capability: keyof AssistCapabilitySwitches, operations: unknown[]) => ({ schemaVersion: 1, capability, operations })
@@ -30,8 +30,21 @@ describe('StudioPatch validation against current Payload fields', () => {
     expect(() => validateStudioPatch(proposal('suggestLayout', [{ op: 'add', path: '/page/layout', value: reordered }]), enabled, context)).toThrow(/replace/i)
   })
 
-  it('keeps crop capability unavailable even if its switch is on', () => {
-    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/page/layout/0/heading', value: 'x' }]), enabled, context)).toThrow(/no dispone/i)
+  it('accepts bounded crop replacements only for placement ids bound to the snapshot', () => {
+    const operations = [
+      { op: 'replace', path: '/media-placements/placement-14/placement/focalX', value: 0.25 },
+      { op: 'replace', path: '/media-placements/placement-14/placement/focalY', value: 0.75 },
+      { op: 'replace', path: '/media-placements/placement-14/placement/zoom', value: 1.5 },
+      { op: 'replace', path: '/media-placements/placement-14/placement/frame', value: '4:3' },
+    ]
+    expect(validateStudioPatch(proposal('suggestCrop', operations), enabled, context).operations).toHaveLength(4)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/other/placement/focalX', value: 0.5 }]), enabled, context)).toThrow(/snapshot/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/placement-14/placement/asset', value: 99 }]), enabled, context)).toThrow(/ruta/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/placement-14/placement/zoom', value: 4.01 }]), enabled, context)).toThrow(/límites/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/placement-14/placement/focalX', value: -0.01 }]), enabled, context)).toThrow(/límites/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/placement-14/placement/fit', value: 'stretch' }]), enabled, context)).toThrow(/ajuste/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/media-placements/placement-14/placement/frame', value: '3:2' }]), enabled, context)).toThrow(/proporción/i)
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'add', path: '/media-placements/placement-14/placement/focalX', value: 0.5 }]), enabled, context)).toThrow(/replace/i)
   })
 
   it('requires an explicit enabled capability switch', () => {
