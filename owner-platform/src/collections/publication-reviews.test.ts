@@ -18,6 +18,9 @@ describe('PublicationReviews collection', () => {
     expect(PublicationReviews.access?.create?.(access(owner))).toBe(false)
     expect(PublicationReviews.access?.update?.(access(owner))).toBe(false)
     expect(PublicationReviews.access?.delete?.(access(owner))).toBe(false)
+    expect(PublicationReviews.admin?.components?.edit?.beforeDocumentControls).toEqual([
+      './components/PublicationReviewControls#PublicationReviewControls',
+    ])
   })
 
   it('accepts only matching canonical data and owner provenance', async () => {

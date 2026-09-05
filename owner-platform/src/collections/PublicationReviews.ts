@@ -28,7 +28,11 @@ export const enforcePublicationReviewDelete: CollectionBeforeDeleteHook = async 
 
 export const PublicationReviews: CollectionConfig = {
   slug: 'publication-reviews',
-  admin: { defaultColumns: ['bundle', 'decision', 'decidedBy', 'decidedAt'], useAsTitle: 'reviewHash' },
+  admin: {
+    components: { edit: { beforeDocumentControls: ['./components/PublicationReviewControls#PublicationReviewControls'] } },
+    defaultColumns: ['bundle', 'decision', 'decidedBy', 'decidedAt'],
+    useAsTitle: 'reviewHash',
+  },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationReview], beforeDelete: [enforcePublicationReviewDelete] },
   fields: [

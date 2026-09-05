@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { reviewPublicationBundle } from './client'
+import { generatePublicationArtifact, reviewPublicationBundle } from './client'
 
 describe('publication review client', () => {
   it.each([
@@ -25,5 +25,24 @@ describe('publication review client', () => {
     await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, failed)).rejects.toThrow('No se pudo registrar la revisión.')
     const malformed = vi.fn(async () => new Response(JSON.stringify({ review: { id: '../users', decision: 'approved' } }), { status: 201 }))
     await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, malformed)).rejects.toThrow('No se pudo registrar la revisión.')
+  })
+})
+
+describe('publication artifact client', () => {
+  it('requires the exact phrase and returns the immutable artifact destination', async () => {
+    const request = vi.fn(async (_url: string, init: RequestInit) => {
+      expect(init).toMatchObject({ body: JSON.stringify({ confirmation: 'GENERAR ARTEFACTO' }), credentials: 'same-origin', method: 'POST' })
+      return new Response(JSON.stringify({ artifact: { id: 91 } }), { status: 201 })
+    })
+    await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', request)).resolves.toEqual({ href: '/admin/collections/publication-artifacts/91' })
+    await expect(generatePublicationArtifact(70, 'generar', request)).rejects.toThrow(/GENERAR ARTEFACTO/)
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('hides failures and rejects an unsafe artifact identifier', async () => {
+    const failed = vi.fn(async () => new Response('secret leaked', { status: 500 }))
+    await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', failed)).rejects.toThrow('No se pudo generar el artefacto.')
+    const malformed = vi.fn(async () => new Response(JSON.stringify({ artifact: { id: '../users' } }), { status: 201 }))
+    await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', malformed)).rejects.toThrow('No se pudo generar el artefacto.')
   })
 })

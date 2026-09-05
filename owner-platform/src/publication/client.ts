@@ -29,3 +29,23 @@ export const reviewPublicationBundle = async (
   if (review?.decision !== input.decision || ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id)))) return failure()
   return { decision: input.decision, href: `/admin/collections/publication-reviews/${encodeURIComponent(String(id))}` }
 }
+
+export const generatePublicationArtifact = async (
+  reviewId: string | number,
+  confirmation: string,
+  request: PublicationTransport = fetch,
+): Promise<{ href: string }> => {
+  if (confirmation !== 'GENERAR ARTEFACTO') throw new TypeError('Escribe GENERAR ARTEFACTO para continuar.')
+  const response = await request(`/api/owner/publication-reviews/${safeId(reviewId)}/artifacts`, {
+    body: JSON.stringify({ confirmation }),
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+  })
+  if (!response.ok) throw new Error('No se pudo generar el artefacto.')
+  const result = await response.json() as unknown
+  const artifact = isRecord(result) && isRecord(result.artifact) ? result.artifact : undefined
+  const id = artifact?.id
+  if ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id))) throw new Error('No se pudo generar el artefacto.')
+  return { href: `/admin/collections/publication-artifacts/${encodeURIComponent(String(id))}` }
+}
