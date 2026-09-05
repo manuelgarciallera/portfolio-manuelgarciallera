@@ -19,15 +19,17 @@ const parseIssue = (value: unknown): Issue | null => {
 
 export const PublicationPreflightSummary = () => {
   const { data } = useDocumentInfo()
-  const artifactId = safeId(data?.artifact)
+  const artifactId = safeId(isRecord(data?.artifact) ? data.artifact.id : data?.artifact)
   const issueCount = count(data?.issueCount)
   const pageCount = count(data?.pageCount)
   const report = isRecord(data?.report) ? data.report : null
   const rawIssues = report && Array.isArray(report.issues) && report.issues.length <= 1_000 ? report.issues : null
-  const issues = rawIssues?.slice(0, 50).map(parseIssue)
+  const parsedIssues = rawIssues?.map(parseIssue)
+  const issues = parsedIssues?.slice(0, 50)
   const status = data?.status
-  if (artifactId === null || issueCount === null || pageCount === null || !issues || issues.some((entry) => entry === null) || !['blocked', 'ready', 'ready_with_warnings'].includes(String(status))) return <aside className={styles.panel}><strong>Informe no disponible</strong><p>Los datos del preflight no tienen un formato seguro para mostrarse.</p></aside>
-  const label = status === 'blocked' ? 'Publicación bloqueada' : status === 'ready_with_warnings' ? 'Preparada con avisos' : 'Preparada sin incidencias'
+  const expectedStatus = parsedIssues?.some((entry) => entry?.severity === 'blocker') ? 'blocked' : parsedIssues?.length ? 'ready_with_warnings' : 'ready'
+  if (artifactId === null || issueCount === null || pageCount === null || pageCount < 1 || pageCount > 100 || !issues || parsedIssues?.some((entry) => entry === null) || issueCount !== rawIssues?.length || status !== expectedStatus) return <aside className={styles.panel}><strong>Informe no disponible</strong><p>Los datos del preflight no tienen un formato seguro para mostrarse.</p></aside>
+  const label = status === 'blocked' ? 'Revisión estructural: bloqueos' : status === 'ready_with_warnings' ? 'Revisión estructural: avisos' : 'Revisión estructural: sin incidencias'
   return <aside className={styles.panel} aria-labelledby="preflight-summary-title">
     <header><div><strong id="preflight-summary-title">{label}</strong><p>{issueCount} {issueCount === 1 ? 'incidencia' : 'incidencias'} en {pageCount} {pageCount === 1 ? 'página' : 'páginas'}.</p></div><Link href={`/admin/collections/publication-artifacts/${encodeURIComponent(artifactId)}`}>Ver artefacto</Link></header>
     {issues.length > 0 && <ul>{issues.map((entry, index) => {
@@ -35,6 +37,6 @@ export const PublicationPreflightSummary = () => {
       return <li key={`${item.code}:${item.pageId}:${item.blockPosition ?? 'page'}:${index}`} data-severity={item.severity}><div><strong>{item.severity === 'blocker' ? 'Bloqueo' : 'Aviso'}</strong><span>Página {item.pageId}{item.blockPosition === undefined ? '' : ` · Bloque ${item.blockPosition + 1}`}</span></div><p>{item.message}</p></li>
     })}</ul>}
     {issueCount > issues.length && <p>Se muestran las primeras {issues.length} incidencias de {issueCount}.</p>}
-    <small>Este informe orienta la revisión owner; no publica ni despliega la web.</small>
+    <small>Este informe comprueba la estructura del contenido; no certifica diseño, accesibilidad, rendimiento ni disponibilidad de imágenes. No sustituye la revisión de la vista previa y no publica ni despliega la web.</small>
   </aside>
 }
