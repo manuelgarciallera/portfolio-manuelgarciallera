@@ -19,6 +19,9 @@
 .notice { padding: 1rem; background: var(--preview-surface); border: 1px dashed currentColor; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
 .card { min-width: 0; }
+.grid > * { min-width: 0; }
+.document blockquote { margin-inline: 0; padding-inline-start: 1.25rem; border-inline-start: 3px solid var(--preview-accent); }
+.document dd { margin-inline-start: 0; font-size: 1.8rem; font-weight: 600; }
 .image { overflow: hidden; aspect-ratio: var(--desktop-ratio); --active-fit: var(--desktop-fit); --active-position: var(--desktop-position); --active-zoom: var(--desktop-zoom); }
 .image img { display: block; width: 100%; height: 100%; object-fit: var(--active-fit); object-position: var(--active-position); transform: scale(var(--active-zoom)); transform-origin: var(--active-position); }
 @container preview-page (max-width: 900px) {

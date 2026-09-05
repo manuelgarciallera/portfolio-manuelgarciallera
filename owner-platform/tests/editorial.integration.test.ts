@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { createLocalReq, getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 
 import applicationConfig from '../src/payload.config'
-import { loadPageVisualPreview } from '../src/preview/visual-service'
+import { loadContentVisualPreview, loadPageVisualPreview } from '../src/preview/visual-service'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
@@ -15,6 +16,8 @@ beforeAll(async () => {
     key: `editorial-integration-${randomUUID()}`,
     config: {
       ...config,
+      // Exercise real upload metadata without leaving files in the owner's media library.
+      collections: config.collections.map((collection) => collection.slug === 'media' ? { ...collection, upload: { ...collection.upload, disableLocalStorage: true } } : collection),
       // Never connect to the developer's configured database or reuse their credentials.
       db: { ...sqliteAdapter({ client: { url: 'file::memory:' } }), allowIDOnCreate: false, name: 'sqlite' },
       secret: randomUUID() + randomUUID(),
@@ -70,9 +73,42 @@ it('keeps unpublished article edits and version history out of anonymous reads',
   await payload.update({ collection: 'articles', id: article.id, draft: true, overrideAccess: false, user: owner, data: { title: 'Private draft title' } })
   const draft = await payload.findByID({ collection: 'articles', id: article.id, draft: true, overrideAccess: false, user: owner })
   expect(draft.title).toBe('Private draft title')
+  const visual = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection: 'articles', documentId: String(article.id) })
+  expect(visual.title).toBe('Private draft title')
+  expect(visual.blocks.map((block) => block.type)).toEqual(['hero', 'richText'])
+  expect(JSON.stringify(visual.blocks[1].content)).toContain('Public text')
+  await payload.update({ collection: 'articles', id: article.id, draft: true, overrideAccess: false, user: owner, data: {
+    articleLayout: [{ blockType: 'articleQuote', quote: 'Modular quote', attribution: 'Test author' }],
+  } })
+  const modular = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection: 'articles', documentId: String(article.id) })
+  expect(modular.blocks.map((block) => block.type)).toEqual(['hero', 'quote'])
+  expect(modular.blocks[1].quote).toBe('Modular quote')
   for (const draft of [false, true]) {
     const visible = await payload.findByID({ collection: 'articles', id: article.id, draft, overrideAccess: false })
     expect(visible.title).toBe('Published title')
   }
   await expect(payload.findVersions({ collection: 'articles', overrideAccess: false })).rejects.toThrow()
+}, 30_000)
+
+it('previews project metrics and quotes in their saved draft order', async () => {
+  const bytes = await readFile(new URL('../../public/art/hero-refractive-orb-fallback-v2.webp', import.meta.url))
+  const media = await payload.create({ collection: 'media', overrideAccess: false, user: owner, data: { alt: 'Integration image' }, file: {
+    data: bytes, name: `integration-${randomUUID()}.webp`, mimetype: 'image/webp', size: bytes.length,
+  } })
+  const project = await payload.create({ collection: 'projects', draft: true, overrideAccess: false, user: owner, data: {
+    title: 'Draft project', slug: 'integration-project', summary: 'Project summary',
+    heroImage: media.id,
+    body: { root: { type: 'root', version: 1, direction: null, format: '', indent: 0, children: [
+      { type: 'paragraph', version: 1, children: [{ type: 'text', version: 1, text: 'Legacy project body', format: 0, detail: 0, mode: 'normal', style: '' }] },
+    ] } },
+    caseStudyLayout: [
+      { blockType: 'caseMetrics', items: [{ value: '3', label: 'Roles' }] },
+      { blockType: 'caseQuote', quote: 'A finding', attribution: 'Research' },
+    ],
+  } })
+  const visual = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection: 'projects', documentId: String(project.id) })
+  expect(visual.blocks.map((block) => block.type)).toEqual(['hero', 'metrics', 'quote'])
+  expect(visual.blocks[1].metrics).toEqual([{ value: '3', label: 'Roles' }])
+  expect(visual.blocks[0].description).toBe('Project summary')
+  expect(visual.assets[String(media.id)].alt).toBe('Integration image')
 }, 30_000)

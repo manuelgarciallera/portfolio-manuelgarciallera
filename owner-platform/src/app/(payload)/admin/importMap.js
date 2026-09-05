@@ -21,8 +21,8 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from '../../../components/HexColorField'
 import { PagePreviewLink as PagePreviewLink_96882ea548bfd122bac0b086879b6b2c } from '../../../components/PagePreviewLink'
+import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from '../../../components/HexColorField'
 import { MediaPlacementEditor as MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf } from '../../../components/MediaPlacementEditor'
 import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf } from '../../../components/BrandPalettePreview'
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
@@ -68,8 +68,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "./components/HexColorField#HexColorField": HexColorField_cdf0d4826f4989b67240662e47afca94,
   "./components/PagePreviewLink#PagePreviewLink": PagePreviewLink_96882ea548bfd122bac0b086879b6b2c,
+  "./components/HexColorField#HexColorField": HexColorField_cdf0d4826f4989b67240662e47afca94,
   "./components/MediaPlacementEditor#MediaPlacementEditor": MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf,
   "./components/BrandPalettePreview#BrandPalettePreview": BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf,
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,

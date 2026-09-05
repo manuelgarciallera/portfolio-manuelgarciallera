@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { PagePreviewDocument } from './PagePreviewDocument'
 import type { PageVisualPreview } from '../preview/visual-service'
 
-const preview: PageVisualPreview = { id: '7', title: 'Página', updatedAt: 'now', status: 'draft', brand: null, warnings: [], assets: {
+const preview: PageVisualPreview = { collection: 'pages', id: '7', title: 'Página', updatedAt: 'now', status: 'draft', brand: null, warnings: [], assets: {
   '9': { id: 9, url: '/api/media/file/cover.webp', alt: 'Portada', width: 1200, height: 800 },
 }, blocks: [
   { type: 'hero', heading: 'Primero' },
@@ -12,6 +12,24 @@ const preview: PageVisualPreview = { id: '7', title: 'Página', updatedAt: 'now'
 ] }
 
 describe('editorial page rendering', () => {
+  it('renders grouped galleries, contextual image text, citations, notes and metrics', () => {
+    const markup = renderToStaticMarkup(<PagePreviewDocument preview={{ ...preview, collection: 'projects', blocks: [
+      { type: 'hero', heading: 'Proyecto', description: 'Su resumen' },
+      { type: 'gallery', images: [{ assetId: '9', alt: 'Vista uno', caption: 'Pie uno' }, { assetId: '9', alt: 'Vista dos' }] },
+      { type: 'quote', quote: 'Una cita', attribution: 'Fuente' },
+      { type: 'callout', heading: 'Aviso', tone: 'note' },
+      { type: 'metrics', metrics: [{ value: '3', label: 'Roles' }] },
+    ] }} />)
+    expect(markup).toContain('Su resumen')
+    expect(markup).toContain('alt="Vista uno"')
+    expect(markup).toContain('alt="Vista dos"')
+    expect(markup).toContain('<figcaption>Pie uno</figcaption>')
+    expect(markup).toContain('<blockquote>')
+    expect(markup).toContain('<cite>Fuente</cite>')
+    expect(markup).toContain('<aside')
+    expect(markup).toContain('<dt>Roles</dt><dd>3</dd>')
+    expect(markup).not.toContain('no tiene un visor compatible')
+  })
   it('preserves block order, captions and separate responsive crop settings', () => {
     const markup = renderToStaticMarkup(<PagePreviewDocument preview={preview} />)
     expect(markup.indexOf('Primero')).toBeLessThan(markup.indexOf('Segundo'))

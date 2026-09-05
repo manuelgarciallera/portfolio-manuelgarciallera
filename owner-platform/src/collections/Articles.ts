@@ -71,6 +71,7 @@ export const articleBlocks: Block[] = [
 export const Articles: CollectionConfig = {
   slug: 'articles',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/PagePreviewLink#PagePreviewLink'] } },
     defaultColumns: ['title', '_status', 'publishedAt', 'updatedAt'],
     useAsTitle: 'title',
   },

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { loadPageVisualPreview } from './visual-service'
+import { loadContentVisualPreview, loadPageVisualPreview } from './visual-service'
 
 const req = { user: { collection: 'users', id: 1, role: 'owner' } }
 const page = { id: 7, title: 'Inicio', updatedAt: '2026-09-05T10:00:00Z', _status: 'draft', layout: [
@@ -9,6 +9,29 @@ const page = { id: 7, title: 'Inicio', updatedAt: '2026-09-05T10:00:00Z', _statu
 ] }
 
 describe('private visual page preview', () => {
+  it('loads article galleries with contextual alt and rejects unrelated placements', async () => {
+    const findByID = vi.fn(async ({ collection }) => collection === 'articles' ? { title: 'Artículo', articleLayout: [
+      { blockType: 'articleGallery', items: [{ asset: 9, alt: 'Primer uso', placement: 4 }, { asset: 9, alt: 'Segundo uso' }] },
+      { blockType: 'articleQuote', quote: 'Idea', attribution: 'Fuente' },
+    ] } : collection === 'media-placements' ? { placement: { asset: 8, frame: 'auto', fit: 'contain', focalX: .5, focalY: .5, zoom: 1, overrides: {} } } : { id: 9, url: '/api/media/file/cover.webp', alt: 'Original', width: 1200, height: 800 })
+    const result = await loadContentVisualPreview({ payload: { findByID } as never, req: req as never, collection: 'articles', documentId: '2' })
+    expect(result.collection).toBe('articles')
+    expect(result.blocks.map((block) => block.type)).toEqual(['hero', 'gallery', 'quote'])
+    expect(result.blocks[1].images?.map((image) => image.alt)).toEqual(['Primer uso', 'Segundo uso'])
+    expect(result.blocks[1].images?.[0].placement).toBeUndefined()
+    expect(result.warnings.join(' ')).toContain('encuadre')
+    expect(findByID.mock.calls.filter(([args]) => args.collection === 'media')).toHaveLength(1)
+  })
+  it('rejects collections outside the editorial allowlist before reading', async () => {
+    const findByID = vi.fn()
+    await expect(loadContentVisualPreview({ payload: { findByID } as never, req: req as never, collection: 'users' as never, documentId: '2' })).rejects.toThrow(/colección/)
+    expect(findByID).not.toHaveBeenCalled()
+  })
+  it('bounds gallery items before loading their media', async () => {
+    const findByID = vi.fn(async () => ({ title: 'Proyecto', caseStudyLayout: [{ blockType: 'caseGallery', items: Array(13).fill({ asset: 9 }) }] }))
+    await expect(loadContentVisualPreview({ payload: { findByID } as never, req: req as never, collection: 'projects', documentId: '2' })).rejects.toThrow(/12/)
+    expect(findByID).toHaveBeenCalledTimes(1)
+  })
   it('loads the saved draft with owner access and projects only display data in block order', async () => {
     const findByID = vi.fn(async ({ collection }) => collection === 'pages' ? page : { id: 9, url: '/api/media/file/cover.webp', width: 1200, height: 800, alt: 'Imagen', token: 'secret' })
     const result = await loadPageVisualPreview({ payload: { findByID } as never, req: req as never, pageId: '7' })

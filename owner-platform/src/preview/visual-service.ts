@@ -6,14 +6,18 @@ import { normalizeMediaPlacement, type MediaPlacement } from '../media/placement
 import { presentPreviewAsset, type PreviewAsset } from '../media/placement-preview'
 import { projectLexical } from './service'
 import { createPreviewManifest } from './manifest'
+import { contentPreviewLayout, isPreviewCollection, type PreviewCollection } from './content-layout'
 
 export type PreviewText = Parameters<typeof RichText>[0]['data']
+export type VisualImage = { assetId?: string; caption?: string; alt?: string; placement?: MediaPlacement }
 export type VisualBlock = {
   type: string; heading?: string; eyebrow?: string; content?: PreviewText; assetId?: string; caption?: string;
-  placement?: MediaPlacement; featureKey?: string;
+  placement?: MediaPlacement; featureKey?: string; description?: string; alt?: string;
+  quote?: string; attribution?: string; tone?: string; images?: VisualImage[];
+  metrics?: { value: string; label: string }[];
   projects?: { id: string; title: string; summary: string; assetId?: string }[];
 }
-export type PageVisualPreview = { id: string; title: string; updatedAt: string; status: string; blocks: VisualBlock[]; assets: Record<string, PreviewAsset>; brand: ResolvedBrand | null; warnings: string[] }
+export type PageVisualPreview = { collection: PreviewCollection; id: string; title: string; updatedAt: string; status: string; blocks: VisualBlock[]; assets: Record<string, PreviewAsset>; brand: ResolvedBrand | null; warnings: string[] }
 const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
 const text = (value: unknown) => typeof value === 'string' ? value.slice(0, 10_000) : ''
 const idOf = (value: unknown): string | undefined => {
@@ -21,18 +25,19 @@ const idOf = (value: unknown): string | undefined => {
   return (typeof id === 'string' || typeof id === 'number') && /^[A-Za-z0-9_-]{1,128}$/.test(String(id)) ? String(id) : undefined
 }
 
-export const loadPageVisualPreview = async ({ payload, req, pageId }: { payload: Pick<Payload, 'findByID'>; req: PayloadRequest; pageId: string }): Promise<PageVisualPreview> => {
+export const loadContentVisualPreview = async ({ payload, req, collection, documentId }: { payload: Pick<Payload, 'findByID'>; req: PayloadRequest; collection: PreviewCollection; documentId: string }): Promise<PageVisualPreview> => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
-  if (!idOf(pageId)) throw new APIError('Identificador no válido.', 400)
+  if (!isPreviewCollection(collection)) throw new APIError('La colección no dispone de vista editorial.', 400)
+  if (!idOf(documentId)) throw new APIError('Identificador no válido.', 400)
   const reads = new Map<string, Promise<Record<string, unknown>>>()
-  const read = (collection: 'pages' | 'brand-profiles' | 'media' | 'media-placements' | 'projects', id: string) => {
+  const read = (collection: PreviewCollection | 'brand-profiles' | 'media' | 'media-placements', id: string) => {
     const key = `${collection}:${id}`
     if (!reads.has(key)) reads.set(key, payload.findByID({ collection, id, draft: true, depth: 0, overrideAccess: false, req }).then(record))
     return reads.get(key)!
   }
-  const page = await read('pages', pageId)
+  const page = await read(collection, documentId)
   const source = record(page)
-  const result: PageVisualPreview = { id: pageId, title: text(source.title), updatedAt: text(source.updatedAt), status: text(source._status), blocks: [], assets: {}, brand: null, warnings: [] }
+  const result: PageVisualPreview = { collection, id: documentId, title: text(source.title), updatedAt: text(source.updatedAt), status: text(source._status), blocks: [], assets: {}, brand: null, warnings: [] }
   const brandId = idOf(source.brandProfile)
   if (brandId) {
     try { result.brand = resolvePageBrand(await read('brand-profiles', brandId), source.brandOverrides) }
@@ -48,31 +53,43 @@ export const loadPageVisualPreview = async ({ payload, req, pageId }: { payload:
   const richText = (value: unknown): PreviewText | undefined => {
     if (value == null) return undefined
     // Bound the complete JSON tree before the recursive editorial projection.
-    createPreviewManifest({ source: { collection: 'pages', documentId: pageId, versionId: 'visual' }, brandTokens: {}, pageBlocks: [value], mediaReferences: [] })
+    createPreviewManifest({ source: { collection: 'pages', documentId, versionId: 'visual' }, brandTokens: {}, pageBlocks: [value], mediaReferences: [] })
     const ids: Array<string | number> = []
     const projected = projectLexical(value, ids)
     ids.forEach(media)
     return projected as PreviewText
   }
-  if (!Array.isArray(source.layout) || source.layout.length > 100) throw new APIError('El layout debe contener como máximo 100 bloques.', 400)
-  const projectCount = source.layout.reduce((total, block) => total + (Array.isArray(record(block).projects) ? (record(block).projects as unknown[]).length : 0), 0)
+  const image = async (block: Record<string, unknown>, asset = block.asset): Promise<VisualImage> => {
+    const item: VisualImage = { assetId: media(asset), caption: text(block.caption) }
+    if (typeof block.alt === 'string') item.alt = text(block.alt)
+    const placementId = idOf(block.placement)
+    if (placementId) {
+      try {
+        const placementDoc = await read('media-placements', placementId)
+        item.placement = normalizeMediaPlacement(placementDoc.placement)
+        if (String(item.placement.asset) !== item.assetId) throw new Error('Different original')
+      } catch { delete item.placement; result.warnings.push(`Bloque ${result.blocks.length + 1}: encuadre no disponible o asociado a otra imagen.`) }
+    }
+    return item
+  }
+  const layout = contentPreviewLayout(collection, source)
+  const projectCount = layout.reduce((total, block) => total + (Array.isArray(block.projects) ? block.projects.length : 0), 0)
   if (projectCount > 200) throw new APIError('La vista previa admite como máximo 200 referencias de proyecto.', 400)
-  for (const raw of source.layout) {
+  for (const raw of layout) {
     const block = record(raw)
-    const item: VisualBlock = { type: text(block.blockType), heading: text(block.heading) }
-    if (item.type === 'hero') Object.assign(item, { eyebrow: text(block.eyebrow), content: richText(block.body), assetId: media(block.image) })
+    const item: VisualBlock = { type: text(block.blockType), heading: text(block.heading), eyebrow: text(block.eyebrow) }
+    if (item.type === 'hero') Object.assign(item, { description: text(block.description), content: richText(block.body) }, await image(block, block.image))
     else if (item.type === 'richText') item.content = richText(block.content)
-    else if (item.type === 'media') {
-      item.assetId = media(block.asset)
-      item.caption = text(block.caption)
-      const placementId = idOf(block.placement)
-      if (placementId) {
-        try {
-          const placementDoc = record(await read('media-placements', placementId))
-          item.placement = normalizeMediaPlacement(placementDoc.placement)
-          if (String(item.placement.asset) !== item.assetId) throw new Error('Different original')
-        } catch { delete item.placement; result.warnings.push(`Bloque ${result.blocks.length + 1}: encuadre no disponible o asociado a otra imagen.`) }
-      }
+    else if (item.type === 'media') Object.assign(item, await image(block))
+    else if (item.type === 'gallery') {
+      if (!Array.isArray(block.items) || block.items.length > 12) throw new APIError('La galería admite como máximo 12 imágenes.', 400)
+      item.images = []
+      for (const entry of block.items) item.images.push(await image(record(entry)))
+    } else if (item.type === 'quote') Object.assign(item, { quote: text(block.quote), attribution: text(block.attribution) })
+    else if (item.type === 'callout') Object.assign(item, { tone: ['neutral', 'information', 'note'].includes(text(block.tone)) ? text(block.tone) : 'neutral', content: richText(block.content) })
+    else if (item.type === 'metrics') {
+      if (!Array.isArray(block.items) || block.items.length > 8) throw new APIError('El bloque admite como máximo 8 métricas.', 400)
+      item.metrics = block.items.map((entry) => ({ value: text(record(entry).value), label: text(record(entry).label) }))
     } else if (item.type === 'projectGrid') {
       const projects = Array.isArray(block.projects) ? block.projects : []
       if (projects.length > 100) throw new APIError('Demasiados proyectos en la cuadrícula.', 400)
@@ -95,3 +112,6 @@ export const loadPageVisualPreview = async ({ payload, req, pageId }: { payload:
   }
   return result
 }
+
+/** Keep previously shared private page-preview links working. */
+export const loadPageVisualPreview = ({ pageId, ...args }: { payload: Pick<Payload, 'findByID'>; req: PayloadRequest; pageId: string }) => loadContentVisualPreview({ ...args, collection: 'pages', documentId: pageId })

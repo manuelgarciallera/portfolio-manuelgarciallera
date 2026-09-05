@@ -88,6 +88,7 @@ export const projectBlocks: Block[] = [
 export const Projects: CollectionConfig = {
   slug: 'projects',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/PagePreviewLink#PagePreviewLink'] } },
     defaultColumns: ['title', '_status', 'updatedAt'],
     useAsTitle: 'title',
   },
