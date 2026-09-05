@@ -1,0 +1,16 @@
+.importer { margin-block: -1.5rem 2.5rem; color: var(--theme-text); background: var(--theme-elevation-50); border: 1px solid var(--theme-elevation-150); border-radius: 0.6rem; }
+.importer summary { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem; cursor: pointer; }
+.importer summary span { font-weight: 600; }
+.importer summary small, .body > p, .status { color: var(--theme-elevation-600); }
+.body { padding: 0 1rem 1rem; border-top: 1px solid var(--theme-elevation-150); }
+.body > p { max-width: 52rem; margin: 1rem 0; }
+.body label { display: block; margin-bottom: 0.4rem; font-size: 0.8rem; }
+.controls { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; align-items: center; }
+.controls input, .controls button { min-height: 2.6rem; font: inherit; border-radius: 0.3rem; }
+.controls input { min-width: 0; padding: 0.55rem 0.75rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-250); }
+.controls button { padding-inline: 1rem; color: var(--theme-elevation-0); background: var(--theme-text); border: 1px solid var(--theme-text); cursor: pointer; }
+.controls button:disabled { cursor: not-allowed; opacity: 0.55; }
+.controls input:focus-visible, .controls button:focus-visible, .history:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+.status { min-height: 1.25rem; margin: 0.7rem 0 0; font-size: 0.85rem; }
+.history { display: inline-block; margin-top: 0.55rem; color: inherit; font-size: 0.85rem; }
+@media (max-width: 34rem) { .controls { grid-template-columns: 1fr; } .controls button { width: 100%; } .importer summary { flex-direction: column; } }

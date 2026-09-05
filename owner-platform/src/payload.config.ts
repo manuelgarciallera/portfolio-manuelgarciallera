@@ -54,6 +54,7 @@ export default buildConfig({
       beforeDashboard: [
         './components/OwnerSearch#OwnerSearch',
         './components/OwnerOverview#OwnerOverview',
+        './components/AnalyticsImporter#AnalyticsImporter',
         './components/FigmaExplorer#FigmaExplorer',
       ],
     },
