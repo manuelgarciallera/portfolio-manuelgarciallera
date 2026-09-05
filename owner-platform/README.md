@@ -218,6 +218,12 @@ confirm it against another newly generated snapshot. A changed page produces a
 conflict record instead of confirmation. A separately authenticated execution
 endpoint can restore the verified capsule only as a draft and only inside an
 atomic transaction; it cannot publish or deploy.
+The native Restore Plan record now presents only the action valid for its
+current state. A `ready` plan requires `CONFIRMAR RESTAURACIÓN` and captures a
+fresh preview before deciding between `confirmed` and `conflict`; a confirmed
+plan requires `EJECUTAR RESTAURACIÓN`. Conflict and executed records expose no
+reusable action. All responses use controlled copy and keep publication and
+deployment outside the component.
 
 Draft Snapshots is the restorable companion to visual Preview Snapshots.
 `POST /api/owner/draft-snapshots` captures a canonical, immutable, hashed copy

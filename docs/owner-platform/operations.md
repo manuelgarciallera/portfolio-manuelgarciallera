@@ -446,6 +446,13 @@ If the new snapshot hash equals the recorded baseline, the plan becomes
 Both outcomes are audited. Neither endpoint contains an execute, apply, publish,
 deploy, or page-mutation operation. Execution remains a separate boundary.
 
+The native Restore Plan detail renders the same state machine as guarded owner
+controls. A `ready` record accepts only `CONFIRMAR RESTAURACIÓN`; the client
+first creates the required fresh snapshot and then submits its identifier to
+the confirmation endpoint. A conflict removes all action controls. Only a
+`confirmed` record exposes the third phrase and draft execution below, while an
+executed record is informational. Raw server error bodies are never rendered.
+
 ### Transactional draft execution
 
 Only a `confirmed` plan can be executed, using a third exact phrase:
