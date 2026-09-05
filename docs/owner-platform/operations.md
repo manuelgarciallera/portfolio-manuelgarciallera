@@ -662,6 +662,12 @@ crop remain non-operational even if their switches are enabled. Apply,
 publish, deploy, and model-provider configuration are all reported as false;
 the status route cannot activate any of them.
 
+The generated dashboard renders this model as a compact connector and
+capability panel. Figma, Linocube, and the model provider each have an explicit
+state; every proposal switch distinguishes enabled from operational. The link
+to Assistant Settings edits only proposal permission, while the permanent
+apply, publish, and deploy denial remains visible beside the controls.
+
 `GET /api/owner/media/health` is included in the dashboard overview and can be
 consumed independently by the future media workspace. It uses owner-scoped
 database counts for draft/published Media and Media Placements, then reports

@@ -142,6 +142,9 @@ Figma read-only readiness and plan, Linocube's disabled state, and every
 assistant capability switch with its effective operational support. Tokens are
 never returned, and apply, publish, deploy, and model-provider readiness remain
 explicitly false until separately implemented and reviewed.
+The owner dashboard presents this status beside a direct link to Assistant
+Settings. It distinguishes an enabled switch from an operational capability
+and keeps the apply/publish/deploy prohibition visible.
 
 `GET /api/owner/media/health` supplies an owner-only media inventory: draft and
 published originals and placement recipes, plus bounded counts for missing
