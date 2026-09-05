@@ -827,17 +827,24 @@ review. Do not represent these contracts as live integrations.
   tests, upload limits, accessibility, and operational smoke tests.
 - Explicit approval for the content-read/publish bridge into the public site.
 - Root public boundary and bundle comparison passing against the checkpoint.
-- A clean owner production-dependency audit. The current verification reports
-  11 upstream/transitive advisories (1 low, 7 moderate, 3 high, 0 critical), so
-  deployment remains blocked pending compatible fixes and a new full review.
+- A clean owner production-dependency audit. Next.js and its ESLint integration
+  were updated together from 16.2.11 to 16.3.4 on 2026-09-05. This removed the
+  3 high-severity findings in the isolated owner runtime without changing the
+  public application. The current verification still reports 14 upstream or
+  transitive advisories (1 low, 13 moderate, 0 high, 0 critical), so deployment
+  remains blocked pending compatible Payload ecosystem fixes and a new full
+  review. Payload 3.88.0 is the latest compatible release at this checkpoint;
+  npm's suggested 0.1.9 downgrades are not valid remediation for this platform.
 - The public package audit currently reports 1 transitive moderate advisory
   (`fflate`). It is also a release blocker until a compatible, benchmarked fix
   passes the checkpoint comparison. Do not use `npm audit fix --force`.
 
 These counts were produced from the committed lockfiles with
-`npm audit --omit=dev` during the 2026-09-04 verification. Registry advisories
+`npm audit --omit=dev` during the 2026-09-05 verification. Registry advisories
 can change; rerun both audits before any release rather than treating these
-numbers as permanently current.
+numbers as permanently current. Never run `npm audit fix` or
+`npm audit fix --force` without reviewing the complete dependency change and
+repeating the isolation and checkpoint comparisons.
 
 ## Check, evidence, and rollback
 
