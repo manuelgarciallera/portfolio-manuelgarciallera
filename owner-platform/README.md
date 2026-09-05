@@ -233,6 +233,8 @@ context package for that snapshot. It contains the active proposal switches
 and explicit write prohibitions, is limited to 256 KiB, and is marked as
 untrusted editorial data so a downstream model cannot reinterpret authored
 content as instructions.
+Every successful export is recorded in the append-only audit ledger before the
+response is returned; an audit failure blocks the export.
 
 Restore Plans provides the safety boundary for version restoration. Dashboard
 version cards require the exact `PREPARAR RESTAURACIÓN` phrase; the private
