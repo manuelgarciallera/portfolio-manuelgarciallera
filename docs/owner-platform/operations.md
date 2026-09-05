@@ -691,6 +691,12 @@ It then projects only ordered page state plus draft/preview provenance into a
 canonical, immutable export capped at 5 MiB. The attachment is returned with
 `private, no-store`, `nosniff`, and an `X-Content-SHA256` header; successful
 downloads are appended to the audit ledger before any bytes are returned.
+The portable verifier does not trust that digest by itself: it rejects unknown
+fields and schema versions, malformed timestamps or hashes, non-contiguous
+positions, duplicate page IDs or slugs, and reconstructs every draft capsule
+from its page/version provenance to prove that the exported state still matches
+its draft hash. A future bridge must run this verification before interpreting
+the package.
 The route does not write the package to disk, mutate CMS content, cross the
 public application boundary, publish, build, or deploy. It is reviewable input
 for a future benchmark-gated bridge, not that bridge itself.

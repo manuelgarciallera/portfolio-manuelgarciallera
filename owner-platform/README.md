@@ -311,6 +311,10 @@ server re-verifies the artifact, bundle, every draft capsule, and all page
 counts before returning a canonical package with its SHA-256 hash. The response
 is a private, no-store attachment and the access is audited. It writes no file,
 changes no CMS record, and cannot publish or deploy the portfolio.
+The exported contract also has a strict portable verifier: it reconstructs each
+page capsule and rejects extra fields, unsupported schemas, broken ordering,
+duplicate page/slug identities, invalid provenance, and self-described payloads
+whose content does not match the recorded digest.
 
 ## Local development
 
