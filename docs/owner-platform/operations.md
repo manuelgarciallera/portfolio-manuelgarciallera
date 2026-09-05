@@ -350,9 +350,12 @@ fields, credential-shaped fields, or disabled capabilities fail closed.
 `suggestLayout` is deliberately narrower than a general layout patch: it
 accepts one atomic `replace` of `/page/layout` only when the submitted array is
 an exact multiset-preserving reorder of the blocks in the verified snapshot.
-It cannot add, remove, duplicate, or edit a block. Crop proposals remain
-non-operational until their media-placement context has an equally strict
-contract.
+It cannot add, remove, duplicate, or edit a block. New preview snapshots also
+bind each optional media-placement identifier into the canonical manifest.
+`suggestCrop` may replace only `focalX`, `focalY`, `zoom`, `fit`, or `frame` on
+one of those bound placements, using the same numeric ranges and catalogs as
+the editor. It cannot change an asset, address an unbound placement, add a
+field, or target a legacy snapshot that lacks the binding.
 
 After reviewing the stored proposal, record exactly one decision:
 
@@ -752,8 +755,8 @@ It reports whether the server has a non-empty Figma personal access token, its
 normalized plan, and the connector's read-only boundary without returning the
 token. Linocube remains explicitly disabled. Assistant Settings are loaded
 through owner access and each switch is reported separately from operational
-support: copy, palette, layout reordering, and motion proposals are supported,
-while crop remains non-operational even if its switch is enabled. Apply,
+support: copy, palette, layout reordering, bounded crop, and motion proposals
+are supported. Apply,
 publish, deploy, and model-provider configuration are all reported as false;
 the status route cannot activate any of them.
 

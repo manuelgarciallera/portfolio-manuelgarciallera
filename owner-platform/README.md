@@ -201,8 +201,9 @@ grant proposal permission only: no assistant receives apply, publish, deploy, or
 production-write authority.
 Layout permission supports only a detached atomic reorder of the exact blocks
 contained in the verified preview snapshot. It rejects additions, removals,
-duplicates, and content edits. Crop remains non-operational until a bounded
-media-placement proposal contract is available.
+duplicates, and content edits. New snapshots also bind optional media-placement
+IDs. Crop proposals may change only focal position, zoom, fit, or frame for one
+of those bound IDs and remain detached review records.
 
 Audit Events is an owner-readable, append-only ledger created only by trusted
 server services. Preview creation already records its actor, page, snapshot
