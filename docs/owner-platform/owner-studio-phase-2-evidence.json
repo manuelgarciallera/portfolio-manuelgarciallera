@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "verifiedGitHead": "1e678ff79215e765c9ace9f6f8c37557be2078e9",
+  "verifiedGitHead": "329f6020c890e586c90db5edc4f8e088fc8c26e5",
   "isolationEvidencePath": "docs/owner-platform/isolation-evidence-2026-09-04.json",
-  "isolationEvidenceSha256": "63af933d4db6b21b5420f322579d68d9abdf1ffa418c79a455eb95037c3322ff",
+  "isolationEvidenceSha256": "a5624cdd2c8d897a623bc3caf8dbed70b3b3f16259c225a35f9ba8be52c2ee49",
   "ownerTrackedFileCount": 255,
-  "ownerTrackedSurfaceSha256": "d47ef2973f161cb531940897a1ad869bcb8e81981dface493ccb51eacc031f95",
+  "ownerTrackedSurfaceSha256": "9715526e0ff9c7902a28db5dbe745513960177832f229e36eb32a1741fcdbaa7",
   "ownerTrackedSurfaceExclusions": [
     "owner-platform/src/payload-types.ts",
     "owner-platform/next-env.d.ts",
