@@ -318,11 +318,15 @@ host, return `image/png` without a redirect, and remain within a 20 MiB streamed
 limit; no Figma token or browser credential is sent to the signed render URL.
 
 The original bytes are stored as a Payload Media **draft** with owner-authored
-alternative text. A separate immutable Figma Import Execution binds the plan,
-review, Media record, byte hash, size, MIME type, actor, and timestamp. Media,
-execution evidence, and audit event share one database transaction and roll
-back together on failure. This operation does not create a placement, attach
-the image to a page, publish content, write the public repository, or deploy.
+alternative text. The same transaction creates a default Media Placement draft
+pointing to that immutable original, with centered `cover`, `1×` zoom, and the
+original aspect ratio. The response links directly to the existing reversible
+desktop/tablet/mobile placement editor. A separate immutable Figma Import
+Execution binds the plan, review, Media record, placement recipe, byte hash,
+size, MIME type, actor, and timestamp. Media, placement, execution evidence,
+and audit event share one database transaction and roll back together on
+failure. This operation does not attach the image to a page, publish content,
+write the public repository, or deploy.
 
 ## Immutable local preview snapshots
 

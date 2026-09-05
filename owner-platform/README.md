@@ -62,8 +62,10 @@ approved review exposes a separate guarded import requiring
 `IMPORTAR PNG DE FIGMA` and accessible alternative text. The server rediscovers
 the exact node, rejects changed file/node metadata, downloads only `image/png`
 from an allowlisted Figma render host without redirects or credentials, and
-caps the stream at 20 MiB. Media, immutable execution evidence, and its audit
-event are written atomically. The resulting Media record is a draft and no
+caps the stream at 20 MiB. Media, a default reversible Media Placement,
+immutable execution evidence, and its audit event are written atomically. Both
+editable records are drafts; the resulting shortcut opens the existing
+desktop/tablet/mobile crop editor. No
 page, public content, publication, or deployment is changed.
 
 AI and Linocube are disabled contracts only: they have no credentials, SDKs,
