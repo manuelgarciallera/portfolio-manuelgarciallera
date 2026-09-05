@@ -1,0 +1,12 @@
+.restore { margin-top: 0.7rem; padding-top: 0.65rem; border-top: 1px solid var(--theme-elevation-150); }
+.restore summary { width: max-content; max-width: 100%; color: var(--theme-elevation-700); font-size: 0.75rem; cursor: pointer; }
+.restore form { display: grid; grid-template-columns: minmax(10rem, 1fr) auto; gap: 0.5rem; align-items: end; margin-top: 0.65rem; }
+.restore label span { display: block; margin-bottom: 0.35rem; color: var(--theme-elevation-600); font-size: 0.68rem; }
+.restore input, .restore button { min-height: 2.25rem; font: inherit; border-radius: 0.3rem; }
+.restore input { width: 100%; min-width: 0; padding-inline: 0.55rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-250); }
+.restore button { padding-inline: 0.75rem; color: var(--theme-elevation-0); background: var(--theme-text); border: 1px solid var(--theme-text); cursor: pointer; }
+.restore button:disabled { cursor: wait; opacity: 0.6; }
+.restore p { min-height: 1rem; margin: 0.45rem 0 0; color: var(--theme-elevation-600); font-size: 0.7rem; }
+.restore a { display: inline-block; margin-top: 0.35rem; color: inherit; font-size: 0.75rem; }
+.restore input:focus-visible, .restore button:focus-visible, .restore a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+@media (max-width: 36rem) { .restore form { grid-template-columns: 1fr; } .restore button { width: 100%; } }

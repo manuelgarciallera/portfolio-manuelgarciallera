@@ -142,6 +142,7 @@ describe('presentOwnerDashboard', () => {
         createdAt: '2026-09-05T08:00:00.000Z',
         href: '/admin/collections/releases/9',
         name: 'Checkpoint editorial',
+        restoreHref: '/api/owner/releases/9/restore-plans',
         scores: [
           { label: 'Rendimiento', value: 92 },
           { label: 'Usabilidad', value: 93 },

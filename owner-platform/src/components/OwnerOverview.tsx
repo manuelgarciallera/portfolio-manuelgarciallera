@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import { presentOwnerDashboard } from '@/dashboard/presentation'
 import styles from './OwnerOverview.module.css'
+import { RestorePreparation } from './RestorePreparation'
 
 type View = ReturnType<typeof presentOwnerDashboard>
 
@@ -151,6 +152,7 @@ export const OwnerOverview = () => {
                   ))}
                 </dl>
                 <time dateTime={version.createdAt}>{new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(version.createdAt))}</time>
+                <RestorePreparation href={version.restoreHref} versionName={version.name} />
               </li>
             ))}
           </ul>

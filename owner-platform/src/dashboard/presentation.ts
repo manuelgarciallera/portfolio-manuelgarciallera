@@ -1,7 +1,7 @@
 type DashboardCard = { href: string; label: string; tone: 'attention' | 'healthy' | 'neutral'; value: number }
 type ActivityItem = { action: string; createdAt: string; href: string; outcome: string; subject: string; tone: 'attention' | 'success' }
 type RecentItem = { href: string; label: string; meta: string; updatedAt: string }
-type VersionItem = { createdAt: string; href: string; name: string; scores: { label: string; value: number }[]; summary: string }
+type VersionItem = { createdAt: string; href: string; name: string; restoreHref: string; scores: { label: string; value: number }[]; summary: string }
 type AnalyticsPresentation = { available: false } | {
   available: true
   metrics: { change: number | null; label: string; value: string }[]
@@ -63,6 +63,7 @@ const releaseVersions = (releases: Record<string, unknown>): VersionItem[] => {
       createdAt,
       href: `/admin/collections/releases/${encodeURIComponent(String(relationId(version.id)))}`,
       name,
+      restoreHref: `/api/owner/releases/${encodeURIComponent(String(relationId(version.id)))}/restore-plans`,
       scores: [
         { label: 'Rendimiento', value: count(average.performance) },
         { label: 'Usabilidad', value: count(average.usability) },
