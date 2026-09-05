@@ -386,6 +386,16 @@ link directly to the immutable pending proposal for review. Server bodies and
 internal failures are never reflected into the editor. This is an offline
 handoff surface, not a model connection or autonomous agent.
 
+Before requesting a proposal externally, the same panel can fetch
+`GET /api/owner/assist/context?sourceSnapshot=:id`. The owner-only endpoint
+re-verifies the canonical manifest and its stored hash, loads current switches
+server-side, rejects credential-shaped keys, and caps the serialized package at
+256 KiB. Its immutable response contains only the snapshot source and hash,
+projected page/brand/media context, enabled proposal capabilities, an explicit
+`untrusted-editorial-data` marker, and permanent `apply`, `publish`, and
+`deploy` denials. The dashboard renders this as a read-only JSON field for a
+manual copy/paste handoff; it never calls a model or writes content.
+
 ## Verified release registration
 
 Register a version only after creating its immutable preview snapshot and

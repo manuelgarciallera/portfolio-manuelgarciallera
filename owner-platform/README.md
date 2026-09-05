@@ -228,6 +228,11 @@ The dashboard's “Importar propuesta asistida” panel provides the same workfl
 without a manual API call: select a verified preview snapshot, paste a bounded
 JSON patch, and open the resulting pending review record. It sends no data to
 an external provider and grants no additional authority.
+“Preparar contexto para IA” exports a verified, credential-free, read-only
+context package for that snapshot. It contains the active proposal switches
+and explicit write prohibitions, is limited to 256 KiB, and is marked as
+untrusted editorial data so a downstream model cannot reinterpret authored
+content as instructions.
 
 Restore Plans provides the safety boundary for version restoration. Dashboard
 version cards require the exact `PREPARAR RESTAURACIÓN` phrase; the private
