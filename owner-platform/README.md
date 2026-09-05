@@ -315,6 +315,10 @@ The exported contract also has a strict portable verifier: it reconstructs each
 page capsule and rejects extra fields, unsupported schemas, broken ordering,
 duplicate page/slug identities, invalid provenance, and self-described payloads
 whose content does not match the recorded digest.
+Each immutable artifact can now run an owner-confirmed publication preflight.
+The resulting hashed report classifies structural blockers and SEO warnings,
+is retained once per artifact, is audited, and feeds the dashboard attention
+queue. It still has no public write, build, publication, or deployment path.
 
 ## Local development
 

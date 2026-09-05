@@ -701,6 +701,33 @@ The route does not write the package to disk, mutate CMS content, cross the
 public application boundary, publish, build, or deploy. It is reviewable input
 for a future benchmark-gated bridge, not that bridge itself.
 
+### Immutable publication preflight
+
+From the Publication Artifact record, enter `VALIDAR ARTEFACTO` and choose
+**Validar preparación**, or request:
+
+```http
+POST /api/owner/publication-artifacts/100/preflights
+Content-Type: application/json
+
+{"confirmation":"VALIDAR ARTEFACTO"}
+```
+
+The owner-only service reloads and re-verifies the artifact, approved bundle,
+every draft capsule, and the canonical export before evaluating it. It records
+an immutable, hashed Publication Preflight with `ready`,
+`ready_with_warnings`, or `blocked` status. Blocking checks currently cover an
+empty layout, unsupported blocks, and missing data required by hero, media,
+rich-text, and controlled custom-feature blocks. Missing SEO title or
+description and an intentional `noIndex` flag remain visible warnings rather
+than being silently ignored.
+
+One report is retained per immutable artifact. Repeating the operation returns
+the existing report; it does not create divergent evidence. New reports and
+their blocker/warning counts appear in the dashboard attention queue and audit
+ledger. This preflight performs no filesystem write, public content mutation,
+build, deployment, or publication.
+
 ## Provider-neutral analytics imports
 
 Import an aggregate export without connecting a provider account:
