@@ -88,6 +88,7 @@ export const buildAssistanceContextPackage = (manifest: PreviewManifest, switche
   assertNoSensitiveKeys(manifest.brandTokens)
   assertNoSensitiveKeys(manifest.pageBlocks)
   assertNoSensitiveKeys(manifest.mediaReferences)
+  assertNoSensitiveKeys(manifest.mediaPlacements)
   const enabled = ASSIST_CAPABILITIES.filter((capability) => switches[capability] === true)
   const targets = buildTargets(manifest, enabled)
   const candidate = {
@@ -108,6 +109,7 @@ export const buildAssistanceContextPackage = (manifest: PreviewManifest, switche
       targets,
     },
     context: {
+      ...(manifest.mediaPlacements !== undefined ? { placements: manifest.mediaPlacements } : {}),
       brand: manifest.brandTokens,
       media: manifest.mediaReferences,
       page: { ...(typeof manifest.pageTitle === 'string' ? { title: manifest.pageTitle } : {}), layout: manifest.pageBlocks },

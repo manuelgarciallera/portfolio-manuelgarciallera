@@ -11,6 +11,39 @@ const input: PreviewManifestInput = {
 }
 
 describe('preview manifests', () => {
+  it('binds media recipes and responsive overrides to the hash while preserving legacy omission', () => {
+    const mediaPlacements = [{ id: '14', versionId: 'current:saved', placement: {
+      asset: 9, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', zoom: 2, overrides: { mobile: { zoom: 1 } },
+    } }]
+    const captured = createPreviewManifest({ ...input, mediaPlacements } as never)
+    expect(captured).toHaveProperty('mediaPlacements', mediaPlacements)
+    expect(captured.hash).not.toBe(createPreviewManifest(input).hash)
+    mediaPlacements[0].placement.overrides.mobile.zoom = 3
+    expect(captured).toHaveProperty('mediaPlacements.0.placement.overrides.mobile.zoom', 1)
+    expect(() => hashPreviewManifest({ ...captured, mediaPlacements } as never)).toThrow(/hash/i)
+    expect(createPreviewManifest(input)).not.toHaveProperty('mediaPlacements')
+  })
+
+  it.each([null, {}, [{ id: '14', versionId: 'current:saved', placement: { asset: 9, zoom: 99 } }]])('rejects malformed captured recipes %s', (mediaPlacements) => {
+    expect(() => createPreviewManifest({ ...input, mediaPlacements } as never)).toThrow()
+  })
+
+  it.each(['duplicate', 'no-id', 'no-revision', 'extra-field', 'implicit-default'])('rejects ambiguous captured recipe %s', (fault) => {
+    const entry: Record<string, unknown> = { id: '14', versionId: 'current:saved', placement: { asset: 9, focalX: 0.5, focalY: 0.5, fit: 'cover', frame: 'auto', zoom: 1, overrides: {} } }
+    if (fault === 'no-id') delete entry.id
+    if (fault === 'no-revision') delete entry.versionId
+    if (fault === 'extra-field') entry.apiToken = 'secret'
+    if (fault === 'implicit-default') delete (entry.placement as Record<string, unknown>).zoom
+    const mediaPlacements = fault === 'duplicate' ? [entry, entry] : [entry]
+    expect(() => createPreviewManifest({ ...input, mediaPlacements } as never)).toThrow()
+  })
+
+  it('rejects a stored recipe with an invalid zoom despite a valid checksum', () => {
+    const serialized = '{"brandTokens":{},"mediaPlacements":[{"id":"14","placement":{"asset":9,"fit":"cover","focalX":0.5,"focalY":0.5,"frame":"auto","overrides":{},"zoom":99},"versionId":"current:saved"}],"mediaReferences":[],"pageBlocks":[],"schemaVersion":1,"source":{"collection":"pages","documentId":"7","versionId":"v"}}'
+    const stored = { ...JSON.parse(serialized), hash: `sha256:${createHash('sha256').update(serialized).digest('hex')}` }
+    expect(() => hashPreviewManifest(stored)).toThrow(/zoom/i)
+  })
+
   it('binds the captured page title to the hash without changing title-less historical input', () => {
     const legacy = createPreviewManifest(input)
     const captured = createPreviewManifest({ ...input, pageTitle: 'Título guardado' } as never)

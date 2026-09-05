@@ -193,6 +193,38 @@ it('keeps the captured title in assistant context and review after a newer draft
   expect(await payload.findByID({ collection: 'preview-snapshots', id: snapshot.id, req: input.req, overrideAccess: false })).toEqual(snapshot)
 }, 30_000)
 
+it('captures real versioned crop recipes without losing mobile overrides or using newer edits as baseline', async () => {
+  const { page, req } = await createReleaseFixture()
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).png().toBuffer()
+  const media = await payload.create({ collection: 'media', req, overrideAccess: false, data: { alt: 'Synthetic crop image' },
+    file: { name: `crop-${randomUUID()}.png`, data: bytes, mimetype: 'image/png', size: bytes.length },
+  })
+  const crop = await payload.create({ collection: 'media-placements', req, draft: true, overrideAccess: false, data: {
+    name: 'Historical crop', placement: { asset: media.id, zoom: 2, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', overrides: { mobile: { zoom: 1, frame: '9:16' }, tablet: { focalX: 0.4 } } },
+  } })
+  await payload.update({ collection: 'pages', id: page.id, draft: true, req, overrideAccess: false,
+    data: { layout: [{ blockType: 'media', asset: media.id, placement: crop.id }] },
+  })
+  const first = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  await payload.update({ collection: 'media-placements', id: crop.id, draft: true, req, overrideAccess: false, data: { placement: { asset: media.id, zoom: 3 } } })
+  const second = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  expect(first.manifestHash).not.toBe(second.manifestHash)
+  expect((first.manifest as PreviewManifest).source).toEqual((second.manifest as PreviewManifest).source)
+  await payload.updateGlobal({ slug: 'assistant-settings', req, overrideAccess: false, data: { suggestCrop: true } })
+  const context = await createOwnerAssistanceContext({ payload: payload as never, req, sourceSnapshot: first.id })
+  expect(context.context.placements).toEqual([{ id: String(crop.id), versionId: `current:${crop.updatedAt}`, placement: {
+    asset: media.id, zoom: 2, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', overrides: { mobile: { zoom: 1, frame: '9:16' }, tablet: { focalX: 0.4 } },
+  } }])
+  const current = await payload.findByID({ collection: 'media-placements', id: crop.id, draft: true, req, overrideAccess: false })
+  const proposal = await createOwnerAssistanceProposal({ payload: payload as never, req, sourceSnapshot: first.id, provider: 'manual', patch: {
+    schemaVersion: 1, capability: 'suggestCrop', operations: [{ op: 'replace', path: `/media-placements/${crop.id}/placement/zoom`, value: 1.5 }],
+  } })
+  const review = await loadOwnerAssistanceReview({ payload, req, proposalId: String(proposal.id) })
+  expect(review.changes[0]).toMatchObject({ before: { state: 'captured', text: '2' }, proposed: { state: 'captured', text: '1.5' } })
+  expect(await payload.findByID({ collection: 'media-placements', id: crop.id, draft: true, req, overrideAccess: false })).toEqual(current)
+  expect(await payload.findByID({ collection: 'preview-snapshots', id: first.id, req, overrideAccess: false })).toEqual(first)
+}, 30_000)
+
 it('compares a stored proposal against its frozen snapshot, never the newer page draft', async () => {
   const input = await assistanceFixture()
   input.patch.operations = [{ op: 'replace', path: '/page/layout/0/heading', value: 'Suggested heading' }]

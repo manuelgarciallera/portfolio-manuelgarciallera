@@ -11,6 +11,16 @@ const manifest = createPreviewManifest({
 })
 
 describe('Linocube published manifest contract', () => {
+  it('preserves captured recipes and rejects recipe tampering', () => {
+    const captured = createPreviewManifest({ ...manifest, pageBlocks: [], mediaReferences: [], mediaPlacements: [{
+      id: '14', versionId: 'current:saved', placement: { asset: 9, focalX: 0.5, focalY: 0.5, fit: 'cover', frame: 'auto', zoom: 1, overrides: {} },
+    }] } as never)
+    const envelope = { schemaVersion: 1 as const, manifestVersion: 3, digest: captured.hash, manifest: captured }
+    const validated = validatePublishedManifest(envelope)
+    expect(validated.manifest).toHaveProperty('mediaPlacements.0.placement.zoom', 1)
+    expect(() => validatePublishedManifest({ ...envelope, manifest: { ...captured, mediaPlacements: [] } })).toThrow(/hash|coincide/i)
+  })
+
   it('preserves an optional captured title and its verified digest without permitting extra keys', () => {
     const titled = createPreviewManifest({ ...manifest, pageBlocks: [], mediaReferences: [], pageTitle: 'Título histórico' })
     const envelope = { schemaVersion: 1 as const, manifestVersion: 3, digest: titled.hash, manifest: titled }

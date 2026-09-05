@@ -83,6 +83,8 @@ export const loadOwnerAssistanceReview = async ({ payload, req, proposalId }: {
       label = labels[field]
     } else if (path.startsWith('/media-placements/')) {
       const [, , id, , field] = path.split('/')
+      const captured = manifest.mediaPlacements?.find((entry) => entry.id === id)
+      if (captured) before = valueText((captured.placement as unknown as Record<string, unknown>)[field])
       label = `Imagen ${id}: ${labels[field]}`
     }
     const proposed = operation.op === 'remove' ? removedValue : path === '/page/layout' ? blockOrder(operation.value) : valueText(operation.value)

@@ -21,6 +21,17 @@ const fixture = (capability: string, operations: unknown[]) => {
 }
 
 describe('read-only assistance comparison', () => {
+  it('compares captured crop values without reading the live placement', async () => {
+    const input = fixture('suggestCrop', [{ op: 'replace', path: '/media-placements/14/placement/zoom', value: 3 }])
+    const captured = createPreviewManifest({ ...manifest, mediaPlacements: [{ id: '14', versionId: 'current:saved', placement: {
+      asset: 9, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', zoom: 2, overrides: { mobile: { zoom: 1 } },
+    } }] } as never)
+    input.snapshot.manifest = captured
+    input.snapshot.manifestHash = captured.hash
+    const review = await loadOwnerAssistanceReview(input)
+    expect(review.changes[0]).toMatchObject({ before: { state: 'captured', text: '2' }, proposed: { state: 'captured', text: '3' } })
+  })
+
   it('compares a saved title without consulting the live page, including repeated operations', async () => {
     const input = fixture('suggestCopy', [
       { op: 'replace', path: '/page/title', value: 'Intermedio' },

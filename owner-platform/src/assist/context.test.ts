@@ -11,6 +11,18 @@ const manifest = createPreviewManifest({
 })
 
 describe('assistance context package', () => {
+  it('exports frozen crop recipes including mobile and tablet data without granting new actions', () => {
+    const mediaPlacements = [{ id: '14', versionId: 'current:saved', placement: {
+      asset: 9, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', zoom: 2, overrides: { mobile: { zoom: 1 }, tablet: { frame: '1:1' } },
+    } }]
+    const captured = createPreviewManifest({ ...manifest, mediaPlacements } as never)
+    const exported = buildAssistanceContextPackage(captured, { suggestCrop: true })
+    expect(exported.context).toHaveProperty('placements', mediaPlacements)
+    expect(exported.permissions).toMatchObject({ apply: false, publish: false, deploy: false, capabilities: ['suggestCrop'] })
+    expect(exported.proposalContract.targets.suggestCrop).not.toContain('/media-placements/14/placement/overrides/mobile/zoom')
+    expect(buildAssistanceContextPackage(manifest, { suggestCrop: true }).context).not.toHaveProperty('placements')
+  })
+
   it('exports the captured title and a bounded editable target only when copy is enabled', () => {
     const captured = createPreviewManifest({ ...manifest, pageTitle: 'Título guardado' } as never)
     const enabled = buildAssistanceContextPackage(captured, { suggestCopy: true })

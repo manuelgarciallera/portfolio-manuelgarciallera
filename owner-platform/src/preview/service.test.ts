@@ -25,6 +25,63 @@ const brand = {
 }
 
 describe('page preview snapshot service', () => {
+  it('captures referenced recipes once, including responsive overrides, and hashes changes outside the page', async () => {
+    const page = { id: 7, title: 'Inicio', updatedAt: 'saved', brandProfile: 3, layout: [
+      { id: 'a', blockType: 'media', asset: 9, placement: 14 }, { id: 'b', blockType: 'media', asset: 9, placement: 14 },
+    ] }
+    const placement = { id: 14, updatedAt: 'crop-saved', apiToken: 'drop-me', placement: {
+      asset: 9, fit: 'contain', focalX: 0.2, focalY: 0.7, frame: '4:3', zoom: 2,
+      overrides: { mobile: { zoom: 1, frame: '9:16' }, tablet: { focalX: 0.4 } },
+    } }
+    const snapshots: Record<string, unknown>[] = []
+    const findByID = vi.fn(async ({ collection }: { collection: string }) => {
+      if (collection === 'pages') return page
+      if (collection === 'brand-profiles') return brand
+      if (collection === 'media-placements') return placement
+      if (collection === 'media') return { id: 9, alt: 'Imagen', width: 1200, height: 900 }
+      throw new Error('Unexpected collection')
+    })
+    const payload = { findByID,
+      find: async ({ where }: { where: { manifestHash: { equals: string } } }) => ({ docs: snapshots.filter((doc) => doc.manifestHash === where.manifestHash.equals) }),
+      create: async ({ collection, data }: { collection: string; data: Record<string, unknown> }) => {
+        const doc = { id: snapshots.length + 1, ...data }
+        if (collection === 'preview-snapshots') snapshots.push(doc)
+        return doc
+      },
+    }
+    const req = { user: owner }
+    const first = await createPagePreviewSnapshot({ payload: payload as never, req: req as never, pageId: 7 })
+    expect((first.manifest as PreviewManifest)).toHaveProperty('mediaPlacements', [{ id: '14', versionId: 'current:crop-saved', placement: {
+      asset: 9, fit: 'contain', focalX: 0.2, focalY: 0.7, frame: '4:3', zoom: 2,
+      overrides: { mobile: { zoom: 1, frame: '9:16' }, tablet: { focalX: 0.4 } },
+    } }])
+    expect(findByID.mock.calls.filter(([args]) => args.collection === 'media-placements')).toHaveLength(1)
+    expect(findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'media-placements', draft: true, depth: 0, overrideAccess: false, req }))
+    expect(JSON.stringify(first.manifest)).not.toMatch(/apiToken|drop-me/)
+    placement.placement.zoom = 3
+    const second = await createPagePreviewSnapshot({ payload: payload as never, req: req as never, pageId: 7 })
+    expect(second.manifestHash).not.toBe(first.manifestHash)
+    expect(first.manifest).toHaveProperty('mediaPlacements.0.placement.zoom', 2)
+    expect(second.manifest).toHaveProperty('mediaPlacements.0.placement.zoom', 3)
+  })
+
+  it.each(['wrong-asset', 'wrong-id', 'no-revision', 'invalid-zoom', 'denied'])('rejects %s encuadre before persisting a capture', async (fault) => {
+    const page = { id: 7, updatedAt: 'saved', brandProfile: 3, layout: [{ blockType: 'media', asset: 9, placement: 14 }] }
+    const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
+    const payload = { create, find: async () => ({ docs: [] }), findByID: async ({ collection }: { collection: string }) => {
+      if (collection === 'pages') return page
+      if (collection === 'brand-profiles') return brand
+      if (collection === 'media-placements') {
+        if (fault === 'denied') throw new Error('Read denied')
+        return { id: fault === 'wrong-id' ? 99 : 14, updatedAt: fault === 'no-revision' ? null : 'saved',
+          placement: { asset: fault === 'wrong-asset' ? 99 : 9, zoom: fault === 'invalid-zoom' ? 99 : 1 } }
+      }
+      return { id: 9, alt: 'Imagen' }
+    } }
+    await expect(createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })).rejects.toThrow()
+    expect(create).not.toHaveBeenCalled()
+  })
+
   it('distinguishes reordered identical blocks by their stored identities in the assistant context', async () => {
     const page = { id: 7, title: 'Inicio', updatedAt: '2026-09-05T12:00:00Z', brandProfile: 3,
       layout: [{ id: 'block-a', blockType: 'hero', heading: 'Igual' }, { id: 'block-b', blockType: 'hero', heading: 'Igual' }] }
@@ -73,7 +130,7 @@ describe('page preview snapshot service', () => {
   it('loads the current draft, brand and media server-side and projects only known fields', async () => {
     const page = { id: 7, title: 'Inicio', slug: 'inicio', updatedAt: '2026-09-04T12:00:00Z', brandProfile: 3, apiToken: 'page-secret', layout: [{ blockType: 'hero', eyebrow: 'Hola', heading: 'Portfolio', body: lexical, image: 9, customCSS: 'no' }, { blockType: 'richText', content: lexical }, { blockType: 'media', asset: 9, placement: 14, caption: 'Encuadre controlado' }] }
     const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
-    const findByID = vi.fn(async ({ collection, id }) => collection === 'pages' ? page : collection === 'brand-profiles' ? brand : { id, alt: 'Portada', filename: 'cover.webp', mimeType: 'image/webp', width: 1200, height: 800, apiToken: 'media-secret' })
+    const findByID = vi.fn(async ({ collection, id }) => collection === 'pages' ? page : collection === 'brand-profiles' ? brand : collection === 'media-placements' ? { id, updatedAt: 'saved', placement: { asset: 9 } } : { id, alt: 'Portada', filename: 'cover.webp', mimeType: 'image/webp', width: 1200, height: 800, apiToken: 'media-secret' })
     const result = await createPagePreviewSnapshot({ payload: { find: async () => ({ docs: [] }), findByID, create } as never, req: { user: owner } as never, pageId: 7 })
 
     expect(result.manifest).toHaveProperty('pageTitle', 'Inicio')

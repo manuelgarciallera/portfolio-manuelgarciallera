@@ -77,13 +77,14 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
-Último incremento: título histórico capturado y utilizado por la asistencia,
-incluida la compatibilidad del contrato desactivado de Linocube. Ver
-`captured-title-verification-2026-09-05.md`: 668 unitarias owner, 19 integraciones
+Último incremento: encuadres históricos con variaciones móvil/tablet capturados
+y utilizados por la asistencia, conservando el contrato desactivado de Linocube.
+Ver `captured-crops-verification-2026-09-05.md`: 687 unitarias owner, 20 integraciones
 SQLite, lint, tipos y build correctos; 207 unitarias públicas, 8 pruebas de
 aislamiento, 11 guardas y 20 entradas públicas verificadas. No se aplican propuestas.
 
-La identidad persistente de bloques quedó incorporada en el incremento anterior:
+El título histórico y la identidad persistente de bloques quedaron incorporados
+antes: `captured-title-verification-2026-09-05.md` y
 `block-identity-verification-2026-09-05.md`, sin reescribir el histórico.
 
 Incremento anterior: comparación legible de propuestas implementada y verificada.

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { normalizeMediaPlacement, type MediaPlacement } from '../media/placement'
 
 export const PREVIEW_MANIFEST_SCHEMA_VERSION = 1 as const
 export const PREVIEW_LIMITS = Object.freeze({
@@ -11,9 +12,11 @@ export const PREVIEW_LIMITS = Object.freeze({
 
 type JSONPrimitive = boolean | null | number | string
 export type CanonicalJSON = JSONPrimitive | CanonicalJSON[] | { [key: string]: CanonicalJSON }
+export type CapturedMediaPlacement = Readonly<{ id: string; versionId: string; placement: MediaPlacement }>
 export type PreviewManifestInput = {
   source: { collection: 'pages'; documentId: string; versionId: string }
   pageTitle?: string
+  mediaPlacements?: readonly CapturedMediaPlacement[]
   brandTokens: Record<string, unknown>
   pageBlocks: unknown[]
   mediaReferences: unknown[]
@@ -23,6 +26,8 @@ export type PreviewManifest = {
   source: { collection: 'pages'; documentId: string; versionId: string }
   /** Absent in historical captures; never infer it from the current page. */
   pageTitle?: string
+  /** Absent in historical captures; an empty list means no referenced recipes. */
+  mediaPlacements?: readonly CapturedMediaPlacement[]
   brandTokens: Readonly<Record<string, CanonicalJSON>>
   pageBlocks: readonly CanonicalJSON[]
   mediaReferences: readonly CanonicalJSON[]
@@ -65,6 +70,22 @@ const stringify = (value: CanonicalJSON): string => {
   return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stringify(value[key])}`).join(',')}}`
 }
 const canonicalDocument = (value: unknown): CanonicalJSON => canonicalize(value, new Set(), '$', 0, { nodes: 0 })
+const assertCapturedPlacements = (value: unknown): void => {
+  if (value === undefined) return
+  if (!Array.isArray(value)) throw new TypeError('Los encuadres capturados deben ser una lista.')
+  const ids = new Set<string>()
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new TypeError('Encuadre capturado no válido.')
+    const { id, versionId, placement } = entry
+    if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(id) || ids.has(id)) throw new TypeError('Identidad de encuadre ausente, inválida o duplicada.')
+    if (typeof versionId !== 'string' || !/^current:.+$/u.test(versionId) || versionId.length > 256) throw new TypeError('Revisión del encuadre no válida.')
+    const normalized = { id, versionId, placement: normalizeMediaPlacement(placement) }
+    // A stored baseline must contain explicit normalized values, not defaults
+    // inferred later by a potentially different version of the editor.
+    if (stringify(canonicalDocument(entry)) !== stringify(canonicalDocument(normalized))) throw new TypeError('El encuadre capturado no está normalizado o contiene campos adicionales.')
+    ids.add(id)
+  }
+}
 const serializeBounded = (value: CanonicalJSON): string => {
   const serialized = stringify(value)
   if (Buffer.byteLength(serialized, 'utf8') > PREVIEW_LIMITS.maxSerializedBytes)
@@ -87,10 +108,12 @@ export const createPreviewManifest = (input: PreviewManifestInput): PreviewManif
     schemaVersion: PREVIEW_MANIFEST_SCHEMA_VERSION,
     source: input.source,
     ...(input.pageTitle !== undefined ? { pageTitle: input.pageTitle } : {}),
+    ...(input.mediaPlacements !== undefined ? { mediaPlacements: input.mediaPlacements } : {}),
     brandTokens: input.brandTokens,
     pageBlocks: input.pageBlocks,
     mediaReferences: input.mediaReferences,
   }) as unknown as Omit<PreviewManifest, 'hash'>
+  assertCapturedPlacements(candidate.mediaPlacements)
   const hash = digest(candidate as unknown as CanonicalJSON)
   return deepFreeze({ ...candidate, hash } as PreviewManifest)
 }
@@ -99,6 +122,7 @@ export const hashPreviewManifest = (manifest: PreviewManifest): string => {
   if (manifest.pageTitle !== undefined && typeof manifest.pageTitle !== 'string') throw new TypeError('El título capturado debe ser texto.')
   const { hash, ...withoutHash } = manifest
   const canonical = canonicalDocument(withoutHash)
+  assertCapturedPlacements((canonical as Record<string, CanonicalJSON>).mediaPlacements)
   const expected = digest(canonical)
   if (hash !== expected) throw new TypeError('El hash no coincide con el manifiesto canónico.')
   return expected

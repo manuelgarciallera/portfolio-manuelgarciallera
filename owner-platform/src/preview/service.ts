@@ -4,6 +4,7 @@ import { isOwner } from '../access/owner'
 import { resolvePageBrand } from '../brand/inheritance'
 import { createPreviewManifest } from './manifest'
 import { recordAuditEvent } from '../collections/AuditEvents'
+import { normalizeMediaPlacement } from '../media/placement'
 
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new APIError('Datos editoriales no válidos.', 400)
@@ -124,6 +125,25 @@ const projectLayout = (layout: unknown): { blocks: unknown[]; mediaIds: Array<nu
   return { blocks, mediaIds: [...new Set(mediaIds)] }
 }
 
+const captureMediaPlacements = async (payload: Payload, req: PayloadRequest, blocks: unknown[]) => {
+  const references = new Map<string, string>()
+  for (const raw of blocks) {
+    const block = record(raw)
+    if (block.blockType !== 'media' || typeof block.placement !== 'string') continue
+    const asset = String(block.asset)
+    if (references.has(block.placement) && references.get(block.placement) !== asset) throw new APIError('El encuadre está asociado a imágenes diferentes.', 400)
+    references.set(block.placement, asset)
+  }
+  return Promise.all([...references].map(async ([id, asset]) => {
+    const stored = record(await payload.findByID({ collection: 'media-placements', id, draft: true, depth: 0, overrideAccess: false, req }))
+    const updatedAt = text(stored.updatedAt)
+    if (String(stored.id) !== id || !updatedAt) throw new APIError('El encuadre no tiene identidad o revisión verificable.', 400)
+    const placement = normalizeMediaPlacement(stored.placement)
+    if (String(placement.asset) !== asset) throw new APIError('El encuadre no corresponde a la imagen del bloque.', 400)
+    return { id, versionId: `current:${updatedAt}`, placement }
+  }))
+}
+
 export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payload: Payload; req: PayloadRequest; pageId: number | string }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
   const page = record(await payload.findByID({ collection: 'pages', id: pageId as number, draft: true, depth: 0, overrideAccess: false, req }))
@@ -132,6 +152,7 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
   const brand = await payload.findByID({ collection: 'brand-profiles', id: brandId as number, depth: 0, overrideAccess: false, req })
   const resolvedBrand = resolvePageBrand(brand, page.brandOverrides)
   const projected = projectLayout(page.layout)
+  const mediaPlacements = await captureMediaPlacements(payload, req, projected.blocks)
   const mediaReferences = await Promise.all(projected.mediaIds.map(async (id) => {
     const media = record(await payload.findByID({ collection: 'media', id: id as number, depth: 0, overrideAccess: false, req }))
     return defined({ id: String(media.id), alt: text(media.alt), filename: text(media.filename), mimeType: text(media.mimeType), width: typeof media.width === 'number' ? media.width : undefined, height: typeof media.height === 'number' ? media.height : undefined })
@@ -141,6 +162,7 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
   const manifest = createPreviewManifest({
     source: { collection: 'pages', documentId: String(page.id), versionId: `current:${updatedAt}` },
     pageTitle: text(page.title),
+    mediaPlacements,
     brandTokens: resolvedBrand,
     pageBlocks: projected.blocks,
     mediaReferences,
