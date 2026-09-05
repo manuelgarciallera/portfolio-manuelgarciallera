@@ -1,0 +1,21 @@
+.explorer { margin-block: -1.5rem 2.5rem; color: var(--theme-text); background: var(--theme-elevation-50); border: 1px solid var(--theme-elevation-150); border-radius: 0.6rem; }
+.explorer summary { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem; cursor: pointer; }
+.explorer summary span { font-weight: 600; }
+.explorer summary small, .body p, .body li small { color: var(--theme-elevation-600); }
+.body { padding: 0 1rem 1rem; border-top: 1px solid var(--theme-elevation-150); }
+.body form { margin-top: 1rem; }
+.body label { display: block; margin-bottom: 0.4rem; font-size: 0.8rem; }
+.body form > div { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; }
+.body input, .body button { min-height: 2.6rem; font: inherit; border-radius: 0.3rem; }
+.body input { min-width: 0; padding-inline: 0.75rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-250); }
+.body button { padding-inline: 1rem; color: var(--theme-elevation-0); background: var(--theme-text); border: 1px solid var(--theme-text); cursor: pointer; }
+.body button:disabled { cursor: wait; opacity: 0.6; }
+.body input:focus-visible, .body button:focus-visible, .body a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+.body h3 { margin: 1rem 0 0.6rem; font-size: 1rem; }
+.body ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.body li { display: grid; grid-template-columns: 4rem 1fr; gap: 0.7rem; min-width: 0; padding: 0.65rem; background: var(--theme-bg); border: 1px solid var(--theme-elevation-150); border-radius: 0.4rem; }
+.body li img { width: 4rem; height: 3rem; object-fit: cover; border-radius: 0.2rem; }
+.body li > div { display: flex; flex-direction: column; min-width: 0; gap: 0.2rem; }
+.body li strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.body li a { width: max-content; max-width: 100%; color: inherit; font-size: 0.75rem; }
+@media (max-width: 34rem) { .body form > div { grid-template-columns: 1fr; } .explorer summary { flex-direction: column; } }

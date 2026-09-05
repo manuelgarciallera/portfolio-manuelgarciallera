@@ -68,6 +68,7 @@ describe('owner Payload configuration', () => {
     expect(config.admin.components.beforeDashboard).toEqual([
       './components/OwnerSearch#OwnerSearch',
       './components/OwnerOverview#OwnerOverview',
+      './components/FigmaExplorer#FigmaExplorer',
     ])
   })
 })
