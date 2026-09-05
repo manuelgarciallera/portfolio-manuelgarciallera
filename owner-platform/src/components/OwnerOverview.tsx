@@ -63,7 +63,7 @@ export const OwnerOverview = () => {
           <span>{view.workflow.attentionCount === 0 ? 'Sin acciones pendientes' : `${view.workflow.attentionCount} requieren atención`}</span>
         </div>
         <ul>
-          {view.workflow.items.map((item) => <li data-tone={item.tone} key={item.href}><a href={item.href}><strong>{item.value}</strong><span>{item.label}</span></a></li>)}
+          {view.workflow.items.map((item) => <li data-tone={item.tone} key={`${item.href}:${item.label}`}><a href={item.href}><strong>{item.value}</strong><span>{item.label}</span></a></li>)}
         </ul>
       </div>
       <div className={styles.analytics}>

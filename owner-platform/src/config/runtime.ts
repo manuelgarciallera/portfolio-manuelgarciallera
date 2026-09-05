@@ -10,6 +10,7 @@ const UNSAFE_PRODUCTION_SECRETS = new Set([
 
 export type RuntimeConfigInput = {
   databaseUrl?: string
+  localDatabaseName?: string
   nextPhase?: string
   nodeEnv?: string
   payloadSecret?: string
@@ -51,6 +52,7 @@ export const assertCurrentProductionRuntime = (): void =>
 
 export const resolveRuntimeConfig = ({
   databaseUrl,
+  localDatabaseName,
   nextPhase,
   nodeEnv,
   payloadSecret,
@@ -76,10 +78,13 @@ export const resolveRuntimeConfig = ({
     }
   }
 
+  if (localDatabaseName !== undefined && !/^[A-Za-z0-9_-]{1,80}$/.test(localDatabaseName)) {
+    throw new Error('LOCAL_DATABASE_NAME must be a plain local filename without an extension')
+  }
   return {
     database: databaseUrl
       ? { kind: 'postgres', url: databaseUrl }
-      : { kind: 'sqlite', url: 'file:.data/owner-platform.db' },
+      : { kind: 'sqlite', url: `file:.data/${localDatabaseName ?? 'owner-platform'}.db` },
     payloadSecret: payloadSecret || DEVELOPMENT_PAYLOAD_SECRET,
     productionBuild: false,
   }

@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { presentOwnerDashboard } from './presentation'
 
 describe('presentOwnerDashboard', () => {
+  it('gives workflow rows distinct identities even when their destinations coincide', () => {
+    const rows = presentOwnerDashboard({}).workflow.items
+    expect(new Set(rows.map((row) => row.href)).size).toBeLessThan(rows.length)
+    expect(new Set(rows.map((row) => `${row.href}:${row.label}`)).size).toBe(rows.length)
+  })
   it('projects bounded operational cards and recent edit destinations', () => {
     expect(presentOwnerDashboard({
       activity: {

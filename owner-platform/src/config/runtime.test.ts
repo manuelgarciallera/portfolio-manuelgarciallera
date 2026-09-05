@@ -3,6 +3,16 @@ import { describe, expect, it } from 'vitest'
 import { assertProductionRuntimeEnvironment, resolveRuntimeConfig } from './runtime'
 
 describe('owner platform runtime configuration', () => {
+  it('supports an isolated local SQLite filename without changing the default database', () => {
+    expect(resolveRuntimeConfig({ nodeEnv: 'development', localDatabaseName: 'qa-editorial' }).database)
+      .toEqual({ kind: 'sqlite', url: 'file:.data/qa-editorial.db' })
+  })
+  it.each(['../owner', 'file:test', '/tmp/test', 'qa.db', ''] )('rejects invalid local database names: %s', (localDatabaseName) => {
+    expect(() => resolveRuntimeConfig({ nodeEnv: 'development', localDatabaseName })).toThrow(/LOCAL_DATABASE_NAME/)
+  })
+  it('never lets a local database override production PostgreSQL requirements', () => {
+    expect(() => resolveRuntimeConfig({ nodeEnv: 'production', localDatabaseName: 'qa-editorial', payloadSecret: 'a-long-and-valid-production-secret-value' })).toThrow(/DATABASE_URL/)
+  })
   it('uses ignored SQLite storage and an explicit development-only secret locally', () => {
     expect(
       resolveRuntimeConfig({

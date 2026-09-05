@@ -36,6 +36,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const runtime = resolveRuntimeConfig({
   databaseUrl: process.env.DATABASE_URL,
+  localDatabaseName: process.env.LOCAL_DATABASE_NAME || undefined,
   nextPhase:
     process.env.OWNER_PLATFORM_BUILD_PHASE === '1'
       ? 'phase-production-build'
