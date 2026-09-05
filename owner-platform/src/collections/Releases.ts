@@ -96,7 +96,7 @@ export const Releases: CollectionConfig = {
     useAsTitle: 'name',
   },
   access: {
-    create: ownerOnly,
+    create: () => false,
     read: ownerOnly,
     update: () => false,
     delete: () => false,

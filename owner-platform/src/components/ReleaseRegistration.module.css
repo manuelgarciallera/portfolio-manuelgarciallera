@@ -1,0 +1,20 @@
+.registration { margin: 0 0 1rem; padding: 0.8rem; color: var(--theme-text); background: var(--theme-bg); border: 1px solid var(--theme-elevation-200); border-radius: 0.5rem; }
+.registration summary { width: fit-content; font-weight: 600; cursor: pointer; }
+.registration > p { margin: 0.45rem 0 0; color: var(--theme-elevation-650); font-size: 0.75rem; }
+.registration form { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
+.identity { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.55rem; }
+.summary { grid-column: 1 / -1; }
+.registration fieldset { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.55rem; margin: 0; padding: 0.65rem; border: 1px solid var(--theme-elevation-150); border-radius: 0.35rem; }
+.registration legend { padding-inline: 0.25rem; color: var(--theme-elevation-650); font-size: 0.72rem; }
+.registration label span { display: block; margin-bottom: 0.3rem; color: var(--theme-elevation-600); font-size: 0.68rem; }
+.registration input, .registration select, .registration textarea, .registration button { width: 100%; min-height: 2.35rem; font: inherit; border-radius: 0.3rem; }
+.registration input, .registration select, .registration textarea { min-width: 0; padding: 0.5rem 0.6rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-250); }
+.registration textarea { resize: vertical; }
+.confirmation { display: grid; grid-template-columns: minmax(14rem, 1fr) auto; gap: 0.55rem; align-items: end; }
+.registration button { padding-inline: 0.8rem; color: var(--theme-elevation-0); white-space: nowrap; background: var(--theme-text); border: 1px solid var(--theme-text); cursor: pointer; }
+.registration button:disabled { cursor: not-allowed; opacity: 0.6; }
+.registration :focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+.registration .status { min-height: 1rem; }
+.registration > a { display: inline-block; margin-top: 0.35rem; color: inherit; font-size: 0.78rem; }
+@media (max-width: 64rem) { .identity, .registration fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 40rem) { .identity, .registration fieldset, .confirmation { grid-template-columns: 1fr; } }

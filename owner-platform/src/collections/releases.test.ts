@@ -29,7 +29,7 @@ const validRelease = {
 describe('Releases collection', () => {
   it('is owner-only and append-only', () => {
     expect(Releases.slug).toBe('releases')
-    expect(Releases.access?.create?.(accessArgs(owner))).toBe(true)
+    expect(Releases.access?.create?.(accessArgs(owner))).toBe(false)
     expect(Releases.access?.read?.(accessArgs(owner))).toBe(true)
     expect(Releases.access?.create?.(accessArgs(null))).toBe(false)
     expect(Releases.access?.read?.(accessArgs(null))).toBe(false)

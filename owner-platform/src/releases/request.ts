@@ -4,6 +4,7 @@ import { isOwner } from '../access/owner'
 
 const MAX_REQUEST_BYTES = 16 * 1_024
 const RELEASE_REQUEST_FIELDS = ['changeSummary', 'draftSnapshot', 'gitCommit', 'name', 'previewSnapshot', 'quality'] as const
+const RELEASE_INPUT_FIELDS = ['confirmation', ...RELEASE_REQUEST_FIELDS] as const
 class RequestTooLarge extends Error {}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -39,8 +40,9 @@ const readBoundedBody = async (request: Request): Promise<string> => {
 
 export const parseReleaseRequest = (value: unknown): Record<string, unknown> => {
   if (!isRecord(value)) throw new TypeError('La versión no es válida.')
-  const unknown = Object.keys(value).find((key) => !RELEASE_REQUEST_FIELDS.includes(key as never))
+  const unknown = Object.keys(value).find((key) => !RELEASE_INPUT_FIELDS.includes(key as never))
   if (unknown) throw new TypeError(`La solicitud contiene un campo no permitido: ${unknown}.`)
+  if (value.confirmation !== 'REGISTRAR VERSIÓN') throw new TypeError('La confirmación de registro no coincide.')
   if (RELEASE_REQUEST_FIELDS.some((key) => !Object.hasOwn(value, key))) {
     throw new TypeError('Faltan datos obligatorios de la versión.')
   }

@@ -18,12 +18,14 @@ const valid = {
     viewport: 'desktop',
   }],
 }
+const requestValid = { confirmation: 'REGISTRAR VERSIÓN', ...valid }
 
 describe('release registration request', () => {
   it('accepts only immutable release evidence fields', () => {
-    expect(parseReleaseRequest(valid)).toEqual(valid)
-    expect(() => parseReleaseRequest({ ...valid, restore: true })).toThrow(/campo|permitido/i)
-    expect(() => parseReleaseRequest({ ...valid, createdBy: 99 })).toThrow(/campo|permitido/i)
+    expect(parseReleaseRequest(requestValid)).toEqual(valid)
+    expect(() => parseReleaseRequest({ ...requestValid, confirmation: 'publicar' })).toThrow(/confirmación/i)
+    expect(() => parseReleaseRequest({ ...requestValid, restore: true })).toThrow(/campo|permitido/i)
+    expect(() => parseReleaseRequest({ ...requestValid, createdBy: 99 })).toThrow(/campo|permitido/i)
   })
 
   it('authenticates before parsing and bounds request bodies', async () => {
@@ -44,7 +46,7 @@ describe('release registration request', () => {
   it('passes validated evidence to the release service without restore controls', async () => {
     const create = vi.fn(async () => ({ id: 44, ...valid }))
     const response = await handleReleaseRequest(
-      new Request('https://owner.test/api', { method: 'POST', body: JSON.stringify(valid) }),
+      new Request('https://owner.test/api', { method: 'POST', body: JSON.stringify(requestValid) }),
       { authenticate: async () => ({ user: owner }), create },
     )
     expect(response.status).toBe(201)
