@@ -108,7 +108,7 @@ describe('editorial collections', () => {
   })
 
   it('adds a migration-safe reorderable project block canvas', () => {
-    expect(fieldNamed(Projects, 'body')).toMatchObject({ type: 'richText', required: true })
+    expect(fieldNamed(Projects, 'body')).toMatchObject({ type: 'richText' })
     const layout = fieldNamed(Projects, 'caseStudyLayout')
     expect(layout).toMatchObject({ type: 'blocks', required: false })
     if (!layout || layout.type !== 'blocks') throw new Error('Projects.caseStudyLayout must be blocks')
@@ -127,7 +127,7 @@ describe('editorial collections', () => {
   })
 
   it('adds a migration-safe reorderable article block canvas', () => {
-    expect(fieldNamed(Articles, 'content')).toMatchObject({ type: 'richText', required: true })
+    expect(fieldNamed(Articles, 'content')).toMatchObject({ type: 'richText' })
     const layout = fieldNamed(Articles, 'articleLayout')
     expect(layout).toMatchObject({ type: 'blocks', required: false })
     if (!layout || layout.type !== 'blocks') throw new Error('Articles.articleLayout must be blocks')

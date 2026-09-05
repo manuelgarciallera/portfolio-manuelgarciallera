@@ -176,7 +176,10 @@ export interface Project {
    * Encuadre no destructivo opcional para la imagen principal.
    */
   heroPlacement?: (number | null) | MediaPlacement;
-  body: {
+  /**
+   * Contenido clásico: obligatorio solo si no añades bloques al lienzo modular. Los bloques tienen prioridad en la vista editorial; este texto se conserva.
+   */
+  body?: {
     root: {
       type: string;
       children: {
@@ -190,7 +193,7 @@ export interface Project {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   /**
    * Lienzo modular opcional. El cuerpo anterior permanece intacto durante la migración.
    */
@@ -406,7 +409,10 @@ export interface Article {
   slug: string;
   excerpt: string;
   coverImage?: (number | null) | Media;
-  content: {
+  /**
+   * Contenido clásico: obligatorio solo si no añades bloques al lienzo modular. Los bloques tienen prioridad en la vista editorial; este texto se conserva.
+   */
+  content?: {
     root: {
       type: string;
       children: {
@@ -420,7 +426,7 @@ export interface Article {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   /**
    * Lienzo modular opcional. El contenido anterior permanece intacto durante la migración.
    */

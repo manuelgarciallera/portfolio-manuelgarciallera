@@ -34,6 +34,38 @@ beforeAll(async () => {
 
 afterAll(async () => { await payload?.destroy() })
 
+it.each(['articles', 'projects'] as const)('saves %s composed only of blocks without requiring hidden legacy text', async (collection) => {
+  let heroImage: number | undefined
+  if (collection === 'projects') {
+    const bytes = await readFile(new URL('../../public/art/hero-refractive-orb-fallback-v2.webp', import.meta.url))
+    const media = await payload.create({ collection: 'media', overrideAccess: false, user: owner, data: { alt: 'Modular project' }, file: {
+      data: bytes, name: `modular-${randomUUID()}.webp`, mimetype: 'image/webp', size: bytes.length,
+    } })
+    heroImage = media.id
+  }
+  const layoutKey = collection === 'articles' ? 'articleLayout' : 'caseStudyLayout'
+  const data = {
+    title: 'Only modular content', slug: `modular-${collection}`, excerpt: 'Article introduction', summary: 'Project introduction', heroImage,
+    [layoutKey]: [{ blockType: collection === 'articles' ? 'articleQuote' : 'caseQuote', quote: 'Actual editorial content' }],
+  }
+  const draft = await payload.create({ collection, draft: true, overrideAccess: false, user: owner, data: data as never })
+  const legacyKey = collection === 'articles' ? 'content' : 'body'
+  expect((draft as unknown as Record<string, unknown>)[legacyKey] ?? null).toBeNull()
+  const published = await payload.update({ collection, id: draft.id, overrideAccess: false, user: owner, data: { _status: 'published', title: 'Modular publication' } })
+  expect(published._status).toBe('published')
+  const preview = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection, documentId: String(draft.id) })
+  expect(preview.blocks.map((block) => block.type)).toEqual(['hero', 'quote'])
+  expect(preview.blocks[1].quote).toBe('Actual editorial content')
+  await expect(payload.update({ collection, id: draft.id, draft: true, overrideAccess: false, user: owner, data: { [layoutKey]: [] } })).rejects.toThrow()
+  const retained = await payload.findByID({ collection, id: draft.id, draft: true, overrideAccess: false, user: owner })
+  expect((retained as unknown as Record<string, unknown[]>)[layoutKey]).toHaveLength(1)
+  await expect(payload.create({ collection, draft: true, overrideAccess: false, user: owner, data: { ...data, slug: `empty-${collection}`, [layoutKey]: [] } as never })).rejects.toThrow()
+  await expect(payload.create({ collection, draft: true, overrideAccess: false, user: owner, data: {
+    ...data, slug: `empty-editor-${collection}`, [layoutKey]: [],
+    [legacyKey]: { root: { type: 'root', version: 1, direction: null, format: '', indent: 0, children: [{ type: 'paragraph', version: 1, children: [] }] } },
+  } as never })).rejects.toThrow()
+}, 30_000)
+
 it('saves, reorders and restores modular drafts with a real authenticated owner', async () => {
   const page = await payload.create({
     collection: 'pages', draft: true, overrideAccess: false, user: owner,
@@ -83,6 +115,10 @@ it('keeps unpublished article edits and version history out of anonymous reads',
   const modular = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection: 'articles', documentId: String(article.id) })
   expect(modular.blocks.map((block) => block.type)).toEqual(['hero', 'quote'])
   expect(modular.blocks[1].quote).toBe('Modular quote')
+  await payload.update({ collection: 'articles', id: article.id, draft: true, overrideAccess: false, user: owner, data: { articleLayout: [] } })
+  const classicAgain = await loadContentVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), collection: 'articles', documentId: String(article.id) })
+  expect(classicAgain.blocks.map((block) => block.type)).toEqual(['hero', 'richText'])
+  expect(JSON.stringify(classicAgain.blocks[1].content)).toContain('Public text')
   for (const draft of [false, true]) {
     const visible = await payload.findByID({ collection: 'articles', id: article.id, draft, overrideAccess: false })
     expect(visible.title).toBe('Published title')

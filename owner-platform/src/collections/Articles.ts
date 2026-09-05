@@ -2,6 +2,7 @@ import type { Block, CollectionConfig } from 'payload'
 
 import { editorialAccess, editorialVersions, slugField } from './shared'
 import { seoField } from './seo'
+import { validateModularBody } from './modular-body'
 
 const ArticleTextBlock: Block = {
   slug: 'articleText',
@@ -84,7 +85,11 @@ export const Articles: CollectionConfig = {
     slugField,
     { name: 'excerpt', type: 'textarea', required: true },
     { name: 'coverImage', type: 'upload', relationTo: 'media' },
-    { name: 'content', type: 'richText', required: true },
+    {
+      name: 'content', type: 'richText', required: false,
+      validate: validateModularBody('articleLayout'),
+      admin: { description: 'Contenido clásico: obligatorio solo si no añades bloques al lienzo modular. Los bloques tienen prioridad en la vista editorial; este texto se conserva.' },
+    },
     {
       name: 'articleLayout',
       type: 'blocks',

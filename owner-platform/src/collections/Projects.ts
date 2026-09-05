@@ -2,6 +2,7 @@ import type { Block, CollectionConfig } from 'payload'
 
 import { editorialAccess, editorialVersions, slugField } from './shared'
 import { seoField } from './seo'
+import { validateModularBody } from './modular-body'
 
 const CaseSectionBlock: Block = {
   slug: 'caseSection',
@@ -109,7 +110,11 @@ export const Projects: CollectionConfig = {
         description: 'Encuadre no destructivo opcional para la imagen principal.',
       },
     },
-    { name: 'body', type: 'richText', required: true },
+    {
+      name: 'body', type: 'richText', required: false,
+      validate: validateModularBody('caseStudyLayout'),
+      admin: { description: 'Contenido clásico: obligatorio solo si no añades bloques al lienzo modular. Los bloques tienen prioridad en la vista editorial; este texto se conserva.' },
+    },
     {
       name: 'caseStudyLayout',
       type: 'blocks',
