@@ -85,3 +85,41 @@ this harness/environment issue is fixed.
 - Independent read-only review found a creation-date mutation gap; its failing
   regression was reproduced, fixed and re-reviewed with no remaining findings.
 - The protected checkpoint remains `0f0adf686b2752e23c25d224f8c60815b10fd451`.
+
+## Transactional assistance follow-up
+
+Three additional real SQLite regressions exposed partial assistance writes:
+when creation auditing failed, a pending proposal was retained; when decision
+auditing failed, the proposal nevertheless became accepted or rejected with
+new decision metadata. All three failed before the correction.
+
+Creation plus audit, and decision update plus audit, now execute using the same
+Payload request transaction. A result is returned only after commit. An
+operation/audit error triggers rollback; failure to start an owned transaction
+returns HTTP 503 before writes. A transaction belonging to another caller is
+neither committed nor rolled back by these services. Validation and owner checks
+still precede mutation; no AI application, publication or external call is added.
+
+The regressions verify proposal/audit counts after failed creation, exact stored
+proposal equality after failed decisions (including timestamps and notes),
+unchanged audit counts, and successful retry after failure. Database behavior
+uses actual Payload transactions; unit fixtures inject the transaction boundary
+only because their database operations are already substituted.
+
+This establishes atomicity for the tested operation failures on SQLite. It does
+not certify competing multi-client decisions under PostgreSQL, network failures
+with ambiguous commit results, or automatic request retries. Those remain
+separate production/concurrency verification work.
+
+Follow-up verification: the final standard `npm run check` passed 621 unit
+tests, 16 real SQLite integration tests, lint, typecheck and the owner build.
+Three consecutive isolated diagnostic runs also passed all 16 integration
+tests. Temporary fork-exit instrumentation observed only normal worker shutdowns
+on those successful runs; it did not capture the intermittent failure and was
+removed. The earlier process-exit issue remains unproven as fixed. Independent
+read-only review reported no blocking findings in the transaction change.
+
+The fresh public proof for `bd088ab44c918163265ea11ec94c8b5a64b48bbb` plus
+this owner-only change passed: the same public input/runtime/lockfile hashes,
+20 isolated entry points and zero bundle regressions across nine routes.
+The 11 root public guard tests passed again. No deployment was performed.

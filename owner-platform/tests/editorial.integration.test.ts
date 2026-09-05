@@ -32,6 +32,7 @@ let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
 let databaseDirectory: string | undefined
 let rejectRestoreAudit = false
 let rejectFigmaAudit = false
+let rejectedAssistanceAudit: string | undefined
 const databasePrefix = path.join(tmpdir(), 'owner-editorial-qa-')
 
 beforeAll(async () => {
@@ -47,6 +48,7 @@ beforeAll(async () => {
         ...collection, hooks: { ...collection.hooks, beforeChange: [({ data }) => {
           if (rejectRestoreAudit && data.action === 'restore.executed') throw new Error('QA restore audit unavailable')
           if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
+          if (rejectedAssistanceAudit && data.action === rejectedAssistanceAudit) throw new Error('QA assistance audit unavailable')
           return data
         }, ...(collection.hooks.beforeChange ?? [])] },
       } : collection),
@@ -134,6 +136,43 @@ it.each(['accepted', 'rejected'] as const)('persists an assistance proposal and 
   await expect(decideOwnerAssistanceProposal({ payload: payload as never, req, proposalId: String(proposal.id), decision })).rejects.toThrow(/pendiente/i)
   await expect(payload.update({ collection: 'assistance-proposals', id: proposal.id as number, user: owner, overrideAccess: false, data: { status: 'pending' } })).rejects.toThrow()
   expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
+}, 30_000)
+
+const assistanceFixture = async () => {
+  const { page, req } = await createReleaseFixture()
+  const snapshot = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  await payload.updateGlobal({ slug: 'assistant-settings', user: owner, overrideAccess: false, data: { suggestCopy: true } })
+  return { payload: payload as never, req, sourceSnapshot: String(snapshot.id), provider: 'manual', patch: {
+    schemaVersion: 1, capability: 'suggestCopy', operations: [{ op: 'replace', path: '/page/title', value: 'Proposal only' }],
+  } }
+}
+
+it('does not retain a proposal when its creation audit fails', async () => {
+  const input = await assistanceFixture()
+  const counts = async () => Promise.all((['assistance-proposals', 'audit-events'] as const).map(async (collection) => (await payload.count({ collection, user: owner, overrideAccess: false })).totalDocs))
+  const before = await counts()
+  rejectedAssistanceAudit = 'assistant.proposal.created'
+  try {
+    await expect(createOwnerAssistanceProposal(input)).rejects.toThrow('QA assistance audit unavailable')
+  } finally { rejectedAssistanceAudit = undefined }
+  expect(await counts()).toEqual(before)
+  expect((await createOwnerAssistanceProposal(input)).status).toBe('pending')
+}, 30_000)
+
+it.each(['accepted', 'rejected'] as const)('retains the pending proposal if the %s audit fails', async (decision) => {
+  const input = await assistanceFixture()
+  const proposal = await createOwnerAssistanceProposal(input)
+  const read = () => payload.findByID({ collection: 'assistance-proposals', id: proposal.id as number, depth: 0, user: owner, overrideAccess: false })
+  const before = await read()
+  const auditCount = (await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs
+  const command = { payload: payload as never, req: input.req, proposalId: String(proposal.id), decision, note: 'Reviewed by owner' }
+  rejectedAssistanceAudit = `assistant.proposal.${decision}`
+  try {
+    await expect(decideOwnerAssistanceProposal(command)).rejects.toThrow('QA assistance audit unavailable')
+  } finally { rejectedAssistanceAudit = undefined }
+  expect(await read()).toEqual(before)
+  expect((await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs).toBe(auditCount)
+  expect((await decideOwnerAssistanceProposal(command)).status).toBe(decision)
 }, 30_000)
 
 it('reviews a real publication bundle addressed by a URL id and generates its artifact without editing the page', async () => {

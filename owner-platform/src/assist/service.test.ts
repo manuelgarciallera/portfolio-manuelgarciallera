@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createPreviewManifest } from '../preview/manifest'
-import { createOwnerAssistanceContext, createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from './service'
+import { createOwnerAssistanceContext, createOwnerAssistanceProposal as createProposal, decideOwnerAssistanceProposal as decideProposal } from './service'
+
+// Unit fixtures already substitute the database; inject only that boundary's
+// transaction lifecycle. The integration suite uses real Payload transactions.
+const transaction = { begin: async () => true, commit: async () => undefined, rollback: async () => undefined }
+const createOwnerAssistanceProposal = (input: Parameters<typeof createProposal>[0]) => createProposal({ dependencies: transaction, ...input })
+const decideOwnerAssistanceProposal = (input: Parameters<typeof decideProposal>[0]) => decideProposal({ dependencies: transaction, ...input })
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const manifest = createPreviewManifest({
@@ -169,5 +175,26 @@ describe('decideOwnerAssistanceProposal', () => {
       req: { user: owner },
     })).rejects.toThrow(/pendiente/i)
     expect(update).not.toHaveBeenCalled()
+  })
+})
+
+describe('assistance transaction failures', () => {
+  it.each(['create', 'decide'] as const)('fails closed before %s writes when it cannot own a transaction', async (operation) => {
+    const payload = {
+      create: vi.fn(), update: vi.fn(), findGlobal: async () => ({ suggestCopy: true }),
+      findByID: async ({ collection }: { collection: string }) => collection === 'preview-snapshots'
+        ? { id: 12, manifest, manifestHash: manifest.hash }
+        : collection === 'pages' ? { id: 7, title: 'Inicio' } : { id: 31, status: 'pending', targetPage: 7 },
+    }
+    const dependencies = { begin: async () => false, commit: vi.fn(), rollback: vi.fn() }
+    const result = operation === 'create'
+      ? createProposal({ dependencies, patch, payload, provider: 'manual', req: { user: owner }, sourceSnapshot: 12 })
+      : decideProposal({ dependencies, decision: 'accepted', payload, req: { user: owner }, proposalId: 31 })
+    await expect(result).rejects.toMatchObject({ status: 503 })
+    expect(payload.create).not.toHaveBeenCalled()
+    expect(payload.update).not.toHaveBeenCalled()
+    // Never commit or roll back a transaction owned by another caller.
+    expect(dependencies.commit).not.toHaveBeenCalled()
+    expect(dependencies.rollback).not.toHaveBeenCalled()
   })
 })

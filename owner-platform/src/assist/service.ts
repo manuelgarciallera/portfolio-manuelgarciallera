@@ -1,4 +1,4 @@
-import { APIError } from 'payload'
+import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -12,6 +12,30 @@ type AssistancePayload = {
   findByID(args: Record<string, unknown>): Promise<Record<string, unknown>>
   findGlobal?(args: Record<string, unknown>): Promise<Record<string, unknown>>
   update?(args: Record<string, unknown>): Promise<Record<string, unknown>>
+}
+
+type TransactionRequest = { payload?: unknown; user?: unknown }
+type TransactionDependencies = {
+  begin(req: TransactionRequest): Promise<boolean>
+  commit(req: TransactionRequest): Promise<void>
+  rollback(req: TransactionRequest): Promise<void>
+}
+const transactions: TransactionDependencies = {
+  begin: (req) => initTransaction(req as never),
+  commit: (req) => commitTransaction(req as never),
+  rollback: (req) => killTransaction(req as never),
+}
+
+const withAssistanceTransaction = async <T>(req: TransactionRequest, dependencies: TransactionDependencies, operation: () => Promise<T>): Promise<T> => {
+  if (!await dependencies.begin(req)) throw new APIError('No se pudo abrir una transacción de asistencia.', 503)
+  try {
+    const result = await operation()
+    await dependencies.commit(req)
+    return result
+  } catch (error) {
+    try { await dependencies.rollback(req) } catch { /* preserve the operation failure */ }
+    throw error
+  }
 }
 
 const record = (value: unknown, label: string): Record<string, unknown> => {
@@ -69,16 +93,18 @@ export const createOwnerAssistanceContext = async ({
 }
 
 export const createOwnerAssistanceProposal = async ({
+  dependencies = transactions,
   patch,
   payload,
   provider,
   req,
   sourceSnapshot,
 }: {
+  dependencies?: TransactionDependencies
   patch: unknown
   payload: AssistancePayload
   provider: string
-  req: { user?: unknown }
+  req: TransactionRequest
   sourceSnapshot: string | number
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
@@ -140,27 +166,30 @@ export const createOwnerAssistanceProposal = async ({
     switches,
     context,
   )
-  const proposal = await payload.create({
-    collection: 'assistance-proposals',
-    data,
-    overrideAccess: true,
-    req,
+  return withAssistanceTransaction(req, dependencies, async () => {
+    const proposal = await payload.create({
+      collection: 'assistance-proposals',
+      data,
+      overrideAccess: true,
+      req,
+    })
+    await recordAuditEvent({
+      input: {
+        action: 'assistant.proposal.created',
+        metadata: { capability: data.capability, provider, snapshotHash: verifiedHash },
+        outcome: 'success',
+        subject: { collection: 'assistance-proposals', id: relationId(proposal, 'La propuesta') },
+      },
+      payload: payload as never,
+      req,
+      user: req.user,
+    })
+    return proposal
   })
-  await recordAuditEvent({
-    input: {
-      action: 'assistant.proposal.created',
-      metadata: { capability: data.capability, provider, snapshotHash: verifiedHash },
-      outcome: 'success',
-      subject: { collection: 'assistance-proposals', id: relationId(proposal, 'La propuesta') },
-    },
-    payload: payload as never,
-    req,
-    user: req.user,
-  })
-  return proposal
 }
 
 export const decideOwnerAssistanceProposal = async ({
+  dependencies = transactions,
   decision,
   note,
   now,
@@ -168,12 +197,13 @@ export const decideOwnerAssistanceProposal = async ({
   proposalId,
   req,
 }: {
+  dependencies?: TransactionDependencies
   decision: 'accepted' | 'rejected'
   note?: string
   now?: string
   payload: AssistancePayload
   proposalId: string | number
-  req: { user?: unknown }
+  req: TransactionRequest
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
   if (!payload.update) throw new APIError('El servicio de decisión no está disponible.', 500)
@@ -193,26 +223,29 @@ export const decideOwnerAssistanceProposal = async ({
     req.user,
     now,
   )
-  const updated = await payload.update({
-    collection: 'assistance-proposals',
-    data,
-    id: proposalId,
-    overrideAccess: true,
-    req,
-  })
-  await recordAuditEvent({
-    input: {
-      action: `assistant.proposal.${decision}`,
-      metadata: {
-        ...(typeof note === 'string' && note.trim() ? { decisionNote: note.trim() } : {}),
-        targetPage: proposal.targetPage,
+  const update = payload.update
+  return withAssistanceTransaction(req, dependencies, async () => {
+    const updated = await update.call(payload, {
+      collection: 'assistance-proposals',
+      data,
+      id: proposalId,
+      overrideAccess: true,
+      req,
+    })
+    await recordAuditEvent({
+      input: {
+        action: `assistant.proposal.${decision}`,
+        metadata: {
+          ...(typeof note === 'string' && note.trim() ? { decisionNote: note.trim() } : {}),
+          targetPage: proposal.targetPage,
+        },
+        outcome: 'success',
+        subject: { collection: 'assistance-proposals', id: relationId(proposal, 'La propuesta') },
       },
-      outcome: 'success',
-      subject: { collection: 'assistance-proposals', id: relationId(proposal, 'La propuesta') },
-    },
-    payload: payload as never,
-    req,
-    user: req.user,
+      payload: payload as never,
+      req,
+      user: req.user,
+    })
+    return updated
   })
-  return updated
 }
