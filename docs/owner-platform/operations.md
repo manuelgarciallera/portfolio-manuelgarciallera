@@ -970,11 +970,15 @@ review. Do not represent these contracts as live integrations.
 - A clean owner production-dependency audit. Next.js and its ESLint integration
   were updated together from 16.2.11 to 16.3.4 on 2026-09-05. This removed the
   3 high-severity findings in the isolated owner runtime without changing the
-  public application. The current verification still reports 14 upstream or
-  transitive advisories (1 low, 13 moderate, 0 high, 0 critical), so deployment
+  public application. The scoped DOMPurify remediation subsequently reduced
+  the audit to 12 affected upstream/transitive packages (0 low, 12 moderate,
+  0 high, 0 critical), so deployment
   remains blocked pending compatible Payload ecosystem fixes and a new full
   review. Payload 3.88.0 is the latest compatible release at this checkpoint;
   npm's suggested 0.1.9 downgrades are not valid remediation for this platform.
+  See `dependency-remediation-2026-09-05.md` for the scoped override, clean-install
+  verification and the remaining advisory chains. Package totals are not counts
+  of distinct underlying vulnerabilities.
 - The public package audit currently reports 1 transitive moderate advisory
   (`fflate`). It is also a release blocker until a compatible, benchmarked fix
   passes the checkpoint comparison. Do not use `npm audit fix --force`.
