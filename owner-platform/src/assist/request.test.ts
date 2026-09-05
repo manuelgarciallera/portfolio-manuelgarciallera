@@ -63,11 +63,12 @@ describe('assistance proposal requests', () => {
 })
 
 describe('assistance decision requests', () => {
-  it('accepts only one explicit decision and an optional bounded note', () => {
-    expect(parseAssistanceDecisionRequest({ decision: 'accepted', note: 'Revisado' })).toEqual({ decision: 'accepted', note: 'Revisado' })
-    expect(parseAssistanceDecisionRequest({ decision: 'rejected' })).toEqual({ decision: 'rejected' })
-    expect(() => parseAssistanceDecisionRequest({ decision: 'accepted', publish: true })).toThrow(/campo|permitido/i)
-    expect(() => parseAssistanceDecisionRequest({ decision: 'accepted', note: 'x'.repeat(1_001) })).toThrow(/nota/i)
+  it('accepts only one explicitly confirmed decision and an optional bounded note', () => {
+    expect(parseAssistanceDecisionRequest({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', note: 'Revisado' })).toEqual({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', note: 'Revisado' })
+    expect(parseAssistanceDecisionRequest({ confirmation: 'RECHAZAR PROPUESTA', decision: 'rejected' })).toEqual({ confirmation: 'RECHAZAR PROPUESTA', decision: 'rejected' })
+    expect(() => parseAssistanceDecisionRequest({ confirmation: 'RECHAZAR PROPUESTA', decision: 'accepted' })).toThrow(/confirmación/i)
+    expect(() => parseAssistanceDecisionRequest({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', publish: true })).toThrow(/campo|permitido/i)
+    expect(() => parseAssistanceDecisionRequest({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', note: 'x'.repeat(1_001) })).toThrow(/nota/i)
   })
 
   it('authenticates before parsing and decides without exposing apply, publish or deploy controls', async () => {
@@ -81,12 +82,12 @@ describe('assistance decision requests', () => {
     expect(decide).not.toHaveBeenCalled()
 
     const accepted = await handleAssistanceDecisionRequest(
-      new Request('https://owner.test/api/31', { method: 'PATCH', body: JSON.stringify({ decision: 'accepted', note: 'Revisado' }) }),
+      new Request('https://owner.test/api/31', { method: 'PATCH', body: JSON.stringify({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', note: 'Revisado' }) }),
       '31',
       { authenticate: async () => ({ user: owner }), decide },
     )
     expect(accepted.status).toBe(200)
-    expect(decide).toHaveBeenCalledWith({ decision: 'accepted', note: 'Revisado', proposalId: '31' }, owner)
+    expect(decide).toHaveBeenCalledWith({ confirmation: 'ACEPTAR PROPUESTA', decision: 'accepted', note: 'Revisado', proposalId: '31' }, owner)
     expect(JSON.stringify(decide.mock.calls)).not.toMatch(/apply|publish|deploy/)
   })
 })

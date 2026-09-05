@@ -13,6 +13,7 @@ type ProposalRequest = {
 }
 
 type DecisionRequest = {
+  confirmation: 'ACEPTAR PROPUESTA' | 'RECHAZAR PROPUESTA'
   decision: 'accepted' | 'rejected'
   note?: string
 }
@@ -71,14 +72,17 @@ export const parseAssistanceProposalRequest = (value: unknown): ProposalRequest 
 
 export const parseAssistanceDecisionRequest = (value: unknown): DecisionRequest => {
   if (!isRecord(value)) throw new TypeError('La decisión no es válida.')
-  assertExactKeys(value, ['decision', 'note'])
+  assertExactKeys(value, ['confirmation', 'decision', 'note'])
   if (value.decision !== 'accepted' && value.decision !== 'rejected') {
     throw new TypeError('La decisión debe aceptar o rechazar la propuesta.')
   }
+  const confirmation = value.decision === 'accepted' ? 'ACEPTAR PROPUESTA' : 'RECHAZAR PROPUESTA'
+  if (value.confirmation !== confirmation) throw new TypeError('La confirmación de la decisión no coincide.')
   if (value.note !== undefined && (typeof value.note !== 'string' || value.note.trim().length > 1_000)) {
     throw new TypeError('La nota de decisión no es válida.')
   }
   return {
+    confirmation,
     decision: value.decision,
     ...(typeof value.note === 'string' && value.note.trim() ? { note: value.note.trim() } : {}),
   }

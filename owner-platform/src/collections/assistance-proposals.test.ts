@@ -34,6 +34,9 @@ describe('AssistanceProposals collection', () => {
     expect(AssistanceProposals.access?.read?.(accessArgs(null))).toBe(false)
     expect(AssistanceProposals.access?.update?.(accessArgs(owner))).toBe(false)
     expect(AssistanceProposals.access?.delete?.(accessArgs(owner))).toBe(false)
+    expect(AssistanceProposals.admin?.components?.edit?.beforeDocumentControls).toEqual([
+      './components/AssistanceProposalControls#AssistanceProposalControls',
+    ])
   })
 
   it('stores proposal provenance and decision evidence without apply or publish controls', () => {

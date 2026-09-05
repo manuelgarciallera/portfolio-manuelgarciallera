@@ -58,6 +58,7 @@ export const enforceAssistanceProposalDelete: CollectionBeforeDeleteHook = async
 export const AssistanceProposals: CollectionConfig = {
   slug: 'assistance-proposals',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/AssistanceProposalControls#AssistanceProposalControls'] } },
     defaultColumns: ['capability', 'provider', 'status', 'createdAt'],
     useAsTitle: 'capability',
   },
