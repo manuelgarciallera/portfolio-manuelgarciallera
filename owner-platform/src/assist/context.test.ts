@@ -28,6 +28,15 @@ describe('assistance context package', () => {
         schemaVersion: 1,
         operationLimit: 32,
         outputEnvelope: { schemaVersion: 1, capability: 'one-enabled-capability', operations: [{ op: 'replace', path: 'one-listed-target', value: 'type-compatible-value' }] },
+        targetRules: [
+          { capability: 'suggestCopy', operation: 'replace', path: '/page/layout/0/caption', value: { maxLength: 4000, type: 'string' } },
+          { capability: 'suggestCrop', operation: 'replace', path: '/media-placements/14/placement/focalX', value: { maximum: 1, minimum: 0, type: 'number' } },
+          { capability: 'suggestCrop', operation: 'replace', path: '/media-placements/14/placement/focalY', value: { maximum: 1, minimum: 0, type: 'number' } },
+          { capability: 'suggestCrop', operation: 'replace', path: '/media-placements/14/placement/zoom', value: { maximum: 4, minimum: 1, type: 'number' } },
+          { capability: 'suggestCrop', operation: 'replace', path: '/media-placements/14/placement/fit', value: { enum: ['cover', 'contain'], type: 'string' } },
+          { capability: 'suggestCrop', operation: 'replace', path: '/media-placements/14/placement/frame', value: { enum: ['auto', '16:9', '4:3', '1:1', '9:16'], type: 'string' } },
+          { capability: 'suggestMotion', operation: 'replace', path: '/brand/motion/duration', value: { maximum: 1600, minimum: 150, type: 'number' } },
+        ],
         targets: {
           suggestCopy: ['/page/layout/0/caption'],
           suggestCrop: [
@@ -67,5 +76,10 @@ describe('assistance context package', () => {
       suggestPalette: ['/brand/colors/0/value', '/brand/usageWeights/0/weight'],
       suggestLayout: ['/page/layout'],
     })
+    expect(result.proposalContract.targetRules).toEqual([
+      { capability: 'suggestPalette', operation: 'replace', path: '/brand/colors/0/value', value: { format: '#RRGGBB', type: 'string' } },
+      { capability: 'suggestPalette', operation: 'replace', path: '/brand/usageWeights/0/weight', value: { atomicSet: true, maximum: 100, minimum: 0, total: 100, type: 'number' } },
+      { capability: 'suggestLayout', operation: 'replace', path: '/page/layout', value: { constraint: 'exact-block-reorder', type: 'array' } },
+    ])
   })
 })

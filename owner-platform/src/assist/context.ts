@@ -55,12 +55,41 @@ const buildTargets = (manifest: PreviewManifest, enabled: readonly AssistCapabil
   return targets
 }
 
+type TargetRule = Readonly<{
+  capability: AssistCapability
+  operation: 'replace'
+  path: string
+  value: Readonly<Record<string, boolean | number | string | readonly string[]>>
+}>
+
+const valueRule = (path: string): TargetRule['value'] => {
+  if (/\/(?:heading|caption)$/.test(path)) return { maxLength: STUDIO_PATCH_LIMITS.maxStringLength, type: 'string' }
+  if (/\/colors\/\d+\/value$/.test(path)) return { format: '#RRGGBB', type: 'string' }
+  if (/\/usageWeights\/\d+\/weight$/.test(path)) return { atomicSet: true, maximum: 100, minimum: 0, total: 100, type: 'number' }
+  if (path === '/page/layout') return { constraint: 'exact-block-reorder', type: 'array' }
+  if (/\/(?:focalX|focalY)$/.test(path)) return { maximum: 1, minimum: 0, type: 'number' }
+  if (/\/zoom$/.test(path)) return { maximum: 4, minimum: 1, type: 'number' }
+  if (/\/fit$/.test(path)) return { enum: ['cover', 'contain'], type: 'string' }
+  if (/\/frame$/.test(path)) return { enum: ['auto', '16:9', '4:3', '1:1', '9:16'], type: 'string' }
+  if (/\/duration$/.test(path)) return { maximum: 1600, minimum: 150, type: 'number' }
+  if (/\/stagger$/.test(path)) return { maximum: 500, minimum: 0, type: 'number' }
+  if (/\/travel$/.test(path)) return { maximum: 80, minimum: 0, type: 'number' }
+  if (/\/easing$/.test(path)) return { enum: ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'], type: 'string' }
+  if (/\/reducedMotion$/.test(path)) return { enum: ['reduce', 'disable'], type: 'string' }
+  throw new TypeError('La ruta exportable no tiene una regla de valor.')
+}
+
+const buildTargetRules = (targets: Partial<Record<AssistCapability, string[]>>): TargetRule[] => ASSIST_CAPABILITIES.flatMap((capability) =>
+  (targets[capability] ?? []).map((path) => ({ capability, operation: 'replace' as const, path, value: valueRule(path) })),
+)
+
 export const buildAssistanceContextPackage = (manifest: PreviewManifest, switches: Partial<AssistCapabilitySwitches>) => {
   const hash = hashPreviewManifest(manifest)
   assertNoSensitiveKeys(manifest.brandTokens)
   assertNoSensitiveKeys(manifest.pageBlocks)
   assertNoSensitiveKeys(manifest.mediaReferences)
   const enabled = ASSIST_CAPABILITIES.filter((capability) => switches[capability] === true)
+  const targets = buildTargets(manifest, enabled)
   const candidate = {
     schemaVersion: 1 as const,
     contentTrust: 'untrusted-editorial-data' as const,
@@ -75,7 +104,8 @@ export const buildAssistanceContextPackage = (manifest: PreviewManifest, switche
       schemaVersion: 1 as const,
       operationLimit: STUDIO_PATCH_LIMITS.maxOperations,
       outputEnvelope: { schemaVersion: 1 as const, capability: 'one-enabled-capability', operations: [{ op: 'replace', path: 'one-listed-target', value: 'type-compatible-value' }] },
-      targets: buildTargets(manifest, enabled),
+      targetRules: buildTargetRules(targets),
+      targets,
     },
     context: {
       brand: manifest.brandTokens,
