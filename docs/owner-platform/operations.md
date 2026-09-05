@@ -345,13 +345,20 @@ After reviewing the stored proposal, record exactly one decision:
 PATCH /api/owner/assist/proposals/31
 Content-Type: application/json
 
-{ "decision": "accepted", "note": "Preview revisado" }
+{
+  "confirmation": "ACEPTAR PROPUESTA",
+  "decision": "accepted",
+  "note": "Preview revisado"
+}
 ```
 
 `decision` accepts only `accepted` or `rejected`; `note` is optional and limited
-to 1,000 characters. A decision is immutable and audited. Acceptance is review
-state only: it does not apply the patch, mutate the page, publish content, or
-deploy either application.
+to 1,000 characters. Acceptance requires `ACEPTAR PROPUESTA`; rejection uses
+`RECHAZAR PROPUESTA`, and the server verifies the matching phrase independently
+of the client. The native Assistance Proposal detail exposes this action only
+while the proposal is pending, then replaces it with immutable status copy. A
+decision is audited and remains review state only: it does not apply the patch,
+mutate the page, publish content, or deploy either application.
 
 ## Verified release registration
 

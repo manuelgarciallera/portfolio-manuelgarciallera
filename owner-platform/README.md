@@ -202,6 +202,10 @@ Assistance Proposals is the review queue for schema-validated patches. A
 proposal is generated only from a verified preview snapshot and the current
 Assistant Settings. It starts pending and can be accepted or rejected once;
 neither decision applies the patch or publishes content.
+Pending proposal records expose a guarded owner decision form. Acceptance and
+rejection require different exact phrases, may include a bounded note, and
+become read-only evidence immediately after success. Accepting still does not
+apply the patch, write public content, publish, or deploy.
 
 Authenticated owners can create a proposal with
 `POST /api/owner/assist/proposals` and record one decision with
