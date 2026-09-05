@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { listReleaseEvidence, registerOwnerRelease, type ReleaseEvidence } from '@/releases/client'
 import styles from './ReleaseRegistration.module.css'
 
-export const ReleaseRegistration = () => {
+export const ReleaseRegistration = ({ refreshKey = 0 }: { refreshKey?: number }) => {
   const [evidence, setEvidence] = useState<ReleaseEvidence[]>([])
   const [loading, setLoading] = useState(true)
   const [pending, setPending] = useState(false)
@@ -20,7 +20,7 @@ export const ReleaseRegistration = () => {
       .catch((error) => { if (active) setMessage(error instanceof Error ? error.message : 'No se pudieron cargar los snapshots.') })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [])
+  }, [refreshKey])
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

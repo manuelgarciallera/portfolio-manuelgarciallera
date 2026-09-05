@@ -8,12 +8,14 @@ import styles from './OwnerOverview.module.css'
 import { PublicationPreparation } from './PublicationPreparation'
 import { ReleaseRegistration } from './ReleaseRegistration'
 import { RestorePreparation } from './RestorePreparation'
+import { SnapshotCapture } from './SnapshotCapture'
 
 type View = ReturnType<typeof presentOwnerDashboard>
 
 export const OwnerOverview = () => {
   const [view, setView] = useState<View | null>(null)
   const [error, setError] = useState(false)
+  const [snapshotRevision, setSnapshotRevision] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -44,7 +46,8 @@ export const OwnerOverview = () => {
         {view.actions.map((action) => <a href={action.href} key={action.href}>{action.label}</a>)}
       </nav>
       <PublicationPreparation />
-      <ReleaseRegistration />
+      <SnapshotCapture onCaptured={() => setSnapshotRevision((value) => value + 1)} />
+      <ReleaseRegistration refreshKey={snapshotRevision} />
       <ul className={styles.metrics}>
         {view.cards.map((card) => (
           <li key={card.label} data-tone={card.tone}>
