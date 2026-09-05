@@ -8,6 +8,14 @@ public portfolio still reads its existing checked-in content.
 The complete operational runbook is in
 [`../docs/owner-platform/operations.md`](../docs/owner-platform/operations.md).
 
+The focused dashboard browser regression is
+`npm --prefix owner-platform run test:dashboard` from the repository root.
+It uses the existing root Playwright test dependency and the owner esbuild
+dependency (install both lockfiles first). It runs the real dashboard components
+against synthetic HTTP responses at 320/390/768/1280 px in light and dark themes;
+it does not require owner credentials or write to a database. It supplements,
+but does not replace, `check` and real authenticated browser journeys.
+
 ## Current owner surface
 
 The authenticated admin includes Brand Profiles (the first Brand Studio data

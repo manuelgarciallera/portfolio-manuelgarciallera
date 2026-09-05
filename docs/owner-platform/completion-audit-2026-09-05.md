@@ -77,6 +77,14 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
+Incremento responsive posterior: accesos rápidos y buscador de 44 px en móvil,
+sin ampliar desktop, y ajuste de nombres largos en resultados. Ver
+`responsive-audit-2026-09-05.md`: recorrido real de login, creación de una página,
+guardado, recarga y preview privado; ocho nuevas combinaciones browser,
+687 unitarias, 20 integraciones, 22 controles browser y build owner correctos.
+La auditoría completa de todos los editores, traducción coherente y cierre
+de los requisitos de producción siguen pendientes.
+
 Último incremento: encuadres históricos con variaciones móvil/tablet capturados
 y utilizados por la asistencia, conservando el contrato desactivado de Linocube.
 Ver `captured-crops-verification-2026-09-05.md`: 687 unitarias owner, 20 integraciones

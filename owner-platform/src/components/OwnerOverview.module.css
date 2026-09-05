@@ -89,6 +89,10 @@
 .actions a:focus-visible, .metrics a:focus-visible, .workflow a:focus-visible, .recent a:focus-visible, .versions a:focus-visible, .activity a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
 
 @media (max-width: 64rem) { .metrics, .workflow > ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } .analyticsGrid { grid-template-columns: 1fr 1fr; } .traffic { grid-column: 1 / -1; } .capabilities ul { grid-template-columns: repeat(3, minmax(0, 1fr)); } .versions > ul { grid-template-columns: 1fr; } }
+@media (max-width: 48rem) {
+  /* Payload uses a compact root font; keep touch targets in CSS pixels. */
+  .actions a { display: inline-flex; align-items: center; min-height: 44px; font-size: max(1rem, 14px); }
+}
 @media (max-width: 34rem) {
   .overview { margin-top: -0.75rem; }
   .metrics { grid-template-columns: 1fr; }
