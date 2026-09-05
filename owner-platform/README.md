@@ -253,6 +253,10 @@ approved, hash-verified review. `POST
 pair and page count for later export tooling. The manifest is immutable,
 audited, and isolated; generating it performs no filesystem or public-site
 write.
+An approved Publication Review exposes a guarded `GENERAR ARTEFACTO` control
+in its native record and links to the resulting immutable artifact. Rejected
+reviews show no generation action. A successful generation disables the
+control locally and still performs no export, publication, or deployment.
 
 ## Local development
 

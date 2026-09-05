@@ -538,6 +538,12 @@ benchmark-gated process and must not weaken this boundary.
 
 ### Isolated publication artifact
 
+The native Publication Review detail reflects its immutable decision. A
+rejected review exposes no generation action. An approved review requires the
+exact `GENERAR ARTEFACTO` phrase, calls only the artifact endpoint, disables
+the control after success, and links to the resulting immutable record. The
+client validates response identifiers and never renders raw server errors.
+
 Generate a canonical handoff manifest from an approved review:
 
 ```http
