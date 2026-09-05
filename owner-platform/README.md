@@ -113,6 +113,8 @@ that model: issue totals for content and media, workflow attention, registered
 versions, runtime readiness, and the five latest editable records. Links lead
 back to Payload's native editors; malformed data fails closed and the original
 collection dashboard remains available below the extension.
+The same area provides direct native create links for Projects, Pages,
+Articles, and Media; it does not duplicate forms or bypass collection access.
 
 The same overview includes the workflow attention summary exposed independently
 at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
