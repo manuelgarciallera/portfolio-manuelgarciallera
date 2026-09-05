@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { generatePublicationArtifact, listPublicationCandidates, preparePublicationBundle, reorderPublicationSelection, reviewPublicationBundle } from './client'
+import { generatePublicationArtifact, listPublicationCandidates, orderPublicationCandidates, preparePublicationBundle, reorderPublicationSelection, reviewPublicationBundle } from './client'
 
 describe('publication bundle preparation client', () => {
   it('loads a bounded list of immutable release candidates', async () => {
@@ -21,6 +21,8 @@ describe('publication bundle preparation client', () => {
   it('rejects malformed candidate data instead of rendering it', async () => {
     const malformed = vi.fn(async () => new Response(JSON.stringify({ docs: [{ id: '../users', name: 'X', changeSummary: 'Y', createdAt: 'bad' }] }), { status: 200 }))
     await expect(listPublicationCandidates(malformed)).rejects.toThrow('No se pudieron cargar las versiones.')
+    const invalidJson = vi.fn(async () => new Response('<html>upstream error</html>', { status: 200 }))
+    await expect(listPublicationCandidates(invalidJson)).rejects.toThrow('No se pudieron cargar las versiones.')
   })
 
   it('requires the exact phrase and creates a reviewable immutable bundle', async () => {
@@ -43,11 +45,26 @@ describe('publication bundle preparation client', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
+  it('hides malformed bundle responses', async () => {
+    const invalidJson = vi.fn(async () => new Response('<html>failure</html>', { status: 201 }))
+    await expect(preparePublicationBundle({ confirmation: 'PREPARAR PUBLICACIÓN', name: 'Entrega', releaseIds: [44] }, invalidJson)).rejects.toThrow('No se pudo preparar el paquete.')
+  })
+
   it('moves a selected version by one position without mutating the source order', () => {
     const source = [44, 45, 46]
     expect(reorderPublicationSelection(source, 46, -1)).toEqual([44, 46, 45])
     expect(reorderPublicationSelection(source, 44, -1)).toEqual(source)
     expect(source).toEqual([44, 45, 46])
+  })
+
+  it('renders selected candidates first in their explicit order', () => {
+    const candidates = [
+      { changeSummary: 'A', createdAt: '2026-09-05T08:00:00.000Z', id: 44, name: 'A' },
+      { changeSummary: 'B', createdAt: '2026-09-04T08:00:00.000Z', id: 45, name: 'B' },
+      { changeSummary: 'C', createdAt: '2026-09-03T08:00:00.000Z', id: 46, name: 'C' },
+    ]
+    expect(orderPublicationCandidates(candidates, [46, 44]).map(({ id }) => id)).toEqual([46, 44, 45])
+    expect(candidates.map(({ id }) => id)).toEqual([44, 45, 46])
   })
 })
 
@@ -74,6 +91,8 @@ describe('publication review client', () => {
     await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, failed)).rejects.toThrow('No se pudo registrar la revisión.')
     const malformed = vi.fn(async () => new Response(JSON.stringify({ review: { id: '../users', decision: 'approved' } }), { status: 201 }))
     await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, malformed)).rejects.toThrow('No se pudo registrar la revisión.')
+    const invalidJson = vi.fn(async () => new Response('<html>failure</html>', { status: 201 }))
+    await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, invalidJson)).rejects.toThrow('No se pudo registrar la revisión.')
   })
 })
 
@@ -93,5 +112,7 @@ describe('publication artifact client', () => {
     await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', failed)).rejects.toThrow('No se pudo generar el artefacto.')
     const malformed = vi.fn(async () => new Response(JSON.stringify({ artifact: { id: '../users' } }), { status: 201 }))
     await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', malformed)).rejects.toThrow('No se pudo generar el artefacto.')
+    const invalidJson = vi.fn(async () => new Response('<html>failure</html>', { status: 201 }))
+    await expect(generatePublicationArtifact(70, 'GENERAR ARTEFACTO', invalidJson)).rejects.toThrow('No se pudo generar el artefacto.')
   })
 })

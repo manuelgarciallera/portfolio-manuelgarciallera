@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import {
   listPublicationCandidates,
+  orderPublicationCandidates,
   preparePublicationBundle,
   reorderPublicationSelection,
   type PublicationCandidate,
@@ -59,7 +60,7 @@ export const PublicationPreparation = () => {
           <fieldset>
             <legend>Versiones y orden del paquete</legend>
             <ul>
-              {candidates.map((candidate) => {
+              {orderPublicationCandidates(candidates, selected).map((candidate) => {
                 const order = selected.findIndex((value) => String(value) === String(candidate.id))
                 return (
                   <li key={candidate.id} data-selected={order >= 0}>

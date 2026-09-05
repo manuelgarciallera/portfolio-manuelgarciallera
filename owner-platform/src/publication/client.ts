@@ -27,6 +27,19 @@ export const reorderPublicationSelection = <T extends string | number>(
   return next
 }
 
+export const orderPublicationCandidates = (
+  candidates: readonly PublicationCandidate[],
+  selected: readonly (string | number)[],
+): PublicationCandidate[] => {
+  const byId = new Map(candidates.map((candidate) => [String(candidate.id), candidate]))
+  const ordered = selected.flatMap((id) => {
+    const candidate = byId.get(String(id))
+    return candidate ? [candidate] : []
+  })
+  const selectedIds = new Set(selected.map(String))
+  return [...ordered, ...candidates.filter((candidate) => !selectedIds.has(String(candidate.id)))]
+}
+
 const candidateFailure = (): never => { throw new Error('No se pudieron cargar las versiones.') }
 const bundleFailure = (): never => { throw new Error('No se pudo preparar el paquete.') }
 
@@ -35,7 +48,8 @@ export const listPublicationCandidates = async (
 ): Promise<PublicationCandidate[]> => {
   const response = await request('/api/releases?depth=0&limit=100&sort=-createdAt', { credentials: 'same-origin' })
   if (!response.ok) return candidateFailure()
-  const result = await response.json() as unknown
+  let result: unknown
+  try { result = await response.json() as unknown } catch { return candidateFailure() }
   if (!isRecord(result) || !Array.isArray(result.docs) || result.docs.length > 100) return candidateFailure()
   return result.docs.map((value) => {
     if (!isRecord(value)) return candidateFailure()
@@ -68,7 +82,8 @@ export const preparePublicationBundle = async (
     method: 'POST',
   })
   if (!response.ok) return bundleFailure()
-  const result = await response.json() as unknown
+  let result: unknown
+  try { result = await response.json() as unknown } catch { return bundleFailure() }
   const bundle = isRecord(result) && isRecord(result.bundle) ? result.bundle : undefined
   const id = bundle?.id
   if ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id))) return bundleFailure()
@@ -91,7 +106,8 @@ export const reviewPublicationBundle = async (
     method: 'POST',
   })
   if (!response.ok) return failure()
-  const result = await response.json() as unknown
+  let result: unknown
+  try { result = await response.json() as unknown } catch { return failure() }
   const review = isRecord(result) && isRecord(result.review) ? result.review : undefined
   const id = review?.id
   if (review?.decision !== input.decision || ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id)))) return failure()
@@ -111,7 +127,8 @@ export const generatePublicationArtifact = async (
     method: 'POST',
   })
   if (!response.ok) throw new Error('No se pudo generar el artefacto.')
-  const result = await response.json() as unknown
+  let result: unknown
+  try { result = await response.json() as unknown } catch { throw new Error('No se pudo generar el artefacto.') }
   const artifact = isRecord(result) && isRecord(result.artifact) ? result.artifact : undefined
   const id = artifact?.id
   if ((typeof id !== 'string' && typeof id !== 'number') || !/^[A-Za-z0-9_-]+$/.test(String(id))) throw new Error('No se pudo generar el artefacto.')
