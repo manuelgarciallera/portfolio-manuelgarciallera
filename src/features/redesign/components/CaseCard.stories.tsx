@@ -92,6 +92,8 @@ export const Draft: Story = {
     const link = canvas.getByRole('link', { name: 'Caso Caso futuro' })
 
     await expect(link).toHaveAttribute('href', '/casos')
+    await expect(canvas.getByRole('link', { name: 'En preparación: Caso futuro' })).toHaveAttribute('href', '/casos')
+    await expect(canvas.queryByRole('link', { name: /Ver caso de estudio/ })).not.toBeInTheDocument()
     await expect(canvas.getAllByText('En preparación')).toHaveLength(2)
   },
 }

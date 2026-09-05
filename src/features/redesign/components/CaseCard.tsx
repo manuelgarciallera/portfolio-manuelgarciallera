@@ -23,6 +23,7 @@ export interface CaseCardProps {
 
 export function CaseCard({ item, viewportActive = false, registerPreview }: CaseCardProps) {
   const href = item.published ? `/casos/${item.slug}` : '/casos'
+  const actionLabel = item.published ? 'Ver caso de estudio' : 'En preparación'
   const visualRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [pointerEngaged, setPointerEngaged] = useState(false)
@@ -91,10 +92,10 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
             if (!event.currentTarget.contains(event.relatedTarget)) resetVisual()
           }}
         >
-          <Link className="rd-case-hit-area" href={href} aria-label={`Ver caso de estudio: ${item.title}${item.titleAccent ?? ''}`}>
-            <span className="rd-sr-only">Ver caso de estudio</span>
+          <Link className="rd-case-hit-area" href={href} aria-label={`${actionLabel}: ${item.title}${item.titleAccent ?? ''}`}>
+            <span className="rd-sr-only">{actionLabel}</span>
           </Link>
-          <span className="rd-case-hover-cta" data-pointer-cta="true" aria-hidden="true">Ver caso de estudio</span>
+          <span className="rd-case-hover-cta" data-pointer-cta="true" aria-hidden="true">{actionLabel}</span>
           <span className="rd-case-visual-copy">
             <Image className="rd-case-logo" src={item.visual.logoSrc} alt={item.visual.logoAlt} width={190} height={54} />
             <span className="rd-case-visual-narrative">
