@@ -235,6 +235,9 @@ untrusted editorial data so a downstream model cannot reinterpret authored
 content as instructions. A generated `proposalContract` lists the required
 response envelope and only the exact patch targets present in that snapshot
 for enabled capabilities, avoiding guessed indices, fields, or placement IDs.
+Each target includes the accepted operation and a machine-readable value rule,
+including ranges and fixed catalogs, so external generation does not need to
+infer the validator's constraints.
 Every successful export is recorded in the append-only audit ledger before the
 response is returned; an audit failure blocks the export.
 

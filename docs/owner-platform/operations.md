@@ -395,10 +395,12 @@ projected page/brand/media context, enabled proposal capabilities, an explicit
 `untrusted-editorial-data` marker, and permanent `apply`, `publish`, and
 `deploy` denials. It also generates a `proposalContract`: the maximum operation
 count, the required response envelope, and the exact paths that each enabled
-capability may propose for that snapshot. Disabled capabilities and fields that
-do not exist in the verified content are absent. The dashboard renders this as
-a read-only JSON field for a manual copy/paste handoff; it never calls a model
-or writes content.
+capability may propose for that snapshot. Every path also has an explicit
+`targetRules` entry describing the only safe operation and its value contract:
+text length, HEX format, numeric range, allowed catalog, atomic percentage set,
+or exact-block reorder. Disabled capabilities and fields that do not exist in
+the verified content are absent. The dashboard renders this as a read-only JSON
+field for a manual copy/paste handoff; it never calls a model or writes content.
 Each successful export appends `assistant.context.exported` with the snapshot
 ID and verified hash to the audit ledger before returning the package. Audit
 failure is fail-closed: no unaudited context is delivered.
