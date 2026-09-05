@@ -117,6 +117,10 @@ that model: issue totals for content and media, workflow attention, registered
 versions, runtime readiness, and the five latest editable records. Links lead
 back to Payload's native editors; malformed data fails closed and the original
 collection dashboard remains available below the extension.
+It also presents the three latest verified versions with their date, concise
+change summary, and average performance, usability, and accessibility scores.
+These are read-only shortcuts to immutable Release records; they cannot
+restore, publish, or deploy a version.
 The same area provides direct native create links for Projects, Pages,
 Articles, and Media; it does not duplicate forms or bypass collection access.
 

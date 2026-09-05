@@ -598,6 +598,12 @@ relationships, or invalid measurements fail the complete response rather than
 showing a version that appears safer than its evidence. This endpoint is
 read-only: it does not prepare, confirm, or execute a restore plan.
 
+The generated owner dashboard projects the first three records from this
+verified summary as compact version cards. Each card shows its date, bounded
+change summary, and the three average quality scores, then links to the native
+immutable Release record for inspection. This surface cannot execute a
+restore, publish content, or trigger a deployment.
+
 The future owner home can consume `GET /api/owner/dashboard` instead of
 coordinating the three read models in the browser. The server authenticates
 once and loads content health, release history, verified analytics, and recent
