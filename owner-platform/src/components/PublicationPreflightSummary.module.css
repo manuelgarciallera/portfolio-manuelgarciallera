@@ -1,0 +1,16 @@
+.panel { width: min(60rem, 100%); margin: 0 0 1rem; padding: 0.9rem; color: var(--theme-text); background: var(--theme-elevation-50); border: 1px solid var(--theme-elevation-200); border-radius: 0.45rem; }
+.panel header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.panel header p { margin: 0.25rem 0 0; color: var(--theme-elevation-650); font-size: 0.78rem; }
+.panel a { color: inherit; font-size: 0.78rem; text-underline-offset: 0.2em; }
+.panel ul { display: grid; gap: 0.45rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+.panel li { padding: 0.65rem 0.7rem; background: var(--theme-bg); border: 1px solid var(--theme-elevation-150); border-inline-start: 0.2rem solid var(--theme-warning-500); border-radius: 0.35rem; }
+.panel li[data-severity='blocker'] { border-inline-start-color: var(--theme-error-500); }
+.panel li > div { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.panel li strong, .panel li span, .panel small { font-size: 0.7rem; }
+.panel li span, .panel small { color: var(--theme-elevation-650); }
+.panel li p { margin: 0.3rem 0 0; font-size: 0.78rem; }
+.panel > p { margin: 0.65rem 0 0; color: var(--theme-elevation-650); font-size: 0.75rem; }
+.panel small { display: block; margin-top: 0.7rem; }
+.panel a:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
+@media (max-width: 38rem) { .panel header, .panel li > div { align-items: flex-start; flex-direction: column; gap: 0.25rem; } }
+

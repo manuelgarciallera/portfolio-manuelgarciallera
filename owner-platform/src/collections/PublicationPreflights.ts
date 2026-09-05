@@ -23,7 +23,7 @@ export const enforcePublicationPreflightDelete: CollectionBeforeDeleteHook = asy
 
 export const PublicationPreflights: CollectionConfig = {
   slug: 'publication-preflights',
-  admin: { defaultColumns: ['artifact', 'status', 'issueCount', 'checkedAt'], useAsTitle: 'preflightHash' },
+  admin: { components: { edit: { beforeDocumentControls: ['./components/PublicationPreflightSummary#PublicationPreflightSummary'] } }, defaultColumns: ['artifact', 'status', 'issueCount', 'checkedAt'], useAsTitle: 'preflightHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationPreflight], beforeDelete: [enforcePublicationPreflightDelete] },
   fields: [
@@ -40,4 +40,3 @@ export const PublicationPreflights: CollectionConfig = {
     { name: 'createdBy', type: 'relationship', relationTo: 'users', required: true, admin: { readOnly: true } },
   ],
 }
-
