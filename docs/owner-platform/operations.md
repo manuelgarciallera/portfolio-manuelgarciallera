@@ -405,6 +405,14 @@ restorable snapshots whose page or source revision differs.
 
 ## Non-destructive restore planning
 
+The dashboard version cards provide a guarded preparation control. After the
+owner types `PREPARAR RESTAURACIÓN`, the private endpoint
+`POST /api/owner/releases/:id/restore-plans` verifies the selected release,
+derives its target page, creates a fresh current preview snapshot, and prepares
+the same `ready` plan described below. The UI then links to the immutable plan
+for review. This convenience path removes manual relationship IDs but does not
+confirm, execute, publish, or deploy the restoration.
+
 Create a fresh preview snapshot of the page, then prepare a restore plan:
 
 ```http
