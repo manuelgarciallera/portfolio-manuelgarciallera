@@ -12,7 +12,7 @@ export const prepareFigmaImportExecution: CollectionBeforeChangeHook = async ({ 
   try {
     canonical = createFigmaImportExecution({
       contentHash: data.contentHash, importedAt: data.importedAt, importedBy: data.importedBy,
-      mediaId: data.media, mimeType: data.mimeType, planHash: data.planHash, planId: data.plan,
+      mediaId: data.media, mimeType: data.mimeType, placementId: data.placement, planHash: data.planHash, planId: data.plan,
       reviewHash: data.reviewHash, reviewId: data.review, size: data.size,
     })
   } catch { throw new APIError('La evidencia de importación de Figma no es válida.', 400) }
@@ -35,6 +35,7 @@ export const FigmaImportExecutions: CollectionConfig = {
     { name: 'plan', type: 'relationship', relationTo: 'figma-import-plans', required: true, index: true, admin: { readOnly: true } },
     { name: 'planHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'media', type: 'relationship', relationTo: 'media', required: true, unique: true, admin: { readOnly: true } },
+    { name: 'placement', type: 'relationship', relationTo: 'media-placements', required: true, unique: true, admin: { readOnly: true } },
     { name: 'contentHash', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'mimeType', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'size', type: 'number', required: true, admin: { readOnly: true } },

@@ -15,9 +15,10 @@ export const executeFigmaImport = async (reviewId: string | number, input: { alt
   let body: unknown
   try { body = await response.json() as unknown } catch { return fail() }
   const execution = record(body) && record(body.execution) ? body.execution : undefined
-  if (!execution || !safeId(execution.id) || !safeId(execution.media)) return fail()
+  if (!execution || !safeId(execution.id) || !safeId(execution.media) || !safeId(execution.placement)) return fail()
   return {
     executionHref: `/admin/collections/figma-import-executions/${encodeURIComponent(String(execution.id))}`,
     mediaHref: `/admin/collections/media/${encodeURIComponent(String(execution.media))}`,
+    placementHref: `/admin/collections/media-placements/${encodeURIComponent(String(execution.placement))}`,
   }
 }

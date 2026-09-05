@@ -15,7 +15,7 @@ export const FigmaImportReviewControls = () => {
   const decision = data?.decision
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState('La importación crea un medio en borrador; no publica ni modifica ninguna página.')
-  const [destinations, setDestinations] = useState<{ executionHref: string; mediaHref: string } | null>(null)
+  const [destinations, setDestinations] = useState<{ executionHref: string; mediaHref: string; placementHref: string } | null>(null)
   if (reviewId === null || (decision !== 'approved' && decision !== 'rejected')) return null
   if (decision === 'rejected') return <aside className={styles.panel}><strong>Importación rechazada</strong><p>Una revisión rechazada no puede crear medios.</p></aside>
 
@@ -40,6 +40,6 @@ export const FigmaImportReviewControls = () => {
       <button type="submit" disabled={pending || destinations !== null}>{pending ? 'Importando…' : 'Importar como borrador'}</button>
     </form>
     <p className={styles.status} role="status" aria-live="polite">{message}</p>
-    {destinations && <p><Link href={destinations.mediaHref}>Editar medio</Link> · <Link href={destinations.executionHref}>Ver evidencia</Link></p>}
+    {destinations && <p><Link href={destinations.placementHref}>Ajustar encuadre</Link> · <Link href={destinations.mediaHref}>Editar medio</Link> · <Link href={destinations.executionHref}>Ver evidencia</Link></p>}
   </aside>
 }

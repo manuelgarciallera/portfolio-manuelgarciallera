@@ -17,7 +17,7 @@ const provider = { discover: vi.fn(async () => ({ ok: true as const, file: { nam
 const transaction = { begin: async () => true, commit: async () => undefined, rollback: async () => undefined }
 
 const setup = () => {
-  const create = vi.fn(async ({ collection }: { collection: string }) => collection === 'media' ? { id: 72, _status: 'draft' } : collection === 'figma-import-executions' ? { id: 73 } : { id: 74 })
+  const create = vi.fn(async ({ collection }: { collection: string }) => collection === 'media' ? { id: 72, _status: 'draft' } : collection === 'media-placements' ? { id: 71, _status: 'draft' } : collection === 'figma-import-executions' ? { id: 73 } : { id: 74 })
   const find = vi.fn(async (): Promise<{ docs: Array<Record<string, unknown>> }> => ({ docs: [] }))
   const findByID = vi.fn(async ({ collection }: { collection: string }) => collection === 'figma-import-reviews' ? reviewDocument : planDocument)
   const payload = { create, find, findByID }
@@ -37,7 +37,8 @@ describe('executeOwnerFigmaImport', () => {
       data: expect.objectContaining({ _status: 'draft', alt: 'Vista principal del portfolio', credit: 'Figma · Portfolio · Hero principal' }),
       file: expect.objectContaining({ data: Buffer.from('png'), mimetype: 'image/png', name: 'hero-principal.png', size: 3 }),
     }))
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'figma-import-executions', data: expect.objectContaining({ contentHash: `sha256:${createHash('sha256').update('png').digest('hex')}`, media: 72, plan: 44, review: 45 }) }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'media-placements', data: { _status: 'draft', name: 'Hero principal · encuadre', placement: { asset: 72 } } }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'figma-import-executions', data: expect.objectContaining({ contentHash: `sha256:${createHash('sha256').update('png').digest('hex')}`, media: 72, placement: 71, plan: 44, review: 45 }) }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'audit-events', data: expect.objectContaining({ action: 'figma.import.executed', subjectCollection: 'figma-import-executions' }) }))
     expect(JSON.stringify(create.mock.calls)).not.toMatch(/publish|deploy|publicBridge/)
   })
@@ -74,14 +75,14 @@ describe('executeOwnerFigmaImport', () => {
   it('creates media, execution evidence, and audit atomically and rolls back partial writes', async () => {
     const success = setup()
     const successEvents: string[] = []
-    success.create.mockImplementation(async ({ collection }: { collection: string }) => { successEvents.push(`create:${collection}`); return collection === 'media' ? { id: 72 } : collection === 'figma-import-executions' ? { id: 73 } : { id: 74 } })
+    success.create.mockImplementation(async ({ collection }: { collection: string }) => { successEvents.push(`create:${collection}`); return collection === 'media' ? { id: 72 } : collection === 'media-placements' ? { id: 71 } : collection === 'figma-import-executions' ? { id: 73 } : { id: 74 } })
     const successTransaction = {
       begin: vi.fn(async () => { successEvents.push('begin'); return true }),
       commit: vi.fn(async () => { successEvents.push('commit') }),
       rollback: vi.fn(async () => { successEvents.push('rollback') }),
     }
     await executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: successTransaction, download: success.download, payload: success.payload, provider, req: { payload: success.payload, user: owner }, reviewId: 45 })
-    expect(successEvents).toEqual(['begin', 'create:media', 'create:figma-import-executions', 'create:audit-events', 'commit'])
+    expect(successEvents).toEqual(['begin', 'create:media', 'create:media-placements', 'create:figma-import-executions', 'create:audit-events', 'commit'])
     expect(successTransaction.rollback).not.toHaveBeenCalled()
 
     const failure = setup()

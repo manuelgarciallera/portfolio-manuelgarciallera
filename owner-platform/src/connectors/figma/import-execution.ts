@@ -7,6 +7,7 @@ export type FigmaImportExecution = Readonly<{
   planId: string | number
   planHash: string
   mediaId: string | number
+  placementId: string | number
   contentHash: string
   mimeType: 'image/png'
   size: number
@@ -31,7 +32,7 @@ const hash = (value: Omit<FigmaImportExecution, 'hash'>) => `sha256:${createHash
 
 export const createFigmaImportExecution = (input: Input): FigmaImportExecution => {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('La importación de Figma no es válida.')
-  if (![input.reviewId, input.planId, input.mediaId, input.importedBy].every(identifier)) throw new TypeError('Los identificadores de la importación no son válidos.')
+  if (![input.reviewId, input.planId, input.mediaId, input.placementId, input.importedBy].every(identifier)) throw new TypeError('Los identificadores de la importación no son válidos.')
   if (![input.reviewHash, input.planHash, input.contentHash].every((value) => typeof value === 'string' && digestPattern.test(value))) throw new TypeError('Los hashes de la importación no son válidos.')
   if (input.mimeType !== 'image/png') throw new TypeError('La importación debe ser una imagen PNG.')
   if (!Number.isSafeInteger(input.size) || input.size < 1 || input.size > 25 * 1024 * 1024) throw new TypeError('El tamaño de la importación no es válido.')

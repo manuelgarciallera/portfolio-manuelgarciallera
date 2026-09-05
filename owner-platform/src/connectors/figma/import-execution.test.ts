@@ -10,6 +10,7 @@ const input = {
   mimeType: 'image/png' as const,
   planHash: `sha256:${'b'.repeat(64)}`,
   planId: 44,
+  placementId: 71,
   reviewHash: `sha256:${'c'.repeat(64)}`,
   reviewId: 45,
   size: 2048,
@@ -31,5 +32,6 @@ describe('Figma import execution evidence', () => {
     expect(() => createFigmaImportExecution({ ...input, importedAt: 'today' })).toThrow(/fecha/i)
     const execution = createFigmaImportExecution(input)
     expect(() => hashFigmaImportExecution({ ...execution, mediaId: 73 })).toThrow(/hash/i)
+    expect(() => hashFigmaImportExecution({ ...execution, placementId: 74 })).toThrow(/hash/i)
   })
 })

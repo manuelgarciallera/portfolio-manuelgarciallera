@@ -7,12 +7,12 @@ const owner = { id: 1, collection: 'users', role: 'owner' }
 const execution = createFigmaImportExecution({
   contentHash: `sha256:${'a'.repeat(64)}`, importedAt: '2026-09-05T07:30:00.000Z', importedBy: 1,
   mediaId: 72, mimeType: 'image/png', planHash: `sha256:${'b'.repeat(64)}`, planId: 44,
-  reviewHash: `sha256:${'c'.repeat(64)}`, reviewId: 45, size: 2048,
+  placementId: 71, reviewHash: `sha256:${'c'.repeat(64)}`, reviewId: 45, size: 2048,
 })
 const data = {
   contentHash: execution.contentHash, executionHash: execution.hash, importedAt: execution.importedAt,
   importedBy: 1, media: 72, mimeType: execution.mimeType, plan: 44, planHash: execution.planHash,
-  review: 45, reviewHash: execution.reviewHash, schemaVersion: 1, size: execution.size,
+  placement: 71, review: 45, reviewHash: execution.reviewHash, schemaVersion: 1, size: execution.size,
 }
 
 describe('FigmaImportExecutions collection', () => {
@@ -24,6 +24,7 @@ describe('FigmaImportExecutions collection', () => {
     expect(FigmaImportExecutions.access?.create?.(access(owner))).toBe(false)
     const review = FigmaImportExecutions.fields.find((field) => 'name' in field && field.name === 'review')
     expect(review).toMatchObject({ relationTo: 'figma-import-reviews', unique: true })
+    expect(FigmaImportExecutions.fields.find((field) => 'name' in field && field.name === 'placement')).toMatchObject({ relationTo: 'media-placements', unique: true })
   })
 
   it('accepts only canonical evidence owned by the actor', async () => {

@@ -963,6 +963,7 @@ export interface FigmaImportExecution {
   plan: number | FigmaImportPlan;
   planHash: string;
   media: number | Media;
+  placement: number | MediaPlacement;
   contentHash: string;
   mimeType: string;
   size: number;
@@ -1809,6 +1810,7 @@ export interface FigmaImportExecutionsSelect<T extends boolean = true> {
   plan?: T;
   planHash?: T;
   media?: T;
+  placement?: T;
   contentHash?: T;
   mimeType?: T;
   size?: T;

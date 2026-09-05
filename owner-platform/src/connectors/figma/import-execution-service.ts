@@ -96,15 +96,22 @@ export const executeOwnerFigmaImport = async ({ alt, confirmation, dependencies 
       req,
     })
     const mediaId = id(media, 'El medio')
-    const execution = createFigmaImportExecution({ contentHash, importedAt: now, importedBy: ownerId, mediaId, mimeType: rendered.mimeType, planHash, planId, reviewHash: review.hash, reviewId, size: rendered.size })
+    const placement = await payload.create({
+      collection: 'media-placements',
+      data: { _status: 'draft', name: `${plan.candidate.name} · encuadre`, placement: { asset: mediaId } },
+      overrideAccess: true,
+      req,
+    })
+    const placementId = id(placement, 'El encuadre')
+    const execution = createFigmaImportExecution({ contentHash, importedAt: now, importedBy: ownerId, mediaId, mimeType: rendered.mimeType, placementId, planHash, planId, reviewHash: review.hash, reviewId, size: rendered.size })
     const created = await payload.create({
       collection: 'figma-import-executions',
-      data: { contentHash, executionHash: execution.hash, importedAt: execution.importedAt, importedBy: ownerId, media: mediaId, mimeType: execution.mimeType, plan: planId, planHash, review: reviewId, reviewHash: review.hash, schemaVersion: execution.schemaVersion, size: execution.size },
+      data: { contentHash, executionHash: execution.hash, importedAt: execution.importedAt, importedBy: ownerId, media: mediaId, mimeType: execution.mimeType, placement: placementId, plan: planId, planHash, review: reviewId, reviewHash: review.hash, schemaVersion: execution.schemaVersion, size: execution.size },
       overrideAccess: true,
       req,
     })
     await recordAuditEvent({
-      input: { action: 'figma.import.executed', metadata: { contentHash, mediaId, planHash, reviewHash: review.hash, size: rendered.size }, outcome: 'success', subject: { collection: 'figma-import-executions', id: id(created, 'La importación') } },
+      input: { action: 'figma.import.executed', metadata: { contentHash, mediaId, placementId, planHash, reviewHash: review.hash, size: rendered.size }, outcome: 'success', subject: { collection: 'figma-import-executions', id: id(created, 'La importación') } },
       payload: payload as never, req, user: req.user,
     })
     await dependencies.commit(req)
