@@ -77,7 +77,12 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
-Incremento actual: comparación legible de propuestas implementada y verificada.
+Último incremento: identidad persistente de bloques en nuevas capturas y contexto
+del asistente, sin reescribir el histórico ni aplicar propuestas. Ver
+`block-identity-verification-2026-09-05.md`: 660 unitarias owner, 18 integraciones
+SQLite, lint, tipos, build y aislamiento de 20 entradas públicas correctos.
+
+Incremento anterior: comparación legible de propuestas implementada y verificada.
 Resultado: 653 unitarias owner, 17 integraciones SQLite y 22 casos browser;
 lint, TypeScript y builds owner/público correctos. Portfolio: 207 unitarias,
 11 guardas, 8 pruebas de aislamiento; 20 entradas públicas aisladas y 9 rutas

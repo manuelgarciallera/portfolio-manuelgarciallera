@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createPagePreviewSnapshot } from './service'
+import { buildAssistanceContextPackage } from '../assist/context'
+import type { PreviewManifest } from './manifest'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const lexical = { root: { type: 'root', version: 1, direction: 'ltr', format: '', indent: 0, children: [{ type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, children: [
@@ -23,6 +25,51 @@ const brand = {
 }
 
 describe('page preview snapshot service', () => {
+  it('distinguishes reordered identical blocks by their stored identities in the assistant context', async () => {
+    const page = { id: 7, title: 'Inicio', updatedAt: '2026-09-05T12:00:00Z', brandProfile: 3,
+      layout: [{ id: 'block-a', blockType: 'hero', heading: 'Igual' }, { id: 'block-b', blockType: 'hero', heading: 'Igual' }] }
+    const snapshots: Record<string, unknown>[] = []
+    const payload = {
+      findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : brand,
+      find: async ({ where }: { where: { manifestHash: { equals: string } } }) => ({ docs: snapshots.filter((doc) => doc.manifestHash === where.manifestHash.equals) }),
+      create: async ({ collection, data }: { collection: string; data: Record<string, unknown> }) => {
+        const doc = { id: snapshots.length + 1, ...data }
+        if (collection === 'preview-snapshots') snapshots.push(doc)
+        return doc
+      },
+    }
+    const first = await createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })
+    page.layout = [page.layout[1], page.layout[0]]
+    const second = await createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })
+    expect(second.manifestHash).not.toBe(first.manifestHash)
+    expect(buildAssistanceContextPackage(second.manifest as PreviewManifest, { suggestLayout: true }).context.page.layout).toEqual([
+      { id: 'block-b', blockType: 'hero', heading: 'Igual' },
+      { id: 'block-a', blockType: 'hero', heading: 'Igual' },
+    ])
+    expect((first.manifest as PreviewManifest).pageBlocks).toEqual([
+      { id: 'block-a', blockType: 'hero', heading: 'Igual' },
+      { id: 'block-b', blockType: 'hero', heading: 'Igual' },
+    ])
+  })
+
+  it.each(['', 'path/segment', 'x'.repeat(129), 7, null])('rejects malformed block identity %s before persisting a capture', async (id) => {
+    const page = { id: 7, updatedAt: 'now', brandProfile: 3, layout: [{ id, blockType: 'hero', heading: 'Hola' }] }
+    const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
+    const payload = { findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : brand, find: async () => ({ docs: [] }), create }
+    await expect(createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })).rejects.toThrow(/identificador/i)
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('rejects duplicate block identities across block families before persisting', async () => {
+    const page = { id: 7, updatedAt: 'now', brandProfile: 3, layout: [
+      { id: 'same', blockType: 'hero', heading: 'Uno' }, { id: 'same', blockType: 'customFeature', featureKey: 'contact-panel' },
+    ] }
+    const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
+    const payload = { findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : brand, find: async () => ({ docs: [] }), create }
+    await expect(createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })).rejects.toThrow(/identificador/i)
+    expect(create).not.toHaveBeenCalled()
+  })
+
   it('loads the current draft, brand and media server-side and projects only known fields', async () => {
     const page = { id: 7, title: 'Inicio', slug: 'inicio', updatedAt: '2026-09-04T12:00:00Z', brandProfile: 3, apiToken: 'page-secret', layout: [{ blockType: 'hero', eyebrow: 'Hola', heading: 'Portfolio', body: lexical, image: 9, customCSS: 'no' }, { blockType: 'richText', content: lexical }, { blockType: 'media', asset: 9, placement: 14, caption: 'Encuadre controlado' }] }
     const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))

@@ -22,7 +22,8 @@ import { createOwnerPublicationBundle } from '../src/publication/service'
 import { createOwnerPublicationReview } from '../src/publication/review-service'
 import { createOwnerPublicationArtifact } from '../src/publication/artifact-service'
 import { createOwnerPublicationPreflight } from '../src/publication/preflight-service'
-import { createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from '../src/assist/service'
+import { createOwnerAssistanceContext, createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from '../src/assist/service'
+import type { PreviewManifest } from '../src/preview/manifest'
 import { loadOwnerAssistanceReview } from '../src/assist/review'
 import { createOwnerFigmaImportPlan } from '../src/connectors/figma/import-service'
 import { createOwnerFigmaImportReview } from '../src/connectors/figma/import-review-service'
@@ -106,6 +107,30 @@ it('registers a real immutable release from a matched snapshot pair', async () =
   expect(release.name).toBe('Integration release')
   await expect(payload.update({ collection: 'releases', id: release.id as number, overrideAccess: false, user: owner, data: { name: 'Rewritten' } })).rejects.toThrow()
   await expect(payload.find({ collection: 'releases', overrideAccess: false })).rejects.toThrow()
+}, 30_000)
+
+it('preserves real Payload block identities through capture, assistant context and reorder review', async () => {
+  const { page, req } = await createReleaseFixture()
+  const saved = await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { layout: [{ blockType: 'hero', heading: 'Igual' }, { blockType: 'hero', heading: 'Igual' }] },
+  })
+  const ids = saved.layout.map((block) => block.id)
+  expect(ids).toHaveLength(2)
+  expect(ids.every((id) => typeof id === 'string' && id.length > 0)).toBe(true)
+  expect(ids[0]).not.toBe(ids[1])
+  const snapshot = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  await payload.updateGlobal({ slug: 'assistant-settings', user: owner, overrideAccess: false, data: { suggestLayout: true } })
+  const context = await createOwnerAssistanceContext({ payload: payload as never, req, sourceSnapshot: snapshot.id })
+  const before = [{ id: ids[0], blockType: 'hero', heading: 'Igual' }, { id: ids[1], blockType: 'hero', heading: 'Igual' }]
+  expect(context.context.page.layout).toEqual(before)
+  const proposal = await createOwnerAssistanceProposal({ payload: payload as never, req, sourceSnapshot: snapshot.id, provider: 'manual', patch: {
+    schemaVersion: 1, capability: 'suggestLayout', operations: [{ op: 'replace', path: '/page/layout', value: [before[1], before[0]] }],
+  } })
+  const review = await loadOwnerAssistanceReview({ payload: payload as never, req, proposalId: proposal.id as number })
+  expect(review.changes[0].proposed.text).toBe(`1. hero [${ids[1]}] — Igual\n2. hero [${ids[0]}] — Igual`)
+  const reread = await payload.findByID({ collection: 'preview-snapshots', id: snapshot.id, user: owner, overrideAccess: false })
+  expect((reread.manifest as PreviewManifest).pageBlocks).toEqual(before)
+  expect((await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).layout.map((block) => block.id)).toEqual(ids)
 }, 30_000)
 
 it.each(['accepted', 'rejected'] as const)('persists an assistance proposal and its %s decision without editing the page', async (decision) => {

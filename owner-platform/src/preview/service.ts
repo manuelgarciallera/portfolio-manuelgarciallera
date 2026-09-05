@@ -82,10 +82,20 @@ export const projectLexical = (value: unknown, mediaIds: Array<number | string>)
 const projectLayout = (layout: unknown): { blocks: unknown[]; mediaIds: Array<number | string> } => {
   if (!Array.isArray(layout)) throw new APIError('La página no contiene un layout válido.', 400)
   const mediaIds: Array<number | string> = []
+  const blockIds = new Set<string>()
   const blocks = layout.map((raw) => {
     const block = record(raw)
     const blockType = text(block.blockType)
-    const base = { blockType }
+    const id = block.id
+    if (Object.hasOwn(block, 'id')) {
+      if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(id) || blockIds.has(id)) {
+        throw new APIError('El identificador de bloque no es válido o está duplicado.', 400)
+      }
+      blockIds.add(id)
+    }
+    // Keep persisted identity; positional/generated IDs would become ambiguous
+    // when an owner or an assistant reorders otherwise identical blocks.
+    const base = defined({ blockType, id })
     if (blockType === 'hero') {
       const image = relationId(block.image)
       if (image !== undefined) mediaIds.push(image)
