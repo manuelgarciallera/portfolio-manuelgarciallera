@@ -26,6 +26,8 @@ describe('release registration request', () => {
     expect(() => parseReleaseRequest({ ...requestValid, confirmation: 'publicar' })).toThrow(/confirmación/i)
     expect(() => parseReleaseRequest({ ...requestValid, restore: true })).toThrow(/campo|permitido/i)
     expect(() => parseReleaseRequest({ ...requestValid, createdBy: 99 })).toThrow(/campo|permitido/i)
+    expect(() => parseReleaseRequest({ ...requestValid, createdAt: '2020-01-01T00:00:00.000Z' })).toThrow(/campo|permitido/i)
+    expect(() => parseReleaseRequest({ ...requestValid, updatedAt: '2020-01-01T00:00:00.000Z' })).toThrow(/campo|permitido/i)
   })
 
   it('authenticates before parsing and bounds request bodies', async () => {

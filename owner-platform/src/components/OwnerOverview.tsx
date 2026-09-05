@@ -17,28 +17,39 @@ export const OwnerOverview = () => {
   const [view, setView] = useState<View | null>(null)
   const [error, setError] = useState(false)
   const [snapshotRevision, setSnapshotRevision] = useState(0)
+  const [overviewRevision, setOverviewRevision] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
     const load = async () => {
       try {
         const response = await fetch('/api/owner/dashboard', { credentials: 'same-origin', signal: controller.signal })
+        if (controller.signal.aborted) return
+        if (response.status === 401 || response.status === 403) {
+          setView(null)
+          setError(true)
+          return
+        }
         const data = await response.json() as { overview?: unknown }
+        if (controller.signal.aborted) return
         if (!response.ok || !data.overview) throw new Error('Dashboard unavailable')
         setView(presentOwnerDashboard(data.overview))
-      } catch (reason) {
-        if (!(reason instanceof DOMException && reason.name === 'AbortError')) setError(true)
+        setError(false)
+      } catch {
+        if (!controller.signal.aborted) setError(true)
       }
     }
     void load()
     return () => controller.abort()
-  }, [])
+  }, [overviewRevision])
 
-  if (error) return <p className={styles.notice} role="status">El resumen no está disponible. Las colecciones siguen accesibles debajo.</p>
+  const retrySummary = () => setOverviewRevision((value) => value + 1)
+  if (error && !view) return <p className={styles.notice} role="status">El resumen no está disponible. Las colecciones siguen accesibles debajo. <button type="button" onClick={retrySummary}>Reintentar resumen</button></p>
   if (!view) return <p className={styles.notice} role="status">Preparando resumen…</p>
 
   return (
     <section className={styles.overview} aria-labelledby="owner-overview-title">
+      {error && <p role="status">No se pudo actualizar el resumen. Los datos mostrados son anteriores; los formularios conservan su estado. <button type="button" onClick={retrySummary}>Reintentar resumen</button></p>}
       <div className={styles.heading}>
         <h2 id="owner-overview-title">Estado editorial</h2>
         <span>{view.runtimeLabel}</span>
@@ -49,7 +60,7 @@ export const OwnerOverview = () => {
       <PublicationPreparation />
       <SnapshotCapture onCaptured={() => setSnapshotRevision((value) => value + 1)} />
       <AssistancePreparation />
-      <ReleaseRegistration refreshKey={snapshotRevision} />
+      <ReleaseRegistration refreshKey={snapshotRevision} onRegistered={() => setOverviewRevision((value) => value + 1)} />
       <ul className={styles.metrics}>
         {view.cards.map((card) => (
           <li key={card.label} data-tone={card.tone}>

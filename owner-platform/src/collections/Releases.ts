@@ -14,6 +14,10 @@ import {
 } from '../releases/quality'
 
 const RELEASE_FIELDS = new Set([
+  // Payload populates timestamp fields before this collection hook. The owner
+  // HTTP request allowlist still rejects client-authored timestamps.
+  'createdAt',
+  'updatedAt',
   'changeSummary',
   'createdBy',
   'draftSnapshot',

@@ -452,6 +452,12 @@ failure is fail-closed: no unaudited context is delivered.
 
 ## Verified release registration
 
+The dashboard refreshes its history after a successful registration without
+resetting the form. Transient refresh failures retain the previous summary with
+an explicit warning and retry; authorization failures clear the private summary.
+See `release-registration-verification.md` for real database/browser evidence
+and the Payload timestamp compatibility correction.
+
 Register a version only after creating its immutable preview snapshot and
 collecting its bounded quality evidence:
 

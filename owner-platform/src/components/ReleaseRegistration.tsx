@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { listReleaseEvidence, registerOwnerRelease, type ReleaseEvidence } from '@/releases/client'
 import styles from './ReleaseRegistration.module.css'
 
-export const ReleaseRegistration = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+export const ReleaseRegistration = ({ refreshKey = 0, onRegistered }: { refreshKey?: number; onRegistered?: () => void }) => {
   const [evidence, setEvidence] = useState<ReleaseEvidence[]>([])
   const [loading, setLoading] = useState(true)
   const [pending, setPending] = useState(false)
@@ -48,6 +48,7 @@ export const ReleaseRegistration = ({ refreshKey = 0 }: { refreshKey?: number })
       })
       setReleaseHref(result.href)
       setMessage('Versión registrada y auditada. La web pública sigue sin cambios.')
+      onRegistered?.()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'No se pudo registrar la versión.')
     } finally { setPending(false) }

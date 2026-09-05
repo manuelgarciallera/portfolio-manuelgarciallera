@@ -6,6 +6,9 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
 
 import applicationConfig from '../src/payload.config'
 import { loadContentVisualPreview, loadPageVisualPreview } from '../src/preview/visual-service'
+import { createPagePreviewSnapshot } from '../src/preview/service'
+import { createPageDraftSnapshot } from '../src/recovery/service'
+import { createOwnerRelease } from '../src/releases/service'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
@@ -33,6 +36,33 @@ beforeAll(async () => {
 }, 60_000)
 
 afterAll(async () => { await payload?.destroy() })
+
+it('registers a real immutable release from a matched snapshot pair', async () => {
+  const brand = await payload.create({ collection: 'brand-profiles', overrideAccess: false, user: owner, data: {
+    name: 'Release brand', slug: 'release-brand', _status: 'published',
+    colors: [
+      { role: 'background', value: '#000000' }, { role: 'surface', value: '#111111' },
+      { role: 'text', value: '#FFFFFF' }, { role: 'mutedText', value: '#AAAAAA' },
+      { role: 'accent', value: '#FF4B44' }, { role: 'interaction', value: '#00D4E6' },
+      { role: 'success', value: '#21A366' }, { role: 'danger', value: '#FF4B44' },
+    ],
+    usageWeights: [{ role: 'background', weight: 70 }, { role: 'surface', weight: 20 }, { role: 'text', weight: 8 }, { role: 'accent', weight: 2 }],
+    motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
+  } })
+  const page = await payload.create({ collection: 'pages', draft: true, overrideAccess: false, user: owner, data: {
+    title: 'Release page', slug: 'release-page', brandProfile: brand.id, layout: [{ blockType: 'hero', heading: 'Snapshot source' }],
+  } })
+  const req = await createLocalReq({ user: owner }, payload)
+  const preview = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  const draft = await createPageDraftSnapshot({ payload: payload as never, req, pageId: page.id })
+  const release = await createOwnerRelease({ payload: payload as never, req, input: {
+    name: 'Integration release', changeSummary: 'Synthetic evidence', gitCommit: 'a'.repeat(40), previewSnapshot: preview.id, draftSnapshot: draft.id,
+    quality: [{ viewport: 'desktop', performance: 80, usability: 80, accessibility: 80, source: 'manual', measuredAt: '2026-09-05T08:00:00.000Z' }],
+  } }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(release.name).toBe('Integration release')
+  await expect(payload.update({ collection: 'releases', id: release.id as number, overrideAccess: false, user: owner, data: { name: 'Rewritten' } })).rejects.toThrow()
+  await expect(payload.find({ collection: 'releases', overrideAccess: false })).rejects.toThrow()
+}, 30_000)
 
 it.each(['articles', 'projects'] as const)('saves %s composed only of blocks without requiring hidden legacy text', async (collection) => {
   let heroImage: number | undefined
