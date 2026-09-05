@@ -29,15 +29,32 @@ const immutableError = () => new APIError('El plan de restauración es inmutable
 
 export const prepareRestorePlan: CollectionBeforeChangeHook = async ({ data, operation, originalDoc, req }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
+  // Payload adds timestamps before collection hooks. Validate the restoration
+  // command separately; direct API writes remain denied by collection access.
+  const { createdAt, updatedAt, ...command } = data
+  const metadata = {
+    ...(createdAt !== undefined ? { createdAt } : {}),
+    ...(updatedAt !== undefined ? { updatedAt } : {}),
+  }
+  // Field traversal materializes absent optional fields as undefined, including
+  // fields for other transitions. Null and all supplied values remain validated.
+  data = Object.fromEntries(Object.entries(command).filter(([, value]) => value !== undefined))
   if (operation === 'create') {
     try {
-      return createRestorePlanData(data, req.user)
+      return { ...createRestorePlanData(data, req.user), ...metadata }
     } catch {
       throw new APIError('El plan de restauración no es válido.', 400)
     }
   }
   if (operation !== 'update') {
     throw immutableError()
+  }
+  const completeData = { ...data, ...metadata }
+  // beforeValidate merges stored fields into a partial update. Only unchanged
+  // stored values may be omitted from the transition command; modifications to
+  // its immutable references still fail, including explicit null replacements.
+  for (const [key, value] of Object.entries(data)) {
+    if (Object.hasOwn(originalDoc ?? {}, key) && Object.is(value, originalDoc[key])) delete data[key]
   }
   if (originalDoc?.status === 'confirmed') {
     if (Object.keys(data).some((key) => !executionFields.has(key)) || data.status !== 'executed') throw immutableError()
@@ -51,7 +68,7 @@ export const prepareRestorePlan: CollectionBeforeChangeHook = async ({ data, ope
       Number.isNaN(Date.parse(data.executedAt)) ||
       new Date(data.executedAt).toISOString() !== data.executedAt
     ) throw new APIError('El resultado de ejecución no es válido.', 400)
-    return data
+    return completeData
   }
   if (Object.keys(data).some((key) => !decisionFields.has(key))) throw immutableError()
   if (originalDoc?.status !== 'ready') throw new APIError('El plan ya no está preparado para confirmación.', 409)
@@ -76,7 +93,7 @@ export const prepareRestorePlan: CollectionBeforeChangeHook = async ({ data, ope
   ) {
     throw new APIError('El estado de conflicto no es válido.', 400)
   }
-  return data
+  return completeData
 }
 
 export const enforceRestorePlanDelete: CollectionBeforeDeleteHook = async () => {

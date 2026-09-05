@@ -569,6 +569,11 @@ executed record is informational. Raw server error bodies are never rendered.
 
 ### Transactional draft execution
 
+Local SQLite now explicitly enables transactions. The real database restoration,
+rollback and stale-edit tests are documented in
+`restore-integration-verification.md`; the integration runner uses and cleans a
+separate temporary database. This does not replace PostgreSQL staging verification.
+
 Only a `confirmed` plan can be executed, using a third exact phrase:
 
 ```http

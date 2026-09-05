@@ -45,10 +45,14 @@ const runtime = resolveRuntimeConfig({
   payloadSecret: process.env.PAYLOAD_SECRET,
 })
 
+// SQLite disables transactions unless explicitly configured. Recovery relies on
+// real rollback, so local development must exercise the same atomic contract.
+export const createLocalDatabaseAdapter = (url: string) => sqliteAdapter({ client: { url }, transactionOptions: {} })
+
 const db =
   runtime.database.kind === 'postgres'
     ? postgresAdapter({ pool: { connectionString: runtime.database.url } })
-    : sqliteAdapter({ client: { url: runtime.database.url } })
+    : createLocalDatabaseAdapter(runtime.database.url)
 
 const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>
   collections.map((collection) => ({ ...collection, admin: { ...collection.admin, group } }))

@@ -27,6 +27,7 @@ describe('restore plan service', () => {
       create,
       findByID: vi.fn(async ({ collection, id }) => {
         if (collection === 'releases') return { draftSnapshot: 11, id: 44, previewSnapshot: 10 }
+        if (collection === 'pages') return { id: 7 }
         if (collection === 'draft-snapshots') return { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
         if (id === 10) return { id: 10, manifest: targetManifest, manifestHash: targetManifest.hash }
         return { id: 12, manifest: baselineManifest, manifestHash: baselineManifest.hash }
@@ -47,7 +48,7 @@ describe('restore plan service', () => {
         targetHash: targetManifest.hash,
         targetCapsuleHash: targetCapsule.hash,
         targetDraftSnapshot: 11,
-        targetPage: '7',
+        targetPage: 7,
         targetSnapshot: 10,
       }),
       overrideAccess: true,

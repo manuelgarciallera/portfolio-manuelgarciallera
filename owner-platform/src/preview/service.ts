@@ -134,6 +134,13 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
     pageBlocks: projected.blocks,
     mediaReferences,
   })
+  // Rechecking an unchanged revision must reuse its immutable capture. The hash
+  // covers the freshly loaded page, brand and media, not just the page timestamp.
+  const existing = await payload.find({
+    collection: 'preview-snapshots', where: { manifestHash: { equals: manifest.hash } },
+    depth: 0, limit: 1, pagination: false, overrideAccess: false, req,
+  })
+  if (existing.docs[0]) return existing.docs[0]
   const snapshot = await payload.create({
     collection: 'preview-snapshots',
     overrideAccess: true,

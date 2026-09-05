@@ -95,6 +95,11 @@ export const createOwnerRestorePlan = async ({
   ) {
     throw new APIError('Los snapshots objetivo no pertenecen a la misma revisión.', 409)
   }
+  // Manifests serialize IDs as strings, while SQL relationships require the
+  // database's actual ID type. Resolve it through the owner-authorized read.
+  const page = await payload.findByID({ collection: 'pages', depth: 0, draft: true, id: target.manifest.source.documentId, overrideAccess: false, req })
+  const targetPage = relationId(page, 'La página objetivo')
+  if (String(targetPage) !== target.manifest.source.documentId) throw new APIError('La página objetivo no coincide con la versión.', 409)
   const plan = await payload.create({
     collection: 'restore-plans',
     data: {
@@ -105,7 +110,7 @@ export const createOwnerRestorePlan = async ({
       targetHash: target.manifestHash,
       targetCapsuleHash: targetDraft.capsuleHash,
       targetDraftSnapshot: targetDraft.id,
-      targetPage: target.manifest.source.documentId,
+      targetPage,
       targetSnapshot: target.id,
     },
     overrideAccess: true,

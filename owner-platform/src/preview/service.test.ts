@@ -27,7 +27,7 @@ describe('page preview snapshot service', () => {
     const page = { id: 7, title: 'Inicio', slug: 'inicio', updatedAt: '2026-09-04T12:00:00Z', brandProfile: 3, apiToken: 'page-secret', layout: [{ blockType: 'hero', eyebrow: 'Hola', heading: 'Portfolio', body: lexical, image: 9, customCSS: 'no' }, { blockType: 'richText', content: lexical }, { blockType: 'media', asset: 9, placement: 14, caption: 'Encuadre controlado' }] }
     const create = vi.fn(async ({ data }) => ({ id: 22, ...data }))
     const findByID = vi.fn(async ({ collection, id }) => collection === 'pages' ? page : collection === 'brand-profiles' ? brand : { id, alt: 'Portada', filename: 'cover.webp', mimeType: 'image/webp', width: 1200, height: 800, apiToken: 'media-secret' })
-    const result = await createPagePreviewSnapshot({ payload: { findByID, create } as never, req: { user: owner } as never, pageId: 7 })
+    const result = await createPagePreviewSnapshot({ payload: { find: async () => ({ docs: [] }), findByID, create } as never, req: { user: owner } as never, pageId: 7 })
 
     expect(findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'pages', id: 7, draft: true, depth: 0, overrideAccess: false }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', overrideAccess: true, req: expect.anything() }))
@@ -80,6 +80,6 @@ describe('page preview snapshot service', () => {
     const page = { id: 8, title: 'Minimal', slug: 'minimal', updatedAt: 'now', brandProfile: 3, layout: [{ blockType: 'customFeature', featureKey: 'contact-panel' }] }
     const create = vi.fn(async ({ data }) => ({ id: 23, ...data }))
     const findByID = vi.fn(async ({ collection }) => collection === 'pages' ? page : brand)
-    await expect(createPagePreviewSnapshot({ payload: { findByID, create } as never, req: { user: owner } as never, pageId: 8 })).resolves.toMatchObject({ id: 23 })
+    await expect(createPagePreviewSnapshot({ payload: { find: async () => ({ docs: [] }), findByID, create } as never, req: { user: owner } as never, pageId: 8 })).resolves.toMatchObject({ id: 23 })
   })
 })

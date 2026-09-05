@@ -44,9 +44,9 @@ describe('prepare owner restore plan', () => {
       throw new Error(`Unexpected ${collection}`)
     })
 
-    await expect(prepareOwnerRestorePlan({ payload: { create, findByID } as never, releaseId: 44, req: { user: owner } as never })).resolves.toMatchObject({ id: 50, status: 'ready' })
+    await expect(prepareOwnerRestorePlan({ payload: { create, findByID, find: async () => ({ docs: [] }) } as never, releaseId: 44, req: { user: owner } as never })).resolves.toMatchObject({ id: 50, status: 'ready' })
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots' }))
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'restore-plans', data: expect.objectContaining({ baselineSnapshot: 12, release: 44, targetPage: '7' }) }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'restore-plans', data: expect.objectContaining({ baselineSnapshot: 12, release: 44, targetPage: 7 }) }))
   })
 
   it('rejects unauthenticated preparation before reading a release', async () => {

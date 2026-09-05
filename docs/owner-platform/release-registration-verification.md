@@ -24,12 +24,16 @@ private summary. Aborted requests cannot replace a newer result.
 ## Real database regression
 
 `tests/editorial.integration.test.ts` creates an authenticated owner, brand,
-draft page, visual snapshot and restorable snapshot in in-memory SQLite. It
+draft page, visual snapshot and restorable snapshot in isolated SQLite. It
 then calls the actual release registration service. Before the fix this failed
 with `Campo no permitido en la versión: updatedAt`. After the fix it creates
 the release successfully and continues to reject anonymous reads and owner
 attempts to rewrite the immutable record. HTTP parser tests separately retain
 the rejection of client-authored timestamps.
+
+The initial registration verification used in-memory SQLite. The subsequent
+restore integration now uses a temporary file with transactions enabled; see
+`restore-integration-verification.md` for its isolated lifecycle.
 
 ## Browser regression
 
