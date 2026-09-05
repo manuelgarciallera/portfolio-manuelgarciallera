@@ -14,7 +14,8 @@ type IntegrationsPresentation = {
   connectors: { label: string; status: string; tone: 'disabled' | 'ready' }[]
   safety: string
 }
-type DashboardPresentation = { actions: { href: string; label: string }[]; activity: ActivityItem[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; integrations: IntegrationsPresentation; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
+type WorkflowPresentation = { attentionCount: number; items: { href: string; label: string; tone: 'attention' | 'clear'; value: number }[] }
+type DashboardPresentation = { actions: { href: string; label: string }[]; activity: ActivityItem[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; integrations: IntegrationsPresentation; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[]; workflow: WorkflowPresentation }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -196,6 +197,31 @@ const activityPresentation = (value: unknown): ActivityItem[] => {
   })
 }
 
+const workflowPresentation = (value: unknown): WorkflowPresentation => {
+  const workflow = value === undefined ? {} : object(value) ?? fail()
+  const proposals = workflow.proposals === undefined ? {} : object(workflow.proposals) ?? fail()
+  const restores = workflow.restores === undefined ? {} : object(workflow.restores) ?? fail()
+  const publication = workflow.publication === undefined ? {} : object(workflow.publication) ?? fail()
+  const metric = (source: Record<string, unknown>, key: string) => source[key] === undefined ? 0 : count(source[key])
+  const pendingProposals = metric(proposals, 'pending')
+  const pendingRestores = metric(restores, 'ready') + metric(restores, 'confirmed') + metric(restores, 'conflict')
+  const awaitingReview = metric(publication, 'awaitingReview')
+  const awaitingArtifact = metric(publication, 'approvedAwaitingArtifact')
+  const derivedAttention = pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
+  const attentionCount = workflow.attentionCount === undefined ? derivedAttention : count(workflow.attentionCount)
+  if (attentionCount !== derivedAttention) return fail()
+  const item = (href: string, label: string, value: number) => ({ href, label, tone: value > 0 ? 'attention' as const : 'clear' as const, value })
+  return {
+    attentionCount,
+    items: [
+      item('/admin/collections/assistance-proposals', 'Propuestas pendientes', pendingProposals),
+      item('/admin/collections/restore-plans', 'Restauraciones por revisar', pendingRestores),
+      item('/admin/collections/publication-bundles', 'Paquetes sin revisión', awaitingReview),
+      item('/admin/collections/publication-artifacts', 'Aprobaciones sin artefacto', awaitingArtifact),
+    ],
+  }
+}
+
 export const presentOwnerDashboard = (value: unknown): DashboardPresentation => {
   const overview = object(value) ?? fail()
   const content = object(overview.content) ?? {}
@@ -226,5 +252,6 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
     recent: recentItems(object(overview.recent) ?? {}),
     runtimeLabel: readiness.productionReady === true ? 'Preparado para producción' : 'Local protegido',
     versions: releaseVersions(releases),
+    workflow: workflowPresentation(overview.workflow),
   }
 }
