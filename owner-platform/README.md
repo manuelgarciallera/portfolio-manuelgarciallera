@@ -318,7 +318,9 @@ whose content does not match the recorded digest.
 Each immutable artifact can now run an owner-confirmed publication preflight.
 The resulting hashed report classifies structural blockers and SEO warnings,
 is retained once per artifact, is audited, and feeds the dashboard attention
-queue. It still has no public write, build, publication, or deployment path.
+queue. Its native detail view turns the stored JSON into a bounded, accessible
+issue list without replacing the immutable evidence. It still has no public
+write, build, publication, or deployment path.
 
 ## Local development
 

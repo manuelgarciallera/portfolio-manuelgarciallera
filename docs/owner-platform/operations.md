@@ -725,8 +725,12 @@ than being silently ignored.
 One report is retained per immutable artifact. Repeating the operation returns
 the existing report; it does not create divergent evidence. New reports and
 their blocker/warning counts appear in the dashboard attention queue and audit
-ledger. This preflight performs no filesystem write, public content mutation,
-build, deployment, or publication.
+ledger. The native report view presents status, page, optional block position,
+severity, and controlled diagnostic copy, with a link back to the source
+artifact. Rendering is capped at the first 50 of at most 1,000 validated issues
+so a malformed record cannot overload the owner interface. The original hashed
+JSON remains visible as evidence. This preflight performs no filesystem write,
+public content mutation, build, deployment, or publication.
 
 ## Provider-neutral analytics imports
 
