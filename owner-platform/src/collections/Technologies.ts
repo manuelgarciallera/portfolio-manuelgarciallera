@@ -28,7 +28,12 @@ export const Technologies: CollectionConfig = {
     { name: 'name', type: 'text', required: true, maxLength: 80 },
     slugField,
     { name: 'icon', type: 'upload', relationTo: 'media', required: true },
-    { name: 'brandColor', type: 'text', validate: validateTechnologyColor },
+    {
+      name: 'brandColor',
+      type: 'text',
+      validate: validateTechnologyColor,
+      admin: { components: { Field: './components/HexColorField#HexColorField' } },
+    },
     { name: 'officialUrl', type: 'text', validate: validateOfficialTechnologyUrl },
   ],
 }

@@ -152,6 +152,10 @@ describe('editorial collections', () => {
     expect(validateOfficialTechnologyUrl('https://react.dev/', {} as never)).toBe(true)
     expect(validateOfficialTechnologyUrl('http://react.dev/', {} as never)).toMatch(/https/i)
     expect(validateOfficialTechnologyUrl('javascript:alert(1)', {} as never)).toMatch(/https/i)
+    expect(fieldNamed(Technologies, 'brandColor')).toMatchObject({
+      admin: { components: { Field: './components/HexColorField#HexColorField' } },
+      type: 'text',
+    })
   })
 
   it('adds a migration-safe brand relationship and controlled page overrides', () => {
@@ -169,6 +173,12 @@ describe('editorial collections', () => {
       'usageWeights',
       'motion',
     ])
+    for (const name of ['accent', 'surface']) {
+      expect(overrides.fields.find((field) => 'name' in field && field.name === name)).toMatchObject({
+        admin: { components: { Field: './components/HexColorField#HexColorField' } },
+        type: 'text',
+      })
+    }
     expect(JSON.stringify(overrides)).not.toMatch(/(?:customCSS|javascript|html|codeEditor)/i)
   })
 

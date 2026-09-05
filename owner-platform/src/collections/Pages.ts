@@ -169,8 +169,16 @@ export const Pages: CollectionConfig = {
       type: 'group',
       admin: { description: 'Variaciones controladas; fondo y texto siempre se heredan.' },
       fields: [
-        { name: 'accent', type: 'text' },
-        { name: 'surface', type: 'text' },
+        {
+          name: 'accent',
+          type: 'text',
+          admin: { components: { Field: './components/HexColorField#HexColorField' } },
+        },
+        {
+          name: 'surface',
+          type: 'text',
+          admin: { components: { Field: './components/HexColorField#HexColorField' } },
+        },
         {
           name: 'usageWeights',
           type: 'array',
