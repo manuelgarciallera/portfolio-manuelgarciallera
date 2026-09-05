@@ -150,6 +150,7 @@ export const pageBlocks: Block[] = [
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/PagePreviewLink#PagePreviewLink'] } },
     defaultColumns: ['title', '_status', 'updatedAt'],
     useAsTitle: 'title',
   },

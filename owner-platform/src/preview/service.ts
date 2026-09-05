@@ -37,7 +37,7 @@ const safeURL = (value: unknown): string => {
   } catch { /* handled below */ }
   throw new APIError('URL editorial no permitida.', 400)
 }
-const projectLexical = (value: unknown, mediaIds: Array<number | string>): unknown => {
+export const projectLexical = (value: unknown, mediaIds: Array<number | string>): unknown => {
   if (Array.isArray(value)) return value.map((entry) => projectLexical(entry, mediaIds))
   if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) return value
   const source = record(value)

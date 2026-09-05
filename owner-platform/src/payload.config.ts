@@ -57,6 +57,7 @@ export default buildConfig({
   admin: {
     components: {
       views: {
+        pagePreview: { Component: './components/PagePreviewView#PagePreviewView', path: '/page-preview/:id', exact: true },
         createFirstUser: { Component: './components/FirstOwnerSetup#FirstOwnerSetup', path: '/create-first-user', exact: true },
       },
       beforeDashboard: [

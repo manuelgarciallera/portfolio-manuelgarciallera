@@ -22,6 +22,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from '../../../components/HexColorField'
+import { PagePreviewLink as PagePreviewLink_96882ea548bfd122bac0b086879b6b2c } from '../../../components/PagePreviewLink'
 import { MediaPlacementEditor as MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf } from '../../../components/MediaPlacementEditor'
 import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf } from '../../../components/BrandPalettePreview'
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
@@ -38,6 +39,7 @@ import { OwnerSearch as OwnerSearch_7da0697cce316540a9fd4f700f16f565 } from '../
 import { OwnerOverview as OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0 } from '../../../components/OwnerOverview'
 import { AnalyticsImporter as AnalyticsImporter_dd572f3242a10829ee97001466e657e0 } from '../../../components/AnalyticsImporter'
 import { FigmaExplorer as FigmaExplorer_63178c84466ff51b9c0c9a1bedcf3ae6 } from '../../../components/FigmaExplorer'
+import { PagePreviewView as PagePreviewView_b68769b9698ad497adc0db363d714c93 } from '../../../components/PagePreviewView'
 import { FirstOwnerSetup as FirstOwnerSetup_9c02219eb134058961eaa8d6db9a7a26 } from '../../../components/FirstOwnerSetup'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -67,6 +69,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "./components/HexColorField#HexColorField": HexColorField_cdf0d4826f4989b67240662e47afca94,
+  "./components/PagePreviewLink#PagePreviewLink": PagePreviewLink_96882ea548bfd122bac0b086879b6b2c,
   "./components/MediaPlacementEditor#MediaPlacementEditor": MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf,
   "./components/BrandPalettePreview#BrandPalettePreview": BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf,
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,
@@ -83,6 +86,7 @@ export const importMap = {
   "./components/OwnerOverview#OwnerOverview": OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0,
   "./components/AnalyticsImporter#AnalyticsImporter": AnalyticsImporter_dd572f3242a10829ee97001466e657e0,
   "./components/FigmaExplorer#FigmaExplorer": FigmaExplorer_63178c84466ff51b9c0c9a1bedcf3ae6,
+  "./components/PagePreviewView#PagePreviewView": PagePreviewView_b68769b9698ad497adc0db363d714c93,
   "./components/FirstOwnerSetup#FirstOwnerSetup": FirstOwnerSetup_9c02219eb134058961eaa8d6db9a7a26,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

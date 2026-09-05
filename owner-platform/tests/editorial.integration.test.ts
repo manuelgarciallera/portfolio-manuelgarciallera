@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { getPayload, type Payload } from 'payload'
+import { createLocalReq, getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 
 import applicationConfig from '../src/payload.config'
+import { loadPageVisualPreview } from '../src/preview/visual-service'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
@@ -54,6 +55,9 @@ it('saves, reorders and restores modular drafts with a real authenticated owner'
   expect(restored.title).toBe('Original draft')
   expect(restored.layout?.map((block) => block.blockType === 'hero' ? block.heading : '')).toEqual(['First', 'Second'])
   expect(restored._status).toBe('draft')
+  const visual = await loadPageVisualPreview({ payload, req: await createLocalReq({ user: owner }, payload), pageId: String(page.id) })
+  expect(visual.blocks.map((block) => block.heading)).toEqual(['First', 'Second'])
+  expect(visual.status).toBe('draft')
 }, 30_000)
 
 it('keeps unpublished article edits and version history out of anonymous reads', async () => {
