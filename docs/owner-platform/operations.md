@@ -678,6 +678,23 @@ repository, update public content, trigger builds, or contact a deployment
 provider. It provides a stable input contract for a future separately tested
 export adapter.
 
+Open the immutable Publication Artifact record and choose **Descargar paquete
+JSON**, or request:
+
+```http
+GET /api/owner/publication-artifacts/100/export
+```
+
+The owner-only endpoint re-verifies the artifact hash, its persisted
+relationships and counts, the associated bundle hash, and every capsule hash.
+It then projects only ordered page state plus draft/preview provenance into a
+canonical, immutable export capped at 5 MiB. The attachment is returned with
+`private, no-store`, `nosniff`, and an `X-Content-SHA256` header; successful
+downloads are appended to the audit ledger before any bytes are returned.
+The route does not write the package to disk, mutate CMS content, cross the
+public application boundary, publish, build, or deploy. It is reviewable input
+for a future benchmark-gated bridge, not that bridge itself.
+
 ## Provider-neutral analytics imports
 
 Import an aggregate export without connecting a provider account:

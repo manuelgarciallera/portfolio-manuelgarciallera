@@ -306,6 +306,11 @@ An approved Publication Review exposes a guarded `GENERAR ARTEFACTO` control
 in its native record and links to the resulting immutable artifact. Rejected
 reviews show no generation action. A successful generation disables the
 control locally and still performs no export, publication, or deployment.
+The immutable artifact record now offers an owner-only JSON download. The
+server re-verifies the artifact, bundle, every draft capsule, and all page
+counts before returning a canonical package with its SHA-256 hash. The response
+is a private, no-store attachment and the access is audited. It writes no file,
+changes no CMS record, and cannot publish or deploy the portfolio.
 
 ## Local development
 
