@@ -57,7 +57,14 @@ Each plan record exposes a guarded owner review. Approval requires
 `APROBAR IMPORTACIÓN FIGMA`; rejection requires
 `RECHAZAR IMPORTACIÓN FIGMA`. The decision is stored separately as one
 immutable, hash-verified Figma Import Review and audited. Approval is still
-evidence only and grants no download or media-write authority.
+evidence only; it grants no implicit download or media-write authority. An
+approved review exposes a separate guarded import requiring
+`IMPORTAR PNG DE FIGMA` and accessible alternative text. The server rediscovers
+the exact node, rejects changed file/node metadata, downloads only `image/png`
+from an allowlisted Figma render host without redirects or credentials, and
+caps the stream at 20 MiB. Media, immutable execution evidence, and its audit
+event are written atomically. The resulting Media record is a draft and no
+page, public content, publication, or deployment is changed.
 
 AI and Linocube are disabled contracts only: they have no credentials, SDKs,
 network implementation, autonomous writes, or public publishing path. See the
@@ -158,9 +165,10 @@ forms or bypass collection access, validation, drafts, or upload limits.
 
 The same overview includes the workflow attention summary exposed independently
 at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
-states, Figma import plans without a review, publication bundles awaiting review, and
+states, Figma import plans without a review, approved Figma reviews without an
+import, publication bundles awaiting review, and
 approvals awaiting an artifact. It uses owner-scoped database counts and
-returns no document bodies. The dashboard converts those counts into five collection shortcuts and verifies
+returns no document bodies. The dashboard converts those counts into six collection shortcuts and verifies
 that the advertised attention total equals the underlying pending states. The
 shortcuts navigate only; they never decide or execute a workflow operation.
 

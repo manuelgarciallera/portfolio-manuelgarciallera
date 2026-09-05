@@ -305,8 +305,24 @@ Open a Figma Import Plan to register exactly one owner decision through
 `RECHAZAR IMPORTACIÓN FIGMA`. The service rejects repeated decisions,
 re-verifies the plan and stored hash, and creates a separate immutable Figma
 Import Review with its own canonical hash and audit event. An approval is only
-review evidence: no render is downloaded and no Media record, placement,
-public content, publication, or deployment is created.
+review evidence: it does not itself download a render or create Media.
+
+An approved review exposes a separate guarded operation at
+`POST /api/owner/figma/import-reviews/:id/execute`. It requires the exact
+`IMPORTAR PNG DE FIGMA` phrase and 1–500 characters of alternative text. Before
+writing, the server verifies the review and plan hashes, rediscovers the exact
+node through Figma, and compares the approved file name, last-modified value,
+node identity, name, type, dimensions, and source URL. Any drift requires a new
+plan and review. The fresh render must use HTTPS on an allowlisted Figma CDN/S3
+host, return `image/png` without a redirect, and remain within a 20 MiB streamed
+limit; no Figma token or browser credential is sent to the signed render URL.
+
+The original bytes are stored as a Payload Media **draft** with owner-authored
+alternative text. A separate immutable Figma Import Execution binds the plan,
+review, Media record, byte hash, size, MIME type, actor, and timestamp. Media,
+execution evidence, and audit event share one database transaction and roll
+back together on failure. This operation does not create a placement, attach
+the image to a page, publish content, write the public repository, or deploy.
 
 ## Immutable local preview snapshots
 
@@ -779,18 +795,20 @@ render actor identity, email, metadata, document bodies, or credentials.
 `GET /api/owner/workflow/summary` supplies the dashboard attention queue using
 owner-scoped database counts only. It reports pending, accepted, and rejected
 assistance proposals; ready, confirmed, conflicting, and executed restore
-plans; Figma import plans and reviews; and the publication chain from bundles
-through reviews to artifacts.
+plans; Figma import plans, reviews, and executions; and the publication chain
+from bundles through reviews to artifacts.
 The server derives bundles awaiting review and approved reviews awaiting an
 artifact, then rejects impossible totals instead of emitting misleading
 negative values. Conflicts and every state awaiting an owner decision are
-included in `attentionCount`. Reviewed Figma plans leave the queue because the
-server derives the difference between immutable plans and reviews and rejects
-impossible review totals. No workflow document body is returned and no
+included in `attentionCount`. Reviewed Figma plans leave the review queue;
+approved reviews remain as a separate import queue until immutable execution
+evidence exists. The server rejects review or execution totals that exceed
+their preceding approved states. No workflow document body is returned and no
 decision, restore, publication, or deployment is executed.
 
-The generated dashboard turns the attention model into five navigable queue
-items: Figma import plans, pending proposals, restore plans requiring review,
+The generated dashboard turns the attention model into six navigable queue
+items: Figma import plans, approved Figma reviews awaiting import, pending
+proposals, restore plans requiring review,
 bundles awaiting a review, and approved reviews awaiting an artifact. A zero state remains
 visible as clear; non-zero items are marked for attention. The presentation
 recomputes the total and rejects inconsistent data, while every link merely
