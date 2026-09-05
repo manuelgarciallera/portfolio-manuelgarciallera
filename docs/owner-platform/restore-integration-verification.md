@@ -65,9 +65,53 @@ schema across them. Native transaction handles can remain open until worker
 exit on Windows, so cleanup runs in the parent process, not in `afterAll`.
 Uploads still disable local storage. QA owners and release metrics are synthetic.
 
-This is service/database integration evidence, not a new claim that the entire
-restore interaction has been verified in a browser or on production PostgreSQL.
+This suite provides service/database evidence. The subsequent browser round
+below covers the interaction separately; neither certifies production PostgreSQL.
 Existing public and security release gates continue to apply.
+
+## Browser restore controls
+
+The first real browser restoration exposed a separate UI failure: Payload mounts
+`beforeDocumentControls` inside its document form, while `RestorePlanControls`
+rendered another form. React reported invalid nested forms and hydration failure;
+confirming navigated with a query string instead of calling the confirm endpoint.
+
+The controls now use a labelled group, an explicitly non-submit button and
+controlled confirmation text. Enter invokes the intended action without
+submitting the enclosing document form; IME composition is not intercepted.
+The two confirmation phrases remain distinct, and successful confirmation clears
+the text before execution. Styling is unchanged apart from the form selector.
+
+Run `node tests/dashboard-refresh.browser.mjs` in `owner-platform` against the
+isolated loopback QA server on port 3011 with synthetic `OWNER_QA_EMAIL` ending in
+`@example.invalid`, `OWNER_QA_PASSWORD`, and `OWNER_QA_RESTORE=1`. Set
+`OWNER_QA_VIEWPORT=mobile` for 390 × 844, otherwise the default desktop viewport
+is 1280 × 720. Do not combine this mode with the simulated dashboard-error modes.
+The script creates synthetic records in the QA database, not in the owner's DB.
+
+The browser path creates snapshots, registers a synthetic release, prepares the
+plan, confirms with Enter, executes with the button, and reloads. It checks real
+draft/published API responses, the persisted executed state, absence of nested
+forms and browser runtime errors, and that the controls fit the viewport. It also
+checks individual input/button bounds in both phases, clears the confirmation
+phrase between phases, and compares the full page responses before and after
+confirmation to ensure no content or metadata changes before execution. Scores
+and commit IDs in these fixtures are synthetic, not quality certifications.
+
+Follow-up: other action components mounted in `beforeDocumentControls` also
+render forms (assistance, Figma import and publication actions). They need their
+own browser regressions and scoped corrections; this change does not claim to
+have verified or fixed those independent workflows.
+
+Browser-round verification: the complete path passed at 1280 × 720 and
+390 × 844 in Chromium, including the extra unchanged-page and child-bounds
+assertions suggested by independent review. `npm run check` passed (612 unit
+tests, nine real SQLite tests, lint, typecheck and build). Public guards passed
+(11 tests, 20 entry points); a fresh public proof from
+`7f857b211ee5f05e1453dba5bb73df823a55b321` plus these owner-only changes retained
+the public input hash listed below and the same public output, with zero bundle
+regressions across nine routes. No dependencies, public files or deployments were changed.
+The independent review reported no Critical or Important issue.
 
 ## Final checks for this round
 

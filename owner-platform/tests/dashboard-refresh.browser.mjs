@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { chromium } from 'playwright'
+import { verifyRestoreFlow } from './restore-flow.browser.mjs'
 
 const base = 'http://127.0.0.1:3011'
 const { OWNER_QA_EMAIL: email, OWNER_QA_PASSWORD: password } = process.env
 if (!email?.endsWith('@example.invalid') || !password) throw new Error('Use an isolated synthetic QA owner.')
 const browser = await chromium.launch({ headless: true })
 try {
-  const context = await browser.newContext()
+  const context = await browser.newContext(process.env.OWNER_QA_VIEWPORT === 'mobile' ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } : {})
   const request = context.request
   const login = await request.post(`${base}/api/users/login`, { data: { email, password }, timeout: 120_000 })
   assert.equal(login.status(), 200)
@@ -82,6 +83,7 @@ try {
     await overview.getByRole('link').filter({ hasText: name }).waitFor({ timeout: 10_000 })
     assert.equal(await registration.locator('input[name=name]').inputValue(), name, 'Refreshing the summary must not remount active forms')
     console.log('PASS: a genuinely registered QA release appears in the existing dashboard without a reload or lost form values.')
+    if (process.env.OWNER_QA_RESTORE === '1') await verifyRestoreFlow({ page, request, overview, pageId, name, originalTitle: `QA dashboard ${suffix}`, base })
   }
 } finally {
   await browser.close()

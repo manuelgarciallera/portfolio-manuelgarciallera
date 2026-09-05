@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
 
 import { confirmRestorePlan, executeRestorePlan } from '@/restore/client'
@@ -23,29 +23,29 @@ export const RestorePlanControls = () => {
   const [status, setStatus] = useState(initialStatus === 'ready' || initialStatus === 'confirmed' || initialStatus === 'conflict' || initialStatus === 'executed' ? initialStatus : null)
   const [message, setMessage] = useState('')
   const [pending, setPending] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
 
   if (planId === null || status === null) return null
 
-  const confirm = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const confirm = async () => {
+    if (pending) return
     if (pageId === null) return setMessage('La página objetivo no está disponible.')
-    const phrase = new FormData(event.currentTarget).get('confirmation')?.toString() ?? ''
     setPending(true)
     try {
-      const result = await confirmRestorePlan(planId, pageId, phrase)
+      const result = await confirmRestorePlan(planId, pageId, confirmation)
       setStatus(result.status)
+      setConfirmation('')
       setMessage(result.status === 'confirmed' ? 'Plan confirmado. La página sigue sin cambios.' : 'Conflicto detectado. Este plan no puede ejecutarse.')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'No se pudo confirmar la restauración.')
     } finally { setPending(false) }
   }
 
-  const execute = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const phrase = new FormData(event.currentTarget).get('confirmation')?.toString() ?? ''
+  const execute = async () => {
+    if (pending) return
     setPending(true)
     try {
-      await executeRestorePlan(planId, phrase)
+      await executeRestorePlan(planId, confirmation)
       setStatus('executed')
       setMessage('Borrador restaurado. No se ha publicado ni desplegado.')
     } catch (error) {
@@ -61,10 +61,16 @@ export const RestorePlanControls = () => {
     <aside className={styles.panel} data-tone={status === 'confirmed' ? 'warning' : 'neutral'}>
       <strong>{status === 'ready' ? 'Confirmar línea base' : 'Restaurar borrador'}</strong>
       <p>{status === 'ready' ? 'Se capturará de nuevo la página. Si cambió, el plan quedará bloqueado.' : 'La ejecución es transaccional y restaura únicamente el borrador.'}</p>
-      <form onSubmit={status === 'ready' ? confirm : execute}>
-        <label><span>Escribe {phrase}</span><input name="confirmation" type="text" autoComplete="off" /></label>
-        <button type="submit" disabled={pending}>{pending ? 'Comprobando…' : status === 'ready' ? 'Comprobar y confirmar' : 'Restaurar como borrador'}</button>
-      </form>
+      <div className={styles.controls} role="group" aria-label={status === 'ready' ? 'Confirmar restauración' : 'Ejecutar restauración'}>
+        <label><span>Escribe {phrase}</span><input name="confirmation" type="text" autoComplete="off" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+            event.preventDefault()
+            event.stopPropagation()
+            void (status === 'ready' ? confirm : execute)()
+          }
+        }} /></label>
+        <button type="button" onClick={status === 'ready' ? confirm : execute} disabled={pending}>{pending ? 'Comprobando…' : status === 'ready' ? 'Comprobar y confirmar' : 'Restaurar como borrador'}</button>
+      </div>
       <p className={styles.status} role="status" aria-live="polite">{message}</p>
     </aside>
   )
