@@ -482,7 +482,9 @@ Prepare an inspectable publication candidate from one release per page:
 
 The owner dashboard now exposes **Preparar paquete de publicación**. It loads
 at most 100 owner-readable releases, lets the owner select and move them one
-position at a time, and keeps the resulting order explicit. The form requires
+position at a time, and moves selected rows into their resulting visible order.
+Malformed native API responses are reduced to controlled editor messages
+instead of exposing parsing or upstream details. The form requires
 both a bounded name and the exact `PREPARAR PUBLICACIÓN` phrase. Its successful
 destination is the immutable bundle detail, where the separate review step
 begins. Loading or submitting this control does not access the public
