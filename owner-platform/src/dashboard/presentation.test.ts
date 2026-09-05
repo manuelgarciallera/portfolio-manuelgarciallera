@@ -24,6 +24,25 @@ describe('presentOwnerDashboard', () => {
         },
       },
       content: { issueCount: 3 },
+      integrations: {
+        assistant: {
+          apply: false,
+          capabilities: {
+            suggestCopy: { enabled: true, operational: true },
+            suggestCrop: { enabled: false, operational: false },
+            suggestLayout: { enabled: false, operational: false },
+            suggestMotion: { enabled: true, operational: true },
+            suggestPalette: { enabled: false, operational: true },
+          },
+          deploy: false,
+          providerConfigured: false,
+          publish: false,
+        },
+        connectors: {
+          figma: { access: 'read-only', auth: 'personal-access-token', configured: true, plan: 'professional' },
+          linocube: { access: 'disabled', configured: false },
+        },
+      },
       media: { issueCount: 2 },
       readiness: { productionReady: false },
       recent: {
@@ -81,6 +100,21 @@ describe('presentOwnerDashboard', () => {
         { href: '/admin/collections/assistance-proposals', label: 'Pendientes', tone: 'attention', value: 4 },
         { href: '/admin/collections/releases', label: 'Versiones', tone: 'neutral', value: 7 },
       ],
+      integrations: {
+        capabilities: [
+          { enabled: true, label: 'Textos', operational: true },
+          { enabled: false, label: 'Paleta', operational: true },
+          { enabled: false, label: 'Composición', operational: false },
+          { enabled: false, label: 'Encuadre', operational: false },
+          { enabled: true, label: 'Movimiento', operational: true },
+        ],
+        connectors: [
+          { label: 'Figma', status: 'Listo · solo lectura', tone: 'ready' },
+          { label: 'Linocube', status: 'Desactivado', tone: 'disabled' },
+          { label: 'Asistente IA', status: 'Sin proveedor', tone: 'disabled' },
+        ],
+        safety: 'Aplicar, publicar y desplegar: bloqueado',
+      },
       recent: [
         { href: '/admin/collections/projects/1', label: 'Proyecto', meta: 'Proyecto · Publicado', updatedAt: '2026-09-05T11:00:00.000Z' },
         { href: '/admin/collections/articles/3', label: 'Artículo', meta: 'Artículo · Borrador', updatedAt: '2026-09-05T10:00:00.000Z' },
@@ -106,6 +140,7 @@ describe('presentOwnerDashboard', () => {
     expect(() => presentOwnerDashboard({ releases: { versions: new Array(21).fill({}) } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ releases: { versions: [{ id: 1, name: 'X', changeSummary: 'Y', createdAt: 'bad', scores: { average: {} } }] } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ analytics: { available: true, data: { topRoutes: new Array(11).fill({}) } } })).toThrow(/dashboard/i)
+    expect(() => presentOwnerDashboard({ integrations: { assistant: { capabilities: { suggestCopy: { enabled: 'yes' } } } } })).toThrow(/dashboard/i)
   })
 
   it('represents a dashboard without analytics as unavailable rather than false zeroes', () => {

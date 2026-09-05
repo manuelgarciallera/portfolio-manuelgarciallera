@@ -8,7 +8,12 @@ type AnalyticsPresentation = { available: false } | {
   routes: { label: string; value: number }[]
   vitals: { label: string; rating: 'good' | 'needs-improvement' | 'poor'; value: string }[]
 }
-type DashboardPresentation = { actions: { href: string; label: string }[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
+type IntegrationsPresentation = {
+  capabilities: { enabled: boolean; label: string; operational: boolean }[]
+  connectors: { label: string; status: string; tone: 'disabled' | 'ready' }[]
+  safety: string
+}
+type DashboardPresentation = { actions: { href: string; label: string }[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; integrations: IntegrationsPresentation; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -113,6 +118,43 @@ const analyticsPresentation = (value: unknown): AnalyticsPresentation => {
   }
 }
 
+const integrationsPresentation = (value: unknown): IntegrationsPresentation => {
+  const integrations = value === undefined ? {} : object(value) ?? fail()
+  const assistant = integrations.assistant === undefined ? {} : object(integrations.assistant) ?? fail()
+  const capabilities = assistant.capabilities === undefined ? {} : object(assistant.capabilities) ?? fail()
+  const connectors = integrations.connectors === undefined ? {} : object(integrations.connectors) ?? fail()
+  const definitions = [
+    ['suggestCopy', 'Textos'],
+    ['suggestPalette', 'Paleta'],
+    ['suggestLayout', 'Composición'],
+    ['suggestCrop', 'Encuadre'],
+    ['suggestMotion', 'Movimiento'],
+  ] as const
+  const projectedCapabilities = definitions.map(([key, label]) => {
+    const entry = capabilities[key] === undefined ? { enabled: false, operational: false } : object(capabilities[key]) ?? fail()
+    if (typeof entry.enabled !== 'boolean' || typeof entry.operational !== 'boolean') return fail()
+    return { enabled: entry.enabled, label, operational: entry.operational }
+  })
+  const figma = connectors.figma === undefined ? {} : object(connectors.figma) ?? fail()
+  const linocube = connectors.linocube === undefined ? {} : object(connectors.linocube) ?? fail()
+  const figmaReady = figma.configured === true && figma.access === 'read-only'
+  if (figma.configured !== undefined && typeof figma.configured !== 'boolean') return fail()
+  if (linocube.configured !== undefined && typeof linocube.configured !== 'boolean') return fail()
+  const providerConfigured = assistant.providerConfigured === true
+  if (assistant.providerConfigured !== undefined && typeof assistant.providerConfigured !== 'boolean') return fail()
+  const safe = ['apply', 'publish', 'deploy'].every((key) => assistant[key] !== true)
+  if (!safe) return fail()
+  return {
+    capabilities: projectedCapabilities,
+    connectors: [
+      { label: 'Figma', status: figmaReady ? 'Listo · solo lectura' : 'Sin configurar', tone: figmaReady ? 'ready' : 'disabled' },
+      { label: 'Linocube', status: 'Desactivado', tone: 'disabled' },
+      { label: 'Asistente IA', status: providerConfigured ? 'Proveedor configurado' : 'Sin proveedor', tone: providerConfigured ? 'ready' : 'disabled' },
+    ],
+    safety: 'Aplicar, publicar y desplegar: bloqueado',
+  }
+}
+
 export const presentOwnerDashboard = (value: unknown): DashboardPresentation => {
   const overview = object(value) ?? fail()
   const content = object(overview.content) ?? {}
@@ -138,6 +180,7 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
       { href: '/admin/collections/assistance-proposals', label: 'Pendientes', tone: attention ? 'attention' : 'healthy', value: attention },
       { href: '/admin/collections/releases', label: 'Versiones', tone: 'neutral', value: metric(releases, 'count') },
     ],
+    integrations: integrationsPresentation(overview.integrations),
     recent: recentItems(object(overview.recent) ?? {}),
     runtimeLabel: readiness.productionReady === true ? 'Preparado para producción' : 'Local protegido',
     versions: releaseVersions(releases),

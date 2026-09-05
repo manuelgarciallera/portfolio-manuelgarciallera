@@ -77,6 +77,22 @@ export const OwnerOverview = () => {
           </>
         ) : <p className={styles.analyticsEmpty}>Aún no hay un snapshot analítico verificado. No se muestran ceros ficticios.</p>}
       </div>
+      <div className={styles.integrations}>
+        <div className={styles.sectionHeading}>
+          <h3>Conectores y asistencia</h3>
+          <Link href="/admin/globals/assistant-settings">Configurar permisos</Link>
+        </div>
+        <div className={styles.integrationGrid}>
+          <ul className={styles.connectors}>
+            {view.integrations.connectors.map((connector) => <li data-tone={connector.tone} key={connector.label}><span>{connector.label}</span><strong>{connector.status}</strong></li>)}
+          </ul>
+          <div className={styles.capabilities}>
+            <p>Propuestas permitidas</p>
+            <ul>{view.integrations.capabilities.map((capability) => <li data-enabled={capability.enabled} key={capability.label}><span>{capability.label}</span><small>{capability.enabled ? capability.operational ? 'Activa' : 'Sin implementación' : 'Apagada'}</small></li>)}</ul>
+          </div>
+        </div>
+        <p className={styles.safety}>{view.integrations.safety}</p>
+      </div>
       {view.recent.length > 0 && (
         <div className={styles.recent}>
           <h3>Continuar editando</h3>
