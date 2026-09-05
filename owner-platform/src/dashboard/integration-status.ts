@@ -8,7 +8,7 @@ export const buildIntegrationStatus = ({ figmaPlan, figmaToken, switches }: Inpu
   const plan = figmaPlans.has(figmaPlan as FigmaPlan) ? figmaPlan as FigmaPlan : 'starter'
   const capabilities = Object.fromEntries(ASSIST_CAPABILITIES.map((capability: AssistCapability) => [capability, {
     enabled: switches[capability] === true,
-    operational: capability !== 'suggestLayout' && capability !== 'suggestCrop',
+    operational: capability !== 'suggestCrop',
   }])) as Record<AssistCapability, { enabled: boolean; operational: boolean }>
   return {
     assistant: { apply: false, capabilities, deploy: false, providerConfigured: false, publish: false },

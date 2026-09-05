@@ -21,8 +21,17 @@ describe('StudioPatch validation against current Payload fields', () => {
     expect(() => validateStudioPatch(proposal('suggestCopy', [{ op: 'replace', path, value: 'x' }]), enabled, context)).toThrow()
   })
 
-  it('keeps layout and crop capabilities unavailable even if switches are on', () => {
-    for (const capability of ['suggestLayout', 'suggestCrop'] as const) expect(() => validateStudioPatch(proposal(capability, [{ op: 'replace', path: '/page/layout/0/heading', value: 'x' }]), enabled, context)).toThrow(/no dispone/i)
+  it('accepts only an atomic reordering of the exact existing layout blocks', () => {
+    const reordered = [context.page.layout[2], context.page.layout[0], context.page.layout[1]]
+    expect(validateStudioPatch(proposal('suggestLayout', [{ op: 'replace', path: '/page/layout', value: reordered }]), enabled, context).operations[0]).toEqual({ op: 'replace', path: '/page/layout', value: reordered })
+
+    expect(() => validateStudioPatch(proposal('suggestLayout', [{ op: 'replace', path: '/page/layout', value: [context.page.layout[0], context.page.layout[1]] }]), enabled, context)).toThrow(/mismos bloques/i)
+    expect(() => validateStudioPatch(proposal('suggestLayout', [{ op: 'replace', path: '/page/layout', value: [{ ...context.page.layout[0], heading: 'Alterado' }, context.page.layout[1], context.page.layout[2]] }]), enabled, context)).toThrow(/mismos bloques/i)
+    expect(() => validateStudioPatch(proposal('suggestLayout', [{ op: 'add', path: '/page/layout', value: reordered }]), enabled, context)).toThrow(/replace/i)
+  })
+
+  it('keeps crop capability unavailable even if its switch is on', () => {
+    expect(() => validateStudioPatch(proposal('suggestCrop', [{ op: 'replace', path: '/page/layout/0/heading', value: 'x' }]), enabled, context)).toThrow(/no dispone/i)
   })
 
   it('requires an explicit enabled capability switch', () => {

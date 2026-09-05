@@ -38,6 +38,11 @@ const assertSafeValue = (value: unknown, depth = 0, ancestors = new Set<object>(
   for (const [key, child] of Object.entries(value)) { if (blockedKey.test(key)) throw new TypeError(`Clave ${key} no permitida.`); assertSafeValue(child, depth + 1, next) }
 }
 const deepFreeze = <T>(value: T): T => { if (value && typeof value === 'object') { Object.freeze(value); for (const child of Object.values(value)) deepFreeze(child) }; return value }
+const stableJSON = (value: unknown): string => {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) return `[${value.map(stableJSON).join(',')}]`
+  return `{${Object.keys(value as Record<string, unknown>).sort().map((key) => `${JSON.stringify(key)}:${stableJSON((value as Record<string, unknown>)[key])}`).join(',')}}`
+}
 function assertDataArray(value: unknown, label: string): asserts value is unknown[] {
   if (!Array.isArray(value)) throw new TypeError(`${label} debe ser una lista.`)
   if (Object.getPrototypeOf(value) !== Array.prototype) throw new TypeError(`${label} no admite un prototipo personalizado.`)
@@ -97,15 +102,27 @@ export const validateStudioPatch = (input: unknown, switches: AssistCapabilitySw
   if (input.schemaVersion !== 1 || typeof input.capability !== 'string' || !capabilities.has(input.capability)) throw new TypeError('Versión o capacidad no permitida.')
   const capability = input.capability as AssistCapability
   if (!switches[capability]) throw new TypeError(`La capacidad ${capability} está desactivada.`)
-  if (capability === 'suggestLayout' || capability === 'suggestCrop') throw new TypeError(`La capacidad ${capability} no dispone aún de operaciones seguras.`)
+  if (capability === 'suggestCrop') throw new TypeError(`La capacidad ${capability} no dispone aún de operaciones seguras.`)
   assertDataArray(input.operations, 'Las operaciones')
   if (input.operations.length < 1 || input.operations.length > STUDIO_PATCH_LIMITS.maxOperations) throw new TypeError('Cantidad de operaciones no permitida.')
+  if (capability === 'suggestLayout') {
+    if (input.operations.length !== 1) throw new TypeError('La reordenación debe ser una operación atómica.')
+    const operation = input.operations[0]
+    assertPlainDataRecord(operation, 'La operación', ['op', 'path', 'value'])
+    if (Object.keys(operation).some((key) => !operationKeys.has(key)) || operation.op !== 'replace' || operation.path !== '/page/layout') throw new TypeError('La reordenación solo admite replace sobre el layout completo.')
+    assertSafeValue(operation.value)
+    assertDataArray(operation.value, 'El layout propuesto')
+    const current = context.page.layout.map(stableJSON).sort()
+    const proposed = operation.value.map(stableJSON).sort()
+    if (current.length !== proposed.length || current.some((block, index) => block !== proposed[index])) throw new TypeError('La reordenación debe conservar exactamente los mismos bloques.')
+  }
   const weightValues = new Map<number, number>()
   for (const raw of input.operations) {
     assertPlainDataRecord(raw, 'La operación', ['op', 'path'])
     if (Object.keys(raw).some((key) => !operationKeys.has(key))) throw new TypeError('La operación contiene una propiedad no permitida.')
     if (raw.op !== 'add' && raw.op !== 'remove' && raw.op !== 'replace') throw new TypeError('Operación no permitida.')
     if (typeof raw.path !== 'string' || raw.path.length > 256 || raw.path.includes('~')) throw new TypeError('Ruta no permitida.')
+    if (capability === 'suggestLayout') continue
     const field = classifyPath(raw.path, context)
     if (field.capability !== capability) throw new TypeError('La ruta no corresponde a la capacidad declarada.')
     const hasValue = Object.hasOwn(raw, 'value')
