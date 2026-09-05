@@ -3,7 +3,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { buildConfig } from 'payload'
+import { buildConfig, type CollectionConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
@@ -45,6 +45,9 @@ const db =
     ? postgresAdapter({ pool: { connectionString: runtime.database.url } })
     : sqliteAdapter({ client: { url: runtime.database.url } })
 
+const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>
+  collections.map((collection) => ({ ...collection, admin: { ...collection.admin, group } }))
+
 export default buildConfig({
   admin: {
     components: {
@@ -60,24 +63,10 @@ export default buildConfig({
     user: Users.slug,
   },
   collections: [
-    Users,
-    Media,
-    MediaPlacements,
-    BrandProfiles,
-    Projects,
-    Technologies,
-    Articles,
-    Pages,
-    PreviewSnapshots,
-    Releases,
-    AuditEvents,
-    AssistanceProposals,
-    RestorePlans,
-    DraftSnapshots,
-    PublicationBundles,
-    PublicationReviews,
-    PublicationArtifacts,
-    AnalyticsSnapshots,
+    ...groupCollections('Contenido', [Projects, Articles, Pages, Technologies]),
+    ...groupCollections('Diseño y medios', [Media, MediaPlacements, BrandProfiles]),
+    ...groupCollections('Workflow', [PreviewSnapshots, Releases, AssistanceProposals, RestorePlans, DraftSnapshots, PublicationBundles, PublicationReviews, PublicationArtifacts]),
+    ...groupCollections('Sistema', [Users, AuditEvents, AnalyticsSnapshots]),
   ],
   globals: [AssistantSettings],
   bodyParser: multipartBodyParser,

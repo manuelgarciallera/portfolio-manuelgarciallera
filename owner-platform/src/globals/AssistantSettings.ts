@@ -16,6 +16,7 @@ export const AssistantSettings: GlobalConfig = {
   admin: {
     description:
       'Permisos para generar propuestas. Aplicar, publicar y desplegar nunca se conceden al asistente.',
+    group: 'Sistema',
   },
   access: {
     read: ownerOnly,
