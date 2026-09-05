@@ -635,9 +635,10 @@ edit destinations. Presentation data is validated again in the client before
 rendering; an invalid or unavailable summary degrades to a notice while the
 standard Payload collection cards remain usable. This overview performs no
 mutation and exposes no publish, deploy, restore, or public-bridge control.
-Four creation shortcuts route to Payload's own authenticated create views for
-Projects, Pages, Articles, and Media. They add no mutation endpoint and retain
-the normal collection permissions, validation hooks, drafts, and upload limits.
+Six creation shortcuts route to Payload's own authenticated create views for
+Projects, Pages, Articles, Media, Brand Profiles, and Media Placements. They add
+no mutation endpoint and retain the normal collection permissions, validation
+hooks, drafts, and upload limits.
 
 `GET /api/owner/audit/activity` exposes the same bounded recent-activity feed
 independently. It loads no more than 20 owner-visible events without expanding

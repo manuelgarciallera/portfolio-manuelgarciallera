@@ -134,7 +134,8 @@ change summary, and average performance, usability, and accessibility scores.
 These are read-only shortcuts to immutable Release records; they cannot
 restore, publish, or deploy a version.
 The same area provides direct native create links for Projects, Pages,
-Articles, and Media; it does not duplicate forms or bypass collection access.
+Articles, Media, Brand Profiles, and Media Placements; it does not duplicate
+forms or bypass collection access, validation, drafts, or upload limits.
 
 The same overview includes the workflow attention summary exposed independently
 at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
