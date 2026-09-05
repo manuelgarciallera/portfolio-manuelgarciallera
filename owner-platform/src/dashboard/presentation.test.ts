@@ -5,6 +5,24 @@ import { presentOwnerDashboard } from './presentation'
 describe('presentOwnerDashboard', () => {
   it('projects bounded operational cards and recent edit destinations', () => {
     expect(presentOwnerDashboard({
+      analytics: {
+        available: true,
+        data: {
+          engagement: { averageDurationSeconds: 84, bounceRatePercent: 31.5 },
+          period: { from: '2026-08-01T00:00:00.000Z', to: '2026-09-01T00:00:00.000Z' },
+          source: 'manual-export',
+          topRoutes: [
+            { path: '/casos', pageViews: 80, visitors: 40 },
+            { path: '/', pageViews: 40, visitors: 20 },
+          ],
+          traffic: { pageViews: 120, pageViewsChangePercent: 20, visitors: 60, visitorsChangePercent: -5 },
+          vitals: {
+            cls: { rating: 'good', value: 0.08 },
+            inp: { rating: 'good', value: 180 },
+            lcp: { rating: 'needs-improvement', value: 2800 },
+          },
+        },
+      },
       content: { issueCount: 3 },
       media: { issueCount: 2 },
       readiness: { productionReady: false },
@@ -38,6 +56,25 @@ describe('presentOwnerDashboard', () => {
         { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
         { href: '/admin/collections/media/create', label: 'Subir medio' },
       ],
+      analytics: {
+        available: true,
+        metrics: [
+          { change: 20, label: 'Páginas vistas', value: '120' },
+          { change: -5, label: 'Visitantes', value: '60' },
+          { change: null, label: 'Duración media', value: '1 min 24 s' },
+          { change: null, label: 'Rebote', value: '31,5%' },
+        ],
+        periodLabel: '1 ago – 1 sept 2026',
+        routes: [
+          { label: '/casos', value: 80 },
+          { label: '/', value: 40 },
+        ],
+        vitals: [
+          { label: 'LCP', rating: 'needs-improvement', value: '2,80 s' },
+          { label: 'INP', rating: 'good', value: '180 ms' },
+          { label: 'CLS', rating: 'good', value: '0,08' },
+        ],
+      },
       cards: [
         { href: '/admin/collections/projects', label: 'Contenido', tone: 'attention', value: 3 },
         { href: '/admin/collections/media', label: 'Medios', tone: 'attention', value: 2 },
@@ -68,5 +105,10 @@ describe('presentOwnerDashboard', () => {
     expect(() => presentOwnerDashboard({ recent: { articles: new Array(6).fill({}) } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ releases: { versions: new Array(21).fill({}) } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ releases: { versions: [{ id: 1, name: 'X', changeSummary: 'Y', createdAt: 'bad', scores: { average: {} } }] } })).toThrow(/dashboard/i)
+    expect(() => presentOwnerDashboard({ analytics: { available: true, data: { topRoutes: new Array(11).fill({}) } } })).toThrow(/dashboard/i)
+  })
+
+  it('represents a dashboard without analytics as unavailable rather than false zeroes', () => {
+    expect(presentOwnerDashboard({ analytics: { available: false, data: null } }).analytics).toEqual({ available: false })
   })
 })

@@ -1,7 +1,14 @@
 type DashboardCard = { href: string; label: string; tone: 'attention' | 'healthy' | 'neutral'; value: number }
 type RecentItem = { href: string; label: string; meta: string; updatedAt: string }
 type VersionItem = { createdAt: string; href: string; name: string; scores: { label: string; value: number }[]; summary: string }
-type DashboardPresentation = { actions: { href: string; label: string }[]; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
+type AnalyticsPresentation = { available: false } | {
+  available: true
+  metrics: { change: number | null; label: string; value: string }[]
+  periodLabel: string
+  routes: { label: string; value: number }[]
+  vitals: { label: string; rating: 'good' | 'needs-improvement' | 'poor'; value: string }[]
+}
+type DashboardPresentation = { actions: { href: string; label: string }[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -10,6 +17,11 @@ const relationId = (value: unknown): string | number => {
   if ((typeof value === 'string' || typeof value === 'number') && String(value).trim()) return value
   return fail()
 }
+const finite = (value: unknown, min = -Infinity, max = Infinity): number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fail()
+const nullableFinite = (value: unknown, min = -Infinity, max = Infinity): number | null => value === null ? null : finite(value, min, max)
+const date = (value: unknown): Date => typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? new Date(value) : fail()
+const numberLabel = (value: number, maximumFractionDigits = 2) => new Intl.NumberFormat('es-ES', { maximumFractionDigits }).format(value)
 
 const recentItems = (recent: Record<string, unknown>): RecentItem[] => {
   const definitions = [
@@ -54,6 +66,53 @@ const releaseVersions = (releases: Record<string, unknown>): VersionItem[] => {
   })
 }
 
+const analyticsPresentation = (value: unknown): AnalyticsPresentation => {
+  const analytics = object(value)
+  if (!analytics || analytics.available === false) return { available: false }
+  if (analytics.available !== true) return fail()
+  const data = object(analytics.data) ?? fail()
+  const traffic = object(data.traffic) ?? fail()
+  const engagement = object(data.engagement) ?? fail()
+  const period = object(data.period) ?? fail()
+  const topRoutes = data.topRoutes
+  if (!Array.isArray(topRoutes) || topRoutes.length > 10) return fail()
+  const from = date(period.from)
+  const to = date(period.to)
+  if (from.getTime() >= to.getTime()) return fail()
+  const duration = nullableFinite(engagement.averageDurationSeconds, 0)
+  const bounce = nullableFinite(engagement.bounceRatePercent, 0, 100)
+  const change = (input: unknown) => nullableFinite(input)
+  const vital = (key: 'lcp' | 'inp' | 'cls', label: string, unit: 'seconds' | 'milliseconds' | 'plain') => {
+    const entry = object(object(data.vitals)?.[key])
+    if (!entry) return []
+    if (!['good', 'needs-improvement', 'poor'].includes(String(entry.rating))) return fail()
+    const raw = finite(entry.value, 0)
+    const formatted = unit === 'seconds'
+      ? `${new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(raw / 1000)} s`
+      : unit === 'milliseconds' ? `${numberLabel(raw)} ms` : numberLabel(raw)
+    return [{ label, rating: entry.rating as 'good' | 'needs-improvement' | 'poor', value: formatted }]
+  }
+  return {
+    available: true,
+    metrics: [
+      { change: change(traffic.pageViewsChangePercent), label: 'Páginas vistas', value: numberLabel(count(traffic.pageViews), 0) },
+      { change: change(traffic.visitorsChangePercent), label: 'Visitantes', value: numberLabel(count(traffic.visitors), 0) },
+      { change: null, label: 'Duración media', value: duration === null ? '—' : `${Math.floor(duration / 60)} min ${Math.round(duration % 60)} s` },
+      { change: null, label: 'Rebote', value: bounce === null ? '—' : `${numberLabel(bounce)}%` },
+    ],
+    periodLabel: `${new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(from).replace('.', '')} – ${new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(to).replace('.', '')}`,
+    routes: topRoutes.slice(0, 5).map((entry) => {
+      const route = object(entry) ?? fail()
+      return { label: typeof route.path === 'string' && route.path.startsWith('/') && route.path.length <= 200 ? route.path : fail(), value: count(route.pageViews) }
+    }),
+    vitals: [
+      ...vital('lcp', 'LCP', 'seconds'),
+      ...vital('inp', 'INP', 'milliseconds'),
+      ...vital('cls', 'CLS', 'plain'),
+    ],
+  }
+}
+
 export const presentOwnerDashboard = (value: unknown): DashboardPresentation => {
   const overview = object(value) ?? fail()
   const content = object(overview.content) ?? {}
@@ -72,6 +131,7 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
       { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
       { href: '/admin/collections/media/create', label: 'Subir medio' },
     ],
+    analytics: analyticsPresentation(overview.analytics),
     cards: [
       { href: '/admin/collections/projects', label: 'Contenido', tone: contentIssues ? 'attention' : 'healthy', value: contentIssues },
       { href: '/admin/collections/media', label: 'Medios', tone: mediaIssues ? 'attention' : 'healthy', value: mediaIssues },

@@ -47,6 +47,36 @@ export const OwnerOverview = () => {
           </li>
         ))}
       </ul>
+      <div className={styles.analytics}>
+        <div className={styles.sectionHeading}>
+          <h3>Analítica</h3>
+          <Link href="/admin/collections/analytics-snapshots">Ver snapshots</Link>
+        </div>
+        {view.analytics.available ? (
+          <>
+            <p className={styles.period}>{view.analytics.periodLabel}</p>
+            <div className={styles.analyticsGrid}>
+              <dl className={styles.traffic}>
+                {view.analytics.metrics.map((metric) => (
+                  <div key={metric.label}>
+                    <dt>{metric.label}</dt>
+                    <dd>{metric.value}</dd>
+                    {metric.change !== null && <small data-change={metric.change > 0 ? 'up' : metric.change < 0 ? 'down' : 'flat'}>{metric.change > 0 ? '+' : ''}{metric.change}%</small>}
+                  </div>
+                ))}
+              </dl>
+              <div className={styles.vitals}>
+                <h4>Core Web Vitals</h4>
+                <ul>{view.analytics.vitals.map((vital) => <li data-rating={vital.rating} key={vital.label}><span>{vital.label}</span><strong>{vital.value}</strong></li>)}</ul>
+              </div>
+              <div className={styles.routes}>
+                <h4>Rutas principales</h4>
+                <ol>{view.analytics.routes.map((route) => <li key={route.label}><span>{route.label}</span><strong>{route.value}</strong></li>)}</ol>
+              </div>
+            </div>
+          </>
+        ) : <p className={styles.analyticsEmpty}>Aún no hay un snapshot analítico verificado. No se muestran ceros ficticios.</p>}
+      </div>
       {view.recent.length > 0 && (
         <div className={styles.recent}>
           <h3>Continuar editando</h3>
