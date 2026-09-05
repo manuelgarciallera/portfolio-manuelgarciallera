@@ -43,6 +43,10 @@ surface without changing the public portfolio:
   does not weaken the publication boundary. Page accent/surface overrides and
   Technology corporate colors reuse this component while retaining their
   existing independent validation and persistence contracts.
+  A proportional preview below the usage controls reads the in-memory form
+  state and visualizes only valid role/color/weight combinations. Its 100%
+  indicator is advisory; authoritative normalization, contrast, completeness,
+  and total checks still run in the collection hook before publication.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
 - **Media Placements** stores reusable, versioned crop recipes: original asset,

@@ -25,6 +25,9 @@ native visual picker. Usage percentages, contrast checks, page overrides, and
 snapshot behavior are unchanged. The same input is reused for page-level
 accent/surface variations and optional technology corporate colors, so every
 editable HEX value behaves consistently without adding a public dependency.
+Brand Profiles also shows a read-only proportional palette bar derived from
+the current form draft. It reports the authored total and only renders segments
+whose role, color, and percentage are valid; it never changes field values.
 
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only
