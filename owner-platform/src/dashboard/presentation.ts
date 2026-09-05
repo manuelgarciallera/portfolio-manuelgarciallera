@@ -162,6 +162,7 @@ const actionLabels: Record<string, string> = {
   'analytics.snapshot.created': 'Snapshot analítico creado',
   'assistant.proposal.accepted': 'Propuesta aceptada',
   'assistant.proposal.created': 'Propuesta creada',
+  'assistant.context.exported': 'Contexto de asistencia exportado',
   'draft.snapshot.created': 'Snapshot restorable creado',
   'preview.snapshot.created': 'Previsualización creada',
   'proposal.denied': 'Propuesta denegada',

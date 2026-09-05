@@ -29,6 +29,17 @@ describe('createOwnerAssistanceContext', () => {
     }
     const result = await createOwnerAssistanceContext({ payload, req: { user: owner }, sourceSnapshot: 12 })
     expect(payload.findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', depth: 0, id: 12, overrideAccess: false }))
+    expect(payload.create).toHaveBeenCalledWith(expect.objectContaining({
+      collection: 'audit-events',
+      data: expect.objectContaining({
+        action: 'assistant.context.exported',
+        metadata: { snapshotHash: manifest.hash },
+        outcome: 'success',
+        subjectCollection: 'preview-snapshots',
+        subjectId: '12',
+      }),
+      overrideAccess: true,
+    }))
     expect(result).toMatchObject({ contentTrust: 'untrusted-editorial-data', permissions: { apply: false, capabilities: ['suggestCopy', 'suggestMotion'] }, snapshot: { hash: manifest.hash } })
   })
 

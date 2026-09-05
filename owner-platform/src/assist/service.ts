@@ -53,7 +53,19 @@ export const createOwnerAssistanceContext = async ({
   if (snapshot.manifestHash !== verifiedHash) throw new APIError('El snapshot no coincide con su manifiesto.', 400)
   const settings = record(await payload.findGlobal({ slug: 'assistant-settings', depth: 0, overrideAccess: false, req }), 'Los permisos del asistente')
   const switches = Object.fromEntries(ASSIST_CAPABILITIES.map((capability) => [capability, settings[capability] === true])) as AssistCapabilitySwitches
-  return buildAssistanceContextPackage(manifest, switches)
+  const contextPackage = buildAssistanceContextPackage(manifest, switches)
+  await recordAuditEvent({
+    input: {
+      action: 'assistant.context.exported',
+      metadata: { snapshotHash: verifiedHash },
+      outcome: 'success',
+      subject: { collection: 'preview-snapshots', id: relationId(snapshot, 'El snapshot') },
+    },
+    payload: payload as never,
+    req,
+    user: req.user,
+  })
+  return contextPackage
 }
 
 export const createOwnerAssistanceProposal = async ({

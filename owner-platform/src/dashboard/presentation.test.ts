@@ -6,10 +6,11 @@ describe('presentOwnerDashboard', () => {
   it('projects bounded operational cards and recent edit destinations', () => {
     expect(presentOwnerDashboard({
       activity: {
-        count: 2,
+        count: 3,
         events: [
           { id: 8, action: 'release.registered', outcome: 'success', subject: { collection: 'releases', id: '7' }, createdAt: '2026-09-05T09:00:00.000Z' },
           { id: 9, action: 'proposal.denied', outcome: 'denied', subject: { collection: 'assistance-proposals', id: '4' }, createdAt: '2026-09-05T08:00:00.000Z' },
+          { id: 10, action: 'assistant.context.exported', outcome: 'success', subject: { collection: 'preview-snapshots', id: '12' }, createdAt: '2026-09-05T07:00:00.000Z' },
         ],
       },
       analytics: {
@@ -92,6 +93,7 @@ describe('presentOwnerDashboard', () => {
       activity: [
         { action: 'Versión registrada', createdAt: '2026-09-05T09:00:00.000Z', href: '/admin/collections/audit-events/8', outcome: 'Correcto', subject: 'releases · 7', tone: 'success' },
         { action: 'Propuesta denegada', createdAt: '2026-09-05T08:00:00.000Z', href: '/admin/collections/audit-events/9', outcome: 'Denegado', subject: 'assistance-proposals · 4', tone: 'attention' },
+        { action: 'Contexto de asistencia exportado', createdAt: '2026-09-05T07:00:00.000Z', href: '/admin/collections/audit-events/10', outcome: 'Correcto', subject: 'preview-snapshots · 12', tone: 'success' },
       ],
       analytics: {
         available: true,
