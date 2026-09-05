@@ -173,6 +173,8 @@ conservative even when some production credentials are present.
 `GET /api/owner/audit/activity` returns at most the latest 20 owner-visible
 audit events. Its dashboard projection includes only action, outcome, subject,
 and timestamp: actor records and workflow metadata are deliberately omitted.
+The generated dashboard displays the five latest events with a direct shortcut
+to each immutable record and to the complete ledger.
 
 Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings

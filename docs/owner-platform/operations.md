@@ -640,6 +640,9 @@ relationships. The response deliberately excludes actor data and event
 metadata, returning only event ID, normalized action, outcome, subject, and
 timestamp. Invalid stored events fail the response rather than presenting a
 misleading audit trail; the endpoint never modifies the append-only ledger.
+The generated dashboard projects only the first five entries, labels their
+outcome, and links to the corresponding immutable Audit Event. It does not
+render actor identity, email, metadata, document bodies, or credentials.
 
 `GET /api/owner/workflow/summary` supplies the dashboard attention queue using
 owner-scoped database counts only. It reports pending, accepted, and rejected
