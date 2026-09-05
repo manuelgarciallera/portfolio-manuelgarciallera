@@ -393,8 +393,12 @@ server-side, rejects credential-shaped keys, and caps the serialized package at
 256 KiB. Its immutable response contains only the snapshot source and hash,
 projected page/brand/media context, enabled proposal capabilities, an explicit
 `untrusted-editorial-data` marker, and permanent `apply`, `publish`, and
-`deploy` denials. The dashboard renders this as a read-only JSON field for a
-manual copy/paste handoff; it never calls a model or writes content.
+`deploy` denials. It also generates a `proposalContract`: the maximum operation
+count, the required response envelope, and the exact paths that each enabled
+capability may propose for that snapshot. Disabled capabilities and fields that
+do not exist in the verified content are absent. The dashboard renders this as
+a read-only JSON field for a manual copy/paste handoff; it never calls a model
+or writes content.
 Each successful export appends `assistant.context.exported` with the snapshot
 ID and verified hash to the audit ledger before returning the package. Audit
 failure is fail-closed: no unaudited context is delivered.

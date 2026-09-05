@@ -232,7 +232,9 @@ an external provider and grants no additional authority.
 context package for that snapshot. It contains the active proposal switches
 and explicit write prohibitions, is limited to 256 KiB, and is marked as
 untrusted editorial data so a downstream model cannot reinterpret authored
-content as instructions.
+content as instructions. A generated `proposalContract` lists the required
+response envelope and only the exact patch targets present in that snapshot
+for enabled capabilities, avoiding guessed indices, fields, or placement IDs.
 Every successful export is recorded in the append-only audit ledger before the
 response is returned; an audit failure blocks the export.
 
