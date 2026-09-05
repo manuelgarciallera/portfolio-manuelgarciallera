@@ -141,6 +141,11 @@ export const BrandProfiles: CollectionConfig = {
       admin: { components: { Field: './components/BrandPalettePreview#BrandPalettePreview' } },
     },
     {
+      name: 'contrastPreview',
+      type: 'ui',
+      admin: { components: { Field: './components/BrandContrastPreview#BrandContrastPreview' } },
+    },
+    {
       name: 'typography',
       type: 'group',
       fields: [

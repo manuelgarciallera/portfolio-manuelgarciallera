@@ -78,6 +78,14 @@ describe('BrandProfiles collection', () => {
     })
   })
 
+  it('adds a read-only WCAG contrast preview to the brand form', () => {
+    expect(fieldNamed('contrastPreview')).toMatchObject({
+      admin: { components: { Field: './components/BrandContrastPreview#BrandContrastPreview' } },
+      name: 'contrastPreview',
+      type: 'ui',
+    })
+  })
+
   it('allows incomplete drafts but rejects invalid publication with actionable errors', async () => {
     await expect(
       validateBrandProfilePublication({ data: { _status: 'draft', colors: [] } } as never),
