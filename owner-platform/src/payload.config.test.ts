@@ -68,6 +68,11 @@ describe('owner Payload configuration', () => {
     expect(config.collections.map((collection) => collection.slug)).toContain('figma-import-plans')
   })
 
+  it('registers immutable Figma import reviews without a download bridge', async () => {
+    const config = await configPromise
+    expect(config.collections.map((collection) => collection.slug)).toContain('figma-import-reviews')
+  })
+
   it('registers the bounded owner search on the generated dashboard', async () => {
     const config = await configPromise
     expect(config.admin.components.beforeDashboard).toEqual([
@@ -97,6 +102,7 @@ describe('owner Payload configuration', () => {
       'publication-reviews': 'Workflow',
       'publication-artifacts': 'Workflow',
       'figma-import-plans': 'Workflow',
+      'figma-import-reviews': 'Workflow',
       users: 'Sistema',
       'audit-events': 'Sistema',
       'analytics-snapshots': 'Sistema',

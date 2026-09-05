@@ -20,6 +20,7 @@ describe('FigmaImportPlans collection', () => {
     expect(FigmaImportPlans.access?.create?.(access(owner))).toBe(false)
     expect(FigmaImportPlans.access?.update?.(access(owner))).toBe(false)
     expect(FigmaImportPlans.access?.delete?.(access(owner))).toBe(false)
+    expect(FigmaImportPlans.admin?.components?.edit?.beforeDocumentControls).toEqual(['./components/FigmaImportPlanControls#FigmaImportPlanControls'])
   })
 
   it('accepts only matching canonical plan provenance created for the owner', async () => {

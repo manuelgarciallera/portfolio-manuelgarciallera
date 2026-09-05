@@ -28,7 +28,7 @@ export const enforceFigmaImportPlanDelete: CollectionBeforeDeleteHook = async ()
 
 export const FigmaImportPlans: CollectionConfig = {
   slug: 'figma-import-plans',
-  admin: { defaultColumns: ['candidateName', 'candidateType', 'sourceFileKey', 'status', 'createdAt'], useAsTitle: 'candidateName' },
+  admin: { components: { edit: { beforeDocumentControls: ['./components/FigmaImportPlanControls#FigmaImportPlanControls'] } }, defaultColumns: ['candidateName', 'candidateType', 'sourceFileKey', 'status', 'createdAt'], useAsTitle: 'candidateName' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [prepareFigmaImportPlan], beforeDelete: [enforceFigmaImportPlanDelete] },
   fields: [

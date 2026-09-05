@@ -3,6 +3,7 @@ type WorkflowSummaryInput = {
   artifacts: number
   bundles: number
   figmaImportPlans: number
+  figmaImportReviews: number
   proposals: { accepted: number; pending: number; rejected: number }
   restores: { confirmed: number; conflict: number; executed: number; ready: number }
   reviews: { approved: number; rejected: number }
@@ -19,17 +20,20 @@ export const buildWorkflowSummary = (input: WorkflowSummaryInput) => {
   const bundles = count(input.bundles)
   const artifacts = count(input.artifacts)
   const figmaImportPlans = count(input.figmaImportPlans)
+  const figmaImportReviews = count(input.figmaImportReviews)
   const proposals = normalized(input.proposals)
   const restores = normalized(input.restores)
   const reviews = normalized(input.reviews)
   const reviewTotal = total(reviews)
   if (reviewTotal > bundles) throw new TypeError('Las revisiones superan los paquetes disponibles.')
   if (artifacts > reviews.approved) throw new TypeError('Los artefactos superan las revisiones aprobadas.')
+  if (figmaImportReviews > figmaImportPlans) throw new TypeError('Las revisiones de Figma superan los planes disponibles.')
   const awaitingReview = bundles - reviewTotal
+  const figmaAwaitingReview = figmaImportPlans - figmaImportReviews
   const approvedAwaitingArtifact = reviews.approved - artifacts
   return {
-    attentionCount: figmaImportPlans + proposals.pending + restores.ready + restores.confirmed + restores.conflict + awaitingReview + approvedAwaitingArtifact,
-    figmaImportPlans: { pending: figmaImportPlans },
+    attentionCount: figmaAwaitingReview + proposals.pending + restores.ready + restores.confirmed + restores.conflict + awaitingReview + approvedAwaitingArtifact,
+    figmaImport: { awaitingReview: figmaAwaitingReview, plans: figmaImportPlans, reviews: figmaImportReviews },
     proposals: { ...proposals, total: total(proposals) },
     publication: { approvedAwaitingArtifact, artifacts, awaitingReview, bundles, reviews: { ...reviews, total: reviewTotal } },
     restores: { ...restores, total: total(restores) },
