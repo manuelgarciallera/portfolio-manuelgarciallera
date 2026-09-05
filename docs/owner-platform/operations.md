@@ -504,6 +504,13 @@ record has no effect on the portfolio.
 
 ### Immutable owner review
 
+The native Publication Bundle detail provides the same review as an owner-only
+form. Approval and rejection require their different exact phrases, the
+optional note is limited to 1,000 characters, and a successful decision links
+to the immutable review record. The client validates the phrase before
+transport and renders controlled errors only; it has no apply, publish,
+filesystem-write, or deployment control.
+
 After inspecting the package, record one final owner decision:
 
 ```http

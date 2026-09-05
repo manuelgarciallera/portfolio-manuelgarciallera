@@ -242,6 +242,10 @@ bundle. `POST /api/owner/publication-bundles/:id/review` requires the exact
 approval or rejection phrase, re-verifies the bundle hash, and writes an audit
 event. Approval is evidence only: it still cannot publish, deploy, apply, or
 write into the public portfolio.
+The native Publication Bundle record now exposes that endpoint as a guarded
+review form. Approval and rejection use different exact phrases, an optional
+bounded note, and link to the resulting immutable review. The control disables
+itself after a successful decision and never exposes a publish or deploy action.
 
 Publication Artifacts creates a canonical handoff manifest only from an
 approved, hash-verified review. `POST
