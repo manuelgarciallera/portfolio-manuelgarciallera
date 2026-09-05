@@ -654,6 +654,13 @@ negative values. Conflicts and every state awaiting an owner decision are
 included in `attentionCount`. No workflow document body is returned and no
 decision, restore, publication, or deployment is executed.
 
+The generated dashboard turns the attention model into four navigable queue
+items: pending proposals, restore plans requiring review, bundles awaiting a
+review, and approved reviews awaiting an artifact. A zero state remains
+visible as clear; non-zero items are marked for attention. The presentation
+recomputes the total and rejects inconsistent data, while every link merely
+opens the relevant Payload collection.
+
 `GET /api/owner/integrations/status` supplies a credential-free status model
 for the integrations panel and is also included in `GET /api/owner/dashboard`.
 It reports whether the server has a non-empty Figma personal access token, its

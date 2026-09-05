@@ -136,6 +136,9 @@ The same overview includes the workflow attention summary exposed independently
 at `GET /api/owner/workflow/summary`: pending assistance proposals, restore
 states, publication bundles awaiting review, and approvals awaiting an
 artifact. It uses owner-scoped database counts and returns no document bodies.
+The dashboard converts those counts into four collection shortcuts and verifies
+that the advertised attention total equals the underlying pending states. The
+shortcuts navigate only; they never decide or execute a workflow operation.
 
 `GET /api/owner/integrations/status` adds a credential-free control-plane view:
 Figma read-only readiness and plan, Linocube's disabled state, and every
