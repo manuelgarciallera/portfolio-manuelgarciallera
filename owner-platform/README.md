@@ -28,6 +28,8 @@ editable HEX value behaves consistently without adding a public dependency.
 Brand Profiles also shows a read-only proportional palette bar derived from
 the current form draft. It reports the authored total and only renders segments
 whose role, color, and percentage are valid; it never changes field values.
+An adjacent WCAG preview calculates the three contrast pairs already required
+for publication and marks each as correct, needing review, or incomplete.
 
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only

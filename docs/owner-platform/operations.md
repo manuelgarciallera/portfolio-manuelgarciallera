@@ -47,6 +47,10 @@ surface without changing the public portfolio:
   state and visualizes only valid role/color/weight combinations. Its 100%
   indicator is advisory; authoritative normalization, contrast, completeness,
   and total checks still run in the collection hook before publication.
+  A second read-only preview calculates `text/background`, `text/surface`, and
+  `mutedText/background` using the same WCAG ratios as the publication hook.
+  Missing or malformed draft colors show as pending instead of throwing; the
+  preview cannot approve, save, or publish a profile.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
 - **Media Placements** stores reusable, versioned crop recipes: original asset,
