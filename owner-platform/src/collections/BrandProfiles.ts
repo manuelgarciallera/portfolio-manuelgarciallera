@@ -136,6 +136,11 @@ export const BrandProfiles: CollectionConfig = {
       ],
     },
     {
+      name: 'palettePreview',
+      type: 'ui',
+      admin: { components: { Field: './components/BrandPalettePreview#BrandPalettePreview' } },
+    },
+    {
       name: 'typography',
       type: 'group',
       fields: [

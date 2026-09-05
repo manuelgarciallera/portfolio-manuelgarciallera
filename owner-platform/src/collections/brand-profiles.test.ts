@@ -70,6 +70,14 @@ describe('BrandProfiles collection', () => {
     })
   })
 
+  it('adds a read-only palette proportion preview to the brand form', () => {
+    expect(fieldNamed('palettePreview')).toMatchObject({
+      admin: { components: { Field: './components/BrandPalettePreview#BrandPalettePreview' } },
+      name: 'palettePreview',
+      type: 'ui',
+    })
+  })
+
   it('allows incomplete drafts but rejects invalid publication with actionable errors', async () => {
     await expect(
       validateBrandProfilePublication({ data: { _status: 'draft', colors: [] } } as never),
