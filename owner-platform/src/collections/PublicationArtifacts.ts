@@ -23,7 +23,7 @@ export const enforcePublicationArtifactDelete: CollectionBeforeDeleteHook = asyn
 
 export const PublicationArtifacts: CollectionConfig = {
   slug: 'publication-artifacts',
-  admin: { defaultColumns: ['bundle', 'review', 'pageCount', 'createdAt'], useAsTitle: 'artifactHash' },
+  admin: { components: { edit: { beforeDocumentControls: ['./components/PublicationArtifactControls#PublicationArtifactControls'] } }, defaultColumns: ['bundle', 'review', 'pageCount', 'createdAt'], useAsTitle: 'artifactHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationArtifact], beforeDelete: [enforcePublicationArtifactDelete] },
   fields: [
