@@ -11,6 +11,18 @@ const manifest = createPreviewManifest({
 })
 
 describe('assistance context package', () => {
+  it('exports the captured title and a bounded editable target only when copy is enabled', () => {
+    const captured = createPreviewManifest({ ...manifest, pageTitle: 'Título guardado' } as never)
+    const enabled = buildAssistanceContextPackage(captured, { suggestCopy: true })
+    expect(enabled.context.page).toHaveProperty('title', 'Título guardado')
+    expect(enabled.proposalContract.targets.suggestCopy).toEqual(['/page/title', '/page/layout/0/caption'])
+    expect(enabled.proposalContract.targetRules[0]).toEqual({
+      capability: 'suggestCopy', operation: 'replace', path: '/page/title', value: { maxLength: 4000, type: 'string' },
+    })
+    expect(buildAssistanceContextPackage(captured, { suggestCopy: false }).proposalContract.targets).not.toHaveProperty('suggestCopy')
+    expect(buildAssistanceContextPackage(manifest, { suggestCopy: true }).context.page).not.toHaveProperty('title')
+  })
+
   it('exports only enabled capabilities and immutable verified editorial context', () => {
     const result = buildAssistanceContextPackage(manifest, {
       suggestCopy: true,

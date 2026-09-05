@@ -140,6 +140,7 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
   if (!updatedAt) throw new APIError('La página no tiene una revisión actual verificable.', 400)
   const manifest = createPreviewManifest({
     source: { collection: 'pages', documentId: String(page.id), versionId: `current:${updatedAt}` },
+    pageTitle: text(page.title),
     brandTokens: resolvedBrand,
     pageBlocks: projected.blocks,
     mediaReferences,

@@ -153,7 +153,7 @@ export const createOwnerAssistanceProposal = async ({
   ) as AssistCapabilitySwitches
   const brand = record(manifest.brandTokens, 'La marca del snapshot')
   const context: StudioPatchContext = {
-    page: { title: page.title, layout: manifest.pageBlocks as StudioPatchContext['page']['layout'] },
+    page: { title: manifest.pageTitle ?? '', layout: manifest.pageBlocks as StudioPatchContext['page']['layout'] },
     brand: {
       colors: brand.colors as StudioPatchContext['brand']['colors'],
       motion: brand.motion as StudioPatchContext['brand']['motion'],

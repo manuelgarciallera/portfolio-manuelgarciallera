@@ -21,6 +21,21 @@ const fixture = (capability: string, operations: unknown[]) => {
 }
 
 describe('read-only assistance comparison', () => {
+  it('compares a saved title without consulting the live page, including repeated operations', async () => {
+    const input = fixture('suggestCopy', [
+      { op: 'replace', path: '/page/title', value: 'Intermedio' },
+      { op: 'replace', path: '/page/title', value: 'Final' },
+    ])
+    const captured = createPreviewManifest({ ...manifest, pageTitle: 'Título guardado' } as never)
+    input.snapshot.manifest = captured
+    input.snapshot.manifestHash = captured.hash
+    const review = await loadOwnerAssistanceReview(input)
+    expect(review.changes.map(({ before, proposed }) => [before.text, proposed.text])).toEqual([
+      ['Título guardado', 'Intermedio'], ['Intermedio', 'Final'],
+    ])
+    expect(review.changes[0].before.state).toBe('captured')
+  })
+
   it('compares captured text in order without changing the proposal or snapshot', async () => {
     const input = fixture('suggestCopy', [
       { op: 'replace', path: '/page/layout/0/heading', value: 'Intermedio' },

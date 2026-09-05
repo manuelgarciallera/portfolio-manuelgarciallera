@@ -76,6 +76,7 @@ describe('page preview snapshot service', () => {
     const findByID = vi.fn(async ({ collection, id }) => collection === 'pages' ? page : collection === 'brand-profiles' ? brand : { id, alt: 'Portada', filename: 'cover.webp', mimeType: 'image/webp', width: 1200, height: 800, apiToken: 'media-secret' })
     const result = await createPagePreviewSnapshot({ payload: { find: async () => ({ docs: [] }), findByID, create } as never, req: { user: owner } as never, pageId: 7 })
 
+    expect(result.manifest).toHaveProperty('pageTitle', 'Inicio')
     expect(findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'pages', id: 7, draft: true, depth: 0, overrideAccess: false }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', overrideAccess: true, req: expect.anything() }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({

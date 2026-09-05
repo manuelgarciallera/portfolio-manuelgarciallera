@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { createPreviewManifest, hashPreviewManifest, PREVIEW_LIMITS, type PreviewManifestInput } from './manifest'
 
@@ -10,6 +11,26 @@ const input: PreviewManifestInput = {
 }
 
 describe('preview manifests', () => {
+  it('binds the captured page title to the hash without changing title-less historical input', () => {
+    const legacy = createPreviewManifest(input)
+    const captured = createPreviewManifest({ ...input, pageTitle: 'Título guardado' } as never)
+    expect(captured).toHaveProperty('pageTitle', 'Título guardado')
+    expect(captured.hash).not.toBe(legacy.hash)
+    expect(() => hashPreviewManifest({ ...captured, pageTitle: 'Otro título' } as never)).toThrow(/hash/i)
+    expect(createPreviewManifest(input)).toEqual(legacy)
+    expect(legacy).not.toHaveProperty('pageTitle')
+  })
+
+  it.each([null, 17, { token: 'must-not-export' }])('rejects non-text captured titles: %s', (pageTitle) => {
+    expect(() => createPreviewManifest({ ...input, pageTitle } as never)).toThrow(/título/i)
+  })
+
+  it('rejects a non-text title in stored JSON even when its checksum is valid', () => {
+    const serialized = '{"brandTokens":{},"mediaReferences":[],"pageBlocks":[],"pageTitle":17,"schemaVersion":1,"source":{"collection":"pages","documentId":"7","versionId":"v"}}'
+    const stored = { ...JSON.parse(serialized), hash: `sha256:${createHash('sha256').update(serialized).digest('hex')}` }
+    expect(() => hashPreviewManifest(stored)).toThrow(/título/i)
+  })
+
   it('hashes canonical object order deterministically while preserving array order', () => {
     const first = createPreviewManifest(input)
     const second = createPreviewManifest({

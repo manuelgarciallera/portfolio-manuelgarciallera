@@ -13,6 +13,7 @@ type JSONPrimitive = boolean | null | number | string
 export type CanonicalJSON = JSONPrimitive | CanonicalJSON[] | { [key: string]: CanonicalJSON }
 export type PreviewManifestInput = {
   source: { collection: 'pages'; documentId: string; versionId: string }
+  pageTitle?: string
   brandTokens: Record<string, unknown>
   pageBlocks: unknown[]
   mediaReferences: unknown[]
@@ -20,6 +21,8 @@ export type PreviewManifestInput = {
 export type PreviewManifest = {
   schemaVersion: typeof PREVIEW_MANIFEST_SCHEMA_VERSION
   source: { collection: 'pages'; documentId: string; versionId: string }
+  /** Absent in historical captures; never infer it from the current page. */
+  pageTitle?: string
   brandTokens: Readonly<Record<string, CanonicalJSON>>
   pageBlocks: readonly CanonicalJSON[]
   mediaReferences: readonly CanonicalJSON[]
@@ -79,9 +82,11 @@ const digest = (value: CanonicalJSON): string => `sha256:${createHash('sha256').
 
 export const createPreviewManifest = (input: PreviewManifestInput): PreviewManifest => {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('La entrada debe ser JSON.')
+  if (input.pageTitle !== undefined && typeof input.pageTitle !== 'string') throw new TypeError('El título capturado debe ser texto.')
   const candidate = canonicalDocument({
     schemaVersion: PREVIEW_MANIFEST_SCHEMA_VERSION,
     source: input.source,
+    ...(input.pageTitle !== undefined ? { pageTitle: input.pageTitle } : {}),
     brandTokens: input.brandTokens,
     pageBlocks: input.pageBlocks,
     mediaReferences: input.mediaReferences,
@@ -91,6 +96,7 @@ export const createPreviewManifest = (input: PreviewManifestInput): PreviewManif
 }
 
 export const hashPreviewManifest = (manifest: PreviewManifest): string => {
+  if (manifest.pageTitle !== undefined && typeof manifest.pageTitle !== 'string') throw new TypeError('El título capturado debe ser texto.')
   const { hash, ...withoutHash } = manifest
   const canonical = canonicalDocument(withoutHash)
   const expected = digest(canonical)

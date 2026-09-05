@@ -173,6 +173,26 @@ const assistanceFixture = async () => {
   } }
 }
 
+it('keeps the captured title in assistant context and review after a newer draft is saved', async () => {
+  const input = await assistanceFixture()
+  const snapshot = await payload.findByID({ collection: 'preview-snapshots', id: Number(input.sourceSnapshot), req: input.req, overrideAccess: false })
+  const pageId = Number((snapshot.manifest as PreviewManifest).source.documentId)
+  await payload.update({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false,
+    data: { title: 'Newer live title' },
+  })
+  const current = await payload.findByID({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false })
+  const context = await createOwnerAssistanceContext(input)
+  expect(context.context.page.title).toBe('Release page')
+  expect(context.proposalContract.targets.suggestCopy).toContain('/page/title')
+  const proposal = await createOwnerAssistanceProposal(input)
+  const review = await loadOwnerAssistanceReview({ payload, req: input.req, proposalId: String(proposal.id) })
+  expect(review.changes[0]).toMatchObject({
+    before: { state: 'captured', text: 'Release page' }, proposed: { state: 'captured', text: 'Proposal only' },
+  })
+  expect(await payload.findByID({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false })).toEqual(current)
+  expect(await payload.findByID({ collection: 'preview-snapshots', id: snapshot.id, req: input.req, overrideAccess: false })).toEqual(snapshot)
+}, 30_000)
+
 it('compares a stored proposal against its frozen snapshot, never the newer page draft', async () => {
   const input = await assistanceFixture()
   input.patch.operations = [{ op: 'replace', path: '/page/layout/0/heading', value: 'Suggested heading' }]

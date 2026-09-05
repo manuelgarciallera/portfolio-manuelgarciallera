@@ -11,6 +11,15 @@ const manifest = createPreviewManifest({
 })
 
 describe('Linocube published manifest contract', () => {
+  it('preserves an optional captured title and its verified digest without permitting extra keys', () => {
+    const titled = createPreviewManifest({ ...manifest, pageBlocks: [], mediaReferences: [], pageTitle: 'Título histórico' })
+    const envelope = { schemaVersion: 1 as const, manifestVersion: 3, digest: titled.hash, manifest: titled }
+    expect(validatePublishedManifest(envelope)).toEqual(envelope)
+    expect(() => validatePublishedManifest({ ...envelope, manifest: { ...titled, pageTitle: 'Alterado' } })).toThrow(/hash|coincide/i)
+    expect(() => validatePublishedManifest({ ...envelope, manifest: { ...titled, unexpected: true } })).toThrow(/propiedad/i)
+    expect(() => validatePublishedManifest({ ...envelope, manifest: { ...titled, pageTitle: { apiToken: 'secret' } } })).toThrow(/título/i)
+  })
+
   it('validates a versioned manifest and matching digest', () => {
     const envelope = { schemaVersion: 1 as const, manifestVersion: 3, digest: manifest.hash, manifest }
     expect(validatePublishedManifest(envelope)).toEqual(envelope)

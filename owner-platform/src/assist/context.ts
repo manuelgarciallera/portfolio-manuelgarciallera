@@ -26,10 +26,10 @@ const buildTargets = (manifest: PreviewManifest, enabled: readonly AssistCapabil
   const targets: Partial<Record<AssistCapability, string[]>> = {}
   const allowed = new Set(enabled)
   if (allowed.has('suggestCopy')) {
-    targets.suggestCopy = manifest.pageBlocks.flatMap((value, index) => {
+    targets.suggestCopy = [...(typeof manifest.pageTitle === 'string' ? ['/page/title'] : []), ...manifest.pageBlocks.flatMap((value, index) => {
       const block = record(value)
       return ['heading', 'caption'].flatMap((field) => block && Object.hasOwn(block, field) ? [`/page/layout/${index}/${field}`] : [])
-    })
+    })]
   }
   if (allowed.has('suggestPalette')) {
     const brand = record(manifest.brandTokens)
@@ -63,7 +63,7 @@ type TargetRule = Readonly<{
 }>
 
 const valueRule = (path: string): TargetRule['value'] => {
-  if (/\/(?:heading|caption)$/.test(path)) return { maxLength: STUDIO_PATCH_LIMITS.maxStringLength, type: 'string' }
+  if (/\/(?:title|heading|caption)$/.test(path)) return { maxLength: STUDIO_PATCH_LIMITS.maxStringLength, type: 'string' }
   if (/\/colors\/\d+\/value$/.test(path)) return { format: '#RRGGBB', type: 'string' }
   if (/\/usageWeights\/\d+\/weight$/.test(path)) return { atomicSet: true, maximum: 100, minimum: 0, total: 100, type: 'number' }
   if (path === '/page/layout') return { constraint: 'exact-block-reorder', type: 'array' }
@@ -110,7 +110,7 @@ export const buildAssistanceContextPackage = (manifest: PreviewManifest, switche
     context: {
       brand: manifest.brandTokens,
       media: manifest.mediaReferences,
-      page: { layout: manifest.pageBlocks },
+      page: { ...(typeof manifest.pageTitle === 'string' ? { title: manifest.pageTitle } : {}), layout: manifest.pageBlocks },
     },
   }
   const serialized = JSON.stringify(candidate)

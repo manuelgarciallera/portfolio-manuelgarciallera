@@ -48,9 +48,9 @@ export const loadOwnerAssistanceReview = async ({ payload, req, proposalId }: {
   if (snapshot.manifestHash !== snapshotHash || idOf(proposal.targetPage) !== manifest.source.documentId) throw new APIError('La versión no coincide con la propuesta.', 400)
   const brand = record(manifest.brandTokens)
   const context: StudioPatchContext = {
-    // Schema v1 never captured the page title or placement recipes. The empty
-    // title is for structural validation only; it is NEVER shown as the baseline.
-    page: { title: '', layout: manifest.pageBlocks as StudioPatchContext['page']['layout'] },
+    // Older captures lack the title. An empty fallback permits structural
+    // validation only; the comparison below keeps that baseline unknown.
+    page: { title: manifest.pageTitle ?? '', layout: manifest.pageBlocks as StudioPatchContext['page']['layout'] },
     brand: { colors: brand.colors as StudioPatchContext['brand']['colors'], usageWeights: brand.usageWeights as StudioPatchContext['brand']['usageWeights'], motion: brand.motion as StudioPatchContext['brand']['motion'] },
   }
   // A historical, read-only comparison remains readable when a capability is
@@ -63,7 +63,9 @@ export const loadOwnerAssistanceReview = async ({ payload, req, proposalId }: {
     const { path } = operation
     let before = unknownValue
     let label = 'Título de página'
-    if (path === '/page/layout') {
+    if (path === '/page/title' && typeof manifest.pageTitle === 'string') {
+      before = valueText(manifest.pageTitle)
+    } else if (path === '/page/layout') {
       before = blockOrder(context.page.layout)
       label = 'Orden de los bloques'
     } else if (path.startsWith('/page/layout/')) {
