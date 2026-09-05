@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createAssistanceProposal, decideAssistanceProposal, listAssistanceSnapshots, parseAssistancePatch } from './client'
+import { createAssistanceProposal, decideAssistanceProposal, listAssistanceSnapshots, loadAssistanceContext, parseAssistancePatch } from './client'
 
 describe('assistance proposal preparation client', () => {
   it('loads a bounded list of verified preview snapshots', async () => {
@@ -18,6 +18,15 @@ describe('assistance proposal preparation client', () => {
       return new Response(JSON.stringify({ proposal: { capability: 'suggestMotion', id: 31, status: 'pending' } }), { status: 201 })
     })
     await expect(createAssistanceProposal(12, patch, request)).resolves.toEqual({ capability: 'suggestMotion', id: 31 })
+  })
+
+  it('loads an exportable context package for the selected snapshot', async () => {
+    const contextPackage = { schemaVersion: 1, contentTrust: 'untrusted-editorial-data', permissions: { apply: false } }
+    const request = vi.fn(async () => new Response(JSON.stringify({ contextPackage }), { status: 200 }))
+    await expect(loadAssistanceContext(12, request)).resolves.toEqual(contextPackage)
+    expect(request).toHaveBeenCalledWith('/api/owner/assist/context?sourceSnapshot=12', { credentials: 'same-origin' })
+    const malformed = vi.fn(async () => new Response(JSON.stringify({ contextPackage: [] }), { status: 200 }))
+    await expect(loadAssistanceContext(12, malformed)).rejects.toThrow(/contexto/i)
   })
 
   it('rejects malformed, oversized, unsafe, or inconsistent data without leaking responses', async () => {

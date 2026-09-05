@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createPreviewManifest } from '../preview/manifest'
-import { createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from './service'
+import { createOwnerAssistanceContext, createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from './service'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const manifest = createPreviewManifest({
@@ -19,6 +19,25 @@ const patch = {
   operations: [{ op: 'replace', path: '/page/title', value: 'Nuevo título' }],
   schemaVersion: 1,
 }
+
+describe('createOwnerAssistanceContext', () => {
+  it('loads and verifies the snapshot and active switches server-side', async () => {
+    const payload = {
+      create: vi.fn(),
+      findByID: vi.fn(async () => ({ id: 12, manifest, manifestHash: manifest.hash })),
+      findGlobal: vi.fn(async () => ({ suggestCopy: true, suggestMotion: true })),
+    }
+    const result = await createOwnerAssistanceContext({ payload, req: { user: owner }, sourceSnapshot: 12 })
+    expect(payload.findByID).toHaveBeenCalledWith(expect.objectContaining({ collection: 'preview-snapshots', depth: 0, id: 12, overrideAccess: false }))
+    expect(result).toMatchObject({ contentTrust: 'untrusted-editorial-data', permissions: { apply: false, capabilities: ['suggestCopy', 'suggestMotion'] }, snapshot: { hash: manifest.hash } })
+  })
+
+  it('rejects anonymous access and a mismatched stored manifest hash', async () => {
+    await expect(createOwnerAssistanceContext({ payload: {} as never, req: { user: null }, sourceSnapshot: 12 })).rejects.toThrow(/owner/i)
+    const payload = { create: vi.fn(), findByID: vi.fn(async () => ({ id: 12, manifest, manifestHash: 'sha256:other' })), findGlobal: vi.fn(async () => ({})) }
+    await expect(createOwnerAssistanceContext({ payload, req: { user: owner }, sourceSnapshot: 12 })).rejects.toThrow(/snapshot|manifiesto/i)
+  })
+})
 
 describe('createOwnerAssistanceProposal', () => {
   it('derives context and switches server-side, persists a pending proposal and audits it', async () => {

@@ -5,6 +5,7 @@ import { recordAuditEvent } from '../collections/AuditEvents'
 import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 import { ASSIST_CAPABILITIES, type AssistCapabilitySwitches, type StudioPatchContext } from './contracts'
 import { createProposalData, decideProposalData } from './proposal'
+import { buildAssistanceContextPackage } from './context'
 
 type AssistancePayload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -25,6 +26,34 @@ const relationId = (value: unknown, label: string): string | number => {
   const expanded = record(value, label)
   if (typeof expanded.id === 'string' || typeof expanded.id === 'number') return expanded.id
   throw new APIError(`${label} no tiene identificador.`, 400)
+}
+
+export const createOwnerAssistanceContext = async ({
+  payload,
+  req,
+  sourceSnapshot,
+}: {
+  payload: AssistancePayload
+  req: { user?: unknown }
+  sourceSnapshot: string | number
+}) => {
+  if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
+  if (!payload.findGlobal) throw new APIError('Los permisos del asistente no están disponibles.', 500)
+  const snapshot = record(await payload.findByID({
+    collection: 'preview-snapshots',
+    depth: 0,
+    id: sourceSnapshot,
+    overrideAccess: false,
+    req,
+  }), 'El snapshot')
+  const manifest = snapshot.manifest as PreviewManifest
+  let verifiedHash: string
+  try { verifiedHash = hashPreviewManifest(manifest) }
+  catch { throw new APIError('El manifiesto del snapshot no supera la verificación de hash.', 400) }
+  if (snapshot.manifestHash !== verifiedHash) throw new APIError('El snapshot no coincide con su manifiesto.', 400)
+  const settings = record(await payload.findGlobal({ slug: 'assistant-settings', depth: 0, overrideAccess: false, req }), 'Los permisos del asistente')
+  const switches = Object.fromEntries(ASSIST_CAPABILITIES.map((capability) => [capability, settings[capability] === true])) as AssistCapabilitySwitches
+  return buildAssistanceContextPackage(manifest, switches)
 }
 
 export const createOwnerAssistanceProposal = async ({

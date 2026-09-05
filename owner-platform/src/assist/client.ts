@@ -32,6 +32,20 @@ export const parseAssistancePatch = (source: string): Record<string, unknown> =>
   return parsed
 }
 
+export const loadAssistanceContext = async (
+  sourceSnapshot: string | number,
+  request: AssistanceTransport = fetch,
+): Promise<Record<string, unknown>> => {
+  if (!safeId(sourceSnapshot)) throw new TypeError('El snapshot no es válido.')
+  const response = await request(`/api/owner/assist/context?sourceSnapshot=${encodeURIComponent(String(sourceSnapshot))}`, { credentials: 'same-origin' })
+  if (!response.ok) throw new Error('No se pudo cargar el contexto.')
+  let result: unknown
+  try { result = await response.json() as unknown } catch { throw new Error('No se pudo cargar el contexto.') }
+  const contextPackage = isRecord(result) && isRecord(result.contextPackage) ? result.contextPackage : undefined
+  if (!contextPackage || contextPackage.schemaVersion !== 1 || contextPackage.contentTrust !== 'untrusted-editorial-data' || !isRecord(contextPackage.permissions) || contextPackage.permissions.apply !== false) throw new Error('No se pudo cargar el contexto.')
+  return contextPackage
+}
+
 export const createAssistanceProposal = async (
   sourceSnapshot: string | number,
   patch: Record<string, unknown>,
