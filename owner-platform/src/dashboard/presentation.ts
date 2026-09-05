@@ -212,7 +212,8 @@ const workflowPresentation = (value: unknown): WorkflowPresentation => {
   const awaitingReview = metric(publication, 'awaitingReview')
   const awaitingArtifact = metric(publication, 'approvedAwaitingArtifact')
   const pendingFigmaImports = metric(figmaImport, 'awaitingReview')
-  const derivedAttention = pendingFigmaImports + pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
+  const approvedFigmaImports = metric(figmaImport, 'approvedAwaitingImport')
+  const derivedAttention = pendingFigmaImports + approvedFigmaImports + pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
   const attentionCount = workflow.attentionCount === undefined ? derivedAttention : count(workflow.attentionCount)
   if (attentionCount !== derivedAttention) return fail()
   const item = (href: string, label: string, value: number) => ({ href, label, tone: value > 0 ? 'attention' as const : 'clear' as const, value })
@@ -220,6 +221,7 @@ const workflowPresentation = (value: unknown): WorkflowPresentation => {
     attentionCount,
     items: [
       item('/admin/collections/figma-import-plans', 'Importaciones Figma por revisar', pendingFigmaImports),
+      item('/admin/collections/figma-import-reviews', 'Importaciones Figma aprobadas', approvedFigmaImports),
       item('/admin/collections/assistance-proposals', 'Propuestas pendientes', pendingProposals),
       item('/admin/collections/restore-plans', 'Restauraciones por revisar', pendingRestores),
       item('/admin/collections/publication-bundles', 'Paquetes sin revisión', awaitingReview),

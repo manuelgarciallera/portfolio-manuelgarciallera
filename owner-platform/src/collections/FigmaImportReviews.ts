@@ -19,7 +19,7 @@ export const enforceFigmaImportReviewDelete: CollectionBeforeDeleteHook = async 
 
 export const FigmaImportReviews: CollectionConfig = {
   slug: 'figma-import-reviews',
-  admin: { defaultColumns: ['plan', 'decision', 'decidedBy', 'decidedAt'], useAsTitle: 'reviewHash' },
+  admin: { components: { edit: { beforeDocumentControls: ['./components/FigmaImportReviewControls#FigmaImportReviewControls'] } }, defaultColumns: ['plan', 'decision', 'decidedBy', 'decidedAt'], useAsTitle: 'reviewHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [prepareFigmaImportReview], beforeDelete: [enforceFigmaImportReviewDelete] },
   fields: [

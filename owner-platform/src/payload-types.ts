@@ -84,6 +84,7 @@ export interface Config {
     'publication-artifacts': PublicationArtifact;
     'figma-import-plans': FigmaImportPlan;
     'figma-import-reviews': FigmaImportReview;
+    'figma-import-executions': FigmaImportExecution;
     users: User;
     'audit-events': AuditEvent;
     'analytics-snapshots': AnalyticsSnapshot;
@@ -111,6 +112,7 @@ export interface Config {
     'publication-artifacts': PublicationArtifactsSelect<false> | PublicationArtifactsSelect<true>;
     'figma-import-plans': FigmaImportPlansSelect<false> | FigmaImportPlansSelect<true>;
     'figma-import-reviews': FigmaImportReviewsSelect<false> | FigmaImportReviewsSelect<true>;
+    'figma-import-executions': FigmaImportExecutionsSelect<false> | FigmaImportExecutionsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
     'analytics-snapshots': AnalyticsSnapshotsSelect<false> | AnalyticsSnapshotsSelect<true>;
@@ -952,6 +954,27 @@ export interface FigmaImportReview {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "figma-import-executions".
+ */
+export interface FigmaImportExecution {
+  id: number;
+  review: number | FigmaImportReview;
+  reviewHash: string;
+  plan: number | FigmaImportPlan;
+  planHash: string;
+  media: number | Media;
+  contentHash: string;
+  mimeType: string;
+  size: number;
+  importedBy: number | User;
+  importedAt: string;
+  schemaVersion: number;
+  executionHash: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-events".
  */
 export interface AuditEvent {
@@ -1090,6 +1113,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'figma-import-reviews';
         value: number | FigmaImportReview;
+      } | null)
+    | ({
+        relationTo: 'figma-import-executions';
+        value: number | FigmaImportExecution;
       } | null)
     | ({
         relationTo: 'users';
@@ -1769,6 +1796,26 @@ export interface FigmaImportReviewsSelect<T extends boolean = true> {
   note?: T;
   schemaVersion?: T;
   reviewHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "figma-import-executions_select".
+ */
+export interface FigmaImportExecutionsSelect<T extends boolean = true> {
+  review?: T;
+  reviewHash?: T;
+  plan?: T;
+  planHash?: T;
+  media?: T;
+  contentHash?: T;
+  mimeType?: T;
+  size?: T;
+  importedBy?: T;
+  importedAt?: T;
+  schemaVersion?: T;
+  executionHash?: T;
   updatedAt?: T;
   createdAt?: T;
 }

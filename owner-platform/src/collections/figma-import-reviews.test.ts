@@ -16,6 +16,7 @@ describe('FigmaImportReviews collection', () => {
     expect(FigmaImportReviews.access?.create?.(access(owner))).toBe(false)
     expect(FigmaImportReviews.access?.update?.(access(owner))).toBe(false)
     expect(FigmaImportReviews.access?.delete?.(access(owner))).toBe(false)
+    expect(FigmaImportReviews.admin?.components?.edit?.beforeDocumentControls).toEqual(['./components/FigmaImportReviewControls#FigmaImportReviewControls'])
   })
 
   it('accepts only matching canonical owner provenance', async () => {
