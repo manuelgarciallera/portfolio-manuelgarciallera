@@ -51,6 +51,10 @@ surface without changing the public portfolio:
   `mutedText/background` using the same WCAG ratios as the publication hook.
   Missing or malformed draft colors show as pending instead of throwing; the
   preview cannot approve, save, or publish a profile.
+  The motion group has a replayable three-step preview for duration, stagger,
+  travel, and easing. It uses only the existing allowlisted values, falls back
+  visibly when the draft is incomplete, and honors the browser's reduced-motion
+  preference. It is an editor aid only and is not loaded by the public site.
 - **Pages** assigns one brand profile and permits only controlled page-level
   overrides. Background and text roles continue to inherit from the profile.
 - **Media Placements** stores reusable, versioned crop recipes: original asset,

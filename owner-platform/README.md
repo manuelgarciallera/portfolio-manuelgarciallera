@@ -30,6 +30,10 @@ the current form draft. It reports the authored total and only renders segments
 whose role, color, and percentage are valid; it never changes field values.
 An adjacent WCAG preview calculates the three contrast pairs already required
 for publication and marks each as correct, needing review, or incomplete.
+Motion settings have a replayable private preview that reflects bounded
+duration, stagger, travel, and easing values. Invalid drafts use a clearly
+non-authoritative safe demonstration, and `prefers-reduced-motion` disables the
+preview animation without changing the stored policy.
 
 `POST /api/owner/preview-snapshots` creates an immutable manifest from a page's
 current draft. `POST /api/owner/figma/discover` performs bounded, read-only
