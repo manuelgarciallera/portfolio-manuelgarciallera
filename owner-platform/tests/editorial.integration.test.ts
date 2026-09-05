@@ -3,7 +3,11 @@ import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { createLocalReq, getPayload, type Payload } from 'payload'
-import { afterAll, beforeAll, expect, it } from 'vitest'
+import { afterAll, beforeAll, expect, it, vi } from 'vitest'
+
+// This suite runs in Node, outside Next's react-server module condition. Only
+// its build-time marker is substituted; services and persistence remain real.
+vi.mock('server-only', () => ({}))
 
 import applicationConfig, { createLocalDatabaseAdapter } from '../src/payload.config'
 import { loadContentVisualPreview, loadPageVisualPreview } from '../src/preview/visual-service'
@@ -13,6 +17,10 @@ import { createOwnerRelease } from '../src/releases/service'
 import { prepareOwnerRestorePlan } from '../src/restore/prepare'
 import { confirmOwnerRestorePlan } from '../src/restore/service'
 import { executeOwnerRestorePlan } from '../src/restore/execute'
+import { createOwnerPublicationBundle } from '../src/publication/service'
+import { createOwnerPublicationReview } from '../src/publication/review-service'
+import { createOwnerPublicationArtifact } from '../src/publication/artifact-service'
+import { createOwnerPublicationPreflight } from '../src/publication/preflight-service'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
@@ -88,6 +96,21 @@ it('registers a real immutable release from a matched snapshot pair', async () =
   expect(release.name).toBe('Integration release')
   await expect(payload.update({ collection: 'releases', id: release.id as number, overrideAccess: false, user: owner, data: { name: 'Rewritten' } })).rejects.toThrow()
   await expect(payload.find({ collection: 'releases', overrideAccess: false })).rejects.toThrow()
+}, 30_000)
+
+it('reviews a real publication bundle addressed by a URL id and generates its artifact without editing the page', async () => {
+  const { page, req, release } = await createReleaseFixture()
+  const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'QA publication', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
+  const before = await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })
+  const review = await createOwnerPublicationReview({ payload: payload as never, req, bundleId: String(bundle.id), decision: 'approved', confirmation: 'APROBAR PAQUETE' }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(review.decision).toBe('approved')
+  const artifact = await createOwnerPublicationArtifact({ payload: payload as never, req, reviewId: String(review.id), confirmation: 'GENERAR ARTEFACTO' }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(artifact.pageCount).toBe(1)
+  const preflight = await createOwnerPublicationPreflight({ payload: payload as never, req, artifactId: String(artifact.id) }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
+  expect(preflight.pageCount).toBe(1)
+  const storedPreflight = await payload.findByID({ collection: 'publication-preflights', id: preflight.id as number, depth: 0, user: owner, overrideAccess: false })
+  expect(storedPreflight.artifact).toBe(artifact.id)
+  expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
 }, 30_000)
 
 it('restores the captured page as a draft while preserving the published revision', async () => {

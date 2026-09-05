@@ -21,14 +21,16 @@ export const createOwnerPublicationReview = async ({ bundleId, confirmation, dec
   const existing = await payload.find({ collection: 'publication-reviews', depth: 0, limit: 1, overrideAccess: false, req, where: { bundle: { equals: bundleId } } })
   if (existing.docs.length) throw new APIError('El paquete ya ha sido revisado y decidido.', 409)
   const bundleDoc = await payload.findByID({ collection: 'publication-bundles', depth: 0, id: bundleId, overrideAccess: false, req })
+  const storedBundleId = bundleDoc.id
+  if ((typeof storedBundleId !== 'string' && typeof storedBundleId !== 'number') || String(storedBundleId) !== String(bundleId)) throw new APIError('El identificador del paquete no coincide.', 409)
   let verifiedHash: string
   try { verifiedHash = hashPublicationBundle(bundleDoc.bundle as PublicationBundle) }
   catch { throw new APIError('El paquete no supera la verificación de integridad.', 409) }
   if (bundleDoc.bundleHash !== verifiedHash) throw new APIError('El hash almacenado del paquete no coincide.', 409)
-  const review = createPublicationReview({ bundleHash: verifiedHash, bundleId, decision, decidedAt: now ?? new Date().toISOString(), decidedBy: req.user.id, note })
+  const review = createPublicationReview({ bundleHash: verifiedHash, bundleId: storedBundleId, decision, decidedAt: now ?? new Date().toISOString(), decidedBy: req.user.id, note })
   const created = await payload.create({
     collection: 'publication-reviews',
-    data: { bundle: bundleId, bundleHash: verifiedHash, decision, decidedAt: review.decidedAt, decidedBy: req.user.id, note: review.note, reviewHash: review.hash, schemaVersion: review.schemaVersion },
+    data: { bundle: storedBundleId, bundleHash: verifiedHash, decision, decidedAt: review.decidedAt, decidedBy: req.user.id, note: review.note, reviewHash: review.hash, schemaVersion: review.schemaVersion },
     overrideAccess: true, req,
   })
   await recordAuditEvent({

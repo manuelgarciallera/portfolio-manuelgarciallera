@@ -1,10 +1,11 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useDocumentInfo } from '@payloadcms/ui'
 
 import { runPublicationPreflight } from '../publication/client'
+import { DocumentActionGroup } from './DocumentActionGroup'
 import styles from './PublicationBundleControls.module.css'
 
 const safeId = (value: unknown): string | number | null => (typeof value === 'string' || typeof value === 'number') && /^[A-Za-z0-9_-]{1,128}$/.test(String(value)) ? value : null
@@ -15,10 +16,10 @@ export const PublicationArtifactControls = () => {
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState('La validación solo genera evidencia owner; no cambia la web pública.')
   const [preflightHref, setPreflightHref] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState('')
   if (artifactId === null) return null
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const confirmation = new FormData(event.currentTarget).get('confirmation')?.toString() ?? ''
+  const submit = async () => {
+    if (pending || preflightHref !== null) return
     setPending(true)
     setPreflightHref(null)
     try {
@@ -31,10 +32,10 @@ export const PublicationArtifactControls = () => {
   return <aside className={styles.panel}>
     <strong>Exportación revisable</strong>
     <p>Descarga un JSON íntegro para validación externa. No escribe, publica ni despliega la web.</p>
-    <form onSubmit={submit}>
-      <label><span>Escribe VALIDAR ARTEFACTO</span><input name="confirmation" type="text" autoComplete="off" /></label>
-      <button type="submit" disabled={pending || preflightHref !== null}>{pending ? 'Validando…' : 'Validar preparación'}</button>
-    </form>
+    <DocumentActionGroup label="Validar artefacto" disabled={pending || preflightHref !== null} onAction={submit}>
+      <label><span>Escribe VALIDAR ARTEFACTO</span><input name="confirmation" type="text" autoComplete="off" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label>
+      <button type="button" onClick={submit} disabled={pending || preflightHref !== null}>{pending ? 'Validando…' : 'Validar preparación'}</button>
+    </DocumentActionGroup>
     <p className={styles.status} role="status" aria-live="polite">{message}</p>
     {preflightHref && <Link href={preflightHref}>Ver informe inmutable</Link>}
     <br />

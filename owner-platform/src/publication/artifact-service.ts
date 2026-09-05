@@ -19,6 +19,8 @@ export const createOwnerPublicationArtifact = async ({ confirmation, payload, re
   const existing = await payload.find({ collection: 'publication-artifacts', depth: 0, limit: 1, overrideAccess: false, req, where: { review: { equals: reviewId } } })
   if (existing.docs.length) throw new APIError('El artefacto ya existe para esta revisión.', 409)
   const reviewDoc = await payload.findByID({ collection: 'publication-reviews', depth: 0, id: reviewId, overrideAccess: false, req })
+  const storedReviewId = relationId(reviewDoc, 'La revisión')
+  if (String(storedReviewId) !== String(reviewId)) throw new APIError('El identificador de la revisión no coincide.', 409)
   if (reviewDoc.decision !== 'approved') throw new APIError('La revisión debe estar aprobada.', 409)
   const bundleId = relationId(reviewDoc.bundle, 'El paquete')
   const canonicalReview: PublicationReview = {
@@ -32,8 +34,8 @@ export const createOwnerPublicationArtifact = async ({ confirmation, payload, re
   let bundleHash: string
   try { bundleHash = hashPublicationBundle(bundleDoc.bundle as PublicationBundle) } catch { throw new APIError('El paquete no supera la verificación de integridad.', 409) }
   if (bundleHash !== reviewDoc.bundleHash || bundleHash !== bundleDoc.bundleHash) throw new APIError('La revisión no pertenece al paquete verificado.', 409)
-  const artifact = createPublicationArtifact({ bundleHash, bundleId, pageCount: bundleDoc.pageCount, reviewHash, reviewId })
-  const created = await payload.create({ collection: 'publication-artifacts', data: { artifact, artifactHash: artifact.hash, bundle: bundleId, bundleHash, createdBy: req.user.id, pageCount: artifact.pageCount, review: reviewId, reviewHash, schemaVersion: artifact.schemaVersion }, overrideAccess: true, req })
+  const artifact = createPublicationArtifact({ bundleHash, bundleId, pageCount: bundleDoc.pageCount, reviewHash, reviewId: storedReviewId })
+  const created = await payload.create({ collection: 'publication-artifacts', data: { artifact, artifactHash: artifact.hash, bundle: bundleId, bundleHash, createdBy: req.user.id, pageCount: artifact.pageCount, review: storedReviewId, reviewHash, schemaVersion: artifact.schemaVersion }, overrideAccess: true, req })
   await recordAuditEvent({ input: { action: 'publication.artifact.created', metadata: { artifactHash: artifact.hash, bundleHash, reviewHash }, outcome: 'success', subject: { collection: 'publication-artifacts', id: relationId(created, 'El artefacto') } }, payload: payload as never, req, user: req.user })
   return created
 }

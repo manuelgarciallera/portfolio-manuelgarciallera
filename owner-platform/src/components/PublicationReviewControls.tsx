@@ -1,10 +1,11 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useDocumentInfo } from '@payloadcms/ui'
 
 import { generatePublicationArtifact } from '@/publication/client'
+import { DocumentActionGroup } from './DocumentActionGroup'
 import styles from './PublicationBundleControls.module.css'
 
 const identifier = (value: unknown): string | number | null => (typeof value === 'string' || typeof value === 'number') && String(value).trim() ? value : null
@@ -16,12 +17,12 @@ export const PublicationReviewControls = () => {
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState('Generar crea un manifiesto interno; no publica ni despliega.')
   const [artifactHref, setArtifactHref] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState('')
   if (reviewId === null || (decision !== 'approved' && decision !== 'rejected')) return null
   if (decision === 'rejected') return <aside className={styles.panel}><strong>Paquete rechazado</strong><p>Una revisión rechazada no puede generar artefactos.</p></aside>
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const confirmation = new FormData(event.currentTarget).get('confirmation')?.toString() ?? ''
+  const submit = async () => {
+    if (pending || artifactHref !== null) return
     setPending(true)
     setArtifactHref(null)
     try {
@@ -37,10 +38,10 @@ export const PublicationReviewControls = () => {
     <aside className={styles.panel}>
       <strong>Generar artefacto aprobado</strong>
       <p>El manifiesto conserva hashes y procedencia para una futura exportación revisada.</p>
-      <form onSubmit={submit}>
-        <label><span>Escribe GENERAR ARTEFACTO</span><input name="confirmation" type="text" autoComplete="off" /></label>
-        <button type="submit" disabled={pending || artifactHref !== null}>{pending ? 'Generando…' : 'Generar artefacto'}</button>
-      </form>
+      <DocumentActionGroup label="Generar artefacto aprobado" disabled={pending || artifactHref !== null} onAction={submit}>
+        <label><span>Escribe GENERAR ARTEFACTO</span><input name="confirmation" type="text" autoComplete="off" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label>
+        <button type="button" onClick={submit} disabled={pending || artifactHref !== null}>{pending ? 'Generando…' : 'Generar artefacto'}</button>
+      </DocumentActionGroup>
       <p className={styles.status} role="status" aria-live="polite">{message}</p>
       {artifactHref && <Link href={artifactHref}>Ver artefacto inmutable</Link>}
     </aside>

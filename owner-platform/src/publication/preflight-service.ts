@@ -28,6 +28,8 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   if (existing.totalDocs > 0 && existing.docs[0]) return existing.docs[0]
 
   const artifactDocument = await payload.findByID({ collection: 'publication-artifacts', depth: 0, id: artifactId, overrideAccess: false, req })
+  const storedArtifactId = relationId(artifactDocument, 'El artefacto')
+  if (String(storedArtifactId) !== String(artifactId)) throw new APIError('El identificador del artefacto no coincide.', 409)
   const artifact = artifactDocument.artifact as PublicationArtifact
   let artifactHash: string
   try { artifactHash = hashPublicationArtifact(artifact) } catch { throw new APIError('El artefacto no supera la verificación de integridad.', 409) }
@@ -48,7 +50,7 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   } catch { throw new APIError('No se pudo crear un preflight íntegro.', 409) }
   const created = await payload.create({
     collection: 'publication-preflights',
-    data: { artifact: artifactId, artifactHash, checkedAt, createdBy: req.user.id, exportHash: exported.hash, issueCount: report.issueCount, pageCount: report.pageCount, preflightHash: report.hash, report, schemaVersion: report.schemaVersion, status: report.status },
+    data: { artifact: storedArtifactId, artifactHash, checkedAt, createdBy: req.user.id, exportHash: exported.hash, issueCount: report.issueCount, pageCount: report.pageCount, preflightHash: report.hash, report, schemaVersion: report.schemaVersion, status: report.status },
     overrideAccess: true,
     req,
   })
@@ -58,4 +60,3 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   })
   return created
 }
-

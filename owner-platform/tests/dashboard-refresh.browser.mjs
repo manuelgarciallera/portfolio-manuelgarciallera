@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { chromium } from 'playwright'
 import { verifyRestoreFlow } from './restore-flow.browser.mjs'
+import { verifyPublicationFlow } from './publication-flow.browser.mjs'
 
 const base = 'http://127.0.0.1:3011'
 const { OWNER_QA_EMAIL: email, OWNER_QA_PASSWORD: password } = process.env
@@ -84,6 +85,10 @@ try {
     assert.equal(await registration.locator('input[name=name]').inputValue(), name, 'Refreshing the summary must not remount active forms')
     console.log('PASS: a genuinely registered QA release appears in the existing dashboard without a reload or lost form values.')
     if (process.env.OWNER_QA_RESTORE === '1') await verifyRestoreFlow({ page, request, overview, pageId, name, originalTitle: `QA dashboard ${suffix}`, base })
+    if (process.env.OWNER_QA_PUBLICATION === '1') {
+      const href = await registration.getByRole('link', { name: 'Ver versión inmutable' }).getAttribute('href')
+      await verifyPublicationFlow({ page, request, pageId, releaseId: href.split('/').at(-1), name, base })
+    }
   }
 } finally {
   await browser.close()

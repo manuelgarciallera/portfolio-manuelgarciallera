@@ -98,10 +98,10 @@ phrase between phases, and compares the full page responses before and after
 confirmation to ensure no content or metadata changes before execution. Scores
 and commit IDs in these fixtures are synthetic, not quality certifications.
 
-Follow-up: other action components mounted in `beforeDocumentControls` also
-render forms (assistance, Figma import and publication actions). They need their
-own browser regressions and scoped corrections; this change does not claim to
-have verified or fixed those independent workflows.
+The subsequent [document-action round](./document-action-controls-verification.md)
+corrected the same nested-form pattern in assistance, Figma import and publication
+controls, with scoped browser regressions and real publication integration.
+That evidence has separate limits; it does not certify live external connectors.
 
 Browser-round verification: the complete path passed at 1280 × 720 and
 390 × 844 in Chromium, including the extra unchanged-page and child-bounds
