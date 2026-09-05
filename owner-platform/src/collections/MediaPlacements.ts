@@ -9,12 +9,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const selectOptions = (values: readonly string[]) =>
   values.map((value) => ({ label: value, value }))
 
-const overrideFields = (): Field[] => [
+const overrideFields = (breakpoint: 'mobile' | 'tablet'): Field[] => [
   { name: 'focalX', type: 'number', min: 0, max: 1 },
   { name: 'focalY', type: 'number', min: 0, max: 1 },
   { name: 'zoom', type: 'number', min: 1, max: 4 },
-  { name: 'fit', type: 'select', options: selectOptions(MEDIA_FITS) },
-  { name: 'frame', type: 'select', options: selectOptions(MEDIA_FRAMES) },
+  // Explicit enum names keep versioned nested fields below the adapter's 63-character limit.
+  { name: 'fit', type: 'select', enumName: `media_${breakpoint}_fit`, options: selectOptions(MEDIA_FITS) },
+  { name: 'frame', type: 'select', enumName: `media_${breakpoint}_frame`, options: selectOptions(MEDIA_FRAMES) },
 ]
 
 export const validateMediaPlacement: CollectionBeforeValidateHook = async ({ data, originalDoc, req }) => {
@@ -105,8 +106,8 @@ export const MediaPlacements: CollectionConfig = {
           name: 'overrides',
           type: 'group',
           fields: [
-            { name: 'mobile', type: 'group', fields: overrideFields() },
-            { name: 'tablet', type: 'group', fields: overrideFields() },
+            { name: 'mobile', type: 'group', fields: overrideFields('mobile') },
+            { name: 'tablet', type: 'group', fields: overrideFields('tablet') },
           ],
         },
         {

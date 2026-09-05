@@ -32,13 +32,14 @@ export const normalizePageBrandOverrides = (value: unknown): PageBrandOverrides 
 
   const result: PageBrandOverrides = {}
   for (const role of ['accent', 'surface'] as const) {
-    if (!Object.hasOwn(value, role)) continue
+    if (!Object.hasOwn(value, role) || value[role] === undefined) continue
     const color = value[role]
     result[role] = color === null ? null : normalizeHex(color)
   }
 
-  if (Object.hasOwn(value, 'usageWeights')) {
-    if (value.usageWeights === null) result.usageWeights = null
+  if (Object.hasOwn(value, 'usageWeights') && value.usageWeights !== undefined) {
+    // Payload hydrates an unused optional array as []; no rows means inherit.
+    if (value.usageWeights === null || (Array.isArray(value.usageWeights) && value.usageWeights.length === 0)) result.usageWeights = null
     else {
       const errors = validateUsageWeights(value.usageWeights)
       if (errors.length) throw new Error(errors.join(' '))
@@ -46,7 +47,7 @@ export const normalizePageBrandOverrides = (value: unknown): PageBrandOverrides 
     }
   }
 
-  if (Object.hasOwn(value, 'motion')) {
+  if (Object.hasOwn(value, 'motion') && value.motion !== undefined) {
     if (value.motion === null) result.motion = null
     else {
       if (!isRecord(value.motion)) throw new Error('La variación de movimiento debe ser un objeto.')
@@ -55,7 +56,7 @@ export const normalizePageBrandOverrides = (value: unknown): PageBrandOverrides 
       for (const key of allowedMotionKeys) {
         if (!Object.hasOwn(value.motion, key)) continue
         const setting = value.motion[key]
-        if (setting !== null) Object.assign(result.motion, { [key]: setting })
+        if (setting !== null && setting !== undefined) Object.assign(result.motion, { [key]: setting })
       }
       const errors = validateMotion({
         duration: 600,

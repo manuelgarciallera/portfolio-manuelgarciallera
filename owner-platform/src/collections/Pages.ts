@@ -39,6 +39,11 @@ export const validatePageBrandPublication: CollectionBeforeValidateHook = async 
       }
       try {
         result.brandOverrides = normalizePageBrandOverrides(merged)
+        // SQL version writes require arrays, not null. An empty optional list
+        // still means inherit when resolved by normalizePageBrandOverrides.
+        if (isRecord(result.brandOverrides) && result.brandOverrides.usageWeights === null) {
+          result.brandOverrides.usageWeights = []
+        }
       } catch (error) {
         return invalid(error instanceof Error ? error.message : 'Las variaciones de marca no son válidas.')
       }

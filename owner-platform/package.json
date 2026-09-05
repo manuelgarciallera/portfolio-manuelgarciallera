@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "node ./scripts/dev.mjs",
     "build": "node ./scripts/build.mjs",
-    "check": "npm run test && npm run lint && npm run typecheck && npm run build",
+    "check": "npm run test && npm run test:integration && npm run lint && npm run typecheck && npm run build",
     "generate:importmap": "payload generate:importmap",
     "generate:types": "payload generate:types",
     "lint": "eslint .",
     "start": "next start",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

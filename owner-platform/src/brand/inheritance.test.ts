@@ -23,6 +23,12 @@ const base = {
 } as const
 
 describe('resolvePageBrand', () => {
+  it('inherits when Payload hydrates unused optional fields and empty arrays', () => {
+    expect(resolvePageBrand(base, {
+      accent: undefined, surface: undefined, usageWeights: [],
+      motion: { duration: undefined, stagger: null, travel: undefined, easing: undefined },
+    })).toEqual(base)
+  })
   it('returns a detached normalized brand when there are no overrides', () => {
     const resolved = resolvePageBrand(base, undefined)
     expect(resolved).toEqual(base)
