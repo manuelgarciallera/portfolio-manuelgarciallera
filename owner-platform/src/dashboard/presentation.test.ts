@@ -76,7 +76,8 @@ describe('presentOwnerDashboard', () => {
         }],
       },
       workflow: {
-        attentionCount: 10,
+        attentionCount: 12,
+        figmaImportPlans: { pending: 2 },
         proposals: { accepted: 4, pending: 3, rejected: 1, total: 8 },
         publication: { approvedAwaitingArtifact: 1, artifacts: 2, awaitingReview: 1, bundles: 5, reviews: { approved: 3, rejected: 1, total: 4 } },
         restores: { confirmed: 1, conflict: 2, executed: 6, ready: 2, total: 11 },
@@ -117,7 +118,7 @@ describe('presentOwnerDashboard', () => {
       cards: [
         { href: '/admin/collections/projects', label: 'Contenido', tone: 'attention', value: 3 },
         { href: '/admin/collections/media', label: 'Medios', tone: 'attention', value: 2 },
-        { href: '/admin/collections/assistance-proposals', label: 'Pendientes', tone: 'attention', value: 10 },
+        { href: '/admin/collections/assistance-proposals', label: 'Pendientes', tone: 'attention', value: 12 },
         { href: '/admin/collections/releases', label: 'Versiones', tone: 'neutral', value: 7 },
       ],
       integrations: {
@@ -153,8 +154,9 @@ describe('presentOwnerDashboard', () => {
         summary: 'Canvas modular y SEO.',
       }],
       workflow: {
-        attentionCount: 10,
+        attentionCount: 12,
         items: [
+          { href: '/admin/collections/figma-import-plans', label: 'Importaciones Figma por revisar', tone: 'attention', value: 2 },
           { href: '/admin/collections/assistance-proposals', label: 'Propuestas pendientes', tone: 'attention', value: 3 },
           { href: '/admin/collections/restore-plans', label: 'Restauraciones por revisar', tone: 'attention', value: 5 },
           { href: '/admin/collections/publication-bundles', label: 'Paquetes sin revisión', tone: 'attention', value: 1 },
@@ -178,6 +180,7 @@ describe('presentOwnerDashboard', () => {
   it('represents a dashboard without analytics as unavailable rather than false zeroes', () => {
     expect(presentOwnerDashboard({ analytics: { available: false, data: null } }).analytics).toEqual({ available: false })
     expect(presentOwnerDashboard({}).workflow).toEqual({ attentionCount: 0, items: [
+      { href: '/admin/collections/figma-import-plans', label: 'Importaciones Figma por revisar', tone: 'clear', value: 0 },
       { href: '/admin/collections/assistance-proposals', label: 'Propuestas pendientes', tone: 'clear', value: 0 },
       { href: '/admin/collections/restore-plans', label: 'Restauraciones por revisar', tone: 'clear', value: 0 },
       { href: '/admin/collections/publication-bundles', label: 'Paquetes sin revisión', tone: 'clear', value: 0 },

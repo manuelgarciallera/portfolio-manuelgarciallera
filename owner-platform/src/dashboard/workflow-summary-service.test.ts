@@ -8,8 +8,9 @@ describe('getOwnerWorkflowSummary', () => {
   it('uses owner-scoped counts without loading workflow documents', async () => {
     const count = vi.fn(async () => ({ totalDocs: 0 }))
     await expect(getOwnerWorkflowSummary({ payload: { count }, req: { user: owner } })).resolves.toMatchObject({ attentionCount: 0 })
-    expect(count).toHaveBeenCalledTimes(11)
+    expect(count).toHaveBeenCalledTimes(12)
     expect(count).toHaveBeenCalledWith(expect.objectContaining({ collection: 'assistance-proposals', overrideAccess: false, req: { user: owner }, where: { status: { equals: 'pending' } } }))
+    expect(count).toHaveBeenCalledWith(expect.objectContaining({ collection: 'figma-import-plans', overrideAccess: false, req: { user: owner }, where: { status: { equals: 'pending' } } }))
   })
 
   it('rejects anonymous access before querying storage', async () => {

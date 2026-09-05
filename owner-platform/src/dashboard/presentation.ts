@@ -164,6 +164,7 @@ const actionLabels: Record<string, string> = {
   'assistant.proposal.created': 'Propuesta creada',
   'assistant.context.exported': 'Contexto de asistencia exportado',
   'draft.snapshot.created': 'Snapshot restorable creado',
+  'figma.plan.created': 'Plan de importación Figma creado',
   'preview.snapshot.created': 'Previsualización creada',
   'proposal.denied': 'Propuesta denegada',
   'publication.artifact.created': 'Artefacto de publicación creado',
@@ -204,18 +205,21 @@ const workflowPresentation = (value: unknown): WorkflowPresentation => {
   const proposals = workflow.proposals === undefined ? {} : object(workflow.proposals) ?? fail()
   const restores = workflow.restores === undefined ? {} : object(workflow.restores) ?? fail()
   const publication = workflow.publication === undefined ? {} : object(workflow.publication) ?? fail()
+  const figmaImportPlans = workflow.figmaImportPlans === undefined ? {} : object(workflow.figmaImportPlans) ?? fail()
   const metric = (source: Record<string, unknown>, key: string) => source[key] === undefined ? 0 : count(source[key])
   const pendingProposals = metric(proposals, 'pending')
   const pendingRestores = metric(restores, 'ready') + metric(restores, 'confirmed') + metric(restores, 'conflict')
   const awaitingReview = metric(publication, 'awaitingReview')
   const awaitingArtifact = metric(publication, 'approvedAwaitingArtifact')
-  const derivedAttention = pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
+  const pendingFigmaImports = metric(figmaImportPlans, 'pending')
+  const derivedAttention = pendingFigmaImports + pendingProposals + pendingRestores + awaitingReview + awaitingArtifact
   const attentionCount = workflow.attentionCount === undefined ? derivedAttention : count(workflow.attentionCount)
   if (attentionCount !== derivedAttention) return fail()
   const item = (href: string, label: string, value: number) => ({ href, label, tone: value > 0 ? 'attention' as const : 'clear' as const, value })
   return {
     attentionCount,
     items: [
+      item('/admin/collections/figma-import-plans', 'Importaciones Figma por revisar', pendingFigmaImports),
       item('/admin/collections/assistance-proposals', 'Propuestas pendientes', pendingProposals),
       item('/admin/collections/restore-plans', 'Restauraciones por revisar', pendingRestores),
       item('/admin/collections/publication-bundles', 'Paquetes sin revisión', awaitingReview),

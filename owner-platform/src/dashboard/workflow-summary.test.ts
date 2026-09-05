@@ -7,11 +7,13 @@ describe('buildWorkflowSummary', () => {
     expect(buildWorkflowSummary({
       artifacts: 2,
       bundles: 5,
+      figmaImportPlans: 2,
       proposals: { accepted: 4, pending: 3, rejected: 1 },
       restores: { confirmed: 1, conflict: 2, executed: 6, ready: 2 },
       reviews: { approved: 3, rejected: 1 },
     })).toEqual({
-      attentionCount: 10,
+      attentionCount: 12,
+      figmaImportPlans: { pending: 2 },
       proposals: { accepted: 4, pending: 3, rejected: 1, total: 8 },
       publication: { approvedAwaitingArtifact: 1, artifacts: 2, awaitingReview: 1, bundles: 5, reviews: { approved: 3, rejected: 1, total: 4 } },
       restores: { confirmed: 1, conflict: 2, executed: 6, ready: 2, total: 11 },
@@ -19,7 +21,7 @@ describe('buildWorkflowSummary', () => {
   })
 
   it('rejects impossible workflow totals', () => {
-    const input = { artifacts: 2, bundles: 1, proposals: { accepted: 0, pending: 0, rejected: 0 }, restores: { confirmed: 0, conflict: 0, executed: 0, ready: 0 }, reviews: { approved: 1, rejected: 1 } }
+    const input = { artifacts: 2, bundles: 1, figmaImportPlans: 0, proposals: { accepted: 0, pending: 0, rejected: 0 }, restores: { confirmed: 0, conflict: 0, executed: 0, ready: 0 }, reviews: { approved: 1, rejected: 1 } }
     expect(() => buildWorkflowSummary(input)).toThrow(/revisiones/i)
     expect(() => buildWorkflowSummary({ ...input, bundles: 2, artifacts: 3 })).toThrow(/artefactos/i)
   })
