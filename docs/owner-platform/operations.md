@@ -347,6 +347,12 @@ The server re-verifies the snapshot hash, resolves the current draft and active
 Assistant Settings itself, validates the patch allowlist, stores a pending
 proposal, and appends an audit event. The body is limited to 64 KiB and unknown
 fields, credential-shaped fields, or disabled capabilities fail closed.
+`suggestLayout` is deliberately narrower than a general layout patch: it
+accepts one atomic `replace` of `/page/layout` only when the submitted array is
+an exact multiset-preserving reorder of the blocks in the verified snapshot.
+It cannot add, remove, duplicate, or edit a block. Crop proposals remain
+non-operational until their media-placement context has an equally strict
+contract.
 
 After reviewing the stored proposal, record exactly one decision:
 
@@ -746,8 +752,8 @@ It reports whether the server has a non-empty Figma personal access token, its
 normalized plan, and the connector's read-only boundary without returning the
 token. Linocube remains explicitly disabled. Assistant Settings are loaded
 through owner access and each switch is reported separately from operational
-support: copy, palette, and motion proposals are supported, while layout and
-crop remain non-operational even if their switches are enabled. Apply,
+support: copy, palette, layout reordering, and motion proposals are supported,
+while crop remains non-operational even if its switch is enabled. Apply,
 publish, deploy, and model-provider configuration are all reported as false;
 the status route cannot activate any of them.
 

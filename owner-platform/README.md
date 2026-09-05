@@ -199,6 +199,10 @@ Assistant Settings exposes independent owner-only switches for copy, palette,
 layout, crop, and motion proposals. Every switch defaults to off. These settings
 grant proposal permission only: no assistant receives apply, publish, deploy, or
 production-write authority.
+Layout permission supports only a detached atomic reorder of the exact blocks
+contained in the verified preview snapshot. It rejects additions, removals,
+duplicates, and content edits. Crop remains non-operational until a bounded
+media-placement proposal contract is available.
 
 Audit Events is an owner-readable, append-only ledger created only by trusted
 server services. Preview creation already records its actor, page, snapshot
