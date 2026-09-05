@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "verifiedGitHead": "3bf6861e0fd4e58beddeb9f2e15c08b0ca2086e8",
+  "verifiedGitHead": "62c4de2782cb0abbf17f6b727510ba8ef540b16e",
   "isolationEvidencePath": "docs/owner-platform/isolation-evidence-2026-09-04.json",
-  "isolationEvidenceSha256": "1d3fce187b7613cfe6c53febdf0f528480d6b36fbe9c1e8377c9121f6b569182",
+  "isolationEvidenceSha256": "893623e6b0c428823eb2d411144075944ad0b8819d757f86fd3f2b6bd27c99fb",
   "ownerTrackedFileCount": 287,
-  "ownerTrackedSurfaceSha256": "44a29c1e9e8713090488bdfc70252e6594bb32835bb90d3c332e6b4ed7887f70",
+  "ownerTrackedSurfaceSha256": "8080fea82264b59bf92fdaae5ef732fdccef095b76028d105d6089ff59aaee97",
   "ownerTrackedSurfaceExclusions": [
     "owner-platform/src/payload-types.ts",
     "owner-platform/next-env.d.ts",
@@ -19,7 +19,7 @@
     "owner-platform/.env.production.local",
     "owner-platform/.env.test.local"
   ],
-  "ownerPackageLockSha256": "8056b60b777c8b57751cd211b8ba4dce1af00f7b4b5bbcf23627949b1be1e85f",
+  "ownerPackageLockSha256": "48bde45225eeea8d1b21c25cd11e7c6b7614b3e77bc6f7d6f807857d4c334609",
   "publicIsolationRecord": {
     "passed": true,
     "routeCount": 9,
