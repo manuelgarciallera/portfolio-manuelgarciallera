@@ -953,6 +953,12 @@ guards or authorize a release.
 
 ## Disabled integrations
 
+For the current requirement-by-requirement local delivery audit, see
+[`completion-audit-2026-09-05.md`](./completion-audit-2026-09-05.md).
+Assistance proposals now include an authenticated read-only before/proposed
+comparison; its evidence and snapshot-v1 limitations are documented in
+[`assistance-review-verification.md`](./assistance-review-verification.md).
+
 - AI assistance is a provider-neutral validation contract only. There is no
   model SDK, API key, chat UI, autonomous mutation, or publish action in this
   phase. Capability switches default to denied and accepted patches are limited

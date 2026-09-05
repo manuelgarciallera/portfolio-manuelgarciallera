@@ -23,6 +23,7 @@ import { createOwnerPublicationReview } from '../src/publication/review-service'
 import { createOwnerPublicationArtifact } from '../src/publication/artifact-service'
 import { createOwnerPublicationPreflight } from '../src/publication/preflight-service'
 import { createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from '../src/assist/service'
+import { loadOwnerAssistanceReview } from '../src/assist/review'
 import { createOwnerFigmaImportPlan } from '../src/connectors/figma/import-service'
 import { createOwnerFigmaImportReview } from '../src/connectors/figma/import-review-service'
 import { executeOwnerFigmaImport } from '../src/connectors/figma/import-execution-service'
@@ -146,6 +147,27 @@ const assistanceFixture = async () => {
     schemaVersion: 1, capability: 'suggestCopy', operations: [{ op: 'replace', path: '/page/title', value: 'Proposal only' }],
   } }
 }
+
+it('compares a stored proposal against its frozen snapshot, never the newer page draft', async () => {
+  const input = await assistanceFixture()
+  input.patch.operations = [{ op: 'replace', path: '/page/layout/0/heading', value: 'Suggested heading' }]
+  const proposal = await createOwnerAssistanceProposal(input)
+  const stored = await payload.findByID({ collection: 'assistance-proposals', id: proposal.id as number, depth: 0, req: input.req, overrideAccess: false })
+  const pageId = stored.targetPage as number
+  await payload.update({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false,
+    data: { title: 'Newer live title', layout: [{ blockType: 'hero', heading: 'Newer draft, not baseline' }] },
+  })
+  // Turning a connector off must not hide historical evidence from the owner.
+  await payload.updateGlobal({ slug: 'assistant-settings', user: owner, overrideAccess: false, data: { suggestCopy: false } })
+  const pageBefore = await payload.findByID({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false })
+  const auditBefore = (await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs
+  const review = await loadOwnerAssistanceReview({ payload, req: input.req, proposalId: String(proposal.id) })
+  expect(review.changes[0]).toMatchObject({ before: { state: 'captured', text: 'Snapshot source' }, proposed: { state: 'captured', text: 'Suggested heading' } })
+  await decideOwnerAssistanceProposal({ payload: payload as never, req: input.req, proposalId: String(proposal.id), decision: 'rejected' })
+  expect(await loadOwnerAssistanceReview({ payload, req: input.req, proposalId: String(proposal.id) })).toEqual(review)
+  expect(await payload.findByID({ collection: 'pages', id: pageId, draft: true, req: input.req, overrideAccess: false })).toEqual(pageBefore)
+  expect((await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs).toBe(auditBefore + 1)
+}, 30_000)
 
 it('does not retain a proposal when its creation audit fails', async () => {
   const input = await assistanceFixture()

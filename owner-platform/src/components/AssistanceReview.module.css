@@ -1,0 +1,15 @@
+.review { min-width: 0; margin: 0 0 1rem; color: var(--theme-text); }
+.review h3 { margin: 0; font-size: 1rem; }
+.review > p { margin: 0.4rem 0 0.8rem; font-size: 0.85rem; line-height: 1.5; }
+.changes { display: grid; gap: 1rem; margin: 0 0 0.8rem; padding-left: 1.4rem; }
+.changes li { min-width: 0; }
+.changes h4 { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+.operation { margin: 0.25rem 0 0.5rem; font-size: 0.8rem; }
+.values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 0; }
+.values > div { min-width: 0; padding: 0.6rem; border: 1px solid var(--theme-elevation-200); border-radius: 0.3rem; }
+.values dt { margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; }
+.values dd { margin: 0; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.review summary { cursor: pointer; font-size: 0.8rem; }
+.review summary:focus-visible { outline: 2px solid var(--theme-text); outline-offset: 3px; }
+.hash { font-size: 0.8rem; overflow-wrap: anywhere; }
+@media (max-width: 46rem) { .values { grid-template-columns: 1fr; } }

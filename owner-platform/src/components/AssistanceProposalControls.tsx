@@ -5,6 +5,7 @@ import { useDocumentInfo } from '@payloadcms/ui'
 
 import { decideAssistanceProposal } from '@/assist/client'
 import { DocumentActionGroup } from './DocumentActionGroup'
+import { AssistanceReview } from './AssistanceReview'
 import styles from './PublicationBundleControls.module.css'
 
 const identifier = (value: unknown): string | number | null => (typeof value === 'string' || typeof value === 'number') && String(value).trim() ? value : null
@@ -20,7 +21,7 @@ export const AssistanceProposalControls = () => {
   const [note, setNote] = useState('')
   const [message, setMessage] = useState('La decisión clasifica la propuesta; no aplica cambios ni publica.')
   if (proposalId === null || !['pending', 'accepted', 'rejected'].includes(String(status))) return null
-  if (status !== 'pending' || completed) return <aside className={styles.panel}><strong>Propuesta {status === 'rejected' || decision === 'rejected' ? 'rechazada' : 'aceptada'}</strong><p>La decisión es inmutable y no ha aplicado el patch a la página.</p></aside>
+  if (status !== 'pending' || completed) return <aside className={styles.panel}><AssistanceReview key={String(proposalId)} proposalId={proposalId} /><strong>Propuesta {status === 'rejected' || decision === 'rejected' ? 'rechazada' : 'aceptada'}</strong><p>La decisión es inmutable y no ha aplicado el patch a la página.</p></aside>
 
   const phrase = decision === 'accepted' ? 'ACEPTAR PROPUESTA' : 'RECHAZAR PROPUESTA'
   const submit = async () => {
@@ -41,6 +42,7 @@ export const AssistanceProposalControls = () => {
 
   return (
     <aside className={styles.panel}>
+      <AssistanceReview key={String(proposalId)} proposalId={proposalId} />
       <strong>Decisión owner de la propuesta</strong>
       <p>Revisa el patch antes de registrar una decisión única.</p>
       <DocumentActionGroup label="Decisión de propuesta" disabled={pending || completed} onAction={submit}>

@@ -1,0 +1,87 @@
+# Auditoría de alcance del Owner Studio
+
+Esta lista contrasta las solicitudes y los tres planes existentes con la
+implementación local. No convierte los límites de una fase en una afirmación
+de producto terminado. Las solicitudes repetidas cuentan una vez: versiones,
+edición modular, encuadres, conectores y control de animación son capacidades
+comunes, no implementaciones separadas por cada mensaje.
+
+## Planes y evidencia
+
+| Requisito | Estado real | Evidencia / límite |
+| --- | --- | --- |
+| Checkpoint recuperable | Conservado | Tag `checkpoint/pre-editor-2026-09-04`, commit `0f0adf686b2752e23c25d224f8c60815b10fd451`; no reescritura ni despliegue |
+| Fundación modular y permisos | Implementado | `src/platform/content`, `connectors/figma`, `security`; pruebas incluidas en la suite pública de 207 tests |
+| Login privado owner | Operativo en local | Payload Users, bootstrap restringido, autorización servidor; evidencia en `browser-verification-2026-09-05.md`; no registro de visitantes |
+| Páginas, proyectos y artículos | Operativo en local | Colecciones, catálogo de bloques, orden, borradores, versiones y papelera; `editorial-runtime-verification.md` |
+| Editor sin depender de IA | Operativo dentro del catálogo | Lexical y formularios nativos; los módulos visuales especiales no son un editor libre de código |
+| Recorte, zoom, encuadre y responsive | Operativo en local | Recetas reversibles por colocación y overrides móvil; `media-editor-verification.md`; no sobrescribe el original |
+| Marca y animaciones configurables | Operativo en local | Colores semánticos, porcentajes validados, contraste, herencia y límites de movimiento; los porcentajes son guía, no cómputo de píxeles |
+| Preview editorial | Operativo en local | Páginas, artículos y proyectos; `visual-editorial-preview.md`; no reproduce todavía toda la dirección artística de la web pública |
+| Versiones por fecha y descripción | Operativo en local | Releases, snapshots inmutables y planes de restauración; `release-registration-verification.md`, `restore-integration-verification.md` |
+| Puntuaciones de calidad | Evidencia registrada | Métricas con fuente/fecha/viewport; no se inventan puntuaciones ni se equiparan mediciones manuales a métricas de campo |
+| Restauración | Probada en SQLite | Vuelve al borrador y conserva publicado/histórico; rollback ante fallo de auditoría; falta ensayo PostgreSQL y almacenamiento real |
+| Preparación de publicación | Operativo en local | Paquete → revisión → artefacto → preflight/exportación; `document-action-controls-verification.md`; no despliega ni reemplaza la web |
+| Figma | Adaptador y flujo local probado | Descubrimiento de solo lectura, aprobación e importación a borradores; persistencia con proveedor sintético; falta prueba con credenciales y archivo autorizado reales |
+| Asistencia IA | Contrato y revisión local | Contexto acotado, switches, importación manual de propuestas, comparación legible y decisión auditada; `assistance-review-verification.md`; sin modelo conectado ni aplicación automática |
+| Analítica dentro del panel | Lectura de snapshots importados | Importador y resumen de métricas/URLs; no es sincronización continua con una cuenta de Analytics |
+| Linocube | Interfaz preparada y desactivada | Sin red ni integración CRM activa; no añade dependencias al editor |
+| Panel acoplable/arrastrable | Diferido expresamente | El diseño aprobado reserva la carcasa dockable para una fase posterior; se conserva la navegación nativa de Payload |
+| Actualizaciones automáticas | No completamente automatizadas | Versiones y lockfiles fijados, pruebas y puertas de calidad; no hay autorización para actualizaciones/despliegues ciegos |
+
+Los planes de fundación, vertical slice y fase 2 separan explícitamente el
+funcionamiento local de la integración pública. Las casillas históricas de
+«escribir test ausente» no se usan como prueba actual: se conservan los planes y
+se remite a pruebas ejecutables, commits e informes. La versión owner de Next
+se actualizó respecto al texto original del plan por la remediación documentada
+de dependencias; no se actualizó por ello el runtime público.
+
+## Lo que falta para uso real en producción
+
+1. PostgreSQL de staging, migraciones revisadas, copias y ensayo de restauración;
+   concurrencia y fallos de commit ambiguos no quedan certificados por SQLite.
+2. Almacenamiento duradero/versionado y rollback de archivos. Las pruebas de
+   importación actuales acreditan rollback de filas, no del proveedor de objetos.
+3. Correo transaccional y recuperación de cuenta, controles de exposición,
+   límites de acceso y monitorización operativa.
+4. Resolver avisos de dependencias compatibles y repetir pruebas. Auditorías
+   npm de esta sesión: owner 12 paquetes moderados afectados por dos cadenas;
+   portfolio 1 paquete moderado (`fflate`); ambos devuelven exit 1, no «audit limpio».
+5. Credenciales y permisos de Figma/analítica/modelos; revisión de costes,
+   privacidad y límites antes de activarlos. Ninguna suscripción de usuario se
+   supone equivalente a crédito API.
+6. Aplicación reversible de propuestas al borrador con preview visual, detección
+   de cambios concurrentes y consentimiento específico. Aceptar hoy solo deja
+   constancia; no debe presentarse como edición IA completa.
+7. Adaptador de publicación estática hacia el portfolio, comparación visual,
+   responsive, accesible y de rendimiento contra el checkpoint, y aprobación
+   de integración/despliegue. Ese puente sigue desactivado.
+
+La versatilidad futura —shell dockable, nuevas familias de bloques, producto
+vendible y CRM— no elimina esas puertas. Tampoco se puede prometer coste cero
+permanente para alojamiento, almacenamiento, analítica o modelos externos.
+
+## Las seis auditorías del portfolio
+
+El informe `../portfolio-complete-audit-2026-09-04.md` recoge responsive,
+accesibilidad, rendimiento, SEO, robustez y contenido. Su matriz de 60
+combinaciones y Lighthouse corresponde a esa fecha, no a una nueva auditoría
+de producción esta noche. Contenido y jerarquía siguen siendo recomendaciones;
+no se reescriben desde este incremento CMS.
+
+En esta sesión se vuelven a ejecutar las comprobaciones técnicas locales y la
+comparación de bundle público. Eso no sustituye la revisión manual con lector
+de pantalla, las métricas reales de visitantes o la inspección visual del
+portfolio en producción. Los ajustes visuales antiguos no se vuelven a aplicar
+por aparecer repetidos en el historial.
+
+## Estado de entrega
+
+Incremento actual: comparación legible de propuestas implementada y verificada.
+Resultado: 653 unitarias owner, 17 integraciones SQLite y 22 casos browser;
+lint, TypeScript y builds owner/público correctos. Portfolio: 207 unitarias,
+11 guardas, 8 pruebas de aislamiento; 20 entradas públicas aisladas y 9 rutas
+sin regresión de bundle. El check owner final usó una concurrencia temporal de
+dos workers; el cierre intermitente del ejecutor permanece documentado.
+El CMS local ha avanzado; no se declara listo para producción, ni se ha
+publicado el panel o modificado el portfolio desde este trabajo.
