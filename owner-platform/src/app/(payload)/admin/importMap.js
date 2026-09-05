@@ -38,6 +38,7 @@ import { OwnerSearch as OwnerSearch_7da0697cce316540a9fd4f700f16f565 } from '../
 import { OwnerOverview as OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0 } from '../../../components/OwnerOverview'
 import { AnalyticsImporter as AnalyticsImporter_dd572f3242a10829ee97001466e657e0 } from '../../../components/AnalyticsImporter'
 import { FigmaExplorer as FigmaExplorer_63178c84466ff51b9c0c9a1bedcf3ae6 } from '../../../components/FigmaExplorer'
+import { FirstOwnerSetup as FirstOwnerSetup_9c02219eb134058961eaa8d6db9a7a26 } from '../../../components/FirstOwnerSetup'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -82,5 +83,6 @@ export const importMap = {
   "./components/OwnerOverview#OwnerOverview": OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0,
   "./components/AnalyticsImporter#AnalyticsImporter": AnalyticsImporter_dd572f3242a10829ee97001466e657e0,
   "./components/FigmaExplorer#FigmaExplorer": FigmaExplorer_63178c84466ff51b9c0c9a1bedcf3ae6,
+  "./components/FirstOwnerSetup#FirstOwnerSetup": FirstOwnerSetup_9c02219eb134058961eaa8d6db9a7a26,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

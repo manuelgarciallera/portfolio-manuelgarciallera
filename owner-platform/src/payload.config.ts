@@ -56,6 +56,9 @@ const groupCollections = (group: string, collections: CollectionConfig[]): Colle
 export default buildConfig({
   admin: {
     components: {
+      views: {
+        createFirstUser: { Component: './components/FirstOwnerSetup#FirstOwnerSetup', path: '/create-first-user', exact: true },
+      },
       beforeDashboard: [
         './components/OwnerSearch#OwnerSearch',
         './components/OwnerOverview#OwnerOverview',

@@ -139,9 +139,16 @@ are ignored. Never commit them.
 1. Generate two independent random values of at least 32 characters: one for
    `PAYLOAD_SECRET`, another short-lived value for `OWNER_BOOTSTRAP_SECRET`.
 2. Put them in `owner-platform/.env`; never put secrets in a URL, screenshot,
-   issue, commit, client-side variable, prompt, or log.
+   issue, commit, bundled client-side variable, prompt, or log.
 3. Start the local owner app.
-4. Submit the first registration directly to the gated endpoint. Example in
+4. Open `/admin/create-first-user`. The guided setup asks for your email,
+   a unique password (12–128 characters), confirmation, and installation key.
+   Enter `OWNER_BOOTSTRAP_SECRET` in the masked installation-key field. The
+   browser sends it only as the required request header, not as document data,
+   and does not store it in browser storage. Success clears the form and
+   reminds you to remove the installation secret. Errors stay visible.
+
+   Alternatively, submit directly to the gated endpoint. Example in
    PowerShell, with values supplied in the current process rather than history:
 
 ```powershell
@@ -156,8 +163,9 @@ Invoke-RestMethod -Method Post -Uri 'http://localhost:3001/api/users/first-regis
    accounts.
 
 The route denies missing or mismatched bootstrap secrets and Payload permits
-first registration only while the Users collection is empty. The normal admin
-form cannot bypass the server-side header gate.
+first registration only while the Users collection is empty. Guided setup uses
+the same server-side header gate; it neither exposes the configured secret nor
+bypasses owner authentication. Use HTTPS for any non-loopback installation.
 
 ## Editorial behavior
 

@@ -22,8 +22,16 @@ Follow `operations.md` for first-owner installation. Use test-only credentials f
 
 ## Remaining usability work
 
-The standard first-user form offers “Create” but cannot submit the required bootstrap header. The protected endpoint correctly rejects it, yet the form did not leave a persistent explanation visible in the inspected snapshot. A guided installation interface is still needed; do not weaken the endpoint protection to make the stock form succeed.
+The initial standard first-user form offered “Create” but could not submit the required bootstrap header. The protected endpoint correctly rejected it, yet the form did not leave a persistent explanation visible. This finding led to the guided installation interface described below; the endpoint protection remains unchanged.
 
 The interface mixes Payload's English labels with the custom Spanish dashboard. A consistent localization pass is pending.
 
 This check does not prove visual preview fidelity or publication into the public portfolio. A saved draft and a snapshot manifest are not a rendered page preview. Browser checks for media editing, versions/restoration, longer content and additional viewports remain pending.
+
+## Guided installation follow-up
+
+The `/admin/create-first-user` view now requests email, password confirmation and a masked installation key, with inline guidance and persistent errors. A real browser request with an incorrect key returned 403 and displayed the installation-key error as an alert. At 390×844 the document width was 390px, with all four fields approximately 329px wide.
+
+Correcting the key in that same form successfully created the synthetic owner. The success view displayed “Cuenta creada”, removed the form, and showed the instruction to remove `OWNER_BOOTSTRAP_SECRET` and restart the server. No production credentials were used.
+
+Reopening `/admin/create-first-user` after the account existed returned a 307 redirect to `/admin`, confirming that Payload still prevents repeating the first-user screen. The temporary browser session and development server were closed after verification.

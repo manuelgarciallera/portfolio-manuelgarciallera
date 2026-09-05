@@ -1,0 +1,13 @@
+.setup { width: 100%; max-width: 32rem; margin: 0 auto; padding: 1rem; box-sizing: border-box; overflow-wrap: anywhere; }
+.setup h1 { font-size: clamp(1.7rem, 5vw, 2.2rem); line-height: 1.15; }
+.setup p, .setup small { line-height: 1.55; }
+.setup details { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--theme-elevation-200); border-radius: .5rem; }
+.setup summary { cursor: pointer; min-height: 2rem; }
+.setup fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 1rem; min-width: 0; }
+.setup legend { margin-bottom: 1rem; font-weight: 600; }
+.setup label { display: grid; gap: .5rem; }
+.setup input { width: 100%; box-sizing: border-box; min-height: 44px; padding: .65rem; color: var(--theme-text); background: var(--theme-input-bg); border: 1px solid var(--theme-elevation-300); border-radius: .25rem; font: inherit; }
+.setup button { min-height: 44px; padding: .75rem 1rem; color: var(--theme-bg); background: var(--theme-text); border: 0; border-radius: .25rem; cursor: pointer; font: inherit; }
+.setup fieldset:disabled { opacity: .6; }
+.setup :focus-visible { outline: 2px solid var(--theme-text); outline-offset: 3px; }
+.error { border-inline-start: 3px solid var(--theme-error-500); padding-inline-start: .75rem; }
