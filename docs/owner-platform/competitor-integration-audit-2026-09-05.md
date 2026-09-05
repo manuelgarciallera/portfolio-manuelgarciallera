@@ -122,3 +122,74 @@ Tomar de la competencia los patrones comprobables, no añadir sus SDKs por
 acumulación. Prioridad: estabilidad y preview fiel; después flujo de edición
 guiado y un único recorrido CMS → Linocube. Arquitectura, diseño público y
 conectores permanecen sin cambios en esta auditoría.
+
+## Revalidación sobre `45f328f` (5 de septiembre, tarde)
+
+Se repitieron las comprobaciones después de incorporar identidad de bloques,
+título histórico y recetas de encuadre a los snapshots. No se modificó código
+de aplicación, configuración de tests, dependencias ni contenido público.
+
+| Comprobación repetida | Resultado observado |
+| --- | --- |
+| Owner `check`, con dos workers temporales | 687 unitarias, 20 integraciones SQLite, lint, tipos y build; exit 0. Reaparecieron avisos de timeout al terminar workers en cinco archivos; no se declara resuelta la estabilidad del ejecutor. |
+| Portfolio unitarias, dos workers | 207/207; exit 0. |
+| Portfolio `check:all` | 11 guardas, 20 entradas públicas, encoding, hero, tipografía en ocho perfiles, navegación, lint, tipos, build y presupuesto de bundle en nueve rutas superados. Exit 1 por `fflate`, un aviso moderado. |
+| Aislamiento owner | 8/8; exit 0. El error del hash ficticio pertenece al caso negativo deliberado. |
+| Owner `test:controls` | 22 casos browser a 1280/390 px; exit 0. Componentes reales con contexto y respuestas sustituidos, no E2E de proveedores. |
+| Owner `npm audit --omit=dev --json` | Exit 1; 12 paquetes moderados por las cadenas de Payload y esbuild. No se aplicó `audit fix --force`. |
+
+Las unitarias owner tardaron 214,52 s; las integraciones, 29,11 s. Se observó
+aproximadamente 1,2 GiB de memoria física disponible en una máquina de 32 GiB
+durante la ejecución. Es contexto diagnóstico, no una causa demostrada de los
+avisos. El código del ejecutor sitúa esos mensajes en el cierre del worker;
+el resumen final sí registra todos los casos como pasados. El warning de correo
+sin adaptador también permanece: las pruebas no acreditan envío de emails.
+
+Se inspeccionaron las dos capturas nuevas de comparación de propuestas a
+1280/390 px: el texto largo se adapta, el marcado malicioso aparece como texto,
+el foco de teclado es visible y la decisión aceptada indica que no ha aplicado
+cambios. Esta inspección abarca ese componente, no todas las pantallas del CMS.
+
+No se repitieron en esta pasada Storybook, Lighthouse, la matriz visual completa
+ni los recorridos con un servidor owner real. Sus resultados anteriores y sus
+incidencias siguen siendo históricos, no nuevas verificaciones satisfactorias.
+Tampoco se probaron PostgreSQL, cuentas de proveedores o aislamiento multicliente.
+
+### Contraste competitivo actualizado
+
+Se volvieron a consultar las fuentes oficiales enlazadas en este informe.
+La búsqueda adicional de Odoo confirmó en su resultado oficial el flujo
+formulario → oportunidad y asignación comercial; la apertura directa siguió
+sin ofrecer extracción utilizable. No se usaron reseñas de terceros para
+acreditar capacidades técnicas ni se probaron cuentas de pago.
+
+El detalle más cercano a la propuesta del owner aparece en
+[Webflow, AI code components](https://help.webflow.com/hc/en-us/articles/51168990228499-Build-AI-code-components)
+(actualizado el 2 de septiembre de 2026): asistente a izquierda/derecha o
+flotante, posición recordada por sitio, lectura de estilos y variables para
+guiar la generación y edición dirigida al elemento seleccionado. La generación
+consume créditos; la edición visual no. La publicación de esos componentes
+requiere planes de pago. Esto confirma un patrón de interacción existente,
+no que debamos copiar su stack ni que nuestra implementación pueda operar gratis.
+
+[Wix Studio](https://www.wix.com/studio/management-tools) comercializa también
+la entrega al cliente: kit de ayuda, modo de contenido y reportes mensuales.
+La inferencia para nuestro producto es que la propuesta comercial debe
+explicar autonomía y seguimiento, no enumerar tecnologías. No hay todavía
+evidencia de demanda, precio aceptable o coste de soporte de nuestro CMS.
+
+Orden recomendado, sin activar integraciones desde esta auditoría:
+
+1. Cerrar estabilidad, seguridad y restauración en infraestructura real.
+2. Preview fiel y una tarea editorial sencilla de principio a fin, sin IA.
+3. Aplicar propuestas al borrador con autorización explícita, control de
+   concurrencia y copia recuperable. Una aceptación registrada no basta.
+4. Probar un único recorrido comercial: formulario web → solicitud identificada
+   → oportunidad en Linocube → siguiente acción visible. Credenciales por cliente,
+   deduplicación, reintentos y trazabilidad antes de denominarlo ecosistema.
+5. Validar ese recorrido con usuarios no técnicos; después valorar el panel
+   acoplable y la expansión a un editor más libre.
+
+El enfoque visual inspirado en videojuegos debe probarse como aprendizaje por
+tareas y feedback comprensible, no como animación adicional obligatoria. Es una
+hipótesis de diseño pendiente de validación, no una ventaja comercial demostrada.
