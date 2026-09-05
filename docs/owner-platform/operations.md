@@ -34,6 +34,11 @@ is explicitly set. The development command binds to localhost and uses port
 After signing in, Payload's admin navigation exposes the implemented editorial
 surface without changing the public portfolio:
 
+The sidebar uses four native groups in a stable order: `Contenido`, `Diseño y
+medios`, `Workflow`, and `Sistema`; Assistant Settings appears under System.
+Grouping is presentation metadata only and does not change collection slugs,
+permissions, endpoints, migrations, or persisted content.
+
 - **Brand Profiles** is the current Brand Studio. It stores semantic colors,
   usage weights, typography, approved imagery/icons, voice notes, and bounded
   motion settings. Publication validation requires unique roles, usage weights

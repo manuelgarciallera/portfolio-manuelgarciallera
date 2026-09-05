@@ -19,6 +19,10 @@ Technology catalog are manually orderable. Open
 work with brand tokens; this is Payload's generated owner UI, not yet a custom
 visual canvas.
 
+The native Payload sidebar is grouped by responsibility: `Contenido`, `Diseño
+y medios`, `Workflow`, and `Sistema`. This changes navigation order only;
+collection slugs, access rules, APIs, and stored documents remain unchanged.
+
 Semantic brand colors retain their normalized HEX storage and publication
 validation, while the admin field now pairs the text value with a synchronized
 native visual picker. Usage percentages, contrast checks, page overrides, and
