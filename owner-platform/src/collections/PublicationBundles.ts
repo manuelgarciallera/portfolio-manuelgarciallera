@@ -39,6 +39,7 @@ export const enforcePublicationBundleDelete: CollectionBeforeDeleteHook = async 
 export const PublicationBundles: CollectionConfig = {
   slug: 'publication-bundles',
   admin: {
+    components: { edit: { beforeDocumentControls: ['./components/PublicationBundleControls#PublicationBundleControls'] } },
     defaultColumns: ['name', 'pageCount', 'bundleHash', 'createdAt'],
     useAsTitle: 'name',
   },

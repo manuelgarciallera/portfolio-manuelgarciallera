@@ -23,6 +23,9 @@ describe('PublicationBundles collection', () => {
     expect(PublicationBundles.access?.create?.(access(owner))).toBe(false)
     expect(PublicationBundles.access?.update?.(access(owner))).toBe(false)
     expect(PublicationBundles.access?.delete?.(access(owner))).toBe(false)
+    expect(PublicationBundles.admin?.components?.edit?.beforeDocumentControls).toEqual([
+      './components/PublicationBundleControls#PublicationBundleControls',
+    ])
   })
 
   it('accepts only matching bundle hash, count and owner provenance', async () => {

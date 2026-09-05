@@ -27,6 +27,7 @@ import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97f
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
 import { BrandMotionPreview as BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709 } from '../../../components/BrandMotionPreview'
 import { RestorePlanControls as RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0 } from '../../../components/RestorePlanControls'
+import { PublicationBundleControls as PublicationBundleControls_a1559df9f50ea83254bc137a42e15312 } from '../../../components/PublicationBundleControls'
 import { OwnerSearch as OwnerSearch_7da0697cce316540a9fd4f700f16f565 } from '../../../components/OwnerSearch'
 import { OwnerOverview as OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0 } from '../../../components/OwnerOverview'
 import { AnalyticsImporter as AnalyticsImporter_dd572f3242a10829ee97001466e657e0 } from '../../../components/AnalyticsImporter'
@@ -64,6 +65,7 @@ export const importMap = {
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,
   "./components/BrandMotionPreview#BrandMotionPreview": BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709,
   "./components/RestorePlanControls#RestorePlanControls": RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0,
+  "./components/PublicationBundleControls#PublicationBundleControls": PublicationBundleControls_a1559df9f50ea83254bc137a42e15312,
   "./components/OwnerSearch#OwnerSearch": OwnerSearch_7da0697cce316540a9fd4f700f16f565,
   "./components/OwnerOverview#OwnerOverview": OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0,
   "./components/AnalyticsImporter#AnalyticsImporter": AnalyticsImporter_dd572f3242a10829ee97001466e657e0,
