@@ -287,9 +287,17 @@ logs.
 The owner dashboard includes a collapsed, same-origin explorer for this route.
 It displays at most the provider's bounded candidate set, validates every
 returned source/preview URL again before rendering, lazy-loads temporary
-thumbnails, and links back to the exact Figma node. The UI remains inspection
-only: it has no selection persistence, media import, replacement, crop, save,
-publication, or retry loop.
+thumbnails, and links back to the exact Figma node.
+
+An owner may explicitly select **Preparar importación**. The private
+`POST /api/owner/figma/import-plans` endpoint requires the exact
+`PREPARAR IMPORTACIÓN FIGMA` phrase, rediscovers the source server-side, and
+accepts only a candidate still present in that fresh bounded result. It stores
+an immutable, hashed Figma Import Plan containing file/node provenance,
+dimensions, and observation time. Temporary signed render URLs are deliberately
+discarded and every plan creation is audited. The resulting record remains
+pending review evidence: it cannot download pixels, create Media, replace an
+asset, crop, publish, deploy, retry automatically, or call any Figma write API.
 
 ## Immutable local preview snapshots
 

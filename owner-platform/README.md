@@ -48,8 +48,11 @@ discovery when `FIGMA_PERSONAL_ACCESS_TOKEN` and `FIGMA_PLAN` are configured
 server-side. Figma rate limits are returned without automatic retries.
 The owner dashboard exposes this through a collapsed explorer: an authenticated
 owner can paste a Figma file, prototype, or node URL and inspect bounded frame,
-section, and component candidates with temporary previews. It cannot import,
-replace, crop, save, or publish a candidate.
+section, and component candidates with temporary previews. A candidate can now
+be converted into an immutable pending Figma Import Plan. The server rediscovers
+the node, stores canonical provenance and a hash, discards the temporary signed
+render URL, and audits creation. This prepares review evidence only: it does not
+download, replace, crop, save as Media, publish, or deploy the candidate.
 
 AI and Linocube are disabled contracts only: they have no credentials, SDKs,
 network implementation, autonomous writes, or public publishing path. See the
