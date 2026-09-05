@@ -97,6 +97,10 @@ public portfolio.
 from the two latest verified snapshots: traffic changes, engagement, ten top
 routes, and Core Web Vitals ratings. It fails closed on hash mismatch and does
 not expose raw provider credentials or visitor data.
+The generated owner dashboard now renders that verified summary directly:
+traffic and period comparison, engagement, five leading routes, and LCP/INP/CLS
+status. With no snapshot it reports analytics as unavailable rather than
+presenting false zeroes.
 
 `GET /api/owner/content/health` provides an owner-only editorial overview:
 draft/published totals plus bounded issue counts for missing SEO, brand

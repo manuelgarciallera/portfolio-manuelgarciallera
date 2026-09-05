@@ -617,6 +617,12 @@ audit activity in parallel. A new installation with no analytics snapshot receiv
 fails closed. This distinction permits a useful first-run dashboard without
 turning missing data into false zeroes or concealing integrity failures.
 
+The dashboard renders the verified analytics result as a compact owner-only
+panel: views and visitors with period change, average duration, bounce rate,
+the five leading routes, and rated LCP/INP/CLS values. An empty installation
+shows an explicit unavailable state and a shortcut to Analytics Snapshots;
+it does not synthesize measurements or add tracking to the public application.
+
 The generated Payload home consumes that endpoint through a compact native
 extension. It shows content and media issue counts, workflow attention,
 registered versions, conservative runtime readiness, and at most five recent
