@@ -58,7 +58,10 @@ change summary, and bounded desktop/mobile quality measurements. Records are
 immutable evidence; selecting a record does not execute a rollback or mutate
 the public site. `POST /api/owner/releases` is the audited registration path:
 it re-verifies the referenced snapshot before creating the immutable record and
-does not expose restore, apply, publish, or deploy controls.
+does not expose restore, apply, publish, or deploy controls. Direct collection
+creation is denied so the hash and audit checks cannot be bypassed. A collapsed
+dashboard form lists only visual/restorable snapshot pairs from the same source
+revision, captures bounded quality evidence, and requires `REGISTRAR VERSIÓN`.
 
 Media Placements stores focal point, zoom, fit, frame ratio, and optional mobile
 or tablet overrides while preserving the uploaded original. Projects and page

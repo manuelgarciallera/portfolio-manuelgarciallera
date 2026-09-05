@@ -370,6 +370,7 @@ POST /api/owner/releases
 Content-Type: application/json
 
 {
+  "confirmation": "REGISTRAR VERSIÓN",
   "name": "Checkpoint API owner",
   "changeSummary": "Endpoints owner revisados.",
   "draftSnapshot": 13,
@@ -388,11 +389,21 @@ Content-Type: application/json
 }
 ```
 
-The authenticated endpoint is limited to 16 KiB, accepts only the documented
-evidence fields, re-computes the snapshot manifest hash, creates the immutable
-release record, and audits the registration. It records a restorable reference;
-it does not execute a restore by itself. Restoration is available only through
-the separate plan, confirmation, conflict, execution, and rollback controls.
+The authenticated endpoint is limited to 16 KiB, requires the exact
+`REGISTRAR VERSIÓN` phrase, accepts only the documented evidence fields,
+re-computes both snapshot hashes, creates the immutable release record, and
+audits the registration. Direct creation through the Releases collection is
+denied so the service checks cannot be bypassed. It records a restorable
+reference; it does not execute a restore by itself. Restoration is available
+only through the separate plan, confirmation, conflict, execution, and rollback
+controls.
+
+The owner dashboard exposes a collapsed registration form for the same endpoint.
+It loads at most 100 owner-readable records from each snapshot collection and
+shows only visual/restorable pairs whose page and source revision match. The
+owner supplies the full Git commit and one bounded quality measurement before
+confirming the record. Invalid or non-JSON responses become controlled editor
+messages and never expose upstream bodies.
 
 Before registering a restorable release, create both snapshots from the same
 unchanged page draft:
