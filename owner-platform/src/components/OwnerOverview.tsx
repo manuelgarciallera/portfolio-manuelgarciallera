@@ -93,6 +93,23 @@ export const OwnerOverview = () => {
         </div>
         <p className={styles.safety}>{view.integrations.safety}</p>
       </div>
+      {view.activity.length > 0 && (
+        <div className={styles.activity}>
+          <div className={styles.sectionHeading}>
+            <h3>Actividad reciente</h3>
+            <Link href="/admin/collections/audit-events">Ver registro</Link>
+          </div>
+          <ul>
+            {view.activity.map((event) => (
+              <li data-tone={event.tone} key={event.href}>
+                <a href={event.href}><span>{event.action}</span><small>{event.subject}</small></a>
+                <strong>{event.outcome}</strong>
+                <time dateTime={event.createdAt}>{new Intl.DateTimeFormat('es-ES', { day: '2-digit', hour: '2-digit', minute: '2-digit', month: 'short' }).format(new Date(event.createdAt))}</time>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {view.recent.length > 0 && (
         <div className={styles.recent}>
           <h3>Continuar editando</h3>

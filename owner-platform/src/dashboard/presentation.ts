@@ -1,4 +1,5 @@
 type DashboardCard = { href: string; label: string; tone: 'attention' | 'healthy' | 'neutral'; value: number }
+type ActivityItem = { action: string; createdAt: string; href: string; outcome: string; subject: string; tone: 'attention' | 'success' }
 type RecentItem = { href: string; label: string; meta: string; updatedAt: string }
 type VersionItem = { createdAt: string; href: string; name: string; scores: { label: string; value: number }[]; summary: string }
 type AnalyticsPresentation = { available: false } | {
@@ -13,7 +14,7 @@ type IntegrationsPresentation = {
   connectors: { label: string; status: string; tone: 'disabled' | 'ready' }[]
   safety: string
 }
-type DashboardPresentation = { actions: { href: string; label: string }[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; integrations: IntegrationsPresentation; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
+type DashboardPresentation = { actions: { href: string; label: string }[]; activity: ActivityItem[]; analytics: AnalyticsPresentation; cards: DashboardCard[]; integrations: IntegrationsPresentation; recent: RecentItem[]; runtimeLabel: string; versions: VersionItem[] }
 
 const object = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const count = (value: unknown): number => Number.isInteger(value) && Number(value) >= 0 ? Number(value) : fail()
@@ -155,6 +156,46 @@ const integrationsPresentation = (value: unknown): IntegrationsPresentation => {
   }
 }
 
+const actionLabels: Record<string, string> = {
+  'analytics.snapshot.created': 'Snapshot analítico creado',
+  'assistant.proposal.accepted': 'Propuesta aceptada',
+  'assistant.proposal.created': 'Propuesta creada',
+  'draft.snapshot.created': 'Snapshot restorable creado',
+  'preview.snapshot.created': 'Previsualización creada',
+  'proposal.denied': 'Propuesta denegada',
+  'publication.artifact.created': 'Artefacto de publicación creado',
+  'publication.bundle.approved': 'Paquete de publicación aprobado',
+  'publication.bundle.created': 'Paquete de publicación creado',
+  'release.registered': 'Versión registrada',
+  'restore.executed': 'Restauración ejecutada',
+  'restore.plan.created': 'Plan de restauración creado',
+}
+
+const activityPresentation = (value: unknown): ActivityItem[] => {
+  const activity = value === undefined ? {} : object(value) ?? fail()
+  const events = activity.events ?? []
+  if (!Array.isArray(events) || events.length > 20) return fail()
+  return events.slice(0, 5).map((value) => {
+    const event = object(value) ?? fail()
+    const subject = object(event.subject) ?? fail()
+    const action = typeof event.action === 'string' && /^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*){1,5}$/.test(event.action) ? event.action : fail()
+    const outcome = event.outcome
+    if (outcome !== 'success' && outcome !== 'denied' && outcome !== 'failure') return fail()
+    const collection = typeof subject.collection === 'string' && /^[a-z][a-z0-9-]{1,63}$/.test(subject.collection) ? subject.collection : fail()
+    const subjectId = relationId(subject.id)
+    const id = relationId(event.id)
+    const createdAt = date(event.createdAt).toISOString()
+    return {
+      action: actionLabels[action] ?? action.split('.').join(' · '),
+      createdAt,
+      href: `/admin/collections/audit-events/${encodeURIComponent(String(id))}`,
+      outcome: outcome === 'success' ? 'Correcto' : outcome === 'denied' ? 'Denegado' : 'Fallido',
+      subject: `${collection} · ${subjectId}`,
+      tone: outcome === 'success' ? 'success' : 'attention',
+    }
+  })
+}
+
 export const presentOwnerDashboard = (value: unknown): DashboardPresentation => {
   const overview = object(value) ?? fail()
   const content = object(overview.content) ?? {}
@@ -173,6 +214,7 @@ export const presentOwnerDashboard = (value: unknown): DashboardPresentation => 
       { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
       { href: '/admin/collections/media/create', label: 'Subir medio' },
     ],
+    activity: activityPresentation(overview.activity),
     analytics: analyticsPresentation(overview.analytics),
     cards: [
       { href: '/admin/collections/projects', label: 'Contenido', tone: contentIssues ? 'attention' : 'healthy', value: contentIssues },

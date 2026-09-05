@@ -5,6 +5,13 @@ import { presentOwnerDashboard } from './presentation'
 describe('presentOwnerDashboard', () => {
   it('projects bounded operational cards and recent edit destinations', () => {
     expect(presentOwnerDashboard({
+      activity: {
+        count: 2,
+        events: [
+          { id: 8, action: 'release.registered', outcome: 'success', subject: { collection: 'releases', id: '7' }, createdAt: '2026-09-05T09:00:00.000Z' },
+          { id: 9, action: 'proposal.denied', outcome: 'denied', subject: { collection: 'assistance-proposals', id: '4' }, createdAt: '2026-09-05T08:00:00.000Z' },
+        ],
+      },
       analytics: {
         available: true,
         data: {
@@ -75,6 +82,10 @@ describe('presentOwnerDashboard', () => {
         { href: '/admin/collections/articles/create', label: 'Nuevo artículo' },
         { href: '/admin/collections/media/create', label: 'Subir medio' },
       ],
+      activity: [
+        { action: 'Versión registrada', createdAt: '2026-09-05T09:00:00.000Z', href: '/admin/collections/audit-events/8', outcome: 'Correcto', subject: 'releases · 7', tone: 'success' },
+        { action: 'Propuesta denegada', createdAt: '2026-09-05T08:00:00.000Z', href: '/admin/collections/audit-events/9', outcome: 'Denegado', subject: 'assistance-proposals · 4', tone: 'attention' },
+      ],
       analytics: {
         available: true,
         metrics: [
@@ -141,6 +152,7 @@ describe('presentOwnerDashboard', () => {
     expect(() => presentOwnerDashboard({ releases: { versions: [{ id: 1, name: 'X', changeSummary: 'Y', createdAt: 'bad', scores: { average: {} } }] } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ analytics: { available: true, data: { topRoutes: new Array(11).fill({}) } } })).toThrow(/dashboard/i)
     expect(() => presentOwnerDashboard({ integrations: { assistant: { capabilities: { suggestCopy: { enabled: 'yes' } } } } })).toThrow(/dashboard/i)
+    expect(() => presentOwnerDashboard({ activity: { events: new Array(21).fill({}) } })).toThrow(/dashboard/i)
   })
 
   it('represents a dashboard without analytics as unavailable rather than false zeroes', () => {
