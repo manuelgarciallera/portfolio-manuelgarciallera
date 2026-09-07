@@ -127,6 +127,13 @@ describe('media revision store', () => {
     await expect(readdir(root)).resolves.toEqual([])
   })
 
+  it('rejects a filename ending in an unpaired high surrogate before allocating a revision directory', async () => {
+    await expect(writeMediaRevision(root, [
+      { name: 'hero\uD800', bytes: Buffer.from('image') },
+    ])).rejects.toThrow()
+    await expect(readdir(root)).resolves.toEqual([])
+  })
+
   it('round-trips a filename containing a valid surrogate pair', async () => {
     const name = 'hero-\uD83D\uDE80.png'
 
@@ -272,6 +279,17 @@ describe('media revision store', () => {
       await saveManifest(revision, { ...valid, files })
       await expect(readMediaRevision(root, revision)).rejects.toThrow()
     }
+  })
+
+  it('rejects a manifest filename ending in an unpaired high surrogate as unsafe Unicode', async () => {
+    const revision = await writeMediaRevision(root, [
+      { name: 'hero.png', bytes: Buffer.from('image') },
+    ])
+    const manifest = await loadManifest(revision)
+    manifest.files[0]!.name = 'hero\uD800'
+    await saveManifest(revision, manifest)
+
+    await expect(readMediaRevision(root, revision)).rejects.toThrow(/nombre.*seguro/i)
   })
 
   it('rejects missing, extra, non-regular, or size-mismatched binaries', async () => {

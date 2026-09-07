@@ -57,6 +57,7 @@ const isWellFormedUtf16 = (value: string): boolean => {
   for (let index = 0; index < value.length; index += 1) {
     const unit = value.charCodeAt(index)
     if (unit >= 0xD800 && unit <= 0xDBFF) {
+      if (index + 1 >= value.length) return false
       const next = value.charCodeAt(index + 1)
       if (next < 0xDC00 || next > 0xDFFF) return false
       index += 1
