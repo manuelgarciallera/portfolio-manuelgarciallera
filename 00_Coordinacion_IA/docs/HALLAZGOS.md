@@ -160,3 +160,54 @@ PENDIENTE, no tocado. Bajar esos 786 kB exige decisiones de arquitectura —cuan
 secciones pueden dejar de ser cliente, y si GSAP y Framer Motion deben convivir—, no
 un ajuste. No se toca a ciegas: la VM Linux del puente no puede construir el
 proyecto porque node_modules trae binarios de Windows.
+
+## SEO y enlaces · 2026-09-07 (Claude)
+
+Rastreo de las 14 rutas del sitemap: metadatos, encabezados, imagenes y cada enlace
+saliente comprobado con una peticion real.
+
+| ID | Hallazgo | Estado |
+| --- | --- | --- |
+| SEO-001 | /casos, /investigacion, /sobre-mi, /proceso y /articulos se compartian sin imagen de previsualizacion. Next reemplaza el objeto `openGraph` entero cuando una ruta lo declara; las cinco lo declaraban para fijar titulo y descripcion propios y perdian la imagen de la raiz. Las rutas dinamicas si la incluian, por eso el hueco no se veia. | ADOPTADO en 6e348b8. Descriptor centralizado en `OG_IMAGE`. |
+| SEO-002 | Descripcion de la home en 206 caracteres y de /proceso en 185: Google corta sobre 155 y la frase que cerraba el argumento no llegaba a verse. | ADOPTADO en 6e348b8. Quedan en 145 y 151. |
+| SEO-003 | Los `<title>` de los cuatro articulos median entre 74 y 92 caracteres al sumar la marca al titular editorial. | ADOPTADO en 6e348b8 con `title.absolute`. |
+
+No encontrado, que tambien es dato: ningun 404, ninguna imagen sin `alt`, ningun
+salto de nivel de encabezado, ninguna pagina sin canonical ni sin JSON-LD, y una
+sola `h1` por pagina en las catorce. LinkedIn responde 999, que es su bloqueo de
+bots.
+
+### PENDIENTE · Peso de imagenes y la calidad 92
+
+Medido con desplazamiento completo de la pagina:
+
+| Ruta | 390px @dpr3 | 1440px @dpr2 |
+| --- | --- | --- |
+| `/` | 28 imagenes, 1654 kB | 29 imagenes, 2651 kB |
+| `/casos/buy-sell-marketplace` | 14 imagenes, 580 kB | 11 imagenes, 746 kB |
+
+Las mas pesadas son las capturas de TheUXUnion servidas a `q=92`: 273, 147, 132,
+100 y 98 kB en la home.
+
+`quality={92}` esta en `ProjectPreviewCarousel.tsx` y en `ResearchThreshold.tsx`, y
+`ProjectPreviewCarousel.unit.test.tsx` lo asevera literalmente bajo el nombre
+«high-density project frames». Es una decision deliberada, no un descuido.
+
+Medicion del coste de esa decision, re-codificando la fuente a 1200px y comparando
+al tamano al que la imagen se muestra de verdad (306 css px x dpr 3 = 918):
+
+| calidad | peso | diferencia media frente a q=92 |
+| --- | --- | --- |
+| 92 | 281 kB | 0,00/255 |
+| 85 | 206 kB | 0,71/255 (max 18) |
+| 80 | 176 kB | 0,85/255 (max 22) |
+| 75 | 152 kB | 1,00/255 (max 29) |
+
+A q=80 la diferencia media es del 0,3% a tamano de pantalla —por debajo de
+cualquier umbral perceptible— y el ahorro es del 37%.
+
+NO SE TOCA. El `sizes` de esas imagenes es correcto: a 390px con dpr 3 el navegador
+pide 1080-1200, que es lo que corresponde. La unica palanca es la calidad, y esa es
+una decision de autor sobre como se ve el trabajo de Manuel, no una correccion
+tecnica. Queda medida para que la decida el. Cambiarla son dos numeros y una linea
+del test.
