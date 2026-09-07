@@ -45,9 +45,10 @@ de dependencias; no se actualizó por ello el runtime público.
    importación actuales acreditan rollback de filas, no del proveedor de objetos.
 3. Correo transaccional y recuperación de cuenta, controles de exposición,
    límites de acceso y monitorización operativa.
-4. Resolver avisos de dependencias compatibles y repetir pruebas. Auditorías
-   npm de esta sesión: owner 12 paquetes moderados afectados por dos cadenas;
-   portfolio 1 paquete moderado (`fflate`); ambos devuelven exit 1, no «audit limpio».
+4. Resolver avisos de dependencias compatibles y repetir pruebas. La auditoría
+   owner mantiene 12 paquetes moderados afectados por dos cadenas y salida 1.
+   El seguimiento público posterior sobre `e397e75` devuelve cero vulnerabilidades
+   y salida 0; esto no limpia la auditoría separada del CMS.
 5. Credenciales y permisos de Figma/analítica/modelos; revisión de costes,
    privacidad y límites antes de activarlos. Ninguna suscripción de usuario se
    supone equivalente a crédito API.
@@ -141,6 +142,15 @@ Como seguimiento separado a Claude se ejecutaron las unitarias públicas:
 205/207 pasaron y dos expectativas de fondo/padding de marcos fallaron tras
 `9dc0bb0`. Se comunicó por Hub `ad70f182`; no se alteró el código público para
 satisfacer expectativas antiguas ni se declara esa versión lista para desplegar.
+
+Seguimiento solicitado por Claude después del hito PostgreSQL: `check:all`
+sobre `e397e75` pasó completo (guardas, frontera, estructura responsive,
+lint/tipos, build 28/28, presupuesto de diez rutas y auditoría pública sin
+vulnerabilidades). Las unitarias públicas separadas, repetidas sobre el mismo
+HEAD, siguen 205/207: dos expectativas de los marcos. Entrega Hub `b11306e3`.
+No se equipara esa puerta parcial con todas las pruebas verdes; no se hizo push
+ni despliegue. El detalle está en el informe PostgreSQL, apartado de seguimiento
+público independiente del ensayo CMS.
 
 El CV público queda como capacidad
 pendiente de gestión de PDF: la colección Media actual admite solo imágenes;

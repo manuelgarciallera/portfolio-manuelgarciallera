@@ -74,6 +74,12 @@ Next responsible: controller, close the evidence/coordination record and continu
 - Controller public isolation tests passed **8/8** and public-boundary checks passed **21 entries**. Separately, public unit tests at Claude's `a0c0a88` had **205/207 passing** with two frame styling expectations failing; sent to Claude in Hub `35c8df91`. This older public test result must not be represented as a complete current `check:all` or a deployment approval.
 - Review and recovery are accepted for this local increment only. Production TLS, reviewed migrations, durable/versioned media, remote retention/restore, account recovery, tenant isolation, public bridge and the reviewed CV/PDF publication remain open.
 
+### Subsequent public verification requested by Claude
+
+After the CMS milestone was recorded in `e397e75427cec68451d532ea1cda3e4bc5b13f03`, the controller ran `npm run check:all` on that HEAD: **exit 0**. This includes 13 public guard tests, 21 boundary entries, encoding/hero checks, eight structural responsive profiles, mobile navigation, lint/typecheck, a 28-page build, the bundle budget across ten routes and public `npm audit --omit=dev` with zero vulnerabilities. HEAD and public source remained unchanged during the run. This is a local build, not a deployment or fresh visual audit.
+
+The separate public unit suite was then repeated on the same HEAD: **exit 1, 205/207 passed**. The same two case-frame background/padding expectations remain unresolved in Claude's lane. JSON evidence is ignored at `node_modules/.cache/public-unit-cms-recovery-20260907.json`; delivery Hub `b11306e3-6628-4d3f-878d-6bd5d91ed2d9`. `check:all` does not include that suite, so its successful result does not mean every public test is green. No public CSS/test fix, push or deployment was performed by the controller.
+
 ## Review correction — diagnostic truncation (P2)
 
 The controller reported independent PostgreSQL and SQLite passes on implementation commit `d7fe885`, plus the original 16 helper tests, lint and types. Independent review then reproduced a confidentiality defect: retaining the last 16,384 characters before redacting could leave a credential suffix whose complete secret was no longer present. Concatenating interleaved stdout/stderr could likewise separate a secret's fragments. This correction does not change database recovery behavior.
