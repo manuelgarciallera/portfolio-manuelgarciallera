@@ -20,7 +20,9 @@ editorial plus HTTP behavior before enabling it on the existing library.
 
 - Public UI, checkpoint and existing media remain unchanged.
 - No provider, spend, credentials, real-data migration or CV publication.
-- Local root explicitly provisioned; no filesystem-root targets or recursive deletion.
+- Local root explicitly provisioned; no filesystem-root targets or recursive deletion
+  in new storage/test code. Existing integration runners may retain their fenced
+  parent-process cleanup of the synthetic root they allocated; no broadening of it.
 - 16 files maximum; 64 MiB maximum total; immutable exclusive writes; schema 1 manifest.
 - No claim of a finished storage integration from core unit tests alone.
 
@@ -89,19 +91,53 @@ new plugin dependency. Installed Payload behavior is recorded in the binding not
 - [ ] Execute complete SQLite and PostgreSQL editorial gates and compare public
   isolation/bundle. An intermittent worker crash is a failed gate, never a pass.
 
-## Task 3 — Protected delivery and rollout evidence
+## Task 3 — Protected HTTP delivery and native editing
+
+Files: add `owner-platform/tests/versioned-media-http.integration.test.ts` and
+`owner-platform/tests/media/http-fixture.ts`. Fix only demonstrated native-flow
+defects in `owner-platform/src/media/revision-storage-binding.ts` and its unit
+tests. Do not edit active config, raw Media, prior integration tests, public code,
+dependencies or existing runners. Test discovery already includes the new suite.
+
+- [ ] Use a listening Node HTTP server on an ephemeral `127.0.0.1` port, with
+  bounded requests and guaranteed fixture-specific shutdown. Connect real
+  `handleEndpoints`, real cookie authentication, actual Payload/native uploads,
+  isolated SQLite and a separate PostgreSQL schema. No real credentials or data.
 
 - [ ] Exercise native image crop and duplication using the authenticated HTTP
   flow with isolated data. Do not weaken safeFetch globally to make tests pass;
   any loopback fixture transport exception must be narrowly scoped to that fixture.
+  Match the fixture's exact protocol, host, port and media-revision path; prove
+  the exception does not admit another port, host or unrelated path. Do not use
+  caller Origin/Host to broaden production storage trust or leak cookies.
+- [ ] Native crop produces the expected dimensions and a new immutable revision;
+  old originals/derivatives stay byte-identical and can be restored. Native
+  duplication produces an independently editable record/revision without changing
+  the source. Use the actual REST endpoints, not a manually emulated copy/upload.
 - [ ] Test actual HTTP download of originals/derivatives: owner access; anonymous
   published revision only; draft, trashed and foreign revision denied; malformed
   paths/ranges and private caching behavior checked.
+  A handler may ignore Range and return the complete 200 response (no advertised
+  partial support), but it must never fabricate a partial response or let Range
+  bypass authorization. Verify failed unauthenticated mutations preserve state.
+- [ ] Establish a failing regression before any binding fix; run focused cycles,
+  then full owner unit, complete SQLite and PostgreSQL editorial suites, lint and
+  types once on final code. Compare public boundary/bundle without changing
+  baseline. Report any failure as a failed gate, not a passed retry.
+
+## Task 4 — Physical recovery and rollout evidence
+
+Consumes the reviewed Task 3 binding and HTTP fixture. Refine the exact fixture
+files before dispatch without changing real data or the active configuration.
+
 - [ ] Prove physical backup/restore includes all retained revisions plus the DB.
+- [ ] Measure realistic image sets and simultaneous requests; record latency and
+  memory with method/limits. Address a demonstrated resource failure without
+  weakening full revision integrity or access checks.
 - [ ] Document storage root permissions, orphan reconciliation, growth/retention,
   migration and rollback. Do not activate on the current library before these
   gates and applicable authorization. Update operational-gap status with exact
   evidence, not assumptions from the core helper.
 
-Task 1 can land independently as a tested internal capability. Tasks 2 and 3 are
+Task 1 can land independently as a tested internal capability. Tasks 2 through 4 are
 required before claiming the original media-loss defect fixed in the CMS.
