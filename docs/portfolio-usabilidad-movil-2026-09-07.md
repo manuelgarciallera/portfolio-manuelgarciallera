@@ -118,3 +118,23 @@ Si alguno afirma que los controles están ocultos en portada, habrá que acotarl
 4. **Editorial:** descargos de autoría antes de la primera evidencia en la ficha de caso; caso
    sin resultado visual sobre el pliegue; ruta `/investigacion` inexistente; `fintech-app` y
    `estadio-3d` con `published: false`.
+
+## Guardado: sigue sin haber copia remota
+
+`origin/codex/manuel` está en el 18 de marzo y `origin/main` en el 13 de marzo. Hay más de 310
+commits que existen solo en este disco, incluido todo `owner-platform`.
+
+El push no se puede lanzar desde el shell de esta sesión: no hay credenciales de GitHub en él
+(`could not read Username for 'https://github.com'`). Hay que hacerlo desde Windows:
+
+```
+git push -u origin HEAD:refs/heads/backup/2026-09-07
+```
+
+Rama nueva, no toca `main` ni `codex/manuel`. Primera tarea antes que cualquier otra.
+
+Aviso operativo: en el montaje de esta sesión el borrado de archivos está restringido, así que
+cada operación de escritura de git dejaba `.lock` huérfanos que habrían bloqueado el siguiente
+commit. Se han limpiado (`index.lock`, `HEAD.lock`, `packed-refs.lock`, `maintenance.lock` y 16
+`tmp_obj_*`). Si Codex se encuentra un «Another git process seems to be running», el origen es
+ese y basta con borrar el `.lock` que nombre el error.
