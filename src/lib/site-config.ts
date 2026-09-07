@@ -78,6 +78,18 @@ export function getPersonJsonLd() {
     image: PROFILE_IMAGE_URL,
     sameAs: SITE_SOCIAL_URLS,
     jobTitle: "Product Designer y Design Engineer especializado en HCI",
+    // El empleador y la formacion no son adorno: son las aristas que conectan esta
+    // entidad con otras ya conocidas por los grafos, y sin ellas el nombre queda
+    // suelto. LALIGA es publico en su perfil profesional; no se afirma nada mas.
+    worksFor: {
+      "@type": "Organization",
+      name: "LALIGA",
+      url: "https://www.laliga.com/",
+    },
+    alumniOf: [
+      { "@type": "CollegeOrUniversity", name: "Universidad Rey Juan Carlos", url: "https://www.urjc.es/" },
+      { "@type": "CollegeOrUniversity", name: "Universidad Internacional de La Rioja", url: "https://www.unir.net/" },
+    ],
     knowsAbout: [
       "Product Design",
       "Design Systems",
@@ -86,8 +98,16 @@ export function getPersonJsonLd() {
       "User Experience Research",
       "Human-Centered Design",
       "Usability",
+      "Accessibility",
       "Interaction Design",
       "Design Engineering",
+      // Sin estas, el grafo describia a un disenador de producto con stack y perdia
+      // justo la mitad que distingue el perfil: la que investiga.
+      "Design Theory",
+      "Design History",
+      "Material Culture",
+      "Haptic Design",
+      "Research through Design",
       "Figma",
       "React",
       "Angular",
