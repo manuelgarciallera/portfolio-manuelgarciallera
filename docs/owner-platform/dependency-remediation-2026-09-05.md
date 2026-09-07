@@ -90,3 +90,28 @@ below only after those commands complete.
 
 No deployment, public database connection, external integration request or
 original media modification formed part of this verification.
+
+## Read-only recheck — 2026-09-08
+
+On source HEAD `cda81b4`, `npm audit --omit=dev --json` again exited 1:
+12 moderate affected package entries, 0 low/high/critical, from the same two
+advisory chains. This is fresh registry evidence, not a clean security gate.
+No install, override, lockfile update or automatic downgrade was performed.
+The suggested adapter/lexical downgrade to 0.1.9 is not a safe remediation plan.
+
+The [Payload advisory](https://github.com/advisories/GHSA-jg8r-5jh2-v2xj)
+still lists the installed 3.88.0 as affected and no patched version. Direct
+inspection confirms `src/collections/Users.ts` explicitly sets `unlock: ownerOnly`.
+That is a local access restriction, not an upstream package fix or a new exploit
+test. Reassess it before adding any non-owner roles or a second auth collection.
+
+The [esbuild advisory](https://github.com/advisories/GHSA-67mh-4wv8-2f99)
+concerns its development **serve API**. Loopback alone is not sufficient protection
+against a malicious website requesting that server from the owner's browser.
+Do not start the affected esbuild serve API; inspect actual reachability before
+claiming mitigation. The new media HTTP fixture uses Node HTTP/Payload, not an
+esbuild development server. No claim about an exposed live service is made by
+this dependency-tree recheck.
+
+Public dependency results in the original section are historical and separate;
+the public fflate remediation does not remove these owner findings.
