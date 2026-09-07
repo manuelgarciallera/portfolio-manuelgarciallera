@@ -1,11 +1,12 @@
 import 'server-only'
 
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
 
 import { isOwner } from '../../access/owner'
 import { recordAuditEvent } from '../../collections/AuditEvents'
 import { createFigmaImportExecution } from './import-execution'
+import { compensateFigmaFiles } from './import-file-compensation'
 import { hashFigmaImportPlan, type FigmaImportPlan } from './import-plan'
 import { createFigmaImportReview, type FigmaImportDecision } from './import-review'
 import { downloadFigmaRender } from './render-download'
@@ -17,6 +18,7 @@ type Payload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
   find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>
   findByID(args: Record<string, unknown>): Promise<Record<string, unknown>>
+  logger?: { warn(data: Record<string, unknown>): unknown }
 }
 type TransactionRequest = { payload?: unknown; user?: unknown }
 type Dependencies = { begin(req: TransactionRequest): Promise<boolean>; commit(req: TransactionRequest): Promise<void>; rollback(req: TransactionRequest): Promise<void> }
@@ -24,6 +26,9 @@ const transactionDefaults: Dependencies = {
   begin: (req) => initTransaction(req as never),
   commit: (req) => commitTransaction(req as never),
   rollback: (req) => killTransaction(req as never),
+}
+const reportRetainedFiles = (payload: Payload, detail: Record<string, unknown>) => {
+  try { payload.logger?.warn({ msg: 'Figma import files require reconciliation', ...detail }) } catch { /* reporting must not replace the import failure */ }
 }
 
 const id = (value: unknown, label: string): string | number => {
@@ -88,16 +93,22 @@ export const executeOwnerFigmaImport = async ({ alt, confirmation, dependencies 
   const contentHash = `sha256:${createHash('sha256').update(rendered.data).digest('hex')}`
   const started = await dependencies.begin(req)
   if (!started) throw new APIError('No se pudo abrir una transacción de importación.', 503)
+  const filePrefix = `figma-${randomUUID()}-`
+  let uploadedMedia: Record<string, unknown> | undefined
+  let uploadAttempted = false
+  let commitAttempted = false
   try {
     const raced = await payload.find({ collection: 'figma-import-executions', depth: 0, limit: 1, overrideAccess: false, req, where: { review: { equals: reviewId } } })
     if (raced.docs.length) throw new APIError('La revisión de Figma ya fue importada.', 409)
+    uploadAttempted = true
     const media = await payload.create({
       collection: 'media',
       data: { _status: 'draft', alt: alternativeText, credit: `Figma · ${plan.file.name} · ${plan.candidate.name}` },
-      file: { data: rendered.data, mimetype: rendered.mimeType, name: safeFilename(plan.candidate.name), size: rendered.size },
+      file: { data: rendered.data, mimetype: rendered.mimeType, name: `${filePrefix}${safeFilename(plan.candidate.name)}`, size: rendered.size },
       overrideAccess: true,
       req,
     })
+    uploadedMedia = media
     const mediaId = id(media, 'El medio')
     const placement = await payload.create({
       collection: 'media-placements',
@@ -117,10 +128,18 @@ export const executeOwnerFigmaImport = async ({ alt, confirmation, dependencies 
       input: { action: 'figma.import.executed', metadata: { contentHash, mediaId, placementId, planHash, reviewHash: review.hash, size: rendered.size }, outcome: 'success', subject: { collection: 'figma-import-executions', id: id(created, 'La importación') } },
       payload: payload as never, req, user: req.user,
     })
+    commitAttempted = true
     await dependencies.commit(req)
     return created
   } catch (error) {
-    try { await dependencies.rollback(req) } catch { /* preserve original import failure */ }
+    let rollbackReturned = false
+    try { await dependencies.rollback(req); rollbackReturned = true } catch { /* preserve original import failure */ }
+    if (!commitAttempted && uploadedMedia && rollbackReturned) {
+      const cleanup = await compensateFigmaFiles({ payload, media: uploadedMedia, prefix: filePrefix })
+      if (cleanup.status === 'retained') reportRetainedFiles(payload, { ...cleanup, filePrefix, reviewId: storedReviewId, mediaId: uploadedMedia.id })
+    } else if (uploadAttempted) {
+      reportRetainedFiles(payload, { reason: commitAttempted ? 'commit-uncertain' : uploadedMedia ? 'rollback-uncertain' : 'upload-incomplete', filePrefix, reviewId: storedReviewId, mediaId: uploadedMedia?.id })
+    }
     throw error
   }
 }

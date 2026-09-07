@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { createHash, randomUUID } from 'node:crypto'
+import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { postgresAdapter } from '@payloadcms/db-postgres'
@@ -30,6 +30,7 @@ import { createOwnerFigmaImportPlan } from '../src/connectors/figma/import-servi
 import { createOwnerFigmaImportReview } from '../src/connectors/figma/import-review-service'
 import { executeOwnerFigmaImport } from '../src/connectors/figma/import-execution-service'
 import { editorialDatabaseConfig } from './recovery/postgres-runtime.mjs'
+import { snapshotFiles } from './recovery/backup-manifest.mjs'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
@@ -38,16 +39,20 @@ let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const postgresCache = path.join(ownerRoot, 'node_modules', '.cache')
+let mediaDirectory: string
 
 beforeAll(async () => {
   const config = await applicationConfig
   const database = await editorialDatabaseConfig(process.env, { cache: postgresCache })
+  // The runner's root has been validated above, for either database engine.
+  mediaDirectory = path.join(process.env.OWNER_INTEGRATION_DIRECTORY!, 'media')
+  await mkdir(mediaDirectory)
   payload = await getPayload({
     key: `editorial-integration-${randomUUID()}`,
     config: {
       ...config,
-      // Exercise real upload metadata without leaving files in the owner's media library.
-      collections: config.collections.map((collection) => collection.slug === 'media' ? { ...collection, upload: { ...collection.upload, disableLocalStorage: true } } : collection.slug === 'audit-events' ? {
+      // Exercise physical uploads, but only inside this disposable fixture.
+      collections: config.collections.map((collection) => collection.slug === 'media' ? { ...collection, upload: { ...collection.upload, disableLocalStorage: false, staticDir: mediaDirectory } } : collection.slug === 'audit-events' ? {
         ...collection, hooks: { ...collection.hooks, beforeChange: [({ data }) => {
           if (rejectRestoreAudit && data.action === 'restore.executed') throw new Error('QA restore audit unavailable')
           if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
@@ -348,10 +353,14 @@ it('imports an approved Figma plan into draft media with URL ids and no optional
   const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).png().toBuffer()
   const download = vi.fn(async () => ({ data: bytes, mimeType: 'image/png' as const, size: bytes.length }))
   const input = { payload: payload as never, req, provider, download, reviewId: String(review.id), alt: 'Synthetic Figma image', confirmation: 'IMPORTAR PNG DE FIGMA' }
+  // An existing same-name upload must survive both compensation and retry.
+  await payload.create({ collection: 'media', data: { _status: 'draft', alt: 'Existing image to preserve' },
+    file: { data: bytes, mimetype: 'image/png', name: 'qa-hero.png', size: bytes.length }, req, overrideAccess: false })
   const counts = async () => Promise.all((['media', 'media-placements', 'figma-import-executions', 'audit-events'] as const).map(async (collection) => (await payload.count({ collection, user: owner, overrideAccess: false })).totalDocs))
   const beforeCounts = await counts()
   const versions = async () => Promise.all((['media', 'media-placements'] as const).map(async (collection) => (await payload.findVersions({ collection, user: owner, overrideAccess: false, limit: 1000 })).docs.map(({ id }) => id).sort()))
   const beforeVersions = await versions()
+  const beforeFiles = await snapshotFiles(mediaDirectory)
   const changedProvider = { discover: async () => { const result = await provider.discover(); return { ...result, file: { ...result.file, lastModified: '2026-09-05T05:00:00.000Z' } } } }
   await expect(executeOwnerFigmaImport({ ...input, provider: changedProvider })).rejects.toThrow(/cambiado/i)
   expect(download).not.toHaveBeenCalled()
@@ -362,12 +371,19 @@ it('imports an approved Figma plan into draft media with URL ids and no optional
   } finally { rejectFigmaAudit = false }
   expect(await counts()).toEqual(beforeCounts)
   expect(await versions()).toEqual(beforeVersions)
+  expect(await snapshotFiles(mediaDirectory)).toEqual(beforeFiles)
   const result = await executeOwnerFigmaImport(input).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
   const stored = await payload.findByID({ collection: 'figma-import-executions', id: result.id as number, depth: 0, user: owner, overrideAccess: false })
   expect(stored.review).toBe(review.id)
   expect(stored.plan).toBe(plan.id)
   const media = await payload.findByID({ collection: 'media', id: stored.media as number, draft: true, depth: 0, user: owner, overrideAccess: false })
   expect(media).toMatchObject({ _status: 'draft', alt: 'Synthetic Figma image', width: 32, height: 32 })
+  const afterFiles = await snapshotFiles(mediaDirectory)
+  const priorNames = new Set(beforeFiles.map((file) => file.path))
+  expect(afterFiles.filter((file) => priorNames.has(file.path))).toEqual(beforeFiles)
+  const storedNames = [...new Set([media.filename, ...Object.values(media.sizes ?? {}).map((size) => size?.filename)].filter(Boolean))].sort()
+  expect(afterFiles.filter((file) => !priorNames.has(file.path)).map((file) => file.path)).toEqual(storedNames)
+  expect(`sha256:${createHash('sha256').update(await readFile(path.join(mediaDirectory, media.filename!))).digest('hex')}`).toBe(stored.contentHash)
   const placement = await payload.findByID({ collection: 'media-placements', id: stored.placement as number, draft: true, depth: 0, user: owner, overrideAccess: false })
   expect(placement).toMatchObject({ _status: 'draft', placement: { asset: media.id } })
   await expect(executeOwnerFigmaImport(input)).rejects.toThrow(/importada/i)

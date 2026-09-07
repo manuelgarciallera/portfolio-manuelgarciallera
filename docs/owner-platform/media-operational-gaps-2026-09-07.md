@@ -2,6 +2,8 @@
 
 Revisión de código local sobre `5f3f228`, separada del incremento PostgreSQL editorial. No se han subido archivos, publicado el CV, conectado un proveedor ni cambiado la web pública. Estos hallazgos no certifican un fallo observado en producción.
 
+Actualización posterior: la paridad editorial PostgreSQL ya está verificada. El riesgo de archivos huérfanos se reprodujo en SQLite con archivos sintéticos reales; se implementó compensación limitada a subidas completadas que fallan antes de intentar commit. Véase [alcance, pruebas y límites](figma-media-compensation-2026-09-07.md). La tabla siguiente conserva el diagnóstico inicial; no interpretar esta corrección como atomicidad general del almacenamiento ni como cierre de las demás puertas.
+
 ## Evidencia y prioridades
 
 | Prioridad | Evidencia actual | Consecuencia y comprobación necesaria |

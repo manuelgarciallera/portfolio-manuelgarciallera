@@ -1,4 +1,7 @@
 import { createHash } from 'node:crypto'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('server-only', () => ({}))
@@ -6,6 +9,7 @@ vi.mock('server-only', () => ({}))
 import { createFigmaImportPlan } from './import-plan'
 import { createFigmaImportReview } from './import-review'
 import { executeOwnerFigmaImport } from './import-execution-service'
+import * as fileCompensation from './import-file-compensation'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const candidate = { id: '1:2', name: 'Hero principal', type: 'FRAME' as const, width: 1440, height: 900, sourceUrl: 'https://www.figma.com/design/AbCdEf/Portfolio?node-id=1-2' }
@@ -26,6 +30,59 @@ const setup = () => {
 }
 
 describe('executeOwnerFigmaImport', () => {
+  it('does not request file reconciliation when a duplicate race stops before upload', async () => {
+    const { payload, download, create, find } = setup()
+    const warn = vi.fn()
+    find.mockResolvedValueOnce({ docs: [] }).mockResolvedValueOnce({ docs: [{ id: 73 }] })
+    await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download,
+      payload: { ...payload, logger: { warn } }, provider, req: { user: owner }, reviewId: 45 })).rejects.toThrow(/importada/i)
+    expect(create).not.toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('retains and reports bytes when upload itself rejects before returning a receipt', async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'figma-partial-test-'))
+    const target = path.join(directory, 'partial.png')
+    const { payload, download, create } = setup()
+    const warn = vi.fn()
+    create.mockImplementation(async ({ collection }) => {
+      if (collection === 'media') { await writeFile(target, 'partial upload'); throw new Error('upload rejected') }
+      return { id: 72 }
+    })
+    try {
+      await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download,
+        payload: { ...payload, logger: { warn } }, provider, req: { user: owner }, reviewId: 45 })).rejects.toThrow('upload rejected')
+      expect(await readFile(target, 'utf8')).toBe('partial upload')
+      expect(warn).toHaveBeenCalledWith(expect.objectContaining({ reason: 'upload-incomplete', reviewId: 45, filePrefix: expect.stringMatching(/^figma-[a-f0-9-]{36}-$/) }))
+    } finally {
+      if (path.dirname(directory) !== tmpdir() || !path.basename(directory).startsWith('figma-partial-test-')) throw new Error('Unsafe test cleanup')
+      await rm(directory, { recursive: true, force: true })
+    }
+  })
+
+  it.each(['commit', 'upload', 'rollback'] as const)('does not remove files when %s is uncertain', async (stage) => {
+    const { payload, download, create } = setup()
+    const cleanup = vi.spyOn(fileCompensation, 'compensateFigmaFiles')
+    const failure = new Error(`${stage} failed`)
+    const dependencies = { ...transaction, commit: vi.fn(async () => { if (stage === 'commit') throw failure }),
+      rollback: async () => { if (stage === 'rollback') throw failure } }
+    if (stage !== 'commit') create.mockImplementation(async ({ collection }) => {
+      if (collection === (stage === 'upload' ? 'media' : 'audit-events')) throw failure
+      return { id: 72 }
+    })
+    try {
+      await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies, download, payload, provider, req: { user: owner }, reviewId: 45 })).rejects.toBe(failure)
+      expect(cleanup).not.toHaveBeenCalled()
+    } finally { cleanup.mockRestore() }
+  })
+
+  it('preserves the import error even if reporting retained files fails', async () => {
+    const { payload, download, create } = setup()
+    const failure = new Error('audit unavailable')
+    create.mockImplementation(async ({ collection }) => { if (collection === 'audit-events') throw failure; return { id: 72 } })
+    await expect(executeOwnerFigmaImport({ alt: 'Vista', confirmation: 'IMPORTAR PNG DE FIGMA', dependencies: transaction, download,
+      payload: { ...payload, logger: { warn: () => { throw new Error('logger unavailable') } } }, provider, req: { user: owner }, reviewId: 45 })).rejects.toBe(failure)
+  })
   it.each([45, 'review-uuid'])('preserves stored review ids (%s) and accepts an absent persisted note', async (id) => {
     const { create, download, payload } = setup()
     const storedPayload = { ...payload, findByID: async ({ collection }: { collection: string }) =>
@@ -46,7 +103,7 @@ describe('executeOwnerFigmaImport', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({
       collection: 'media', overrideAccess: true, req: { user: owner },
       data: expect.objectContaining({ _status: 'draft', alt: 'Vista principal del portfolio', credit: 'Figma · Portfolio · Hero principal' }),
-      file: expect.objectContaining({ data: Buffer.from('png'), mimetype: 'image/png', name: 'hero-principal.png', size: 3 }),
+      file: expect.objectContaining({ data: Buffer.from('png'), mimetype: 'image/png', name: expect.stringMatching(/^figma-[a-f0-9-]{36}-hero-principal\.png$/), size: 3 }),
     }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'media-placements', data: { _status: 'draft', name: 'Hero principal · encuadre', placement: { asset: 72 } } }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'figma-import-executions', data: expect.objectContaining({ contentHash: `sha256:${createHash('sha256').update('png').digest('hex')}`, media: 72, placement: 71, plan: 44, review: 45 }) }))
