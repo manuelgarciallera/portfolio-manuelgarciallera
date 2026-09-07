@@ -35,6 +35,7 @@ import { PublicationArtifactControls as PublicationArtifactControls_a56963d5a28f
 import { PublicationPreflightSummary as PublicationPreflightSummary_d91d80e722973c463f36613da3f8445b } from '../../../components/PublicationPreflightSummary'
 import { FigmaImportPlanControls as FigmaImportPlanControls_9241d79a439249e1712733b3e245af35 } from '../../../components/FigmaImportPlanControls'
 import { FigmaImportReviewControls as FigmaImportReviewControls_3c6353302cf97d5a81b3f01d70ae405c } from '../../../components/FigmaImportReviewControls'
+import { OwnerNavigationAccessibility as OwnerNavigationAccessibility_03fbb4ab5257576f450ab2cbbe4c44f5 } from '../../../components/OwnerNavigationAccessibility'
 import { OwnerSearch as OwnerSearch_7da0697cce316540a9fd4f700f16f565 } from '../../../components/OwnerSearch'
 import { OwnerOverview as OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0 } from '../../../components/OwnerOverview'
 import { AnalyticsImporter as AnalyticsImporter_dd572f3242a10829ee97001466e657e0 } from '../../../components/AnalyticsImporter'
@@ -82,6 +83,7 @@ export const importMap = {
   "./components/PublicationPreflightSummary#PublicationPreflightSummary": PublicationPreflightSummary_d91d80e722973c463f36613da3f8445b,
   "./components/FigmaImportPlanControls#FigmaImportPlanControls": FigmaImportPlanControls_9241d79a439249e1712733b3e245af35,
   "./components/FigmaImportReviewControls#FigmaImportReviewControls": FigmaImportReviewControls_3c6353302cf97d5a81b3f01d70ae405c,
+  "./components/OwnerNavigationAccessibility#OwnerNavigationAccessibility": OwnerNavigationAccessibility_03fbb4ab5257576f450ab2cbbe4c44f5,
   "./components/OwnerSearch#OwnerSearch": OwnerSearch_7da0697cce316540a9fd4f700f16f565,
   "./components/OwnerOverview#OwnerOverview": OwnerOverview_afc8f17752bd65fdd219ef1cdc0f66f0,
   "./components/AnalyticsImporter#AnalyticsImporter": AnalyticsImporter_dd572f3242a10829ee97001466e657e0,

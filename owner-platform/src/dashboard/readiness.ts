@@ -1,14 +1,14 @@
-import { BUILD_ONLY_PAYLOAD_SECRET, DEVELOPMENT_PAYLOAD_SECRET } from '../config/runtime'
+import { isPostgresDatabaseUrl, isSecurePayloadSecret } from '../config/runtime'
 
 type Environment = { databaseUrl?: string; nodeEnv?: string; payloadSecret?: string }
-const unsafeSecrets = new Set(['', 'change-me', DEVELOPMENT_PAYLOAD_SECRET, BUILD_ONLY_PAYLOAD_SECRET])
 
 export const buildOwnerReadiness = ({ databaseUrl, nodeEnv, payloadSecret }: Environment) => {
-  const postgres = typeof databaseUrl === 'string' && Boolean(databaseUrl.trim())
-  const secureSecret = typeof payloadSecret === 'string' && payloadSecret.length >= 32 && !unsafeSecrets.has(payloadSecret)
+  const postgres = isPostgresDatabaseUrl(databaseUrl)
+  const secureSecret = isSecurePayloadSecret(payloadSecret)
   const blockers = [
     ...(!postgres ? ['postgres-database'] : []),
     ...(!secureSecret ? ['secure-payload-secret'] : []),
+    'database-restore-verification',
     'durable-media-storage',
     'public-content-bridge',
     'deployment-review',
@@ -18,7 +18,7 @@ export const buildOwnerReadiness = ({ databaseUrl, nodeEnv, payloadSecret }: Env
     productionReady: false,
     publicBridgeEnabled: false,
     runtime: {
-      database: { durable: postgres, kind: postgres ? 'postgres' as const : 'sqlite' as const },
+      database: { configured: postgres, durable: false, verification: 'not-tested' as const, kind: postgres ? 'postgres' as const : 'sqlite' as const },
       mediaStorage: { adapterConfigured: false, durable: false, kind: 'local' as const },
       mode: nodeEnv === 'production' ? 'production' as const : 'development' as const,
       payloadSecretConfigured: secureSecret,

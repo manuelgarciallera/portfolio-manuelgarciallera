@@ -65,6 +65,7 @@ export default buildConfig({
   i18n: { fallbackLanguage: 'es', supportedLanguages: { es } },
   admin: {
     components: {
+      afterNav: ['./components/OwnerNavigationAccessibility#OwnerNavigationAccessibility'],
       views: {
         pagePreview: { Component: './components/PagePreviewView#PagePreviewView', path: '/page-preview/:id', exact: true },
         contentPreview: { Component: './components/PagePreviewView#PagePreviewView', path: '/content-preview/:collection/:id', exact: true },

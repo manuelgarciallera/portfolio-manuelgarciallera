@@ -943,9 +943,13 @@ polite live region, and links only to server-projected admin destinations.
 
 `GET /api/owner/system/readiness` is included in the owner dashboard and makes
 the local/production distinction explicit without returning connection strings
-or secrets. It reports SQLite as non-durable, PostgreSQL as durable, and accepts
-a Payload secret as configured only when it is at least 32 characters and is
-not one of the known development/build placeholders. The current local media
+or secrets. A syntactically valid PostgreSQL URL reports `configured: true`,
+but never proves connectivity or backup durability: `durable: false` and
+`verification: not-tested` remain until an operational verification mechanism
+exists. Database restore verification is an explicit blocker. Runtime rejects
+malformed/non-PostgreSQL URLs without including the value in errors. A Payload
+secret is configured only when its trimmed length is at least 32 characters
+and it is not a known development/build placeholder. The current local media
 adapter, absent public bridge, and required deployment review remain blockers
 in every environment. Consequently `productionReady`, `deploymentAllowed`, and
 `publicBridgeEnabled` remain false; this status endpoint cannot relax runtime
@@ -996,9 +1000,11 @@ review. Do not represent these contracts as live integrations.
   See `dependency-remediation-2026-09-05.md` for the scoped override, clean-install
   verification and the remaining advisory chains. Package totals are not counts
   of distinct underlying vulnerabilities.
-- The public package audit currently reports 1 transitive moderate advisory
-  (`fflate`). It is also a release blocker until a compatible, benchmarked fix
-  passes the checkpoint comparison. Do not use `npm audit fix --force`.
+- The public `fflate` finding was corrected separately by Claude. On 2026-09-07,
+  root `check:all` passed on `30af18f`, including the ten-route bundle budget
+  and a public runtime audit with zero vulnerabilities. This does not clear the
+  separate owner findings or the owner deployment gates. Do not use
+  `npm audit fix --force`.
 
 These counts were produced from the committed lockfiles with
 `npm audit --omit=dev` during the 2026-09-05 verification. Registry advisories
@@ -1028,10 +1034,11 @@ npm --prefix owner-platform audit --omit=dev
 ```
 
 Run each command and retain its exit code. `check:all` is not a substitute for
-this sequence: it omits the root unit suite and currently returns non-zero at
-the final audit because the documented advisory remains open. The two audit
-commands are expected to remain release blockers while their totals are
-non-zero; do not reinterpret that exit status as a successful security check.
+this sequence: it omits the root unit suite and owner validation. Root
+`check:all` passed on `30af18f` on 2026-09-07; the separate owner runtime audit
+still returned non-zero with 12 moderately affected packages. Any non-zero
+audit remains a release blocker; do not reinterpret that exit status as a
+successful security check or transfer a public pass to the owner app.
 
 `check:owner-isolation` combines three fail-closed checks: no owner runtime
 dependency in the root manifest, no forbidden/private import reachable from a

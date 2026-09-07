@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { assertProductionRuntimeEnvironment, resolveRuntimeConfig } from './runtime'
 
 describe('owner platform runtime configuration', () => {
+  it.each(['   ', 'https://private-host/db', 'file:owner.db', 'postgresql:///db', 'not-a-url'])('rejects a malformed or non-PostgreSQL connection without leaking it: %s', (databaseUrl) => {
+    for (const nodeEnv of ['development', 'production']) {
+      expect(() => resolveRuntimeConfig({ nodeEnv, databaseUrl, payloadSecret: 'a-long-and-valid-production-secret-value' })).toThrow(/^DATABASE_URL must be a valid PostgreSQL connection URL$/)
+    }
+  })
+  it('rejects a whitespace-only production secret', () => {
+    expect(() => assertProductionRuntimeEnvironment({ nodeEnv: 'production', databaseUrl: 'postgres://localhost/qa', payloadSecret: ' '.repeat(40) })).toThrow(/PAYLOAD_SECRET/)
+  })
   it('supports an isolated local SQLite filename without changing the default database', () => {
     expect(resolveRuntimeConfig({ nodeEnv: 'development', localDatabaseName: 'qa-editorial' }).database)
       .toEqual({ kind: 'sqlite', url: 'file:.data/qa-editorial.db' })
