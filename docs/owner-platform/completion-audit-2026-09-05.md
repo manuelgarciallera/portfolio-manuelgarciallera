@@ -77,6 +77,49 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
+### Revalidación operativa del 7 de septiembre de 2026
+
+Antes del incremento de recuperación física se repitieron 700 pruebas unitarias
+owner y 22 integraciones editoriales SQLite: todas correctas. El dashboard pasó
+ocho combinaciones de navegador (320, 390, 768 y 1280 px, claro/oscuro), y los
+controles documentales 22 escenarios en 390/1280 px. Estos últimos son fixtures
+de componentes con endpoints sintéticos: no acreditan conexiones reales con
+Figma, IA ni un barrido visual completo de todas las pantallas de Payload.
+
+El aislamiento del owner pasó 8/8 y la frontera pública 21 entradas. No se
+añadieron dependencias públicas. El tag protegido sigue resolviendo al commit
+`0f0adf686b2752e23c25d224f8c60815b10fd451`.
+
+La auditoría `npm audit --omit=dev` del owner sigue devolviendo salida 1:
+12 paquetes moderados afectados por dos cadenas, cero altos/críticos. No se
+aplica la bajada incompatible que propone npm. PostgreSQL sigue sin estar
+disponible localmente; Docker está detenido. La validación SQLite no sustituye
+un ensayo PostgreSQL ni una copia duradera de producción.
+
+Incremento `aa6867f`: `npm run test:recovery` prueba la recuperación conjunta
+de SQLite y medios sintéticos en procesos separados. La ejecución independiente
+dio salida 0: 4 pruebas del helper, cinco archivos emparejados, cuatro imágenes
+(original y derivados), dos versiones, rechazo de copia corrupta y edición
+restaurada sin alterar origen/respaldo. Ver el
+[informe de recuperación](recovery-drill-report-2026-09-07.md). No es todavía
+un servicio de backup de producción. El commit concurrente público `9dc0bb0`
+de Claude queda fuera del alcance de estas pruebas CMS y no se desplegó aquí.
+La revisión independiente detectó una prueba de rechazo anónimo demasiado
+permisiva; `b7d22a6` exige NotFound/404 y propaga errores inesperados. La revisión
+del delta quedó aceptada, con tres pruebas adicionales del helper.
+Reejecución independiente final sobre `b7d22a6`: salida 0, 7/7 pruebas de
+helpers y recorrido físico completo correcto con los mismos cinco archivos.
+
+Como seguimiento separado a Claude se ejecutaron las unitarias públicas:
+205/207 pasaron y dos expectativas de fondo/padding de marcos fallaron tras
+`9dc0bb0`. Se comunicó por Hub `ad70f182`; no se alteró el código público para
+satisfacer expectativas antiguas ni se declara esa versión lista para desplegar.
+
+El CV público queda como capacidad
+pendiente de gestión de PDF: la colección Media actual admite solo imágenes;
+no se ha publicado ni importado el CV de Figma. Se revisará el documento concreto
+antes de exponerlo. Las versiones académicas/específicas no se publican por defecto.
+
 Incremento del 7 de septiembre: acciones nativas y navegación editorial en
 español; aviso/enlace de preview fuera de la barra de acciones para evitar
 solapamientos en móvil. Ver `editor-language-verification-2026-09-07.md`.
