@@ -1218,7 +1218,10 @@
 .rd-case-feature {
   display: grid; grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1.3fr);
   min-height: clamp(30rem, 56vw, 48rem); position: relative; overflow: hidden;
-  margin: 0 0 var(--space-4); padding: clamp(1.5rem, 4vw, 4.5rem);
+  /* El atajo `margin` anulaba el `margin-inline: calc(50% - 50vw)` heredado y
+     dejaba el bloque a 100vw sin compensar: sus controles caian fuera de la
+     pantalla en 768, 1024 y 1440. El sangrado se declara aqui explicitamente. */
+  margin: 0 calc(50% - 50vw) var(--space-4); padding: clamp(1.5rem, 4vw, 4.5rem);
 }
 .rd-case-feature--buy-sell { background: #003594; color: #fff; }
 .rd-case-feature-copy { display: flex; flex-direction: column; align-items: flex-start; position: relative; z-index: 2; }
