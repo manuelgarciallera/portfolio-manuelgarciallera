@@ -1,6 +1,6 @@
 # Prueba local de recuperación física del CMS
 
-Fecha: 2026-09-07. Implementador: Codex. Estado: **implementado y verificado localmente**. Commit de aplicación probado: `aa6867f179fb163d1d6ddcfaa53d6846fde64690`.
+Fecha: 2026-09-07. Implementador: Codex. Estado: **implementado y verificado localmente**. Commit de aplicación probado: `b7d22a65c242225d53541c6df3647051e5dc1aed`.
 
 ## Alcance y resultado
 
@@ -20,14 +20,14 @@ Las `workflowChecks: 12` que imprime el runner son doce agrupaciones del harness
 4. PNG sintético en disco y tres derivados reales.
 5. Relación de página a medio y a colocación.
 6. Colocación base de escritorio y overrides distintos para móvil y tablet.
-7. Rechazo de lectura anónima del borrador de origen.
+7. Rechazo de lectura anónima del borrador de origen, acreditado únicamente por `Payload.NotFound` con estado 404; cualquier fallo distinto se relanza.
 8. Historial real de dos versiones antes de la copia.
 9. Salida real del proceso de siembra antes del inventario y la copia de base/medios.
 10. Manifiesto emparejado con SHA-256, tamaño y commit, y rechazo previo de la copia corrupta.
-11. Nuevo proceso contra el restore: login, campos/orden, relaciones, placement, versiones, hashes de original/derivados y nuevo rechazo anónimo.
-12. Edición del borrador restaurado sin cambiar ningún hash de la fuente ni del backup.
+11. Nuevo proceso contra el restore: login, campos/orden, relaciones, placement, versiones, hashes de original/derivados y nuevo `NotFound` 404 anónimo.
+12. Edición del borrador restaurado, comprobación del título exacto devuelto y ausencia de cambios en los hashes de la fuente y del backup.
 
-Los cuatro casos Vitest verifican el helper con disco real: copia/restauración independiente, rechazo de fichero ausente, rechazo de fichero corrupto y negativa a sobrescribir un destino existente.
+Los siete casos Vitest incluyen cuatro pruebas del helper con disco real —copia/restauración independiente, rechazo de fichero ausente, rechazo de fichero corrupto y negativa a sobrescribir un destino existente— y tres del control anónimo: aceptar `Payload.NotFound` 404, relanzar intacto un fallo inesperado de persistencia y fallar si la lectura devuelve un documento.
 
 ## Evidencia exacta
 
@@ -35,6 +35,8 @@ TDD del helper:
 
 - Rojo: `node node_modules/vitest/vitest.mjs run --config vitest.recovery.config.ts tests/recovery/backup-manifest.test.mjs` → salida 1; el módulo `./backup-manifest.mjs` todavía no existía.
 - Verde: el mismo comando → salida 0; 1 fichero y 4/4 tests.
+- Rojo de regresión de revisión: `node node_modules/vitest/vitest.mjs run --config vitest.recovery.config.ts tests/recovery/anonymous-draft.test.mjs` → salida 1; el helper acotado `./anonymous-draft.mjs` todavía no existía.
+- Verde de regresión: el mismo comando → salida 0; 1 fichero y 3/3 tests. Un `Error('database unavailable')` se relanza por identidad y no cuenta como denegación de acceso.
 
 Ejecución final sobre el commit de aplicación, desde `owner-platform`, con valores señuelo no secretos definidos en `DATABASE_URL`, `PAYLOAD_SECRET`, `OWNER_BOOTSTRAP_SECRET`, `FIGMA_PERSONAL_ACCESS_TOKEN` y `SMTP_PASS`:
 
@@ -47,14 +49,14 @@ $env:SMTP_PASS='ambient-mail-never-used'
 npm run test:recovery
 ```
 
-Resultado: salida 0. Vitest: 1 fichero, 4/4 tests. Resumen del runner:
+Resultado: salida 0. Vitest: 2 ficheros, 7/7 tests. Resumen del runner:
 
 ```json
 {
   "recovery": "passed",
-  "helperTests": 4,
+  "helperTests": 7,
   "workflowChecks": 12,
-  "applicationCommit": "aa6867f179fb163d1d6ddcfaa53d6846fde64690",
+  "applicationCommit": "b7d22a65c242225d53541c6df3647051e5dc1aed",
   "backupFiles": 5,
   "databaseSidecarsIncluded": 0,
   "mediaFilesVerified": 4,
@@ -92,6 +94,8 @@ El soporte de CV continúa pendiente: la colección `Media` acepta imágenes (`i
 - `owner-platform/package.json`
 - `owner-platform/scripts/test-recovery.mjs`
 - `owner-platform/vitest.recovery.config.ts`
+- `owner-platform/tests/recovery/anonymous-draft.mjs`
+- `owner-platform/tests/recovery/anonymous-draft.test.mjs`
 - `owner-platform/tests/recovery/backup-manifest.mjs`
 - `owner-platform/tests/recovery/backup-manifest.test.mjs`
 - `owner-platform/tests/recovery/payload-worker.mjs`
