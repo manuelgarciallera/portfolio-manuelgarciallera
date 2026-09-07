@@ -6,124 +6,132 @@
   },
   "routes": {
     "/": {
-      "rawBytes": 209623,
-      "gzipBytes": 70576,
+      "rawBytes": 211578,
+      "gzipBytes": 71340,
       "files": [
+        "static/chunks/0278wkjhh6e3n.js",
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
+        "static/chunks/0zp8upatqo-1l.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/220h6v4ch-__7.js",
-        "static/chunks/3hn3ynrrny5u2.js",
-        "static/chunks/42t_-8wuc3u_5.js"
+        "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
     "/articulos": {
-      "rawBytes": 123794,
-      "gzipBytes": 39333,
+      "rawBytes": 124332,
+      "gzipBytes": 39528,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/3hn3ynrrny5u2.js",
+        "static/chunks/2ecarwhbm3_fy.js",
         "static/chunks/3maa356e4fant.js"
       ]
     },
     "/articulos/[slug]": {
-      "rawBytes": 151030,
-      "gzipBytes": 48911,
+      "rawBytes": 152106,
+      "gzipBytes": 49300,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
+        "static/chunks/0lj0s7gokbz96.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/1w18g463npi94.js",
-        "static/chunks/3hn3ynrrny5u2.js",
+        "static/chunks/2ecarwhbm3_fy.js",
         "static/chunks/3maa356e4fant.js"
       ]
     },
     "/casos": {
-      "rawBytes": 218856,
-      "gzipBytes": 73776,
+      "rawBytes": 221082,
+      "gzipBytes": 74645,
       "files": [
-        "static/chunks/02i18v3h9nvhx.js",
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0qcr5_oyvhv5n.js",
         "static/chunks/0ugiy02c9r714.js",
+        "static/chunks/0zp8upatqo-1l.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/220h6v4ch-__7.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/1srx7o5wiqm68.js",
+        "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
     "/casos/[slug]": {
-      "rawBytes": 232943,
-      "gzipBytes": 77834,
+      "rawBytes": 235180,
+      "gzipBytes": 78715,
       "files": [
-        "static/chunks/02i18v3h9nvhx.js",
         "static/chunks/05-c3ty_6dwfk.js",
+        "static/chunks/0cfv2mw5n9jdt.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/1rl7mg84u1g4r.js",
-        "static/chunks/2_inoetj7p9ra.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/1srx7o5wiqm68.js",
+        "static/chunks/2ecarwhbm3_fy.js",
+        "static/chunks/403tfx40h7etx.js"
       ]
     },
     "/investigacion": {
-      "rawBytes": 150489,
-      "gzipBytes": 48373,
-      "files": []
+      "rawBytes": 151649,
+      "gzipBytes": 48814,
+      "files": [
+        "static/chunks/05-c3ty_6dwfk.js",
+        "static/chunks/0ugiy02c9r714.js",
+        "static/chunks/14mrh2-p_w84d.js",
+        "static/chunks/1m_cuz6yq6ran.js",
+        "static/chunks/1nl9a6ehbw0vk.js",
+        "static/chunks/2ecarwhbm3_fy.js",
+        "static/chunks/337gjri31igs9.js"
+      ]
     },
     "/lab/pixel-architecture": {
-      "rawBytes": 117945,
-      "gzipBytes": 36799,
+      "rawBytes": 118483,
+      "gzipBytes": 36994,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
         "static/chunks/1wgpmqggbz_yr.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
     "/lab/spline": {
-      "rawBytes": 110928,
-      "gzipBytes": 34109,
+      "rawBytes": 111466,
+      "gzipBytes": 34304,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/3ehy1ep_v2gfe.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/2ecarwhbm3_fy.js",
+        "static/chunks/3ehy1ep_v2gfe.js"
       ]
     },
     "/proceso": {
-      "rawBytes": 149944,
-      "gzipBytes": 47811,
+      "rawBytes": 151020,
+      "gzipBytes": 48200,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
+        "static/chunks/1m_cuz6yq6ran.js",
         "static/chunks/1nl9a6ehbw0vk.js",
         "static/chunks/2e1ruarw9z4ae.js",
-        "static/chunks/2xb5qrduuoajx.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
     "/sobre-mi": {
-      "rawBytes": 149419,
-      "gzipBytes": 47954,
+      "rawBytes": 150495,
+      "gzipBytes": 48343,
       "files": [
         "static/chunks/05-c3ty_6dwfk.js",
         "static/chunks/0ugiy02c9r714.js",
         "static/chunks/14mrh2-p_w84d.js",
+        "static/chunks/1m_cuz6yq6ran.js",
         "static/chunks/1nl9a6ehbw0vk.js",
-        "static/chunks/2rqydk4vlv-9s.js",
-        "static/chunks/2xb5qrduuoajx.js",
-        "static/chunks/3hn3ynrrny5u2.js"
+        "static/chunks/2ecarwhbm3_fy.js",
+        "static/chunks/2rqydk4vlv-9s.js"
       ]
     }
   }
