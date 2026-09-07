@@ -9,8 +9,10 @@ Actualización posterior: la paridad editorial PostgreSQL ya está verificada. E
 Actualización 2026-09-08: la pérdida de archivos históricos tras reemplazo ya está
 reproducida, no solo inferida. Se ha implementado y revisado un
 [núcleo de revisiones inmutables](media-revision-core-verification-2026-09-08.md),
-todavía sin activar en Payload. La integración aislada está en curso; las puertas
-de permisos HTTP, copia completa, persistencia del alojamiento y publicación del CV
+todavía sin activar en la biblioteca real. La [integración aislada está implementada
+y revisada](media-binding-verification-2026-09-08.md), con 31/31 casos editoriales
+en SQLite y 31/31 en PostgreSQL; las puertas de HTTP con socket y edición nativa,
+copia completa de revisiones, persistencia del alojamiento y publicación del CV
 siguen pendientes. No presentar la biblioteca activa como reparada por esos tests.
 
 | Prioridad | Evidencia actual | Consecuencia y comprobación necesaria |
