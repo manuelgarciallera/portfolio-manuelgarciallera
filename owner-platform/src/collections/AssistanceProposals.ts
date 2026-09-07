@@ -7,6 +7,7 @@ import {
 } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { ASSIST_CAPABILITIES } from '../assist/contracts'
 import { decideProposalData, PROPOSAL_STATUSES } from '../assist/proposal'
 
@@ -68,7 +69,6 @@ export const enforceAssistanceProposalDelete: CollectionBeforeDeleteHook = async
 export const AssistanceProposals: CollectionConfig = {
   slug: 'assistance-proposals',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/AssistanceProposalControls#AssistanceProposalControls'] } },
     defaultColumns: ['capability', 'provider', 'status', 'createdAt'],
     useAsTitle: 'capability',
   },
@@ -83,6 +83,7 @@ export const AssistanceProposals: CollectionConfig = {
     beforeDelete: [enforceAssistanceProposalDelete],
   },
   fields: [
+    documentPanel('./components/AssistanceProposalControls#AssistanceProposalControls'),
     { name: 'targetPage', type: 'relationship', relationTo: 'pages', required: true, admin: { readOnly: true } },
     { name: 'sourceSnapshot', type: 'relationship', relationTo: 'preview-snapshots', required: true, admin: { readOnly: true } },
     {

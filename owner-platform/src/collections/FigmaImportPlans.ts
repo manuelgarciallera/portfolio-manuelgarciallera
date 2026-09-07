@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { hashFigmaImportPlan, type FigmaImportPlan } from '../connectors/figma/import-plan'
 
 const immutableError = () => new APIError('Los planes de importación de Figma son inmutables.', 403)
@@ -28,10 +29,11 @@ export const enforceFigmaImportPlanDelete: CollectionBeforeDeleteHook = async ()
 
 export const FigmaImportPlans: CollectionConfig = {
   slug: 'figma-import-plans',
-  admin: { components: { edit: { beforeDocumentControls: ['./components/FigmaImportPlanControls#FigmaImportPlanControls'] } }, defaultColumns: ['candidateName', 'candidateType', 'sourceFileKey', 'status', 'createdAt'], useAsTitle: 'candidateName' },
+  admin: { defaultColumns: ['candidateName', 'candidateType', 'sourceFileKey', 'status', 'createdAt'], useAsTitle: 'candidateName' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [prepareFigmaImportPlan], beforeDelete: [enforceFigmaImportPlanDelete] },
   fields: [
+    documentPanel('./components/FigmaImportPlanControls#FigmaImportPlanControls'),
     { name: 'schemaVersion', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'status', type: 'select', required: true, options: [{ label: 'Pendiente', value: 'pending' }], admin: { readOnly: true } },
     { name: 'sourceFileKey', type: 'text', required: true, index: true, admin: { readOnly: true } },

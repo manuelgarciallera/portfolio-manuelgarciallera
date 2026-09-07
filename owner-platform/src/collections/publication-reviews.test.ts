@@ -18,9 +18,11 @@ describe('PublicationReviews collection', () => {
     expect(PublicationReviews.access?.create?.(access(owner))).toBe(false)
     expect(PublicationReviews.access?.update?.(access(owner))).toBe(false)
     expect(PublicationReviews.access?.delete?.(access(owner))).toBe(false)
-    expect(PublicationReviews.admin?.components?.edit?.beforeDocumentControls).toEqual([
-      './components/PublicationReviewControls#PublicationReviewControls',
-    ])
+    expect(PublicationReviews.admin?.components?.edit?.beforeDocumentControls ?? []).toEqual([])
+    expect(PublicationReviews.fields[0]).toMatchObject({
+      name: 'ownerActions', type: 'ui',
+      admin: { components: { Field: './components/PublicationReviewControls#PublicationReviewControls' } },
+    })
   })
 
   it('accepts only matching canonical data and owner provenance', async () => {

@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { createPublicationReview } from '../publication/review'
 
 const immutableError = () => new APIError('Las revisiones de publicación son inmutables.', 403)
@@ -29,13 +30,13 @@ export const enforcePublicationReviewDelete: CollectionBeforeDeleteHook = async 
 export const PublicationReviews: CollectionConfig = {
   slug: 'publication-reviews',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/PublicationReviewControls#PublicationReviewControls'] } },
     defaultColumns: ['bundle', 'decision', 'decidedBy', 'decidedAt'],
     useAsTitle: 'reviewHash',
   },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationReview], beforeDelete: [enforcePublicationReviewDelete] },
   fields: [
+    documentPanel('./components/PublicationReviewControls#PublicationReviewControls'),
     { name: 'bundle', type: 'relationship', relationTo: 'publication-bundles', required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'bundleHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'decision', type: 'select', required: true, options: ['approved', 'rejected'], admin: { readOnly: true } },

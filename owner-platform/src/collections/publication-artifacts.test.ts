@@ -15,7 +15,11 @@ describe('PublicationArtifacts collection', () => {
     expect(PublicationArtifacts.access?.create?.(access(owner))).toBe(false)
     expect(PublicationArtifacts.access?.update?.(access(owner))).toBe(false)
     expect(PublicationArtifacts.access?.delete?.(access(owner))).toBe(false)
-    expect(PublicationArtifacts.admin?.components?.edit?.beforeDocumentControls).toEqual(['./components/PublicationArtifactControls#PublicationArtifactControls'])
+    expect(PublicationArtifacts.admin?.components?.edit?.beforeDocumentControls ?? []).toEqual([])
+    expect(PublicationArtifacts.fields[0]).toMatchObject({
+      name: 'ownerActions', type: 'ui',
+      admin: { components: { Field: './components/PublicationArtifactControls#PublicationArtifactControls' } },
+    })
   })
 
   it('accepts only matching canonical data and owner provenance', async () => {

@@ -16,7 +16,11 @@ describe('FigmaImportReviews collection', () => {
     expect(FigmaImportReviews.access?.create?.(access(owner))).toBe(false)
     expect(FigmaImportReviews.access?.update?.(access(owner))).toBe(false)
     expect(FigmaImportReviews.access?.delete?.(access(owner))).toBe(false)
-    expect(FigmaImportReviews.admin?.components?.edit?.beforeDocumentControls).toEqual(['./components/FigmaImportReviewControls#FigmaImportReviewControls'])
+    expect(FigmaImportReviews.admin?.components?.edit?.beforeDocumentControls ?? []).toEqual([])
+    expect(FigmaImportReviews.fields[0]).toMatchObject({
+      name: 'ownerActions', type: 'ui',
+      admin: { components: { Field: './components/FigmaImportReviewControls#FigmaImportReviewControls' } },
+    })
   })
 
   it('accepts only matching canonical owner provenance', async () => {

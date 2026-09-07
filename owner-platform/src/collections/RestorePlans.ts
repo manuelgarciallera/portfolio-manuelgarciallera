@@ -6,6 +6,7 @@ import {
 } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { createRestorePlanData, RESTORE_PLAN_STATUSES } from '../restore/plan'
 
 const decisionFields = new Set([
@@ -103,7 +104,6 @@ export const enforceRestorePlanDelete: CollectionBeforeDeleteHook = async () => 
 export const RestorePlans: CollectionConfig = {
   slug: 'restore-plans',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/RestorePlanControls#RestorePlanControls'] } },
     defaultColumns: ['release', 'targetPage', 'status', 'createdAt'],
     useAsTitle: 'status',
   },
@@ -118,6 +118,7 @@ export const RestorePlans: CollectionConfig = {
     beforeDelete: [enforceRestorePlanDelete],
   },
   fields: [
+    documentPanel('./components/RestorePlanControls#RestorePlanControls'),
     { name: 'release', type: 'relationship', relationTo: 'releases', required: true, admin: { readOnly: true } },
     { name: 'targetPage', type: 'relationship', relationTo: 'pages', required: true, admin: { readOnly: true } },
     { name: 'targetSnapshot', type: 'relationship', relationTo: 'preview-snapshots', required: true, admin: { readOnly: true } },

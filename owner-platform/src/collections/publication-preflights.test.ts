@@ -22,7 +22,11 @@ describe('PublicationPreflights collection', () => {
     expect(PublicationPreflights.access?.read?.({ req: { user: owner } } as never)).toBe(true)
     expect(PublicationPreflights.access?.update?.({ req: { user: owner } } as never)).toBe(false)
     expect(PublicationPreflights.access?.delete?.({ req: { user: owner } } as never)).toBe(false)
-    expect(PublicationPreflights.admin?.components?.edit?.beforeDocumentControls).toEqual(['./components/PublicationPreflightSummary#PublicationPreflightSummary'])
+    expect(PublicationPreflights.admin?.components?.edit?.beforeDocumentControls ?? []).toEqual([])
+    expect(PublicationPreflights.fields[0]).toMatchObject({
+      name: 'ownerActions', type: 'ui',
+      admin: { components: { Field: './components/PublicationPreflightSummary#PublicationPreflightSummary' } },
+    })
     await expect(enforcePublicationPreflightDelete({} as never)).rejects.toThrow(/inmutables/i)
   })
 

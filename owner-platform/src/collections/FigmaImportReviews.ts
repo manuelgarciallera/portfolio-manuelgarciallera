@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { createFigmaImportReview } from '../connectors/figma/import-review'
 
 const immutableError = () => new APIError('Las revisiones de importación de Figma son inmutables.', 403)
@@ -19,10 +20,11 @@ export const enforceFigmaImportReviewDelete: CollectionBeforeDeleteHook = async 
 
 export const FigmaImportReviews: CollectionConfig = {
   slug: 'figma-import-reviews',
-  admin: { components: { edit: { beforeDocumentControls: ['./components/FigmaImportReviewControls#FigmaImportReviewControls'] } }, defaultColumns: ['plan', 'decision', 'decidedBy', 'decidedAt'], useAsTitle: 'reviewHash' },
+  admin: { defaultColumns: ['plan', 'decision', 'decidedBy', 'decidedAt'], useAsTitle: 'reviewHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [prepareFigmaImportReview], beforeDelete: [enforceFigmaImportReviewDelete] },
   fields: [
+    documentPanel('./components/FigmaImportReviewControls#FigmaImportReviewControls'),
     { name: 'plan', type: 'relationship', relationTo: 'figma-import-plans', required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'planHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'decision', type: 'select', required: true, options: ['approved', 'rejected'], admin: { readOnly: true } },

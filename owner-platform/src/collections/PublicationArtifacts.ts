@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { hashPublicationArtifact, type PublicationArtifact } from '../publication/artifact'
 
 const immutableError = () => new APIError('Los artefactos de publicación son inmutables.', 403)
@@ -23,10 +24,11 @@ export const enforcePublicationArtifactDelete: CollectionBeforeDeleteHook = asyn
 
 export const PublicationArtifacts: CollectionConfig = {
   slug: 'publication-artifacts',
-  admin: { components: { edit: { beforeDocumentControls: ['./components/PublicationArtifactControls#PublicationArtifactControls'] } }, defaultColumns: ['bundle', 'review', 'pageCount', 'createdAt'], useAsTitle: 'artifactHash' },
+  admin: { defaultColumns: ['bundle', 'review', 'pageCount', 'createdAt'], useAsTitle: 'artifactHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationArtifact], beforeDelete: [enforcePublicationArtifactDelete] },
   fields: [
+    documentPanel('./components/PublicationArtifactControls#PublicationArtifactControls'),
     { name: 'review', type: 'relationship', relationTo: 'publication-reviews' as never, required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'reviewHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'bundle', type: 'relationship', relationTo: 'publication-bundles', required: true, index: true, admin: { readOnly: true } },

@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { hashPublicationPreflight, type PublicationPreflight } from '../publication/preflight'
 
 const immutableError = () => new APIError('Los informes de preflight son inmutables.', 403)
@@ -23,10 +24,11 @@ export const enforcePublicationPreflightDelete: CollectionBeforeDeleteHook = asy
 
 export const PublicationPreflights: CollectionConfig = {
   slug: 'publication-preflights',
-  admin: { components: { edit: { beforeDocumentControls: ['./components/PublicationPreflightSummary#PublicationPreflightSummary'] } }, defaultColumns: ['artifact', 'status', 'issueCount', 'checkedAt'], useAsTitle: 'preflightHash' },
+  admin: { defaultColumns: ['artifact', 'status', 'issueCount', 'checkedAt'], useAsTitle: 'preflightHash' },
   access: { create: () => false, read: ownerOnly, update: () => false, delete: () => false },
   hooks: { beforeChange: [preparePublicationPreflight], beforeDelete: [enforcePublicationPreflightDelete] },
   fields: [
+    documentPanel('./components/PublicationPreflightSummary#PublicationPreflightSummary'),
     { name: 'artifact', type: 'relationship', relationTo: 'publication-artifacts' as never, required: true, index: true, admin: { readOnly: true } },
     { name: 'artifactHash', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'exportHash', type: 'text', required: true, admin: { readOnly: true } },

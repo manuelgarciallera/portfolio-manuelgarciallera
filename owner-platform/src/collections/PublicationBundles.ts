@@ -6,6 +6,7 @@ import {
 } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { documentPanel } from './document-panel'
 import { hashPublicationBundle, type PublicationBundle } from '../publication/bundle'
 
 const immutableError = () => new APIError('Los paquetes de publicación son inmutables.', 403)
@@ -39,7 +40,6 @@ export const enforcePublicationBundleDelete: CollectionBeforeDeleteHook = async 
 export const PublicationBundles: CollectionConfig = {
   slug: 'publication-bundles',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/PublicationBundleControls#PublicationBundleControls'] } },
     defaultColumns: ['name', 'pageCount', 'bundleHash', 'createdAt'],
     useAsTitle: 'name',
   },
@@ -54,6 +54,7 @@ export const PublicationBundles: CollectionConfig = {
     beforeDelete: [enforcePublicationBundleDelete],
   },
   fields: [
+    documentPanel('./components/PublicationBundleControls#PublicationBundleControls'),
     { name: 'name', type: 'text', required: true, maxLength: 120, admin: { readOnly: true } },
     { name: 'schemaVersion', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'pageCount', type: 'number', required: true, min: 1, max: 100, admin: { readOnly: true } },
