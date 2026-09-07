@@ -210,6 +210,9 @@
   .rd-skip-link,
   .rd-breadcrumbs a,
   .rd-footer nav a,
+  .rd-phase-nav a,
+  .rd-prelude-progress a,
+  .rd-project-gateway__actions a,
   .rd-brand { position: relative; }
 
   .rd-now__answer a::before,
@@ -220,6 +223,9 @@
   .rd-skip-link::before,
   .rd-breadcrumbs a::before,
   .rd-footer nav a::before,
+  .rd-phase-nav a::before,
+  .rd-prelude-progress a::before,
+  .rd-project-gateway__actions a::before,
   .rd-brand::before {
     position: absolute; left: -0.35rem; right: -0.35rem; top: 50%; height: 2.75rem;
     transform: translateY(-50%); content: '';
@@ -227,4 +233,9 @@
 
   .rd-theme-btn,
   .rd-menu-btn { min-width: 2.75rem; min-height: 2.75rem; }
+
+  /* Las acciones del gateway se apilan en movil con 1.1rem de separacion: con areas
+     de 2.75rem sobre enlaces de 24px los medios huecos (8,8px) quedarian por debajo
+     de los 10px que sobresale el area y dos enlaces contiguos se solaparian. */
+  .rd-project-gateway__actions { gap: 1.6rem; }
 }
