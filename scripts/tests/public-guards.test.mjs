@@ -57,6 +57,24 @@ test('public boundary follows CSS imports and CSS url references into private st
   ])
 })
 
+test('public boundary lets a route handler use a server-only package', async () => {
+  const result = await analyzePublicBoundary({
+    rootDir: join(fixtures, 'public-boundary', 'server-only'),
+  })
+
+  assert.deepEqual(result.violations, [])
+})
+
+test('public boundary rejects a server-only package once a page can reach it', async () => {
+  const result = await analyzePublicBoundary({
+    rootDir: join(fixtures, 'public-boundary', 'server-only-leak'),
+  })
+
+  assert.deepEqual(result.violations.map(({ importer, specifier, reason }) => ({ importer, specifier, reason })), [
+    { importer: 'src/lib/mailer.ts', specifier: 'mailer-vendor', reason: 'server-only dependency reached from a public page' },
+  ])
+})
+
 test('bundle snapshot strips route groups but excludes real owner URL segments', async () => {
   const snapshot = await createBundleSnapshot({
     buildDir: join(fixtures, 'public-bundle', '.next'),

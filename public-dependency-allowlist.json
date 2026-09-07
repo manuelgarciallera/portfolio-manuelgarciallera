@@ -12,5 +12,8 @@
     "tailwindcss",
     "three",
     "web-vitals"
+  ],
+  "serverOnlyPackages": [
+    "nodemailer"
   ]
 }

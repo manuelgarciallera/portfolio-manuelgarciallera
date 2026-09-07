@@ -13,6 +13,9 @@ const FORBIDDEN_PACKAGES = [
   '@lexical/',
 ]
 const PRIVATE_SEGMENTS = new Set(['owner', 'admin'])
+// Un route handler nunca viaja al navegador: Next lo ejecuta solo en el servidor.
+// Es la unica frontera que permite dependencias que no pueden entrar en el bundle publico.
+const ROUTE_HANDLER = /(^|\/)route\.(?:ts|tsx|js|jsx|mts|mjs|cts|cjs)$/
 
 function toPosix(value) {
   return value.split(sep).join('/')
@@ -117,6 +120,32 @@ async function walkFiles(directory) {
   return files
 }
 
+// Conjunto de archivos alcanzables desde unas entradas siguiendo solo imports locales.
+// Sirve para demostrar que un modulo NO cuelga de ninguna pagina, en vez de fiarse de su nombre.
+async function reachableFrom(entries, aliases) {
+  const reached = new Set()
+  async function walk(file) {
+    const canonical = normalize(file)
+    if (reached.has(canonical)) return
+    reached.add(canonical)
+    let source
+    try {
+      source = await readFile(canonical, 'utf8')
+    } catch {
+      return
+    }
+    const specifiers = STYLE_EXTENSIONS.includes(extname(canonical))
+      ? extractStyleSpecifiers(source)
+      : extractScriptSpecifiers(source, canonical)
+    for (const specifier of specifiers) {
+      const resolved = await resolveLocalImport(specifier, canonical, aliases)
+      if (resolved) await walk(resolved)
+    }
+  }
+  for (const entry of entries) await walk(entry)
+  return reached
+}
+
 export async function analyzePublicBoundary({ rootDir = process.cwd() } = {}) {
   const absoluteRoot = resolve(rootDir)
   const sourceRoot = join(absoluteRoot, 'src')
@@ -136,8 +165,17 @@ export async function analyzePublicBoundary({ rootDir = process.cwd() } = {}) {
   if (!Array.isArray(allowlist.packages) || !allowlist.packages.every((item) => typeof item === 'string')) {
     throw new Error('public dependency allowlist packages must be an array of strings')
   }
+  const serverOnly = allowlist.serverOnlyPackages ?? []
+  if (!Array.isArray(serverOnly) || !serverOnly.every((item) => typeof item === 'string')) {
+    throw new Error('public dependency allowlist serverOnlyPackages must be an array of strings')
+  }
   const allowedPackages = new Set(allowlist.packages)
+  const serverOnlyPackages = new Set(serverOnly)
   const entries = (await walkFiles(appRoot)).filter((file) => !isPrivatePath(file, sourceRoot)).sort()
+  // Todo lo que cuelga de una pagina o un layout puede acabar en el navegador. Lo que solo
+  // cuelga de un route handler, no. La lista server-only se comprueba contra esta prueba,
+  // no contra una etiqueta: si manana una pagina importa el modulo, el fallo reaparece.
+  const clientReachable = await reachableFrom(entries.filter((file) => !ROUTE_HANDLER.test(toPosix(file))), aliases)
   const visited = new Set()
   const violations = []
 
@@ -166,9 +204,13 @@ export async function analyzePublicBoundary({ rootDir = process.cwd() } = {}) {
       }
       if (/^(?:https?:|data:|node:)/.test(specifier)) continue
       const packageName = specifier.startsWith('@') ? specifier.split('/').slice(0, 2).join('/') : specifier.split('/')[0]
-      if (!allowedPackages.has(packageName)) {
-        violations.push({ importer: toPosix(relative(absoluteRoot, canonical)), specifier, reason: 'public dependency is not allowlisted', trace: trace.map((item) => toPosix(relative(absoluteRoot, item))) })
+      if (allowedPackages.has(packageName)) continue
+      if (serverOnlyPackages.has(packageName)) {
+        if (!clientReachable.has(canonical)) continue
+        violations.push({ importer: toPosix(relative(absoluteRoot, canonical)), specifier, reason: 'server-only dependency reached from a public page', trace: trace.map((item) => toPosix(relative(absoluteRoot, item))) })
+        continue
       }
+      violations.push({ importer: toPosix(relative(absoluteRoot, canonical)), specifier, reason: 'public dependency is not allowlisted', trace: trace.map((item) => toPosix(relative(absoluteRoot, item))) })
     }
   }
 
