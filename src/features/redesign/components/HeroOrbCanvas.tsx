@@ -3,7 +3,7 @@
 import { MeshDistortMaterial, MeshTransmissionMaterial, Text } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Suspense, useMemo, useRef } from 'react'
-import { Group, MathUtils } from 'three'
+import { AdditiveBlending, Color, FrontSide, Group, MathUtils } from 'three'
 
 // El nombre vive dentro de la escena, detras del orbe. Su tamano estaba fijado en
 // unidades de mundo, asi que en un lienzo estrecho (movil) el rotulo era mas ancho
@@ -28,9 +28,9 @@ const WORDMARK_MAX_SIZE = 0.46
 // `.rd-hero-art` declara `aspect-ratio: 1.15`, y en movil el lienzo mide unos
 // 438x352, o sea 1.24: el movil es mas apaisado que el escritorio. Quien decide es
 // la anchura del viewport, la misma que decide la maquetacion en CSS.
-const COMPACT_ORB_Y = 0.42
-const COMPACT_ORB_SCALE = 0.75
-const COMPACT_WORDMARK_Y = -0.62
+const COMPACT_ORB_Y = 0.34
+const COMPACT_ORB_SCALE = 0.78
+const COMPACT_WORDMARK_Y = -0.52
 
 interface HeroOrbCanvasProps {
   isDark: boolean
@@ -40,8 +40,37 @@ interface HeroOrbCanvasProps {
   onReady?: () => void
 }
 
-function LiquidOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion'>) {
+const RIM_VERTEX = `
+varying vec3 vNormalW;
+varying vec3 vViewW;
+void main() {
+  vec4 world = modelMatrix * vec4(position, 1.0);
+  vNormalW = normalize(mat3(modelMatrix) * normal);
+  vViewW = normalize(cameraPosition - world.xyz);
+  gl_Position = projectionMatrix * viewMatrix * world;
+}`
+
+const RIM_FRAGMENT = `
+uniform vec3 uColor;
+uniform float uPower;
+uniform float uIntensity;
+varying vec3 vNormalW;
+varying vec3 vViewW;
+void main() {
+  float fresnel = pow(1.0 - clamp(dot(normalize(vNormalW), normalize(vViewW)), 0.0, 1.0), uPower);
+  gl_FragColor = vec4(uColor * fresnel * uIntensity, fresnel * uIntensity);
+}`
+
+function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   const groupRef = useRef<Group>(null)
+  const rimUniforms = useMemo(
+    () => ({
+      uColor: { value: new Color(isDark ? '#eaf4ff' : '#334155') },
+      uPower: { value: isDark ? 3 : 4 },
+      uIntensity: { value: isDark ? 0.8 : 0.22 },
+    }),
+    [isDark],
+  )
 
   useFrame((state, delta) => {
     const group = groupRef.current
@@ -66,26 +95,29 @@ function LiquidOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' |
         <MeshTransmissionMaterial
           backside
           backsideThickness={0.48}
-          chromaticAberration={0.01}
-          distortion={0.09}
-          distortionScale={0.16}
+          chromaticAberration={0.035}
+          distortion={0.28}
+          distortionScale={0.42}
           temporalDistortion={reduceMotion ? 0 : 0.055}
           roughness={0.015}
-          samples={3}
-          resolution={192}
-          thickness={1.28}
+          samples={isCompact ? 4 : 6}
+          resolution={isCompact ? 256 : 384}
+          thickness={0.55}
+          ior={1.28}
           transmission={1}
           anisotropicBlur={0.12}
-          attenuationColor={isDark ? '#f7f7f3' : '#ffffff'}
-          attenuationDistance={1.35}
+          attenuationColor="#ffffff"
+          attenuationDistance={8}
         />
       </mesh>
+      {/* Corrientes internas: la misma malla de antes, pero a 0.05 de opacidad ya
+          no vela el nombre; solo insinua movimiento dentro del liquido. */}
       <mesh scale={[1.006, 1.004, 1.006]}>
         <sphereGeometry args={[1, 96, 64]} />
         <MeshDistortMaterial
           color="#f3f3ee"
           transparent
-          opacity={0.62}
+          opacity={0.05}
           roughness={0.18}
           metalness={0.02}
           distort={0.22}
@@ -93,15 +125,19 @@ function LiquidOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' |
           depthWrite={false}
         />
       </mesh>
-      <mesh scale={[1.026, 1.02, 1.026]}>
+      {/* El borde. Un vidrio limpio sobre fondo negro es un agujero negro: lo que
+          hace que se perciba una gota es el Fresnel del canto, no el relleno. En
+          claro el canto tiene que oscurecer, no iluminar, o el fondo se lo come. */}
+      <mesh scale={[1.015, 1.015, 1.015]}>
         <sphereGeometry args={[1, 96, 64]} />
-        <MeshDistortMaterial
-          color="#d8d8d1"
+        <shaderMaterial
           transparent
-          opacity={0.18}
-          distort={0.24}
-          speed={reduceMotion ? 0 : 0.35}
           depthWrite={false}
+          blending={AdditiveBlending}
+          side={FrontSide}
+          uniforms={rimUniforms}
+          vertexShader={RIM_VERTEX}
+          fragmentShader={RIM_FRAGMENT}
         />
       </mesh>
     </group>
@@ -147,7 +183,7 @@ function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' |
 function ResponsiveOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   return (
     <group scale={isCompact ? COMPACT_ORB_SCALE : 1} position={[0, isCompact ? COMPACT_ORB_Y : 0, 0]}>
-      <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} />
+      <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} />
     </group>
   )
 }
