@@ -438,7 +438,14 @@
 .rd-prelude-progress__title { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
 .rd-prelude-progress ol { display: flex; gap: clamp(.8rem, 2.5vw, 2.5rem); margin: 0; padding: 0; list-style: none; }
 .rd-prelude-progress a { display: flex; gap: .45rem; color: inherit; font-size: .72rem; text-decoration: none; transition: color .25s ease, transform .3s var(--ease-out); }
-.rd-prelude-progress a span { font-variant-numeric: tabular-nums; opacity: .55; }
+.rd-prelude-progress a span {
+  font-variant-numeric: tabular-nums;
+  /* .55 dejaba el ordinal en 2,63:1 sobre el fondo del preambulo, por debajo del
+     4,5:1 que exige AA para 11,5 px. .84 sobre el .56 heredado da un alfa efectivo
+     de .47 y un contraste de 4,8:1: es el valor mas bajo que pasa, para conservar
+     la jerarquia entre el numero y la etiqueta. */
+  opacity: .84;
+}
 .rd-prelude-progress li.is-active a { color: #fff; }
 .rd-prelude-progress li.is-active a::after { width: 1.5rem; background: #ff6b00; }
 .rd-prelude-progress a::after { align-self: center; width: 0; height: 1px; content: ''; transition: width .3s ease; }
