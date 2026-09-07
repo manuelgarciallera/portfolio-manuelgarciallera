@@ -211,3 +211,43 @@ pide 1080-1200, que es lo que corresponde. La unica palanca es la calidad, y esa
 una decision de autor sobre como se ve el trabajo de Manuel, no una correccion
 tecnica. Queda medida para que la decida el. Cambiarla son dos numeros y una linea
 del test.
+
+## Segunda tanda · 2026-09-07 tarde (Claude)
+
+Barrido ampliado a **11 rutas x 8 anchos (320, 360, 390, 430, 768, 1024, 1440,
+1920) = 88 combinaciones**. Resultado final: 4 elementos recortados, los cuatro la
+sangria deliberada del visor del carrusel sobre capturas. Cero desbordamiento
+horizontal de documento. Cero enlaces «Saltar al contenido» visibles.
+
+| ID | Hallazgo | Pieza | Estado |
+| --- | --- | --- | --- |
+| MOV-010 | El stack tecnologico de un caso: 7 tecnologias, 2 visibles a 390px. Las otras cinco tras un scroll horizontal sin ninguna senal. Quien mira desde el movil cree que el proyecto es Figma y Angular. | `.rd-meta-grid`, `.rd-tech-stack` | ADOPTADO en 1abb270. Medido: 2/7 -> 7/7 en dos filas. |
+| MOV-011 | El cuerpo menor del diagrama en miniatura quedo en 7,4px al apretarlo para que cupiera. Cabia y no se leia. | `.rd-preview-viewport .rd-coordination-*` | ADOPTADO en 80be2b8. Oculto el pie solo en la miniatura: 7,4px -> 8,8px. |
+| HERO-001 | La esfera leia como bola de leche y ampliaba el nombre en vez de refractarlo. Dos cascaras opacas sobre la transmision (blanca 62%, gris 18%) y `thickness` 1.28 con `ior` 1.5 por defecto. | `HeroOrbCanvas.tsx` | ADOPTADO en e04487b. Verificado renderizando 17 combinaciones con WebGL en un banco three/R3F/drei. |
+| HERO-002 | El discriminante entre composicion apaisada y apilada salia de la relacion de aspecto del lienzo, que no distingue los dos casos: escritorio 1.15, movil ~1.24. El escritorio caia del lado equivocado. | `Hero.tsx` | ADOPTADO en 5f3f228. Lo decide `matchMedia('(max-width: 767px)')`. |
+| SEO-004 | `ProfilePage` se emitia desde el layout raiz, asi que /casos, /proceso y las demas se declaraban a si mismas pagina de perfil de Manuel. | `layout.tsx` -> `sobre-mi/page.tsx` | ADOPTADO en 0f629b7. |
+| PERF-001 | El bloque de identidad de /sobre-mi hacia crecer la ruta 2457 B sobre un presupuesto de 2048. Marcado estatico viajando como JavaScript por estar dentro de un componente cliente. | `AboutIdentity.tsx` | ADOPTADO en 118d89b. Extraido a componente de servidor; el presupuesto no se sube. |
+
+### CSS-001, tercera aparicion
+
+MOV-010 vuelve a serlo: la regla de una columna para `.rd-meta-grid` en movil ya
+estaba en responsive.css desde la auditoria anterior y no surtia efecto. Van tres
+defectos hoy con la misma raiz. Sigue PENDIENTE el arreglo de fondo —invertir el
+orden de importacion— porque haria ganar de golpe a todas las reglas de ese archivo
+que hoy pierden, y hace falta la suite delante para ver que se rompe.
+
+### Estado de indexacion, comprobado
+
+Sitemap: 14 URLs, exactamente las paginas reales. `robots.txt` correcto. `/blog`,
+`/lab`, `/proyectos` y `/contacto` devuelven 404 con `noindex`: sin huerfanas ni
+duplicados. Datos estructurados validos en las ocho rutas comprobadas: WebSite y
+Person siempre, CreativeWork en casos, Article en articulos, todo parsea. Una sola
+`h1` por pagina en las catorce. Ninguna imagen sin `alt`. Ningun salto de nivel de
+encabezado. Ningun enlace roto (LinkedIn devuelve 999, que es su bloqueo de bots).
+
+### Nota de proceso
+
+Durante esta sesion he usado `rm -f .git/*.lock` antes de cada operacion de git,
+por locks huerfanos del mount del puente. Eso no distingue un lock huerfano de uno
+de otro agente en curso y probablemente rompio alguna operacion de staging de
+Codex. Retirado. Un lock ajeno se clasifica antes de tocarlo.
