@@ -15,6 +15,7 @@ interface HeroProps {
 export function Hero({ isDark = true }: HeroProps) {
   const [canvasReady, setCanvasReady] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
+  const [canMountCanvas, setCanMountCanvas] = useState(false)
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -22,6 +23,18 @@ export function Hero({ isDark = true }: HeroProps) {
     update()
     media.addEventListener('change', update)
     return () => media.removeEventListener('change', update)
+  }, [])
+
+  // El orbe pesa ~870 KB entre three y drei. Se monta cuando el navegador está
+  // ocioso, para que el fallback estático pinte primero y no compita con el LCP.
+  useEffect(() => {
+    const idle = window.requestIdleCallback
+    if (typeof idle === 'function') {
+      const handle = idle(() => setCanMountCanvas(true), { timeout: 2500 })
+      return () => window.cancelIdleCallback?.(handle)
+    }
+    const timer = window.setTimeout(() => setCanMountCanvas(true), 400)
+    return () => window.clearTimeout(timer)
   }, [])
 
   return (
@@ -49,7 +62,11 @@ export function Hero({ isDark = true }: HeroProps) {
           priority
         />
         <div className="rd-hero-canvas-stage">
-          <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} onReady={() => setCanvasReady(true)} />
+          {/* Con `prefers-reduced-motion: reduce` no se descarga la escena: el
+              fallback estático ya representa la misma pieza sin movimiento. */}
+          {canMountCanvas && !reduceMotion ? (
+            <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} onReady={() => setCanvasReady(true)} />
+          ) : null}
         </div>
       </div>
     </section>

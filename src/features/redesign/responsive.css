@@ -185,3 +185,46 @@
 }
 .rd-phase-nav:focus-visible,
 .rd-preview-tabs:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Objetivos táctiles y contención de titulares · 2026-09-07 (tercera tanda)
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* `max-width` en `ch` sobre una tipografía fluida deja de caber cuando la pista
+   de la rejilla es más estrecha que el texto: `.rd-research-copy` medía
+   cw 469 / sw 820 a 1440px y cw 256 / sw 437 a 768px, y el titular se salía de
+   su columna sobre el artefacto. `min(Nch, 100%)` conserva la medida ideal
+   cuando cabe y la limita al contenedor cuando no. */
+.rd-research-copy { min-width: 0; }
+.rd-research-copy h2 { max-width: min(11ch, 100%); }
+.rd-research-copy p { max-width: min(38ch, 100%); }
+
+/* Área activa de 44px en punteros gruesos, sin tocar el tamaño tipográfico ni
+   el flujo: un pseudo-elemento centrado sobre el enlace. */
+@media (pointer: coarse) {
+  .rd-now__answer a,
+  .rd-article-related,
+  .rd-contact-linkedin,
+  .rd-editorial__all,
+  .rd-mobile-nav-contact,
+  .rd-skip-link,
+  .rd-breadcrumbs a,
+  .rd-footer nav a,
+  .rd-brand { position: relative; }
+
+  .rd-now__answer a::before,
+  .rd-article-related::before,
+  .rd-contact-linkedin::before,
+  .rd-editorial__all::before,
+  .rd-mobile-nav-contact::before,
+  .rd-skip-link::before,
+  .rd-breadcrumbs a::before,
+  .rd-footer nav a::before,
+  .rd-brand::before {
+    position: absolute; left: -0.35rem; right: -0.35rem; top: 50%; height: 2.75rem;
+    transform: translateY(-50%); content: '';
+  }
+
+  .rd-theme-btn,
+  .rd-menu-btn { min-width: 2.75rem; min-height: 2.75rem; }
+}

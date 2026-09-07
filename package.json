@@ -31,7 +31,8 @@
     "ship": "bash ./scripts/ship.sh",
     "storybook": "storybook dev -p 6006 --disable-telemetry",
     "build-storybook": "storybook build --disable-telemetry",
-    "test:storybook": "vitest run --project storybook"
+    "test:storybook": "vitest run --project storybook",
+    "check:layout-overflow": "node ./scripts/check-layout-overflow.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
