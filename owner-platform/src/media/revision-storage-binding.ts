@@ -153,7 +153,9 @@ export const createRevisionStorageCollection = async (
           assertNativeOrigin()
           const source = object(await req.payload.findByID({
             collection: 'media', id: (args as unknown as { id: string | number }).id, depth: 0,
-            draft: req.query?.draft === true || req.query?.draft === 'true',
+            // updateByID mutates the latest version even when this request also
+            // publishes it and therefore has no draft=true query parameter.
+            draft: true,
             overrideAccess: false, req,
           }))
           if (Object.hasOwn(incoming, 'storageRevision') && incoming.storageRevision !== source.storageRevision) {

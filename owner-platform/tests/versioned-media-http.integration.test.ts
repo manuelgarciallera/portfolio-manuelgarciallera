@@ -84,6 +84,29 @@ it('crops and restores immutable originals and derivatives through native REST e
   expect(await readMediaRevision(fixture.revisionRoot, originalRevision)).toEqual(originalFiles)
 })
 
+it('crops the latest draft image when the same native update publishes it', async () => {
+  const published = await upload('#cc0000')
+  const draftBody = new FormData()
+  const draftBytes = await image('#0000cc')
+  draftBody.set('_payload', JSON.stringify({ alt: 'Newer blue draft', _status: 'draft' }))
+  draftBody.set('file', new File([draftBytes], `draft-${randomUUID()}.png`, { type: 'image/png' }))
+  const draftResponse = await fixture.request(`/api/media/${published.id}?draft=true`, { body: draftBody, method: 'PATCH' })
+  expect(draftResponse.status).toBe(200)
+  const draft = (await draftResponse.json()).doc as Record<string, unknown>
+  expect(revision(draft)).not.toBe(revision(published))
+
+  const response = await crop(draft, true, { _status: 'published' })
+  expect(response.status).toBe(200)
+  const cropped = (await response.json()).doc as Record<string, unknown>
+  expect(cropped._status).toBe('published')
+  const files = await readMediaRevision(fixture.revisionRoot, revision(cropped))
+  const croppedOriginal = files.find((file) => file.name === cropped.filename)
+  if (!croppedOriginal) throw new Error('Missing cropped draft original')
+  const decoded = sharp(croppedOriginal.bytes)
+  expect(await decoded.metadata()).toMatchObject({ height: 400, width: 600 })
+  expect([...(await decoded.raw().toBuffer()).subarray(0, 3)]).toEqual([0, 0, 204])
+})
+
 it('duplicates a revision-backed image through the authenticated native REST endpoint', async () => {
   const source = await upload()
   const sourceRevision = revision(source)

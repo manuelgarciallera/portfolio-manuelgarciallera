@@ -64,3 +64,16 @@ Controller documentation commits `cda81b4`, `354e5b6` and `bb82a45` are separate
 - Payload's installed `getExternalFile` forwards the request cookie while following redirects. This fixture's exact revision handler returns a file or error and never redirects, but a future redirecting proxy/hosting configuration is **not certified** by this evidence and would need a separate redirect policy/proof.
 - The suite proves native behavior and authorization for synthetic bounded fixtures in SQLite and PostgreSQL. It is not a production-scale, recovery-provenance or final storage-readiness claim.
 - Existing full owner-isolation/destructive build proof was intentionally not run or weakened. Public-boundary and public-bundle comparison are limited evidence only.
+
+## Review fix round 1 — latest draft source selection
+
+Review found that the native-edit prefetch selected the published document unless the request query contained `draft=true`, while Payload 3.88 `updateByID` independently retrieves the latest collection version before it applies a crop/publish update. With published revision A and newer draft revision B, a crop that also published B therefore compared or fetched A.
+
+- RED on `339fb8d`: `node scripts/test-integration.mjs tests/versioned-media-http.integration.test.ts -t "crops the latest draft image"` failed `1/1`; the real PATCH returned `400` (`Storage revision cannot be assigned by a caller`) instead of `200` when the request supplied B's revision.
+- Minimal fix: the access-checked `findByID` source lookup now always requests Payload's draft/latest view. It does not infer the source from caller `_status`; without a newer draft, Payload falls back to the published document.
+- GREEN: the identical focused command passed `1/1`. The regression creates distinct red published A and blue draft B images, crops and publishes B without `draft=true`, then decodes the persisted original with Sharp and verifies literal `600x400` dimensions plus blue `[0, 0, 204]` pixels.
+- SQLite: `node scripts/test-integration.mjs tests/versioned-media-http.integration.test.ts` passed `1` file / `7` tests (10.82 s).
+- PostgreSQL: configured portable 17.11 tools plus `npm run test:integration:postgres` passed `3` files / `38` tests (52.42 s), including HTTP `7/7`; child and sessions closed, exact cluster stopped, and only its synthetic root was removed.
+- `npx vitest run src/media/revision-storage-binding.test.ts` passed `1` file / `22` tests; `npm run lint` and `npm run typecheck` both exited `0`.
+
+Expected denial-path errors and the no-email-adapter warning remain visible and disclosed. No logging-framework cleanup, active configuration, provider, data, public surface or broad verification was added in this scoped fix.
