@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { chromium } from 'playwright'
 
 // Deliberately fixed to the separately provisioned synthetic QA server.
-const base = 'http://127.0.0.1:3011'
+const base = process.env.OWNER_QA_PORT === '3013' ? 'http://127.0.0.1:3013' : 'http://127.0.0.1:3011'
 const { OWNER_QA_EMAIL: email, OWNER_QA_PASSWORD: password } = process.env
 if (!email?.endsWith('@example.invalid') || !password) throw new Error('Use an isolated synthetic QA owner.')
 const browser = await chromium.launch({ headless: true })

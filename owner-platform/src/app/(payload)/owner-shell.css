@@ -1,0 +1,34 @@
+/* Payload's breadcrumb flex item otherwise pushes the account off narrow
+   screens. Keep the path locally scrollable, including keyboard-focused links,
+   rather than hiding document overflow or changing the desktop shell. */
+@media (max-width: 768px) {
+  /* On a phone the native sidebar occupies the whole viewport. Its desktop
+     grid transition otherwise squeezes the editor to zero width beside it. */
+  .template-default--nav-hydrated,
+  .template-default--nav-hydrated.template-default--nav-open {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .template-default .nav {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    max-width: 100%;
+    z-index: calc(var(--z-modal) + 1);
+    background: var(--theme-bg);
+    visibility: hidden;
+  }
+
+  .template-default .nav--nav-open {
+    visibility: visible;
+  }
+
+  .app-header__wrapper {
+    min-width: 0;
+  }
+
+  .app-header__step-nav-wrapper {
+    min-width: 0;
+    overflow-x: auto;
+  }
+}

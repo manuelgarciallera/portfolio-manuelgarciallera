@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 
 // Run only against the separately started QA database, never the normal owner port.
-const base = 'http://127.0.0.1:3011'
+const base = process.env.OWNER_QA_PORT === '3013' ? 'http://127.0.0.1:3013' : 'http://127.0.0.1:3011'
 const { OWNER_QA_EMAIL: email, OWNER_QA_PASSWORD: password } = process.env
 if (!email || !password) throw new Error('Provide credentials for the isolated QA owner.')
 const json = async (path, options) => {

@@ -1,6 +1,7 @@
 /* THIS FILE FOLLOWS PAYLOAD'S GENERATED EXISTING-APP SHIM. */
 import config from '@payload-config'
 import '@payloadcms/next/css'
+import './owner-shell.css'
 import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts'
 import type { ServerFunctionClient } from 'payload'
 import type { ReactNode } from 'react'

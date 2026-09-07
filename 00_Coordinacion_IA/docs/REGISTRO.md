@@ -45,3 +45,10 @@ Verificación de esta entrega: JSON de coordinación parseado con clave/prefijo/
 | Investigación | Definir identidad y protocolo experimental SomethingHuman | Manuel + responsables del doctorado; nombre/dominio no decididos |
 
 Las pruebas funcionales existentes no convierten automáticamente el CMS en producto comercial listo. Analítica importada, planes Figma y propuestas IA no deben presentarse como conectores reales ya operativos.
+
+## 2026-09-07 · Codex · L1 · CMS responsive y recorrido editorial
+
+- Implementación local: cabecera y menú owner corregidos solo hasta 768 px; sin cambios públicos, dependencias, DNS, push o despliegue. Se preserva el commit SEO de Claude `687f849` y la entrada de verificación Windows anterior.
+- Verificación: 689 unitarias, 20 de integración, 12 combinaciones responsive/tema y 2 recorridos de edición/reordenación/guardado/preview/restauración; medios y bloques de artículos/proyectos; lint y guardas de aislamiento público. Detalles, compilación, límites y repetición segura en [entrega CMS](../../docs/owner-platform/cms-responsive-editorial-2026-09-07.md).
+- Revisión independiente sin defectos introducidos críticos/importantes; comprobaciones reforzadas tras revisión. Pendiente: acceso natural por teclado al menú móvil y staging PostgreSQL/medios/correo/publicación. No equivale a CMS comercial finalizado.
+- Reparto confirmado por Claude en Hub `e8998950-6d80-4cdb-acf9-be445c6e16f5`; respuesta Codex `46a52629-6230-4887-957a-0613c11bd06d`. Claude lee por sesión. Próximo paso Codex: teclado móvil y puertas operativas; público/dominio sigue en Claude.
