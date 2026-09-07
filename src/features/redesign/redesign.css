@@ -499,6 +499,27 @@
   .rd-now { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); }
 }
 
+/* La rejilla de metadatos del caso mantenia dos columnas en movil, asi que la
+   tira de tecnologias se quedaba en unos 170px: los iconos se amontonaban y solo
+   se veian los tres primeros, con el resto escondido tras un scroll horizontal
+   sin ninguna senal de que estuviera ahi. Una columna, y la tira envuelve en
+   varias filas en vez de desplazarse: en movil lo que no se ve, no existe.
+   (La regla de una columna ya existia en responsive.css y no surtia efecto: ese
+   archivo se importa antes y pierde el empate contra `.rd-meta-grid` de aqui.
+   Es el mismo problema de cascada anotado mas arriba.) */
+@media (max-width: 767px) {
+  .rd-meta-grid { grid-template-columns: 1fr; gap: var(--space-1, 1rem); }
+  .rd-tech-stack,
+  .rd-tech-stack--compact {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 1rem 1.15rem;
+    max-width: 100%;
+    padding-bottom: 0;
+  }
+  .rd-tech-stack__item { min-width: 0; }
+}
+
 .rd-case-story__chapter {
   display: grid;
   grid-template-columns: minmax(18rem, .72fr) minmax(0, 1.28fr);
