@@ -6,6 +6,13 @@ Actualización posterior: la paridad editorial PostgreSQL ya está verificada. E
 
 ## Evidencia y prioridades
 
+Actualización 2026-09-08: la pérdida de archivos históricos tras reemplazo ya está
+reproducida, no solo inferida. Se ha implementado y revisado un
+[núcleo de revisiones inmutables](media-revision-core-verification-2026-09-08.md),
+todavía sin activar en Payload. La integración aislada está en curso; las puertas
+de permisos HTTP, copia completa, persistencia del alojamiento y publicación del CV
+siguen pendientes. No presentar la biblioteca activa como reparada por esos tests.
+
 | Prioridad | Evidencia actual | Consecuencia y comprobación necesaria |
 | --- | --- | --- |
 | Antes de activar importaciones reales | `src/collections/Media.ts` usa `staticDir` local; no hay adaptador de objetos en `payload.config.ts` | Verificar persistencia en el alojamiento elegido, permisos de lectura y recuperación de original más derivados. El ensayo físico local no sustituye almacenamiento persistente externo. |

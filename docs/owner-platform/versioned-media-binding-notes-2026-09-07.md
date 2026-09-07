@@ -108,3 +108,15 @@ must measure realistic image sets and simultaneous requests; a production handle
 must not assume the utility alone is a scalable CDN or a DoS/resource budget.
 Any optimized single-file delivery must preserve the manifest/integrity and
 authorization guarantees. No public delivery is enabled by the current core.
+
+## Frozen publication dependency closure (still open)
+
+`publication/bundle.ts` currently stores a `previewHash` plus the draft capsule;
+the bundle entry does not embed the preview's media reference list. The current
+preflight checks content shape/SEO, not physical asset availability. Capturing
+`storageRevision` in previews is necessary but not sufficient to certify an
+exported site as self-contained. Before a public publication bridge is enabled,
+resolve exact captured dependencies into its versioned export contract and verify
+their bytes/access policy. Never substitute current media merely because an old
+export carries only an asset ID. This is not authorization to alter publication
+schemas during the isolated Task 2 binding.
