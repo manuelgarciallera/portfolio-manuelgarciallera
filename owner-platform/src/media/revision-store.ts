@@ -53,9 +53,24 @@ const validateRoot = async (root: string): Promise<string> => {
   return validateRealDirectory(resolved, 'La raíz de revisiones')
 }
 
+const isWellFormedUtf16 = (value: string): boolean => {
+  for (let index = 0; index < value.length; index += 1) {
+    const unit = value.charCodeAt(index)
+    if (unit >= 0xD800 && unit <= 0xDBFF) {
+      const next = value.charCodeAt(index + 1)
+      if (next < 0xDC00 || next > 0xDFFF) return false
+      index += 1
+    } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+      return false
+    }
+  }
+  return true
+}
+
 const validateFileName = (name: unknown): string => {
   if (
     typeof name !== 'string' ||
+    !isWellFormedUtf16(name) ||
     name.length === 0 ||
     Buffer.byteLength(name, 'utf8') > MAX_NAME_BYTES ||
     name === '.' ||

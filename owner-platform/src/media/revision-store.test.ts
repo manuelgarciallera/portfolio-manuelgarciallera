@@ -117,6 +117,28 @@ describe('media revision store', () => {
     await expect(readdir(root)).resolves.toEqual([])
   })
 
+  it.each([
+    ['an unpaired high surrogate', '\uD800.png'],
+    ['an unpaired low surrogate', '\uDC00.png'],
+  ])('rejects %s before allocating a revision directory', async (_label, name) => {
+    await expect(writeMediaRevision(root, [
+      { name, bytes: Buffer.from('image') },
+    ])).rejects.toThrow()
+    await expect(readdir(root)).resolves.toEqual([])
+  })
+
+  it('round-trips a filename containing a valid surrogate pair', async () => {
+    const name = 'hero-\uD83D\uDE80.png'
+
+    const revision = await writeMediaRevision(root, [
+      { name, bytes: Buffer.from('image') },
+    ])
+
+    await expect(readMediaRevision(root, revision)).resolves.toEqual([
+      { name, bytes: Buffer.from('image') },
+    ])
+  })
+
   it('rejects non-Buffer file data at runtime', async () => {
     await expect(writeMediaRevision(root, [
       { name: 'hero.png', bytes: 'not-bytes' },
