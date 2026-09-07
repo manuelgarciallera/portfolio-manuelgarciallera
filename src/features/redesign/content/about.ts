@@ -79,3 +79,38 @@ export const ABOUT_FACTS: AboutFact[] = [
 
 export const ABOUT_CLOSING =
   'No veo estas etapas como cambios de profesión. Son capas de una misma forma de trabajar: comprender el problema, darle forma y construir una solución que pueda evolucionar.'
+
+export interface AboutCredential {
+  title: string
+  institution: string
+  detail?: string
+}
+
+/**
+ * El bloque que lee en diez segundos quien te busca: un supervisor academico
+ * antes de contestar un correo, o alguien de seleccion antes de abrir un caso.
+ * Esa informacion existia repartida entre tres paginas y ninguna la reunia.
+ *
+ * Solo titulaciones cursadas y sus centros. Nada de habilitaciones, equivalencias
+ * ni potenciales: eso lo sabe leer quien tiene que leerlo.
+ */
+export const ABOUT_CREDENTIALS: AboutCredential[] = [
+  {
+    title: 'Máster en Desarrollo Full Stack',
+    institution: 'UNIR · KSchool',
+    detail: '9,5 / 10',
+  },
+  {
+    title: 'Máster oficial en Diseño de Experiencia de Usuario',
+    institution: 'UNIR',
+    detail: '9,6 / 10',
+  },
+  {
+    title: 'Grado en Diseño Integral y Gestión de la Imagen',
+    institution: 'Universidad Rey Juan Carlos',
+  },
+  {
+    title: 'Diseño Gráfico Publicitario',
+    institution: 'Escuela de Arte San Telmo · Formación Profesional Superior',
+  },
+]

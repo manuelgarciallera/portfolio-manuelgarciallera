@@ -12,7 +12,9 @@ export const ARTICLE_AUTHOR = {
   name: 'Manuel García-Llera',
   role: 'Product Designer · Design Engineer',
   bio: 'Investigo, diseño y construyo sistemas digitales. Mi trabajo conecta cultura material, HCI, diseño de producto e implementación.',
-  image: 'https://avatars.githubusercontent.com/u/244682559?s=320&v=4',
+  // El retrato vive en el dominio propio: un avatar de GitHub es una URL de
+  // terceros que puede cambiar o desaparecer sin aviso.
+  image: '/images/manuel-garcia-llera.jpg',
 }
 
 export const ARTICLES: Article[] = [

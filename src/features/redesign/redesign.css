@@ -1925,3 +1925,69 @@
     max-height: none;
   }
 }
+
+/* ---------- Bloque de identidad de /sobre-mi ---------- */
+.rd-identity__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+.rd-identity__portrait { margin: 0; }
+.rd-identity__portrait img {
+  width: 100%;
+  height: auto;
+  border-radius: clamp(0.8rem, 1.5vw, 1.4rem);
+  filter: saturate(0.86) contrast(1.03);
+}
+.rd-identity__body { display: grid; gap: clamp(1.5rem, 3vw, 2.25rem); min-width: 0; }
+.rd-identity__role {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.rd-identity__heading {
+  margin: 0 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+}
+.rd-identity__list { display: grid; gap: 0.9rem; margin: 0; padding: 0; list-style: none; }
+.rd-identity__list li {
+  display: grid;
+  gap: 0.2rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.75rem;
+}
+.rd-identity__list strong { color: var(--ink); font-size: 0.95rem; font-weight: 600; line-height: 1.35; }
+.rd-identity__list span { color: var(--ink-soft); font-size: 0.82rem; line-height: 1.4; }
+.rd-identity__ids {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rd-identity__ids a {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-underline-offset: 0.32em;
+  transition: color 180ms ease;
+}
+.rd-identity__ids a:hover { color: var(--accent-ink); }
+
+@media (max-width: 767px) {
+  .rd-identity__grid { grid-template-columns: 1fr; gap: 2rem; }
+  .rd-identity__portrait { width: min(62%, 15rem); }
+  /* Sin hover, el area activa de estos enlaces tiene que valer por si sola. */
+  .rd-identity__ids { gap: 0.2rem 1.6rem; }
+  .rd-identity__ids a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+}
