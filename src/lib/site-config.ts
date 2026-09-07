@@ -30,7 +30,10 @@ export const SITE_DESCRIPTION =
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
-export const PROFILE_IMAGE_URL = "https://avatars.githubusercontent.com/u/244682559?s=320&v=4";
+// La imagen de la entidad debe vivir en el dominio propio: un avatar de GitHub es
+// una URL de terceros que puede cambiar o desaparecer sin aviso, y deja la unica
+// senal visual de la identidad fuera de control.
+export const PROFILE_IMAGE_URL = `${SITE_URL}/images/manuel-garcia-llera.jpg`;
 
 export const PROFILE_LINKS = {
   linkedin: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_LINKEDIN) || "https://www.linkedin.com/in/manuelgarciallera/",
