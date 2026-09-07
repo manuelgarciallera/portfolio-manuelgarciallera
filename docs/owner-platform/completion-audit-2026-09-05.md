@@ -77,6 +77,12 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
+Incremento del 7 de septiembre: acciones nativas y navegación editorial en
+español; aviso/enlace de preview fuera de la barra de acciones para evitar
+solapamientos en móvil. Ver `editor-language-verification-2026-09-07.md`.
+La traducción de campos y el encaje de paneles avanzados en el editor real
+siguen pendientes; sus pruebas aisladas no equivalen a verificar el shell.
+
 Incremento responsive posterior: accesos rápidos y buscador de 44 px en móvil,
 sin ampliar desktop, y ajuste de nombres largos en resultados. Ver
 `responsive-audit-2026-09-05.md`: recorrido real de login, creación de una página,

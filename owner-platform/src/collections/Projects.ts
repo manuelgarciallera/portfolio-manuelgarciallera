@@ -1,6 +1,6 @@
 import type { Block, CollectionConfig } from 'payload'
 
-import { editorialAccess, editorialVersions, slugField } from './shared'
+import { editorialAccess, editorialPreviewField, editorialVersions, slugField } from './shared'
 import { seoField } from './seo'
 import { validateModularBody } from './modular-body'
 
@@ -89,7 +89,6 @@ export const projectBlocks: Block[] = [
 export const Projects: CollectionConfig = {
   slug: 'projects',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/PagePreviewLink#PagePreviewLink'] } },
     defaultColumns: ['title', '_status', 'updatedAt'],
     useAsTitle: 'title',
   },
@@ -98,6 +97,7 @@ export const Projects: CollectionConfig = {
   trash: true,
   versions: editorialVersions,
   fields: [
+    editorialPreviewField,
     { name: 'title', type: 'text', required: true },
     slugField,
     { name: 'summary', type: 'textarea', required: true },

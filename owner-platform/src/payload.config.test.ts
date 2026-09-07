@@ -1,8 +1,38 @@
 import { describe, expect, it } from 'vitest'
+import { getTranslation, initI18n } from '@payloadcms/translations'
 
 import configPromise from './payload.config'
 
 describe('owner Payload configuration', () => {
+  it('places the editorial preview in the form flow, not the fixed-height action toolbar', async () => {
+    const config = await configPromise
+    for (const slug of ['pages', 'projects', 'articles']) {
+      const collection = config.collections.find((entry) => entry.slug === slug)!
+      expect(collection.admin.components?.edit?.beforeDocumentControls ?? []).not.toContain('./components/PagePreviewLink#PagePreviewLink')
+      expect(collection.fields).toEqual(expect.arrayContaining([expect.objectContaining({
+        name: 'editorialPreview', type: 'ui', admin: expect.objectContaining({
+          components: { Field: './components/PagePreviewLink#PagePreviewLink' },
+        }),
+      })]))
+    }
+  })
+
+  it('resolves native owner actions and editorial navigation in Spanish by default', async () => {
+    const config = await configPromise
+    const i18n = await initI18n({ config: config.i18n, context: 'client', language: config.i18n.fallbackLanguage })
+    expect(i18n.language).toBe('es')
+    expect(i18n.t('authentication:login')).toBe('Iniciar sesión')
+    const labels = Object.fromEntries(config.collections
+      .filter((collection) => ['pages', 'projects', 'articles', 'media', 'media-placements', 'brand-profiles'].includes(collection.slug))
+      .map((collection) => [collection.slug, getTranslation(collection.labels.plural, i18n)]))
+    expect(labels).toEqual({
+      pages: 'Páginas', projects: 'Proyectos', articles: 'Artículos', media: 'Medios',
+      'media-placements': 'Encuadres', 'brand-profiles': 'Perfiles de marca',
+    })
+    // UI translation must never enable localized storage or change API slugs.
+    expect(config.localization).toBeFalsy()
+  })
+
   it('registers the immutable release registry in the owner application', async () => {
     const config = await configPromise
     expect(config.collections.map((collection) => collection.slug)).toContain('releases')

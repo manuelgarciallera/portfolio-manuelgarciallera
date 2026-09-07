@@ -1,6 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { es } from '@payloadcms/translations/languages/es'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildConfig, type CollectionConfig } from 'payload'
@@ -31,6 +32,7 @@ import { FigmaImportExecutions } from './collections/FigmaImportExecutions'
 import { resolveRuntimeConfig } from './config/runtime'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
+import { editorialLabels } from './config/editorial-labels'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -55,9 +57,12 @@ const db =
     : createLocalDatabaseAdapter(runtime.database.url)
 
 const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>
-  collections.map((collection) => ({ ...collection, admin: { ...collection.admin, group } }))
+  collections.map((collection) => ({ ...collection, labels: editorialLabels(collection.slug) ?? collection.labels, admin: { ...collection.admin, group } }))
 
 export default buildConfig({
+  // The owner interface is Spanish, like our custom controls. This is UI i18n,
+  // not content localization: it adds no locale fields or schema migration.
+  i18n: { fallbackLanguage: 'es', supportedLanguages: { es } },
   admin: {
     components: {
       views: {
@@ -83,7 +88,7 @@ export default buildConfig({
     ...groupCollections('Workflow', [PreviewSnapshots, Releases, AssistanceProposals, RestorePlans, DraftSnapshots, PublicationBundles, PublicationReviews, PublicationArtifacts, PublicationPreflights, FigmaImportPlans, FigmaImportReviews, FigmaImportExecutions]),
     ...groupCollections('Sistema', [Users, AuditEvents, AnalyticsSnapshots]),
   ],
-  globals: [AssistantSettings],
+  globals: [{ ...AssistantSettings, label: 'Permisos del asistente' }],
   bodyParser: multipartBodyParser,
   db,
   editor: lexicalEditor(),

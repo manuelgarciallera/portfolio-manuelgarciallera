@@ -3,7 +3,7 @@ import { ValidationError, type Block, type CollectionBeforeValidateHook, type Co
 import { MOTION_EASINGS, REDUCED_MOTION_BEHAVIORS, BRAND_COLOR_ROLES } from '../brand/model'
 import { normalizePageBrandOverrides, resolvePageBrand } from '../brand/inheritance'
 import { validateBrandProfile } from '../brand/validation'
-import { editorialAccess, editorialVersions, slugField } from './shared'
+import { editorialAccess, editorialPreviewField, editorialVersions, slugField } from './shared'
 import { seoField } from './seo'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -150,7 +150,6 @@ export const pageBlocks: Block[] = [
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
-    components: { edit: { beforeDocumentControls: ['./components/PagePreviewLink#PagePreviewLink'] } },
     defaultColumns: ['title', '_status', 'updatedAt'],
     useAsTitle: 'title',
   },
@@ -160,6 +159,7 @@ export const Pages: CollectionConfig = {
   trash: true,
   versions: editorialVersions,
   fields: [
+    editorialPreviewField,
     { name: 'title', type: 'text', required: true },
     slugField,
     {

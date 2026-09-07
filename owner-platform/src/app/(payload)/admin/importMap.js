@@ -1,3 +1,4 @@
+import { PagePreviewLink as PagePreviewLink_96882ea548bfd122bac0b086879b6b2c } from '../../../components/PagePreviewLink'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -21,7 +22,6 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { PagePreviewLink as PagePreviewLink_96882ea548bfd122bac0b086879b6b2c } from '../../../components/PagePreviewLink'
 import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from '../../../components/HexColorField'
 import { MediaPlacementEditor as MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf } from '../../../components/MediaPlacementEditor'
 import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf } from '../../../components/BrandPalettePreview'
@@ -45,6 +45,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./components/PagePreviewLink#PagePreviewLink": PagePreviewLink_96882ea548bfd122bac0b086879b6b2c,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -68,7 +69,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "./components/PagePreviewLink#PagePreviewLink": PagePreviewLink_96882ea548bfd122bac0b086879b6b2c,
   "./components/HexColorField#HexColorField": HexColorField_cdf0d4826f4989b67240662e47afca94,
   "./components/MediaPlacementEditor#MediaPlacementEditor": MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf,
   "./components/BrandPalettePreview#BrandPalettePreview": BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf,
