@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { AboutPage } from '@/features/redesign/about/AboutPage'
+import { OG_IMAGE } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Sobre mí',
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     url: '/sobre-mi',
     title: 'Sobre Manuel García-Llera — Product Designer y Design Engineer',
     description: 'Una trayectoria que conecta arte, cultura material, arquitectura de interiores, diseño 3D, UX, desarrollo full stack e investigación HCI.',
+    images: [OG_IMAGE],
   },
 }
 

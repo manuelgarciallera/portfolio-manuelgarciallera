@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { RedesignCasesIndex } from '@/features/redesign/case/RedesignCasesIndex'
+import { OG_IMAGE } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Casos',
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     url: '/casos',
     title: 'Casos de producto — Manuel García-Llera',
     description: 'Investigación, sistemas, prototipos e implementación explicados mediante decisiones y evidencia.',
+    images: [OG_IMAGE],
   },
 }
 

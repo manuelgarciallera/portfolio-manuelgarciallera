@@ -11,7 +11,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const article = getArticleBySlug(slug)
   if (!article) return {}
   return {
-    title: article.title,
+    // El titular editorial ya es largo: sumarle la marca dejaba el <title> entre 74
+    // y 92 caracteres, y Google truncaba tanto la marca como el final del titular.
+    title: { absolute: article.title },
     description: article.summary,
     keywords: [article.category, 'Product Design', 'HCI', 'Design Systems', 'Human-AI Interaction'],
     authors: [{ name: ARTICLE_AUTHOR.name, url: SITE_URL }],

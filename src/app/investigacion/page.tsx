@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { ResearchPage } from '@/features/redesign/research/ResearchPage'
+import { OG_IMAGE } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Investigación',
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     title: 'Investigación — Manuel García-Llera',
     description:
       'Cómo el diseño del siglo XX eliminó la dimensión háptica y qué efecto tiene recuperarla en la comprensión, la confianza y la decisión de quien usa una interfaz.',
+    images: [OG_IMAGE],
   },
 }
 

@@ -26,7 +26,7 @@ export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa-Llera";
 export const SITE_NAME = PERSON_DISPLAY_NAME;
 export const SITE_TITLE = `${PERSON_DISPLAY_NAME} — Product Designer, Design Systems y HCI`;
 export const SITE_DESCRIPTION =
-  "Portfolio de Manuel Garc\u00EDa-Llera: Product Designer y Design Engineer especializado en sistemas de dise\u00F1o, HCI e interacci\u00F3n humano-IA. De la investigaci\u00F3n y el prototipo a productos digitales implementados.";
+  "Manuel Garc\u00EDa-Llera, Product Designer y Design Engineer: sistemas de dise\u00F1o, HCI e interacci\u00F3n humano-IA, del prototipo al producto implementado.";
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
@@ -34,6 +34,16 @@ export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
 // una URL de terceros que puede cambiar o desaparecer sin aviso, y deja la unica
 // senal visual de la identidad fuera de control.
 export const PROFILE_IMAGE_URL = `${SITE_URL}/images/manuel-garcia-llera.jpg`;
+
+// Next reemplaza el objeto `openGraph` completo cuando una ruta lo declara, no lo
+// fusiona con el de la raiz. Cada pagina que declare `openGraph` tiene que incluir
+// su imagen o se comparte sin previsualizacion; este descriptor evita repetirla.
+export const OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: SITE_TITLE,
+} as const;
 
 export const PROFILE_LINKS = {
   linkedin: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_LINKEDIN) || "https://www.linkedin.com/in/manuelgarciallera/",
