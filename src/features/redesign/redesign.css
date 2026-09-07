@@ -536,25 +536,18 @@
 
 .rd-case-story__frame {
   display: grid;
-  width: calc(100% - clamp(2.5rem, 6vw, 7rem));
-  padding: 0 clamp(1.25rem, 3vw, 3.5rem);
+  width: calc(100% - clamp(1rem, 3vw, 3rem));
   place-items: center;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / .16);
-  border-radius: clamp(1rem, 2vw, 2rem);
-  box-shadow: 0 3rem 6rem rgb(0 0 0 / .35);
+  background: transparent;
 }
-.rd-case-story__frame--buy-sell { background: #09142c; }
-.rd-case-story__frame--laliga { background: #10172f; }
-.rd-case-story__frame--coordination { background: #111; }
-.rd-case-story__frame--theuxunion { background: #171024; }
-.rd-case-story__frame--neutral { background: var(--surface); }
 
 .rd-case-story__media img {
   width: 100%;
   height: auto;
   max-height: 72vh;
   border-radius: clamp(.6rem, 1vw, 1rem);
+  /* Sin placa de fondo, la sombra es lo unico que separa la captura del lienzo. */
+  box-shadow: 0 2rem 4.5rem rgb(0 0 0 / .42);
 }
 
 .rd-case-story__actions {
@@ -1167,8 +1160,13 @@
     inset: 3.8rem 0 4.5rem; border-radius: 0;
   }
   .rd-preview-viewport { inset: 3.8rem -10% 4.5rem 8%; border-radius: 0.65rem 0 0 0.65rem; }
-  .rd-preview-tabs { left: 8%; right: auto; width: calc(92% - 1rem); max-width: calc(100% - 1rem); justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
-  .rd-preview-tabs button[data-active="true"] { transform: translateY(-3px); }
+  .rd-preview-tabs {
+    left: 8%; right: auto; width: calc(92% - 1rem); max-width: calc(100% - 1rem);
+    justify-content: flex-start; align-items: center; min-height: 2.9rem;
+    padding-block: 0.5rem; margin-block: -0.5rem;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .rd-preview-tabs button[data-active="true"] { transform: none; }
   .rd-preview-controls { left: 8%; right: 1rem; bottom: 1rem; }
   .rd-preview-controls > div button:nth-child(2) { display: none; }
   .rd-case-hover-cta { display: none; }

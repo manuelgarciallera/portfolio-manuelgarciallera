@@ -1,9 +1,17 @@
 'use client'
 
 import { MeshDistortMaterial, MeshTransmissionMaterial, Text } from '@react-three/drei'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Suspense, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Suspense, useMemo, useRef } from 'react'
 import { Group, MathUtils } from 'three'
+
+// El nombre vive dentro de la escena, detras del orbe. Su tamano estaba fijado en
+// unidades de mundo, asi que en un lienzo estrecho (movil) el rotulo era mas ancho
+// que el plano visible y se cortaba por los dos lados: se leia «Man ... llera».
+// Aqui se mide el plano a la profundidad del texto y se deja que troika reparta
+// el nombre en dos lineas cuando no cabe en una.
+const WORDMARK_Z = -0.82
+const WORDMARK_MAX_SIZE = 0.46
 
 interface HeroOrbCanvasProps {
   isDark: boolean
@@ -79,6 +87,54 @@ function LiquidOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' |
   )
 }
 
+// El plano visible a la profundidad del rotulo. `getCurrentViewport` devuelve el
+// ancho y alto en unidades de mundo para esa distancia de camara, que es lo que
+// hace falta para decidir el cuerpo tipografico y el ancho de reparto.
+function useWordmarkPlane() {
+  const viewport = useThree((state) => state.viewport)
+  const camera = useThree((state) => state.camera)
+  return useMemo(
+    () => viewport.getCurrentViewport(camera, [0, 0, WORDMARK_Z]),
+    [viewport, camera],
+  )
+}
+
+function HeroWordmark({ isDark }: Pick<HeroOrbCanvasProps, 'isDark'>) {
+  const plane = useWordmarkPlane()
+  // 0.9 del ancho deja un margen visible a izquierda y derecha; el divisor es el
+  // avance aproximado de «Garcia-Llera», la palabra mas larga, que nunca se parte.
+  const maxWidth = plane.width * 0.9
+  const fontSize = Math.min(WORDMARK_MAX_SIZE, maxWidth / 6.9)
+
+  return (
+    <Text
+      position={[0, -0.04, WORDMARK_Z]}
+      color={isDark ? '#f4f1ec' : '#171717'}
+      fontSize={fontSize}
+      maxWidth={maxWidth}
+      lineHeight={1.05}
+      anchorX="center"
+      anchorY="middle"
+      textAlign="center"
+    >
+      Manuel García-Llera
+    </Text>
+  )
+}
+
+// Con el nombre repartido en dos lineas el orbe tapaba practicamente el bloque
+// entero en movil: se encoge cuando el lienzo deja de ser apaisado.
+function ResponsiveOrb({ isDark, reduceMotion }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion'>) {
+  const plane = useWordmarkPlane()
+  const scale = plane.width < plane.height * 1.2 ? 0.78 : 1
+
+  return (
+    <group scale={scale}>
+      <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} />
+    </group>
+  )
+}
+
 function SceneReady({ onReady }: Pick<HeroOrbCanvasProps, 'onReady'>) {
   const reported = useRef(false)
 
@@ -106,10 +162,8 @@ export function HeroOrbCanvas({ isDark, reduceMotion, onReady }: HeroOrbCanvasPr
         <directionalLight position={[3, 4, 4]} intensity={isDark ? 2.2 : 1.8} />
         <pointLight position={[-3, 1.5, 3]} color="#9fe6ff" intensity={isDark ? 5 : 3.4} distance={7} />
         <pointLight position={[3, -2, 2.5]} color="#ff6dcf" intensity={isDark ? 3.2 : 2} distance={6} />
-        <Text position={[0, -0.04, -0.82]} color={isDark ? '#f4f1ec' : '#171717'} fontSize={0.46} anchorX="center" anchorY="middle" textAlign="center">
-          Manuel García-Llera
-        </Text>
-        <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} />
+        <HeroWordmark isDark={isDark} />
+        <ResponsiveOrb isDark={isDark} reduceMotion={reduceMotion} />
         <SceneReady onReady={onReady} />
       </Suspense>
     </Canvas>
