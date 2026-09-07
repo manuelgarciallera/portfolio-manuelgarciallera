@@ -57,21 +57,33 @@ expect(await readMediaRevision(root, first)).toEqual([{ name: 'hero.png', bytes:
 
 ## Task 2 — Payload binding and editorial round trip
 
-Files: `src/collections/Media.ts`, `src/payload.config.ts`, new
-`src/media/revision-storage-binding.ts`, its tests, and
-`tests/editorial.integration.test.ts`, `src/preview/service.ts` and its tests.
-Inspect supported Payload plugin contracts
-and compare owner-only dependency cost before adopting a plugin.
+Files (inside owner-platform): new `src/media/revision-storage-binding.ts`,
+its tests and `tests/versioned-media.integration.test.ts`; `src/preview/service.ts`
+and its tests; `owner-platform/.gitignore` (from repo root). Read `src/collections/Media.ts` and `src/payload.config.ts`, but do
+not enable the new storage on the running app. Provide a configuration factory
+consuming the raw collection and explicit provisioned roots, exercised only in
+isolated fixtures. Use supported collection hooks and upload handlers, without a
+new plugin dependency. Installed Payload behavior is recorded in the binding notes.
 
-- [ ] Keep the existing RED regression as the acceptance case: replacing a file
+- [ ] Keep the existing legacy characterization unchanged; add the positive
+  regression as the acceptance case for the opt-in fixture: replacing a file
   must leave a readable original plus derivatives and restore their exact bytes.
+- [ ] Anchor the owner ignore rule `media/` to `/media/`: uploaded assets stay
+  ignored while new code under `src/media` is visible to Git. Verify both with
+  `git check-ignore`; do not add actual uploaded files.
 - [ ] Bind the returned revision ID into versioned media metadata on successful
   upload, preserving it on metadata-only edits and restoring it with the version.
 - [ ] Capture that exact revision in frozen preview media references. Same-name
   replacement must change the new snapshot hash but leave the old capture intact;
   existing manifests lacking a revision remain explicitly legacy/unverified.
-- [ ] Add real integration tests for same-name replacement, failed update,
-  draft-over-published, trash/restore, duplication and native crop regeneration.
+- [ ] Add real integration tests for same-name replacement, metadata-only edits,
+  failed update, draft-over-published and trash/restore. Reject forged revision
+  metadata; restore must derive authority from the real restore operation and
+  stored version, not a caller-supplied context flag. No legacy path fallback.
+- [ ] Generate exact revision URLs and implement a guarded handler whose every
+  result is a Response (including failures); require an exact media/revision/file
+  association and deny private files to anonymous callers. Never bypass collection
+  access. Native crop/duplication through HTTP is the dependent Task 3 gate.
 - [ ] Adapt Figma compensation for immutable revisions without deleting uncertain
   or historical data. Avoid mixing legacy local and revision cleanup contracts.
 - [ ] Execute complete SQLite and PostgreSQL editorial gates and compare public
@@ -79,6 +91,9 @@ and compare owner-only dependency cost before adopting a plugin.
 
 ## Task 3 — Protected delivery and rollout evidence
 
+- [ ] Exercise native image crop and duplication using the authenticated HTTP
+  flow with isolated data. Do not weaken safeFetch globally to make tests pass;
+  any loopback fixture transport exception must be narrowly scoped to that fixture.
 - [ ] Test actual HTTP download of originals/derivatives: owner access; anonymous
   published revision only; draft, trashed and foreign revision denied; malformed
   paths/ranges and private caching behavior checked.

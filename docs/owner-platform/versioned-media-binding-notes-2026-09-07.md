@@ -79,3 +79,23 @@ Sources: [official documentation](https://payloadcms.com/docs/upload/storage-ada
 These are implementation constraints, not proof the HTTP/download/migration gates
 pass. No root or selector is inferred from user-provided URLs. The original CV,
 existing media and public site remain untouched.
+
+## HTTP fixture boundary and native image editing
+
+Installed Payload exports `handleEndpoints` publicly. It accepts Fetch
+Request/Response and a `payloadInstanceCacheKey`, allowing a disposable fixture to
+exercise real REST authentication/routing without starting the developer's Next
+app. Request/Response tests alone are REST-handler coverage, not a socket or
+browser test. Task 3 needs a bounded loopback HTTP fixture for native refetches.
+
+`generateFileData` refetches originals for native crop and duplication when local
+storage is disabled. `getExternalFile` sends Payload cookies for relative URLs,
+then uses safeFetch by default (which may reject loopback). Do not set
+`skipSafeFetch: true` globally or accept an arbitrary Origin as trusted storage.
+Test any explicit fixture-only transport allowance separately from production.
+
+The native file route checks `prefix` against current/latest-draft rows before
+custom handlers; that is not a historical-version authorization mechanism. Any
+revision selector must be independently bound to the requested media record,
+filename and publication state. Every custom handler outcome must return a
+Response; falling through would invoke the legacy static-file handler.
