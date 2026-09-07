@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { AboutIdentity } from '@/features/redesign/about/AboutIdentity'
 import { AboutPage } from '@/features/redesign/about/AboutPage'
 import { getProfilePageJsonLd, OG_IMAGE } from '@/lib/site-config'
 
@@ -28,7 +29,7 @@ export default function SobreMiPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: profilePageJsonLd }}
       />
-      <AboutPage />
+      <AboutPage identity={<AboutIdentity />} />
     </>
   )
 }
