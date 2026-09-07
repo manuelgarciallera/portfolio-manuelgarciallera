@@ -86,3 +86,77 @@ Cada transferencia debe registrar fuente/fecha, diferencia, pieza concreta, resp
 Para efectos visuales: comparar contra checkpoint, desktop/mobile, movimiento reducido, teclado, degradacion sin animacion, peso/carga, coste y mantenimiento. Conservar libertad creativa mediante recetas y parametros, no mediante instalar toda libreria descubierta. Publicar o alterar diseno requiere alcance aprobado; el radar no lo concede.
 
 En el cierre semanal existente, contar hallazgos nuevos, vinculados a una pieza, probados, adoptados y descartados, con denominadores; revisar los pendientes sin responsable. No medir exito por numero de enlaces ni afirmar mejora sin prueba. Primera revision prevista: siguiente radar; fecha limite de revision de este enganche: 2026-09-14. Sin crear otra tarea programada.
+
+---
+
+## Barrido de recortes en movil · 2026-09-07 (Claude)
+
+Manuel fotografio cuatro defectos en un Android real. En vez de corregir solo esos
+cuatro, escribi una medida que busca la familia entera: para cada elemento visible
+de una pagina, se recorre la cadena de antepasados que recortan, se intersecan sus
+cajas en los dos ejes y se cuenta cuantos pixeles del elemento quedan fuera. Se
+descartan los ejes con un scroller declarado, donde el corte es navegable, y los
+elementos dentro de `[aria-hidden]`.
+
+Cobertura: 11 rutas x 5 anchos (320, 360, 390, 430, 768) = 55 combinaciones,
+contra produccion.
+
+| ID | Hallazgo | Pieza concreta | Estado |
+| --- | --- | --- | --- |
+| MOV-001 | El rotulo del hero tenia el cuerpo fijado en unidades de mundo; en un lienzo estrecho se cortaba por los dos lados y se leia «Man ... llera». | `components/HeroOrbCanvas.tsx` | ADOPTADO en 9dc0bb0. Se mide el plano a la profundidad del texto y troika reparte el nombre en dos lineas. |
+| MOV-002 | «Saltar al contenido» visible en el top. Mi propia regla de area tactil bajaba el enlace de `fixed` a `relative` y perdia el anclaje al viewport. | `responsive.css` | ADOPTADO en 9dc0bb0. Medido: 14 paginas con el enlace visible -> 0. |
+| MOV-003 | Placa de color con filete y sombra alrededor de cada captura de caso: ruido sobre la unica pieza que importa. | `.rd-case-story__frame` | ADOPTADO en 9dc0bb0. La sombra pasa a la imagen. |
+| MOV-004 | La pastilla activa de la tira de pestanas se recortaba por arriba: `overflow-x: auto` obliga al eje vertical a `auto` y el `translateY(-3px)` caia fuera. | `.rd-preview-tabs` | ADOPTADO en 9dc0bb0. |
+| MOV-005 | A 320px toda la pagina de caso se desplazaba 34px: el preambulo pegajoso no podia encoger y, como item mas ancho de la rejilla, arrastraba los cuatro capitulos. | `.rd-prelude-progress`, `.rd-case-story` | ADOPTADO en a0c0a88. Medido: 354px -> 320px. |
+| MOV-006 | El titular del hero perdia 15px a 320px: el suelo del `clamp` dejaba «investigacion,» sin sitio. | `.rd-hero-copy h1` | ADOPTADO en a0c0a88. Medido: 311px -> 272px, justo el hueco. |
+| MOV-007 | El diagrama de coordinacion sumaba 322px en una caja de 214: resultado y pie cortados. Ademas el visor sangra un 10% a la derecha, lo que sobre texto se come el contenido. | `.rd-coordination-*`, `.rd-preview-viewport` | ADOPTADO en a0c0a88. Densidades verificadas a 320/360/390/430. |
+| MOV-008 | La puerta de entrada al proyecto perdia 18px: el boton fijaba `min-width: min(100%, 18rem)` = 288px en un hueco de 256. | `.rd-project-gateway` | ADOPTADO en a0c0a88. |
+| MOV-009 | La seccion «Now» a 768px seguia en dos columnas y la lista perdia 46px, pese a existir la correccion. | `.rd-now` | ADOPTADO en a0c0a88, ver CSS-001. |
+
+Resultado medido inyectando el CSS final sobre produccion y repitiendo las 55
+combinaciones: **43 elementos recortados -> 4**. Los cuatro restantes son la
+sangria deliberada del visor del carrusel sobre capturas (direccion de arte).
+
+### CSS-001 · responsive.css pierde los empates de especificidad
+
+MOV-009 importa mas por lo que revela que por el defecto. La correccion de «Now» a
+768px llevaba tiempo escrita en `responsive.css` y no surtia efecto: ese archivo se
+importa desde `components/SiteHeader.tsx` y `redesign.css` desde `RedesignPage.tsx`,
+asi que en el grafo de modulos responsive va PRIMERO y pierde todos los empates de
+especificidad contra las bases de redesign.css.
+
+Consecuencia: el archivo que llamamos «de correcciones» solo corrige cuando no
+compite. Y cuando si gana —MOV-002— puede romper una base. Las dos caras del mismo
+problema se han dado hoy.
+
+Regla adoptada: una regla que compite en especificidad con una base de redesign.css
+vive en redesign.css, con el motivo escrito al lado. PENDIENTE: nadie ha auditado
+el resto de responsive.css para ver cuantas de sus correcciones estan en el mismo
+caso. Responsable por decidir.
+
+## Accesibilidad · 2026-09-07 (Claude)
+
+axe-core, WCAG 2.0 y 2.1 nivel AA, 11 rutas x 390 y 1440px, con el CSS de a0c0a88
+inyectado: **una sola violacion en todo el sitio**.
+
+`color-contrast` en `.rd-visual-journey__rail span`, la banda serif de fondo del
+caso LALIGA. Es `aria-hidden="true"`, es decorativa y sus palabras se repiten como
+`figcaption strong` en contenido real: cae en la excepcion de texto incidental de
+1.4.3. Para pasar el 3:1 de texto grande sobre #0c1228 habria que subir la opacidad
+de .18 a ~.32, y eso deja de ser una banda fantasma. Criterio: se documenta la
+excepcion, no se cambia la direccion de arte. VIGILAR si algun dia esa banda deja de
+duplicar contenido existente.
+
+## Rendimiento · 2026-09-07 (Claude), medido en produccion a 390px
+
+Vitals bien: LCP entre 204 y 1176 ms y CLS 0 en las siete rutas cargadas.
+
+Peso alto: **786 kB de JS decodificado como base en todas las rutas**, en cinco
+fragmentos compartidos (221 + 142 + 73 + 53 + 43), y 1787 kB en la home. Los 867 kB
+del orbe se descargan aparte y en `requestIdleCallback`: por eso el LCP de la home
+es de 380 ms pese al tamano.
+
+PENDIENTE, no tocado. Bajar esos 786 kB exige decisiones de arquitectura —cuantas
+secciones pueden dejar de ser cliente, y si GSAP y Framer Motion deben convivir—, no
+un ajuste. No se toca a ciegas: la VM Linux del puente no puede construir el
+proyecto porque node_modules trae binarios de Windows.
