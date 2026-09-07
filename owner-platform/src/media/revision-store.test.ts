@@ -1,5 +1,5 @@
-import { mkdtemp, mkdir, readFile, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises'
-import { join, parse, resolve } from 'node:path'
+import { lstat, mkdtemp, mkdir, readFile, readdir, realpath, rename, rmdir, symlink, unlink, writeFile } from 'node:fs/promises'
+import { basename, dirname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -18,6 +18,7 @@ type TestManifest = {
 describe('media revision store', () => {
   let sandbox = ''
   let root = ''
+  let sandboxIdentity: { dev: number; ino: number } | undefined
 
   const manifestPath = (revision: string) => join(root, revision, 'manifest.json')
   const loadManifest = async (revision: string): Promise<TestManifest> =>
@@ -27,18 +28,54 @@ describe('media revision store', () => {
   }
 
   beforeEach(async () => {
+    sandbox = ''
+    sandboxIdentity = undefined
     sandbox = await mkdtemp(join(tmpdir(), 'owner-media-revision-'))
+    const stats = await lstat(sandbox)
+    sandboxIdentity = { dev: stats.dev, ino: stats.ino }
     root = join(sandbox, 'store')
     await mkdir(root, { mode: 0o700 })
   })
 
   afterEach(async () => {
-    const expectedPrefix = resolve(tmpdir())
+    if (!sandbox) return
     const target = resolve(sandbox)
-    if (!target.startsWith(`${expectedPrefix}\\`) && !target.startsWith(`${expectedPrefix}/`)) {
-      throw new Error(`Refusing to clean a non-temporary test path: ${target}`)
+    if (!sandboxIdentity || dirname(target) !== resolve(tmpdir()) || !/^owner-media-revision-[A-Za-z0-9]{6}$/.test(basename(target))) {
+      throw new Error(`Refusing to clean an unowned fixture path: ${target}`)
     }
-    await rm(target, { force: true, recursive: true })
+    const pending: { path: string; identity?: { dev: number; ino: number }; empty?: boolean }[] = [
+      { path: target, identity: sandboxIdentity },
+    ]
+    while (pending.length) {
+      const entry = pending.pop()!
+      const inside = relative(target, entry.path)
+      if (inside === '..' || inside.startsWith(`..${sep}`) || isAbsolute(inside)) {
+        throw new Error('Fixture cleanup escaped its exact owned root')
+      }
+      try {
+        const stats = await lstat(entry.path)
+        if (entry.identity && (stats.isSymbolicLink() || !stats.isDirectory() ||
+          stats.dev !== entry.identity.dev || stats.ino !== entry.identity.ino)) {
+          throw new Error('Fixture directory identity changed during cleanup')
+        }
+        if (stats.isSymbolicLink() || stats.isFile()) {
+          await unlink(entry.path)
+        } else if (stats.isDirectory()) {
+          if (relative(entry.path, await realpath(entry.path)) !== '') {
+            throw new Error('Fixture cleanup directory traverses a link')
+          }
+          if (entry.empty) await rmdir(entry.path)
+          else {
+            pending.push({ ...entry, empty: true, identity: { dev: stats.dev, ino: stats.ino } })
+            for (const name of await readdir(entry.path)) pending.push({ path: join(entry.path, name) })
+          }
+        } else throw new Error('Fixture cleanup encountered an unexpected file type')
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+      }
+    }
+    sandbox = ''
+    sandboxIdentity = undefined
   })
 
   it('keeps old bytes readable when a same-named file is written in a later revision', async () => {
