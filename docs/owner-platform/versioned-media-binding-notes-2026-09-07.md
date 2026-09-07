@@ -99,3 +99,12 @@ custom handlers; that is not a historical-version authorization mechanism. Any
 revision selector must be independently bound to the requested media record,
 filename and publication state. Every custom handler outcome must return a
 Response; falling through would invoke the legacy static-file handler.
+
+## Resource budget before activation
+
+The core reader verifies and returns the complete revision, not just the requested
+derivative. Its per-revision byte cap is not an aggregate concurrency cap. Task 3
+must measure realistic image sets and simultaneous requests; a production handler
+must not assume the utility alone is a scalable CDN or a DoS/resource budget.
+Any optimized single-file delivery must preserve the manifest/integrity and
+authorization guarantees. No public delivery is enabled by the current core.
