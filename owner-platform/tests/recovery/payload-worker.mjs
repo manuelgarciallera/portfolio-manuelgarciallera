@@ -14,15 +14,20 @@ const equal = (actual, expected, message) => {
 
 const sha256File = async (filename) => createHash('sha256').update(await readFile(filename)).digest('hex')
 
-const openPayload = async ({ databaseDirectory, mediaDirectory, payloadSecret }) => {
+const versionEvidence = (versions) => versions.docs.map(({ id, parent, version }) => ({ id, parent, title: version.title, layout: version.layout }))
+
+const openPayload = async ({ databaseDirectory, mediaDirectory, payloadSecret, postgres, mode }) => {
   process.send?.({ progress: 'worker:loading-payload-module' })
   const { getPayload } = await import('payload')
   process.send?.({ progress: 'worker:loading-application-config' })
   const { default: applicationConfig, createLocalDatabaseAdapter } = await import('../../src/payload.config.ts')
   process.send?.({ progress: 'worker:application-config-loaded' })
-  await mkdir(databaseDirectory, { recursive: true })
+  if (!postgres) await mkdir(databaseDirectory, { recursive: true })
   await mkdir(mediaDirectory, { recursive: true })
   const config = await applicationConfig
+  const db = postgres
+    ? (await import('@payloadcms/db-postgres')).postgresAdapter({ pool: postgres, push: mode === 'seed', disableCreateDatabase: true })
+    : { ...createLocalDatabaseAdapter(`file:${path.join(databaseDirectory, 'owner.db').replaceAll('\\', '/')}`), allowIDOnCreate: false, name: 'sqlite' }
   return getPayload({
     key: `physical-recovery-${randomUUID()}`,
     config: {
@@ -30,11 +35,7 @@ const openPayload = async ({ databaseDirectory, mediaDirectory, payloadSecret })
       collections: config.collections.map((collection) => collection.slug === 'media'
         ? { ...collection, upload: { ...collection.upload, disableLocalStorage: false, staticDir: mediaDirectory } }
         : collection),
-      db: {
-        ...createLocalDatabaseAdapter(`file:${path.join(databaseDirectory, 'owner.db').replaceAll('\\', '/')}`),
-        allowIDOnCreate: false,
-        name: 'sqlite',
-      },
+      db,
       secret: payloadSecret,
     },
   })
@@ -61,9 +62,9 @@ const mediaEvidence = async (mediaDirectory, media) => {
   return files
 }
 
-const seed = async ({ credentials, databaseDirectory, mediaDirectory, payloadSecret }) => {
+const seed = async ({ credentials, databaseDirectory, mediaDirectory, payloadSecret, postgres }) => {
   process.send?.({ progress: 'seed:opening-payload' })
-  const payload = await openPayload({ databaseDirectory, mediaDirectory, payloadSecret })
+  const payload = await openPayload({ databaseDirectory, mediaDirectory, payloadSecret, postgres, mode: 'seed' })
   process.send?.({ progress: 'seed:payload-open' })
   try {
     await payload.create({ collection: 'users', overrideAccess: true, data: { ...credentials, role: 'owner' } })
@@ -121,6 +122,7 @@ const seed = async ({ credentials, databaseDirectory, mediaDirectory, payloadSec
       mediaId: media.id,
       placementId: placement.id,
       versionCount: versions.totalDocs,
+      versionHistory: versionEvidence(versions),
       mediaFiles: files,
       expectedLayout: edited.layout.map((block) => ({
         blockType: block.blockType,
@@ -136,8 +138,8 @@ const seed = async ({ credentials, databaseDirectory, mediaDirectory, payloadSec
   }
 }
 
-const verifyRestore = async ({ credentials, databaseDirectory, expected, mediaDirectory, payloadSecret }) => {
-  const payload = await openPayload({ databaseDirectory, mediaDirectory, payloadSecret })
+const verifyRestore = async ({ credentials, databaseDirectory, expected, mediaDirectory, payloadSecret, postgres, mode }) => {
+  const payload = await openPayload({ databaseDirectory, mediaDirectory, payloadSecret, postgres, mode })
   try {
     const owner = await authenticate(payload, credentials)
     const page = await payload.findByID({ collection: 'pages', id: expected.pageId, draft: true, depth: 0, user: owner, overrideAccess: false })
@@ -161,9 +163,12 @@ const verifyRestore = async ({ credentials, databaseDirectory, expected, mediaDi
     equal(await mediaEvidence(mediaDirectory, media), expected.mediaFiles, 'Restored original or derivative media hashes did not match.')
     const versions = await payload.findVersions({ collection: 'pages', where: { parent: { equals: expected.pageId } }, user: owner, overrideAccess: false, limit: 100 })
     check(versions.totalDocs === expected.versionCount, 'Restored version history count did not match the backup.')
+    equal(versionEvidence(versions), expected.versionHistory, 'Restored version IDs, titles or layouts did not match the backup.')
     await expectAnonymousDraftNotFound(() => payload.findByID({ collection: 'pages', id: expected.pageId, depth: 0, draft: true, overrideAccess: false }))
-    const independentlyEdited = await payload.update({ collection: 'pages', id: expected.pageId, draft: true, overrideAccess: false, user: owner, data: { title: 'Recovery page restored independently' } })
-    check(independentlyEdited.title === 'Recovery page restored independently', 'Independent restored edit did not persist its exact title.')
+    if (mode !== 'verify') {
+      const independentlyEdited = await payload.update({ collection: 'pages', id: expected.pageId, draft: true, overrideAccess: false, user: owner, data: { title: 'Recovery page restored independently' } })
+      check(independentlyEdited.title === 'Recovery page restored independently', 'Independent restored edit did not persist its exact title.')
+    }
     return { restoredVersionCount: versions.totalDocs, restoredMediaFileCount: expected.mediaFiles.length }
   } finally {
     const client = payload.db?.client
@@ -175,13 +180,17 @@ const verifyRestore = async ({ credentials, databaseDirectory, expected, mediaDi
 process.once('message', async (input) => {
   process.send?.({ progress: `${input.mode}:message-received` })
   try {
-    const result = input.mode === 'seed' ? await seed(input) : input.mode === 'restore' ? await verifyRestore(input) : (() => { throw new Error('Unknown recovery worker mode.') })()
-    process.send?.({ ok: true, result })
+    const result = input.mode === 'seed' ? await seed(input) : ['restore', 'verify'].includes(input.mode) ? await verifyRestore(input) : (() => { throw new Error('Unknown recovery worker mode.') })()
+    await new Promise((resolve, reject) => process.send({ ok: true, result }, (error) => error ? reject(error) : resolve()))
   } catch (error) {
-    process.send?.({ ok: false, error: error instanceof Error ? error.message : 'Unknown recovery worker failure.' })
+    await new Promise((resolve) => process.send({ ok: false, error: error instanceof Error ? error.message : 'Unknown recovery worker failure.' }, resolve))
     process.exitCode = 1
   } finally {
     process.disconnect?.()
+    // Installed drizzle destroy clears schema but does not end its PostgreSQL pool.
+    // After Payload destroy and flushed IPC, exit this disposable process to close
+    // all its sockets. The controller waits for close and checks server sessions.
+    if (input.postgres) process.exit(process.exitCode ?? 0)
   }
 })
 

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { execFile, fork, spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -7,32 +7,13 @@ import { promisify } from 'node:util'
 import { build } from 'esbuild'
 
 import { createPhysicalBackup, restoreVerifiedBackup, snapshotFiles } from '../tests/recovery/backup-manifest.mjs'
+import { safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
+import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
 
 const execFileAsync = promisify(execFile)
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const workerSource = path.join(ownerRoot, 'tests', 'recovery', 'payload-worker.mjs')
 const tempPrefix = path.join(ownerRoot, 'node_modules', '.cache', 'owner-physical-recovery-')
-let activeWorkers = 0
-
-const safeEnvironment = () => {
-  const keys = process.platform === 'win32'
-    ? ['ComSpec', 'NUMBER_OF_PROCESSORS', 'OS', 'Path', 'PATHEXT', 'PROCESSOR_ARCHITECTURE', 'SystemDrive', 'SystemRoot', 'TEMP', 'TMP', 'windir']
-    : ['HOME', 'LANG', 'PATH', 'SHELL', 'TMPDIR', 'TZ']
-  const env = Object.fromEntries(keys.flatMap((key) => process.env[key] === undefined ? [] : [[key, process.env[key]]]))
-  return {
-    ...env,
-    DATABASE_URL: '',
-    FIGMA_PERSONAL_ACCESS_TOKEN: '',
-    FIGMA_PLAN: '',
-    LOCAL_DATABASE_NAME: '',
-    NODE_ENV: 'test',
-    OWNER_BOOTSTRAP_SECRET: '',
-    PAYLOAD_SECRET: '',
-    RESEND_API_KEY: '',
-    SMTP_PASS: '',
-    SMTP_USER: '',
-  }
-}
 
 const runUnitTests = () => new Promise((resolve, reject) => {
   const child = spawn(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts'], {
@@ -42,41 +23,6 @@ const runUnitTests = () => new Promise((resolve, reject) => {
   })
   child.once('error', reject)
   child.once('close', (code) => code === 0 ? resolve() : reject(new Error(`Recovery helper tests exited with ${code ?? 1}.`)))
-})
-
-const runWorker = (workerPath, input) => new Promise((resolve, reject) => {
-  let response
-  let spawnError
-  let timedOut = false
-  let inputSent = false
-  const child = fork(workerPath, [], {
-    cwd: ownerRoot,
-    env: safeEnvironment(),
-    stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
-  })
-  activeWorkers += 1
-  const timer = setTimeout(() => {
-    timedOut = true
-    child.kill()
-  }, 120_000)
-  child.once('error', (error) => {
-    spawnError = error
-  })
-  child.on('message', (message) => {
-    if (message?.ready && !inputSent) {
-      inputSent = true
-      child.send(input)
-    } else if (message?.progress) console.log(`[recovery] ${message.progress}`)
-    else response = message
-  })
-  child.once('close', (code) => {
-    clearTimeout(timer)
-    activeWorkers -= 1
-    if (timedOut) reject(new Error(`Recovery ${input.mode} worker timed out.`))
-    else if (spawnError) reject(spawnError)
-    else if (code !== 0 || !response?.ok) reject(new Error(response?.error ?? `Recovery ${input.mode} worker exited with ${code ?? 1}.`))
-    else resolve(response.result)
-  })
 })
 
 await runUnitTests()
@@ -149,7 +95,6 @@ try {
 
   console.log(JSON.stringify({
     recovery: 'passed',
-    helperTests: 7,
     workflowChecks: 12,
     applicationCommit,
     backupFiles: manifest.files.length,
@@ -159,10 +104,10 @@ try {
     ambientCredentialsIgnored: true,
   }, null, 2))
 } finally {
-  if (activeWorkers === 0) {
+  if (workersClosed()) {
     if (!path.resolve(taskRoot).startsWith(path.resolve(tempPrefix))) throw new Error('Unsafe recovery cleanup path.')
     await rm(taskRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
   } else {
-    console.error(`Recovery cleanup skipped because ${activeWorkers} child process(es) have not closed. Temporary root retained: ${taskRoot}`)
+    console.error(`Recovery cleanup skipped because child processes have not closed. Temporary root retained: ${taskRoot}`)
   }
 }
