@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Script from 'next/script'
 
 import { CasePage } from '@/features/redesign/case/CasePage'
 import { getCaseBySlug, getPublishedCases } from '@/features/redesign/content/cases'
@@ -49,7 +48,7 @@ export default async function CaseRoute({ params }: CaseRouteParams) {
 
   return (
     <>
-      <Script id={`case-json-ld-${study.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
+      <script id={`case-json-ld-${study.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
       <CasePage study={study} />
     </>
   )

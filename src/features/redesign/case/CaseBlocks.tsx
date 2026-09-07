@@ -26,7 +26,7 @@ export function PhaseNav({ phases }: { phases: CasePhase[] }) {
   }, [phases])
 
   return (
-    <nav className="rd-phase-nav" aria-label="Fases del caso">
+    <nav className="rd-phase-nav" aria-label="Fases del caso" tabIndex={0}>
       {phases.map((phase) => (
         <a key={phase.id} href={`#fase-${phase.id}`} className={active === phase.id ? 'is-active' : ''}>
           {phase.title}

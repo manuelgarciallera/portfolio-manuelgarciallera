@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Script from 'next/script'
 import { ArticlePage } from '@/features/redesign/articles/ArticlePage'
 import { EditorialShell } from '@/features/redesign/components/EditorialShell'
 import { ARTICLES, ARTICLE_AUTHOR, getArticleBySlug } from '@/features/redesign/content/articles'
@@ -43,5 +42,5 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     author: { '@type': 'Person', name: ARTICLE_AUTHOR.name, url: SITE_URL },
     publisher: { '@type': 'Person', name: ARTICLE_AUTHOR.name, url: SITE_URL },
   }).replace(/</g, '\\u003c')
-  return <EditorialShell><Script id="article-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} /><ArticlePage article={article} /></EditorialShell>
+  return <EditorialShell><script id="article-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} /><ArticlePage article={article} /></EditorialShell>
 }

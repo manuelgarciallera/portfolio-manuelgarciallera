@@ -184,7 +184,7 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
             </button>
           </div>
         </div>
-        <div ref={tabsRef} className="rd-preview-tabs" aria-label="Seleccionar vista">
+        <div ref={tabsRef} className="rd-preview-tabs" role="group" aria-label="Seleccionar vista" tabIndex={0}>
           {slides.map((slide, index) => (
             <button key={slide.src} type="button" data-active={index === active ? 'true' : 'false'} data-slide-index={index} onClick={() => { setFrame({ kind: 'slide', index }); setUserControlled(true); manuallyPaused.current = true; setPaused(true) }}>
               {slide.label}

@@ -108,9 +108,9 @@ export default function RootLayout({
   return (
     <html lang={SITE_LANGUAGE} data-theme="dark" className={playfairDisplay.variable} suppressHydrationWarning>
       <head>
-        <Script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
-        <Script id="person-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
-        <Script id="profile-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
+        <script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
+        <script id="person-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
+        <script id="profile-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
         {/* Evita el flash de tema incorrecto */}
         <Script
           id="theme-init"

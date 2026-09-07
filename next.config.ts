@@ -47,6 +47,10 @@ if (isProd) {
 const nextConfig: NextConfig = {
   ...(isolatedBuildDir ? { distDir: isolatedBuildDir } : {}),
   poweredByHeader: false,
+  experimental: {
+    // simple-icons expone un barril enorme: sin esto entran iconos no usados en el bundle.
+    optimizePackageImports: ['simple-icons'],
+  },
   reactStrictMode: true,
   devIndicators: false,
   images: {
