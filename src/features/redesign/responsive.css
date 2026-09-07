@@ -89,3 +89,64 @@
   .rd-header { padding-left: max(0.85rem, env(safe-area-inset-left)); padding-right: max(0.65rem, env(safe-area-inset-right)); }
   .rd-mobile-nav { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Usabilidad táctil y reflujo móvil · 2026-09-07
+   Correcciones transversales derivadas de la auditoría del 7 de septiembre.
+   Ver docs/portfolio-usabilidad-movil-2026-09-07.md
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* La rejilla de metadatos mantenía dos pistas de ~400px y ~106px dentro de un
+   contenedor de 343px: «Contribución» y «Año» quedaban fuera del viewport y
+   `.rd-root { overflow-x: clip }` las ocultaba sin dejar rastro. El culpable es
+   el min-content de la tira de tecnologías, que no puede encogerse sin min-width. */
+.rd-meta-grid > div,
+.rd-meta-grid dt,
+.rd-meta-grid dd { min-width: 0; }
+
+@media (max-width: 767px) {
+  .rd-meta-grid { grid-template-columns: 1fr; gap: var(--space-1, 1rem); }
+  .rd-meta-grid .rd-tech-stack { max-width: 100%; overflow-x: auto; }
+}
+
+/* El gesto horizontal lo gestiona useSwipe; el navegador conserva el scroll vertical. */
+.rd-case-visual,
+.rd-preview-carousel { touch-action: pan-y; }
+
+@media (pointer: coarse) {
+  /* Sin hover no hay `data-engaged`: en táctil los controles del carrusel
+     dependían de que la tarjeta estuviera centrada en el viewport y
+     desaparecían mientras se mostraba la portada. */
+  .rd-preview-carousel--card .rd-preview-controls,
+  .rd-preview-carousel--card .rd-preview-tabs,
+  .rd-preview-carousel--card[data-frame='cover'] .rd-preview-controls,
+  .rd-preview-carousel--card[data-frame='cover'] .rd-preview-tabs {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transition-delay: 0s !important;
+  }
+
+  /* Objetivos táctiles: área activa ≥ 44px sin tocar el tamaño tipográfico. */
+  .rd-preview-tabs button { position: relative; min-height: 2.1rem; }
+  .rd-preview-tabs button::before {
+    position: absolute; left: 0; right: 0; top: 50%; height: 2.75rem;
+    transform: translateY(-50%); content: '';
+  }
+  .rd-preview-controls button { width: 2.75rem; height: 2.75rem; min-height: 2.75rem; }
+  .rd-prelude-progress a { position: relative; }
+  .rd-prelude-progress a::before {
+    position: absolute; left: -0.35rem; right: -0.35rem; top: 50%; height: 2.75rem;
+    transform: translateY(-50%); content: '';
+  }
+}
+
+/* La tira de pestañas se desplaza horizontalmente sin barra visible: se añade
+   una máscara para que se entienda que hay contenido más allá del borde. */
+@media (max-width: 767px) {
+  .rd-preview-tabs {
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(to right, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 82%, transparent 100%);
+  }
+  .rd-preview-tabs button { scroll-snap-align: start; }
+}

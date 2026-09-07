@@ -7,7 +7,8 @@ import { type PointerEvent, type RefCallback, useCallback, useEffect, useRef, us
 import type { CaseStudy } from '../content/types'
 import { BuySellEditorialCover } from './BuySellEditorialCover'
 import { ProjectEditorialCover } from './ProjectEditorialCover'
-import { ProjectPreviewCarousel } from './ProjectPreviewCarousel'
+import { useSwipe } from '../hooks/useSwipe'
+import { ProjectPreviewCarousel, type CarouselControl } from './ProjectPreviewCarousel'
 import { TechStack } from './TechStack'
 
 export type CaseCardItem = Pick<
@@ -29,6 +30,8 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
   const [pointerEngaged, setPointerEngaged] = useState(false)
   const [titleVisible, setTitleVisible] = useState(false)
   const engaged = viewportActive || pointerEngaged
+  const carouselControl = useRef<CarouselControl | null>(null)
+  const { swipeHandlers, consumeDrag } = useSwipe((direction) => carouselControl.current?.move(direction))
 
   useEffect(() => {
     const title = titleRef.current
@@ -52,6 +55,7 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
   }, [item.slug, registerPreview])
 
   const movePointerCta = (event: PointerEvent<HTMLDivElement>) => {
+    swipeHandlers.onPointerMove(event)
     const visual = visualRef.current
     if (!visual || event.pointerType === 'touch') return
     const rect = visual.getBoundingClientRect()
@@ -60,6 +64,7 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
   }
 
   const resetVisual = () => {
+    swipeHandlers.onPointerCancel()
     setPointerEngaged(false)
     visualRef.current?.style.setProperty('--case-pointer-x', '50%')
     visualRef.current?.style.setProperty('--case-pointer-y', '50%')
@@ -85,14 +90,22 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
           data-engaged={engaged ? 'true' : 'false'}
           data-viewport-active={viewportActive ? 'true' : 'false'}
           onPointerEnter={(event) => { if (event.pointerType !== 'touch') setPointerEngaged(true) }}
+          onPointerDown={swipeHandlers.onPointerDown}
           onPointerMove={movePointerCta}
+          onPointerUp={swipeHandlers.onPointerUp}
+          onPointerCancel={swipeHandlers.onPointerCancel}
           onPointerLeave={resetVisual}
           onFocusCapture={() => setPointerEngaged(true)}
           onBlurCapture={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) resetVisual()
           }}
         >
-          <Link className="rd-case-hit-area" href={href} aria-label={`${actionLabel}: ${item.title}${item.titleAccent ?? ''}`}>
+          <Link
+            className="rd-case-hit-area"
+            href={href}
+            aria-label={`${actionLabel}: ${item.title}${item.titleAccent ?? ''}`}
+            onClick={(event) => { if (consumeDrag()) event.preventDefault() }}
+          >
             <span className="rd-sr-only">{actionLabel}</span>
           </Link>
           <span className="rd-case-hover-cta" data-pointer-cta="true" aria-hidden="true">{actionLabel}</span>
@@ -114,6 +127,7 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
             label={`Vista previa de ${item.title}${item.titleAccent ?? ''}`}
             slides={item.visual.slides}
             engaged={engaged}
+            controlRef={carouselControl}
             cover={item.visual.theme === 'buy-sell'
               ? <BuySellEditorialCover />
               : <ProjectEditorialCover index={item.index} visual={item.visual} />}

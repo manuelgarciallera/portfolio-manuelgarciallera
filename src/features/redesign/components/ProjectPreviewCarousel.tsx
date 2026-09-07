@@ -1,7 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from 'react'
+
+import { useSwipe } from '../hooks/useSwipe'
 
 import type { CaseVisualSlide } from '../content/types'
 import { CoordinationDiagram } from './CoordinationDiagram'
@@ -14,9 +16,14 @@ interface ProjectPreviewCarouselProps {
   variant?: 'card' | 'feature'
   engaged?: boolean
   cover?: ReactNode
+  controlRef?: MutableRefObject<CarouselControl | null>
 }
 
-export function ProjectPreviewCarousel({ label, slides, priority = false, variant = 'card', engaged, cover }: ProjectPreviewCarouselProps) {
+export interface CarouselControl {
+  move: (direction: -1 | 1) => void
+}
+
+export function ProjectPreviewCarousel({ label, slides, priority = false, variant = 'card', engaged, cover, controlRef }: ProjectPreviewCarouselProps) {
   const [frame, setFrame] = useState<PreviewFrame>(() => cover ? { kind: 'cover' } : { kind: 'slide', index: 0 })
   const [paused, setPaused] = useState(false)
   const [userControlled, setUserControlled] = useState(false)
@@ -90,6 +97,18 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
     setPaused(true)
   }
 
+  const moveRef = useRef(move)
+  useEffect(() => {
+    moveRef.current = move
+  })
+  const { swipeHandlers } = useSwipe((direction) => moveRef.current(direction))
+
+  useEffect(() => {
+    if (!controlRef) return undefined
+    controlRef.current = { move: (direction) => moveRef.current(direction) }
+    return () => { controlRef.current = null }
+  }, [controlRef])
+
   const togglePlayback = () => {
     manuallyPaused.current = !paused
     setPaused(!paused)
@@ -107,6 +126,7 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
       role="region"
       aria-roledescription="carrusel"
       aria-label={label}
+      {...(variant === 'feature' ? swipeHandlers : {})}
       onMouseEnter={() => { if (!manuallyPaused.current) setPaused(false) }}
       onMouseLeave={() => { if (!focusWithin.current && variant === 'card') setPaused(true) }}
       onFocusCapture={() => { focusWithin.current = true; if (!manuallyPaused.current) setPaused(false) }}
