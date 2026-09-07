@@ -4,7 +4,7 @@ Date: 2026-09-07
 
 Author: Codex implementation lane
 
-Status: implemented and locally verified; independent controller repetition/review pending
+Status: implemented; round-one lifecycle correction locally verified; independent correction review pending
 
 Scope: Task 1 from `postgres-editorial-task-2026-09-07.md`
 
@@ -16,7 +16,7 @@ No application runtime, schema, access rule, public source, dependency, lockfile
 
 Start base: `5f3f228e7fe59b032d0a522ed76f8d95f6b0d201`. Concurrent Claude public-only commits advanced shared HEAD through `e04487b92cb24efdc142d8746326709348288e2b` and later `1abb270`; they were preserved and are not part of this implementation delta.
 
-Implementation and report are committed together; the exact SHA is the commit containing this file (recorded in Git history without a recursive self-reference).
+Initial implementation/report commit: `9e4a33afe651d36ab0cc9a50ab38d23e57e4b714`. The round-one correction and this appended evidence are committed together in the later commit containing this version of the report.
 
 ## Files in this task
 
@@ -85,3 +85,23 @@ Successful editorial runs emit Payload's expected warning that no email adapter 
 ## Next responsible
 
 Controller/Codex: repeat the committed `test:integration:postgres` command with the same portable binaries and perform independent read-only review. After acceptance, the owner plan still requires reviewed production migrations, staging with durable database/media backup and restore, account recovery and the controlled public bridge. Claude's public lane and the separately documented media operational gaps remain outside this commit.
+
+## Round-one lifecycle review correction
+
+Independent review of `9e4a33a` found that `scripts/test-integration-postgres.mjs` set `childClosed = true` for every `runCommand` rejection. On Node `v24.13.0`, `execFile` can invoke its callback from the child `error` handler before the `close` event; therefore callback delivery alone did not prove process closure.
+
+The correction changes only three harness files plus this report:
+
+- `tests/recovery/postgres-runtime.mjs` now settles a command only after an observed `close`, or after a separate bounded one-second closure-evidence window. Results carry `childClosed: true`; errors carry the actual observed boolean. If closure is not observed, the original command code/reason remains in the error and incomplete diagnostics are omitted.
+- `scripts/test-integration-postgres.mjs` derives cleanup permission from that explicit result/error field. It no longer treats every callback rejection as closure. Existing `failure ??= cleanupError` preserves the original command failure, while `cleanupTask` retains the run root when `childClosed` is false.
+- `tests/recovery/postgres-runtime.test.mjs` adds the real-child early-error regression.
+
+TDD and verification from `owner-platform`:
+
+1. RED — `node node_modules/vitest/vitest.mjs run tests/recovery/postgres-runtime.test.mjs --config vitest.recovery.config.ts`: exit `1`; 1 expected failure and 11 passes because the real-child observation hook/closure evidence did not exist.
+2. GREEN — same command: exit `0`; 12/12. The test starts a real Node child, makes timeout termination emit `EPERM` without killing it, observes callback rejection while `exitCode` is still null and no `close` occurred, verifies `childClosed: false`, the retained `EPERM` reason and omitted partial secret prefix, then closes only that test PID and awaits its real `close`.
+3. `$env:OWNER_POSTGRES_BIN='...\pgsql\bin'; npm run test:integration:postgres`: exit `0`; unchanged PostgreSQL editorial suite 22/22, Vitest `24.38s` (tests `17.46s`), zero sessions after actual child close, exact server shutdown and run-root removal.
+4. `$env:OWNER_POSTGRES_BIN='...\pgsql\bin'; npm run test:recovery:postgres`: exit `0`; helpers 27/27, then native recovery passed with 5 backup files, 4 media files, 2 page versions, corrupt/missing rejection, closed sessions, exact shutdown and cleanup.
+5. `npm run lint` and `npm run typecheck`: both exit `0`.
+
+SQLite code and orchestration were not changed in this correction, so its previously recorded 22/22 editorial and physical-recovery results were not rerun. No timeout for Vitest, PostgreSQL, or recovery work was increased; the new one-second bound applies only after an already-delivered callback while awaiting independent closure evidence.

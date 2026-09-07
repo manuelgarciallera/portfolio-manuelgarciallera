@@ -29,11 +29,10 @@ try {
       'run', '--config', 'vitest.integration.config.ts',
     ], { cwd: ownerRoot, env, secrets: [pool.password], timeout: 180_000 })
   } catch (error) {
-    // execFile's callback is delivered after its exact child has closed.
-    childClosed = true
+    childClosed = error?.childClosed === true
     throw error
   }
-  childClosed = true
+  childClosed = testRun.childClosed === true
   if (testRun.stdout) console.log(testRun.stdout)
   if (testRun.stderr) console.error(testRun.stderr)
   assert.equal((await postgres.query('owner_editorial', 'SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid <> pg_backend_pid()')).stdout.trim(), '0', 'Editorial test process left a PostgreSQL session open.')

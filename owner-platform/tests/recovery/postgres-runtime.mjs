@@ -16,21 +16,47 @@ export const safeEnvironment = (ambient = process.env) => {
 
 export const redact = (message, secrets = []) => secrets.filter(Boolean).reduce((text, secret) => text.replaceAll(secret, '[redacted]'), message)
 
-export const runCommand = (file, args, { env = safeEnvironment(), timeout = 60_000, secrets = [], acceptedCodes = [0], cwd } = {}) => new Promise((resolve, reject) => {
-  // execFile waits for close, never invokes a shell and kills only its exact child on timeout.
-  execFile(file, args, { env, cwd, timeout, windowsHide: true, maxBuffer: 2 * 1024 * 1024, encoding: 'utf8' }, (error, stdout, stderr) => {
+export const runCommand = (file, args, { env = safeEnvironment(), timeout = 60_000, closeWaitTimeout = 1_000, secrets = [], acceptedCodes = [0], cwd, onSpawn } = {}) => new Promise((resolve, reject) => {
+  let callbackResult
+  let childAliveAtCallback = false
+  let closeObserved = false
+  let closeTimer
+  let settled = false
+  const settle = (closureWaitExpired = false) => {
+    if (settled || !callbackResult) return
+    if (!closeObserved && !closureWaitExpired) {
+      closeTimer ??= setTimeout(() => settle(true), closeWaitTimeout)
+      return
+    }
+    settled = true
+    clearTimeout(closeTimer)
+    const { error, stdout, stderr } = callbackResult
     const code = error?.code ?? 0
-    if (error?.killed || !acceptedCodes.includes(code)) {
-      const bufferExceeded = code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER'
+    const bufferExceeded = code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER'
+    const failed = error?.killed || !acceptedCodes.includes(code) || !closeObserved
+    if (failed) {
       const detail = error?.killed && !bufferExceeded ? 'timed out' : `failed (${code})`
-      // maxBuffer and forced termination may cut through a credential. Omit
-      // all captured output (and the raw error message), keeping the reason.
-      const diagnostics = bufferExceeded || error?.killed
+      // A callback before close, maxBuffer, or forced termination can leave
+      // diagnostics incomplete. Omit them rather than expose a secret fragment.
+      const diagnostics = bufferExceeded || error?.killed || childAliveAtCallback || !closeObserved
         ? '[Raw diagnostics omitted: subprocess output may be incomplete.]'
         : stderr || stdout || error?.message || ''
-      reject(new Error(redact(`${path.basename(file)} ${detail}: ${diagnostics}`, secrets)))
-    } else resolve({ code, stdout: redact(stdout, secrets), stderr: redact(stderr, secrets) })
+      const closure = closeObserved ? '' : ' Process close was not observed.'
+      const failure = new Error(redact(`${path.basename(file)} ${detail}:${closure} ${diagnostics}`, secrets))
+      failure.childClosed = closeObserved
+      reject(failure)
+    } else resolve({ code, stdout: redact(stdout, secrets), stderr: redact(stderr, secrets), childClosed: true })
+  }
+  const child = execFile(file, args, { env, cwd, timeout, windowsHide: true, maxBuffer: 2 * 1024 * 1024, encoding: 'utf8' }, (error, stdout, stderr) => {
+    childAliveAtCallback = child.exitCode === null && child.signalCode === null
+    callbackResult = { error, stdout, stderr }
+    settle()
   })
+  child.once('close', () => {
+    closeObserved = true
+    settle()
+  })
+  onSpawn?.(child)
 })
 
 export const preflightTools = async (directory) => {

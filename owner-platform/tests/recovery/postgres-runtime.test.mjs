@@ -1,4 +1,5 @@
 import { mkdtemp, stat, writeFile, rm } from 'node:fs/promises'
+import { once } from 'node:events'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, expect, it } from 'vitest'
@@ -116,6 +117,46 @@ it('bounds subprocesses and redacts their diagnostics', async () => {
   expect(typeof runtime.runCommand).toBe('function')
   await expect(runtime.runCommand(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { timeout: 40 })).rejects.toThrow(/timed out/)
   await expect(runtime.runCommand(process.execPath, ['-e', 'process.stderr.write("secret-value"); process.exit(2)'], { secrets: ['secret-value'] })).rejects.toThrow(/\[redacted\]/)
+})
+
+it('does not claim closure when execFile reports an error while the real child remains alive', async () => {
+  let child
+  let forceClose
+  let closeObserved = false
+  const secret = 'synthetic-prefix-synthetic-suffix'
+  const error = await runtime.runCommand(process.execPath, ['-e', 'process.stderr.write("synthetic-prefix-"); setInterval(()=>{},1000)'], {
+    timeout: 40,
+    closeWaitTimeout: 60,
+    secrets: [secret],
+    onSpawn(spawned) {
+      child = spawned
+      const realKill = spawned.kill.bind(spawned)
+      forceClose = () => realKill('SIGKILL')
+      spawned.once('close', () => { closeObserved = true })
+      spawned.kill = () => {
+        const killError = new Error('synthetic kill refusal')
+        killError.code = 'EPERM'
+        queueMicrotask(() => spawned.emit('error', killError))
+        return false
+      }
+    },
+  }).catch((caught) => caught)
+  try {
+    expect(child).toBeDefined()
+    expect(error).toBeInstanceOf(Error)
+    expect(error.childClosed).toBe(false)
+    expect(error.message).toMatch(/EPERM/)
+    expect(error.message).toMatch(/close.*not observed/i)
+    expect(error.message).toMatch(/diagnostics omitted/i)
+    expect(error.message).not.toContain('synthetic-prefix-')
+    expect(closeObserved).toBe(false)
+    expect(child.exitCode).toBeNull()
+  } finally {
+    if (child && !closeObserved) {
+      forceClose()
+      await once(child, 'close')
+    }
+  }
 })
 
 it('constructs only fixed loopback database endpoints and explicit native commands', async () => {
