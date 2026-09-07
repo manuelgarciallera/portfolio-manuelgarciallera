@@ -2,7 +2,7 @@ export const RESEARCH_STATEMENT =
   'Investigo cómo las interfaces —y la inteligencia artificial integrada en ellas— ayudan a las personas a comprender, decidir y actuar. La pregunta no es nueva: la traje del estudio de objetos físicos, donde empezó.'
 
 export const RESEARCH_QUESTION =
-  '¿Cómo y por qué el diseño del siglo XX sistematizó la eliminación de la dimensión háptica, y qué efecto tiene su recuperación sobre la comprensión, la confianza y la decisión de quien usa una interfaz contemporánea?'
+  '¿En qué medida el diseño del siglo XX desplazó la dimensión háptica hacia lo óptico, por qué motivos, y qué efecto tiene recuperarla sobre la comprensión, la confianza y la decisión de quien usa una interfaz contemporánea?'
 
 export const RESEARCH_INTRO: readonly string[] = [
   'Vengo del objeto antes que de la pantalla. Esa procedencia no es una anécdota biográfica: es lo que me permite mirar una interfaz y preguntarme qué se perdió por el camino, en lugar de darla por dada.',
@@ -23,8 +23,8 @@ export const RESEARCH_ROOT_OBJECTS: readonly ResearchRootObject[] = [
 
 export const RESEARCH_ROOT: readonly string[] = [
   'El trabajo empezó comparando objetos de diseño de la RDA y la RFA entre 1949 y 1989. Dos sistemas políticos produciendo utensilios para las mismas manos, con recursos distintos y con ideas opuestas sobre qué debe hacer un objeto.',
-  'El hallazgo no fue estético sino sensorial: el funcionalismo occidental fue retirando de forma sistemática la dimensión háptica —textura, peso, resistencia, temperatura— y dejando en su lugar una superficie cada vez más óptica. Lo que se ve creció; lo que se toca, no.',
-  'Esa conclusión es la raíz de todo lo demás. Si el desplazamiento de lo háptico a lo óptico ocurrió primero en los objetos, la interfaz digital no inaugura nada: es el punto más lejano de un recorrido que ya estaba en marcha.',
+  'Lo que encontré es sensorial antes que estético: en ese corpus, el funcionalismo occidental retira textura, peso, resistencia y temperatura, y deja en su lugar una superficie cada vez más óptica. Lo que se ve creció; lo que se toca, no. Es la lectura que defiendo de un conjunto acotado de objetos, no una ley general del siglo XX.',
+  'De ahí sale todo lo demás, y sale como hipótesis: si el desplazamiento de lo háptico a lo óptico empezó en los objetos, la interfaz digital no inaugura nada, es el punto más lejano de un recorrido que ya estaba en marcha. Hasta dónde aguanta esa continuidad es precisamente lo que queda por investigar.',
 ]
 
 export interface ResearchLine {
@@ -44,7 +44,7 @@ export const RESEARCH_LINES: readonly ResearchLine[] = [
   {
     index: '02',
     title: 'Interfaces que ayudan a decidir',
-    body: 'HCI aplicado y medible: cómo una interfaz con IA integrada cambia lo que una persona entiende, en qué confía y qué acaba haciendo. Con prototipos, participantes y métricas, no con intuición.',
+    body: 'HCI aplicado y medible: cómo una interfaz con IA integrada cambia lo que una persona entiende, en qué confía y qué acaba haciendo. Es la línea que exige prototipos, participantes y métricas; su diseño experimental está por construir.',
     status: 'Línea empírica y aplicada',
   },
   {
@@ -56,7 +56,7 @@ export const RESEARCH_LINES: readonly ResearchLine[] = [
 ]
 
 export const RESEARCH_METHOD: readonly string[] = [
-  'Research through Design como marco: el proyecto no ilustra la investigación, la produce. Cada caso publicado en este sitio deja por escrito qué se preguntó, qué se decidió y qué se descartó.',
+  'Research through Design en el sentido de Frayling: el proyecto no ilustra la investigación, es uno de sus instrumentos. Cada caso publicado aquí debe dejar por escrito qué se preguntó, qué se decidió y qué se descartó. Ese es el criterio con el que los escribo y con el que hay que juzgarlos.',
   'Diseño centrado en las personas según ISO 9241-210 y doble diamante para estructurar el trabajo aplicado: encuadre, investigación, sistema, prototipo, desarrollo y validación, con la evidencia que corresponde a cada fase.',
   'Y una regla que me impongo: distinguir siempre lo medido de lo inferido. Una estimación presentada como dato es el error más caro que puede cometer alguien que investiga.',
 ]
