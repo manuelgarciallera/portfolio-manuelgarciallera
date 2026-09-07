@@ -28,7 +28,7 @@ export const SITE_TITLE = `${PERSON_DISPLAY_NAME} — Product Designer, Design S
 export const SITE_DESCRIPTION =
   "Portfolio de Manuel Garc\u00EDa-Llera: Product Designer y Design Engineer especializado en sistemas de dise\u00F1o, HCI e interacci\u00F3n humano-IA. De la investigaci\u00F3n y el prototipo a productos digitales implementados.";
 
-export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hola@manuelgarciallera.com";
+export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
 export const PROFILE_IMAGE_URL = "https://avatars.githubusercontent.com/u/244682559?s=320&v=4";
 

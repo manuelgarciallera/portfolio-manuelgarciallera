@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { PROFILE_LINKS } from '../../../lib/site-config'
+import { PROFILE_LINKS, SITE_EMAIL } from '../../../lib/site-config'
 
 type FormStatus = 'idle' | 'sending' | 'success' | 'error'
 
@@ -12,6 +12,10 @@ export function ContactForm() {
   const [status, setStatus] = useState<FormStatus>('idle')
   const [feedback, setFeedback] = useState('')
   const [showFallback, setShowFallback] = useState(false)
+
+  // Si la ruta falla, el visitante ya ha escrito su mensaje: perderlo y mandarle
+  // a LinkedIn es la peor recuperacion posible. El mailto lo lleva consigo.
+  const mailtoHref = `mailto:${SITE_EMAIL}?subject=${encodeURIComponent(`Portfolio \u00b7 mensaje de ${values.name || 'un visitante'}`)}&body=${encodeURIComponent([values.company ? `Organizaci\u00f3n: ${values.company}` : '', values.email ? `Email: ${values.email}` : '', '', values.message].filter(Boolean).join('\n'))}`
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -79,7 +83,7 @@ export function ContactForm() {
         </button>
       </div>
       <p className={`rd-contact-form__status is-${status}`} role="status" aria-live="polite">
-        {feedback}{showFallback ? <> <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">Abrir LinkedIn <span aria-hidden="true">↗</span></a></> : null}
+        {feedback}{showFallback ? <> <a href={mailtoHref}>Enviarlo por correo <span aria-hidden="true">↗</span></a> <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">Abrir LinkedIn <span aria-hidden="true">↗</span></a></> : null}
       </p>
     </form>
   )
