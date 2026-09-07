@@ -37,6 +37,9 @@ Consecuencias practicas:
 | 2026-09-07 | Ejercicios del master | CRM de empleados con guards, interceptor e interfaces y backend desplegado | V3 · punto de partida | Pendiente de evaluar |
 | 2026-09-07 | Radar frontend 01-08 (Codex) | Serie real de ocho radares 27 jul - 31 ago en `01_Codex/radar_frontend/`, sin explotar | Todas · materia prima ya existente | Pendiente de vaciar aqui |
 | 2026-09-07 | Radar / consenso 32 | WaterBall (MLS-MPM WebGPU, MIT) y WebGPU Fluids de Hector Arellano, con licencia y rendimiento documentados | V5 y landings de alto impacto; NO el hero, que ya cumple con R3F y WebGPU no es universal | Aplazado con motivo |
+| 2026-09-07 | Codex · TFM/trazabilidad, ejercicios 5/6 y pruebas reales CMS | Editar un campo no debe borrar bloques, marca ni parametros de animacion; un rechazo no crea versiones parciales | V1 · `owner-platform/tests/editorial.integration.test.ts` | Adoptado como comprobacion: 22/22 integracion; [alcance y fuentes](../../docs/owner-platform/master-tfm-transfer-review-2026-09-07.md) |
+| 2026-09-07 | Codex · `pedidos.model.js` y tramo createPedido del TFM | Transaccion existente, pero reserva incondicional y notificacion posterior al commit requieren pruebas de concurrencia/reintento | V4 · reserva de articulo; complementar avisos de permisos ya registrados, no sustituirlos | Candidato prioritario; no reproducido ni corregido aqui. Coordinar responsable TFM antes de reutilizar comercialmente |
+| 2026-09-07 | Codex · evaluacion UI UX Pro Max 2026-09-02 y materiales derivados del master | Corpus y apuntes IA son hipotesis, no evaluacion ni autoridad tecnica; contrastar con fuentes primarias antes de incorporar | V1 · recomendaciones del asistente editorial; futuras recetas de landing | VIGILAR, no instalar; revision radar antes del 2026-09-14, evidencia y limites en informe de transferencia |
 
 ## Como se usa
 

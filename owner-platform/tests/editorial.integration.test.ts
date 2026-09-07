@@ -109,6 +109,44 @@ it('registers a real immutable release from a matched snapshot pair', async () =
   await expect(payload.find({ collection: 'releases', overrideAccess: false })).rejects.toThrow()
 }, 30_000)
 
+it('keeps page blocks, brand and motion when the owner edits only the title', async () => {
+  const { page } = await createReleaseFixture()
+  const before = await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    depth: 0, data: { brandOverrides: { accent: '#00D4E6', motion: { duration: 900, stagger: 120, travel: 32 } } },
+  })
+  await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { title: 'Only the title changed' },
+  })
+  const saved = await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, user: owner, overrideAccess: false })
+  expect(saved.title).toBe('Only the title changed')
+  expect(saved.slug).toBe(page.slug)
+  expect(saved.brandProfile).toEqual(before.brandProfile)
+  expect(saved.layout).toEqual(before.layout)
+  expect(saved.brandOverrides).toMatchObject({ accent: '#00D4E6', motion: { duration: 900, stagger: 120, travel: 32 } })
+}, 30_000)
+
+it('merges one motion parameter without erasing sibling overrides and rejects invalid partial edits atomically', async () => {
+  const { page } = await createReleaseFixture()
+  await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { brandOverrides: { accent: '#00D4E6', motion: { duration: 900, stagger: 120, travel: 32 } } },
+  })
+  await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { brandOverrides: { motion: { duration: 750 } } },
+  })
+  const before = await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, user: owner, overrideAccess: false })
+  expect(before.brandOverrides).toMatchObject({ accent: '#00D4E6', motion: { duration: 750, stagger: 120, travel: 32 } })
+  const versionsBefore = await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, user: owner, overrideAccess: false, limit: 100 })
+  await expect(payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { title: 'Must not persist', brandOverrides: { motion: { duration: -1 } } },
+  })).rejects.toThrow()
+  const after = await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, user: owner, overrideAccess: false })
+  expect(after.title).toBe('Release page')
+  expect(after.brandOverrides).toEqual(before.brandOverrides)
+  expect(after.layout).toEqual(before.layout)
+  const versionsAfter = await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, user: owner, overrideAccess: false, limit: 100 })
+  expect(versionsAfter.docs.map((version) => version.id)).toEqual(versionsBefore.docs.map((version) => version.id))
+}, 30_000)
+
 it('preserves real Payload block identities through capture, assistant context and reorder review', async () => {
   const { page, req } = await createReleaseFixture()
   const saved = await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
