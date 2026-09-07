@@ -215,3 +215,68 @@ Nada de esto está desplegado todavía.
 ## Cómo reproducir
 
 Ninguna de estas medidas necesita herramientas nuevas: se obtienen con `getBoundingClientRect`, `scrollWidth/clientWidth`, `tabIndex` y `PerformanceResourceTiming` sobre la página servida. Merece la pena convertirlas en un script de QA en `scripts/`, porque el criterio actual —desbordamiento del documento— da verde sobre una página con 61 px recortados.
+
+---
+
+# Adenda · correcciones aplicadas y rectificaciones (7 sep, tarde)
+
+## Rectificaciones al informe anterior
+
+Al ir a corregir, tres hallazgos no resistieron la comprobación. Quedan retirados:
+
+- **El pie de página no está roto.** Su único hijo que desborda es `img.rd-footer-artwork`, decorativa y con `aria-hidden="true"`, recortada a propósito por el `overflow: hidden` del pie. El contenido real (los dos `span` y el `nav`) cabe holgadamente: 24..336 en un viewport de 360.
+- **`.rd-case-visual` tampoco.** Sus hijos que salen del marco son la aurora, la rejilla, los planos y las monedas de la portada editorial: sangrado intencionado. La única excepción es `.rd-preview-viewport` (29..396 a 360 px), que recorta ~36 px del borde derecho de cada diapositiva por el `transform: matrix(1.035,0,0,1.035,15,0)`. Es una decisión de encuadre, no un fallo; queda anotada, sin tocar.
+- **El orden de encabezados y dos de las tres regiones sin foco ya estaban corregidos en el código.** No queda ni un `<h4>` en `src/features/redesign`, y `pre.rd-code`, `p.rd-data-mapping` y `.rd-tech-stack` ya llevan `tabIndex={0}`. Lo que axe encuentra es el despliegue de hace tres días, no el repositorio.
+
+Esa última rectificación cambia la conclusión del informe: **una parte de lo auditado se arregla desplegando.**
+
+## Aplicado en `28c960b`
+
+### 1. Los datos estructurados no llegaban al HTML — `layout.tsx`, `casos/[slug]`, `articulos/[slug]`
+
+El JSON-LD estaba bien construido (`WebSite`, `Person`, `ProfilePage`, `Article` y el de cada caso) pero se emitía con `next/script`, cuyo `strategy` por defecto es `afterInteractive`. En el HTML servido no hay una sola etiqueta `<script type="application/ld+json">`: lo que hay es el payload de React con el contenido escapado,
+
+```
+application/ld+json\",\"dangerouslySetInnerHTML\":{\"__html\":\"{\\\"@context\\\":\\\"https://schema.org\\\"…
+```
+
+es decir, props serializadas para inyectar tras la hidratación. Un rastreador que no ejecute JavaScript —LinkedIn, Slack, Bing, la mayoría de validadores— no ve absolutamente nada.
+
+Corrección: `<script type="application/ld+json">` normal en el JSX, renderizado en servidor. `Script` sigue usándose para `theme-init`, que sí necesita `beforeInteractive`.
+
+**Verificar:** `curl` a `/`, `/casos/<slug>` y `/articulos/<slug>` debe devolver `"@type":"Person"`, `"@type":"Article"`, etc. en texto plano.
+
+### 2. La banda de 768 px — `responsive.css`
+
+`.rd-now` declara `grid-template-columns: minmax(18rem,.72fr) minmax(24rem,1.28fr)`: 672 px de mínimos más `gap: clamp(2rem,7vw,8rem)` y dos gutters. En un viewport de 753 px la segunda columna se resolvía en 430..814 y `.rd-root { overflow-x: clip }` se la comía.
+
+La regla de móvil que ya existía (`max-width: 760px`, columna única) se extiende a la banda 761–1023 px. A partir de 1024 la composición de dos columnas queda intacta.
+
+Medido en producción inyectando la regla: la lista pasa de `430..814` a `88..664`, y el recorte del root baja de 814 a 760.
+
+Detectado de paso: el proyecto mezcla cortes en `760px` y `767px` según el bloque. La franja 761–767 se comporta de forma distinta a ambos lados. Merece una normalización aparte.
+
+### 3. Regiones desplazables alcanzables — `CaseBlocks.tsx`, `ProjectPreviewCarousel.tsx`
+
+`nav.rd-phase-nav` (cw 360 / sw 528) y `div.rd-preview-tabs` (cw 320 / sw 528) eran las dos que faltaban: `tabIndex={0}`, `role="group"` en la tira de pestañas, foco visible y máscara de degradado en el borde derecho para que se entienda que el contenido sigue.
+
+### 4. La marca fantasma — `responsive.css`
+
+`.rd-brand-wordmark` ya estaba oculta bajo 768 px con `opacity: 0`, pero con `white-space: nowrap` seguía reservando 345 px de rejilla en la cabecera. `display: none` en esa franja; el monograma, que es lo que se ve, define el ancho.
+
+### 5. Peso y sitemap
+
+`simple-icons` añadido a `experimental.optimizePackageImports`: `TechStack.tsx` importa 16 iconos del barril raíz de un paquete de 21 MB. Y fuera del sitemap `humans.txt` y `.well-known/security.txt`, que no son páginas.
+
+## Verificado
+
+`tsc --noEmit`, `eslint` sobre `src/app` y `src/features/redesign`, y los cinco guardas del repositorio (`check:hero`, `check:responsive-type`, `check:mobile-nav`, `check:encoding`, `check:public-boundary`) en verde, más `public-guards` (11 pass) y `owner-isolation` (8 pass).
+
+`vitest` y `next build` siguen sin poder ejecutarse desde esta sesión: `node_modules` tiene binarios de Windows. **`npm run check:all` en Windows antes de desplegar.** Las aserciones de los tests unitarios que tocan estos componentes son `toContain` sobre subcadenas que no he eliminado, así que no deberían romperse; conviene confirmarlo.
+
+## Pendiente y por qué no lo he tocado
+
+1. **Dominio y locale.** El destino es `https://manuelgarciallera.com/es`. Hoy `SITE_URL` (ya configurable por `NEXT_PUBLIC_SITE_URL`) resuelve a `https://manuelgarciallera.com` sin segmento de idioma, así que todos los canonical y las 13 URLs del sitemap apuntarían a `/casos`, no a `/es/casos`. Eso es una decisión de enrutado —`app/[locale]/`, `hreflang` ES/EN, redirección de `/` a `/es`— que no debo tomar yo. Mientras el dominio no responda, ningún canonical apunta a nada servible.
+2. **1,77 MB de JavaScript.** Bajar la frontera de cliente en `RedesignPage` y condicionar el orbe 3D por capacidad del dispositivo son los dos cambios de mayor impacto, y los dos alteran comportamiento visible: no los hago sin poder ejecutar `next build` ni comparar capturas.
+3. **`.rd-preview-viewport`**: los 36 px recortados de cada diapositiva son encuadre deliberado. Decisión de Manuel.
+4. **`.rd-research-copy` a 1440** (cw 469 / sw 820, `overflow: visible`): el contenido excede su caja sin recortarse, así que se superpone con lo vecino en lugar de desbordar. Requiere revisión visual, no medición.
