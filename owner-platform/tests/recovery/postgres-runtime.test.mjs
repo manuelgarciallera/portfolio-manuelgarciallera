@@ -44,6 +44,62 @@ it('accepts only an exact child run root for lifecycle paths', async () => {
   }
 })
 
+it('selects only an isolated SQLite fixture or fixed loopback PostgreSQL editorial metadata', async () => {
+  expect(typeof runtime.editorialDatabaseConfig).toBe('function')
+  const cache = await fixture()
+  const sqliteRoot = await mkdtemp(path.join(tmpdir(), 'owner-editorial-qa-'))
+  roots.push(sqliteRoot)
+  await expect(runtime.editorialDatabaseConfig({
+    DATABASE_URL: 'postgresql://ambient-owner.invalid/real',
+    OWNER_INTEGRATION_DIRECTORY: sqliteRoot,
+  }, { cache })).resolves.toEqual({
+    engine: 'sqlite',
+    url: `file:${path.join(sqliteRoot, 'editorial.db').replaceAll('\\', '/')}`,
+  })
+
+  const postgresRoot = await mkdtemp(path.join(cache, 'owner-postgres-editorial-'))
+  const postgres = {
+    host: '127.0.0.1', port: 54321, database: 'owner_editorial', user: 'owner_editorial',
+    password: 'a'.repeat(64), ssl: false, connectionTimeoutMillis: 10_000,
+  }
+  await expect(runtime.editorialDatabaseConfig({
+    DATABASE_URL: 'postgresql://ambient-owner.invalid/real',
+    OWNER_INTEGRATION_ENGINE: 'postgres',
+    OWNER_INTEGRATION_DIRECTORY: postgresRoot,
+    OWNER_INTEGRATION_POSTGRES: JSON.stringify(postgres),
+  }, { cache })).resolves.toEqual({ engine: 'postgres', pool: postgres })
+
+  for (const invalid of [
+    { ...postgres, host: 'localhost' },
+    { ...postgres, database: 'owner_source' },
+    { ...postgres, user: 'owner_recovery' },
+    { ...postgres, password: 'short' },
+    { ...postgres, connectionString: 'postgresql://elsewhere.invalid/real' },
+  ]) {
+    await expect(runtime.editorialDatabaseConfig({
+      OWNER_INTEGRATION_ENGINE: 'postgres',
+      OWNER_INTEGRATION_DIRECTORY: postgresRoot,
+      OWNER_INTEGRATION_POSTGRES: JSON.stringify(invalid),
+    }, { cache })).rejects.toThrow(/editorial PostgreSQL/i)
+  }
+})
+
+it('allocates and cleans only the exact shared lifecycle root for each fixed run kind', async () => {
+  expect(typeof runtime.createPostgresCluster).toBe('function')
+  const cache = await fixture()
+  const editorial = await runtime.createPostgresCluster({ cache, kind: 'editorial', tools: {} })
+  expect(path.dirname(editorial.root)).toBe(cache)
+  expect(path.basename(editorial.root)).toMatch(/^owner-postgres-editorial-/)
+  expect((await stat(editorial.root)).isDirectory()).toBe(true)
+  await editorial.shutdown({ childrenClosed: true })
+  await expect(stat(editorial.root)).rejects.toMatchObject({ code: 'ENOENT' })
+
+  const recovery = await runtime.createPostgresCluster({ cache, kind: 'recovery', tools: {} })
+  expect(path.basename(recovery.root)).toMatch(/^owner-postgres-recovery-/)
+  await recovery.shutdown({ childrenClosed: true })
+  await expect(runtime.createPostgresCluster({ cache, kind: 'unknown', tools: {} })).rejects.toThrow(/run kind/i)
+})
+
 it('does not delete synthetic files when shutdown is unproved', async () => {
   expect(typeof runtime.cleanupTask).toBe('function')
   const cache = await fixture()

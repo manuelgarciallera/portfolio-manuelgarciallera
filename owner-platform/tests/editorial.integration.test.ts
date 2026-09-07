@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { createLocalReq, getPayload, type Payload } from 'payload'
 import sharp from 'sharp'
 import { afterAll, beforeAll, expect, it, vi } from 'vitest'
@@ -28,19 +29,19 @@ import { loadOwnerAssistanceReview } from '../src/assist/review'
 import { createOwnerFigmaImportPlan } from '../src/connectors/figma/import-service'
 import { createOwnerFigmaImportReview } from '../src/connectors/figma/import-review-service'
 import { executeOwnerFigmaImport } from '../src/connectors/figma/import-execution-service'
+import { editorialDatabaseConfig } from './recovery/postgres-runtime.mjs'
 
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
-let databaseDirectory: string | undefined
 let rejectRestoreAudit = false
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
-const databasePrefix = path.join(tmpdir(), 'owner-editorial-qa-')
+const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
+const postgresCache = path.join(ownerRoot, 'node_modules', '.cache')
 
 beforeAll(async () => {
   const config = await applicationConfig
-  databaseDirectory = process.env.OWNER_INTEGRATION_DIRECTORY
-  if (!databaseDirectory || !path.resolve(databaseDirectory).startsWith(path.resolve(databasePrefix))) throw new Error('Run integration tests through npm run test:integration for isolated database cleanup')
+  const database = await editorialDatabaseConfig(process.env, { cache: postgresCache })
   payload = await getPayload({
     key: `editorial-integration-${randomUUID()}`,
     config: {
@@ -55,9 +56,10 @@ beforeAll(async () => {
         }, ...(collection.hooks.beforeChange ?? [])] },
       } : collection),
       // Never connect to the developer's configured database or reuse their credentials.
-      // libSQL transactions use separate connections; use a private temporary
-      // file so every connection shares the schema, never the owner's database.
-      db: { ...createLocalDatabaseAdapter(`file:${path.join(databaseDirectory, 'editorial.db').replaceAll('\\', '/')}`), allowIDOnCreate: false, name: 'sqlite' },
+      // Both adapters receive only metadata validated for this isolated run.
+      db: database.engine === 'postgres'
+        ? { ...postgresAdapter({ pool: database.pool, push: true, disableCreateDatabase: true }), allowIDOnCreate: false, name: 'postgres' }
+        : { ...createLocalDatabaseAdapter(database.url!), allowIDOnCreate: false, name: 'sqlite' },
       secret: randomUUID() + randomUUID(),
     },
   })
@@ -71,9 +73,12 @@ beforeAll(async () => {
 }, 60_000)
 
 afterAll(async () => {
-  const client = (payload?.db as unknown as { client?: { close(): void } })?.client
+  const database = payload?.db as unknown as { client?: { close(): void }, name?: string }
   await payload?.destroy()
-  client?.close()
+  // The installed PostgreSQL adapter keeps its initial pool client checked out,
+  // so pool.end() cannot complete. This suite runs in a bounded disposable
+  // process; its parent waits for close and verifies zero server sessions.
+  if (database?.name === 'sqlite') database.client?.close()
 })
 
 const createReleaseFixture = async () => {

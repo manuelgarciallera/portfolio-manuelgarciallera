@@ -1,12 +1,11 @@
 import assert from 'node:assert/strict'
 import { randomBytes, randomUUID } from 'node:crypto'
-import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
-import net from 'node:net'
+import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
 import { createPhysicalBackup, restoreVerifiedBackup, snapshotFiles, verifyPhysicalBackup } from '../tests/recovery/backup-manifest.mjs'
-import { assertTaskRoot, cleanupTask, databaseCommand, databaseOptions, preflightTools, runCommand, safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
+import { createPostgresCluster, databaseCommand, preflightTools, runCommand } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
 
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
@@ -14,43 +13,16 @@ const cache = path.join(ownerRoot, 'node_modules', '.cache')
 // Resolve and execute every required tool before creating a cluster or any test data.
 const { tools, versions } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 await runCommand(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts'], { cwd: ownerRoot, timeout: 60_000 }).then(({ stdout }) => console.log(stdout))
-await mkdir(cache, { recursive: true })
-const root = await mkdtemp(path.join(cache, 'owner-postgres-recovery-'))
-const cluster = path.join(root, 'cluster')
-const passwordFile = path.join(root, 'init-password')
-const password = randomBytes(32).toString('hex')
-const env = { ...safeEnvironment(), PGPASSWORD: password, PGCONNECT_TIMEOUT: '10', PSQLRC: path.join(root, 'no-psqlrc') }
-const command = (name, args, options) => runCommand(tools[name], args, { env, secrets: [password], ...options })
-let startAttempted = false
-let startConfirmed = false
-let initAttempted = false
-let initialized = false
+const postgres = await createPostgresCluster({ cache, kind: 'recovery', tools })
+const { root } = postgres
 let failure
 let result
 
 try {
-  await assertTaskRoot(cache, root)
-  const port = await new Promise((resolve, reject) => {
-    const probe = net.createServer()
-    probe.once('error', reject)
-    probe.listen(0, '127.0.0.1', () => {
-      const chosen = probe.address().port
-      probe.close((error) => error ? reject(error) : resolve(chosen))
-    })
-  })
-  await writeFile(passwordFile, `${password}\n`, { flag: 'wx', mode: 0o600 })
   console.log('[postgres-recovery] initialize isolated SCRAM cluster')
-  initAttempted = true
-  await command('initdb', ['--pgdata', cluster, '--username=owner_recovery', '--auth-host=scram-sha-256', '--auth-local=scram-sha-256', '--pwfile', passwordFile, '--encoding=UTF8', '--locale=C'])
-  initialized = true
-  // A generated configuration file avoids shell/pg_ctl -o quoting entirely.
-  await writeFile(path.join(cluster, 'postgresql.auto.conf'), `listen_addresses = '127.0.0.1'\nport = ${port}\npassword_encryption = 'scram-sha-256'\nunix_socket_directories = ''\n`, { flag: 'w' })
-  startAttempted = true
-  await command('pg_ctl', ['start', '-D', cluster, '-l', path.join(root, 'postgres.log'), '-w', '-t', '30'], { timeout: 45_000 })
-  startConfirmed = true
-  const native = (name, database, archive) => command(name, databaseCommand(name, { port, database, archive }))
-  const query = (database, sql) => command('psql', ['-X', '--host=127.0.0.1', `--port=${port}`, '--username=owner_recovery', '--no-password', `--dbname=${database}`, '--set=ON_ERROR_STOP=1', '--tuples-only', '--no-align', '--command', sql])
-  await native('createdb', 'owner_source')
+  const sourcePostgres = await postgres.initialize()
+  const native = (name, database, archive) => postgres.command(name, databaseCommand(name, { port: sourcePostgres.port, database, archive }))
+  const query = postgres.query
   assert.equal((await query('owner_source', "SHOW listen_addresses")).stdout.trim(), '127.0.0.1')
   assert.equal((await query('owner_source', "SELECT count(*) FROM pg_authid WHERE rolname='owner_recovery' AND rolpassword LIKE 'SCRAM-SHA-256$%'")).stdout.trim(), '1')
   const assertNoPayloadSessions = async (database) => {
@@ -64,7 +36,7 @@ try {
   const restoreDirectory = path.join(root, 'restored')
   const credentials = { email: `recovery-${randomUUID()}@example.invalid`, password: randomBytes(32).toString('hex') }
   const payloadSecret = randomBytes(32).toString('hex')
-  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: databaseOptions(port, database, password), credentials, payloadSecret, mediaDirectory, expected })
+  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: postgres.options(database), credentials, payloadSecret, mediaDirectory, expected })
   const applicationCommit = (await runCommand('git', ['rev-parse', 'HEAD'], { cwd: ownerRoot })).stdout.trim()
   const seeded = await runWorker(workerPath, input('seed', 'owner_source', path.join(sourceDirectory, 'media')), ownerRoot)
   assert(workersClosed(), 'Seed process must close before pg_dump and media copy.')
@@ -92,10 +64,10 @@ try {
   }
 
   await verifyPhysicalBackup(backupDirectory)
-  await command('pg_restore', ['--list', path.join(backupDirectory, 'data', 'database', 'owner.dump')])
+  await postgres.command('pg_restore', ['--list', path.join(backupDirectory, 'data', 'database', 'owner.dump')])
   // Neither a database nor a media destination exists until all integrity checks pass.
   await restoreVerifiedBackup({ backupDirectory, restoreDirectory })
-  await native('createdb', 'owner_restored')
+  await postgres.createDatabase('owner_restored')
   console.log('[postgres-recovery] native pg_restore into fresh database')
   await native('pg_restore', 'owner_restored', path.join(restoreDirectory, 'database', 'owner.dump'))
   const restored = await runWorker(workerPath, input('restore', 'owner_restored', path.join(restoreDirectory, 'media'), seeded), ownerRoot)
@@ -109,24 +81,8 @@ try {
 } catch (error) {
   failure = error
 } finally {
-  // An interrupted initdb can leave a bootstrap child: preserve the root unless
-  // initdb completed, or a running postmaster was explicitly stopped below.
-  let stopped = !startAttempted && (!initAttempted || initialized)
   try {
-    if (startAttempted) {
-      await assertTaskRoot(cache, root)
-      const state = await command('pg_ctl', ['status', '-D', cluster], { acceptedCodes: [0, 3] })
-      if (!startConfirmed && state.code === 3) throw new Error('Unconfirmed startup: cannot prove that no startup child remains.')
-      if (state.code === 0) {
-        const pidInfo = (await readFile(path.join(cluster, 'postmaster.pid'), 'utf8')).split(/\r?\n/)
-        assert.equal(path.resolve(pidInfo[1]), path.resolve(cluster), 'Cluster PID file does not identify this exact data directory.')
-        await command('pg_ctl', ['stop', '-D', cluster, '-m', 'fast', '-w', '-t', '30'], { timeout: 45_000 })
-      }
-      assert.equal((await command('pg_ctl', ['status', '-D', cluster], { acceptedCodes: [3] })).code, 3)
-      await assert.rejects(stat(path.join(cluster, 'postmaster.pid')), { code: 'ENOENT' })
-      stopped = true
-    }
-    await cleanupTask({ cache, root, stopped, workersClosed: workersClosed() })
+    await postgres.shutdown({ childrenClosed: workersClosed() })
     console.log('[postgres-recovery] exact cluster stopped; synthetic run root removed')
   } catch (cleanupError) {
     console.error(`Synthetic recovery data retained at ${root}: ${cleanupError.message}`)

@@ -13,6 +13,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:integration": "node scripts/test-integration.mjs",
+    "test:integration:postgres": "node scripts/test-integration-postgres.mjs",
     "test:recovery": "node scripts/test-recovery.mjs",
     "test:recovery:postgres": "node scripts/test-recovery-postgres.mjs",
     "test:controls": "node tests/document-controls.browser.mjs",

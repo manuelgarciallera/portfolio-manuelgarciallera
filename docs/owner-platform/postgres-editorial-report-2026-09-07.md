@@ -1,0 +1,87 @@
+# PostgreSQL editorial integration report
+
+Date: 2026-09-07
+
+Author: Codex implementation lane
+
+Status: implemented and locally verified; independent controller repetition/review pending
+
+Scope: Task 1 from `postgres-editorial-task-2026-09-07.md`
+
+## Outcome
+
+The unchanged complete `tests/editorial.integration.test.ts` business suite now runs against either its existing isolated SQLite fixture or a fresh real PostgreSQL database. `npm run test:integration` remains SQLite by default. `npm run test:integration:postgres` preflights the existing portable PostgreSQL tools, creates a unique cluster and the single `owner_editorial` database beneath ignored `node_modules/.cache`, runs the same 22 cases in a bounded child, waits for that exact process to close, verifies zero remaining database sessions, stops the exact cluster and removes only that run root.
+
+No application runtime, schema, access rule, public source, dependency, lockfile, production migration, service or deployment was changed. Development schema push occurs only inside the disposable PostgreSQL test database.
+
+Start base: `5f3f228e7fe59b032d0a522ed76f8d95f6b0d201`. Concurrent Claude public-only commits advanced shared HEAD through `e04487b92cb24efdc142d8746326709348288e2b` and later `1abb270`; they were preserved and are not part of this implementation delta.
+
+Implementation and report are committed together; the exact SHA is the commit containing this file (recorded in Git history without a recursive self-reference).
+
+## Files in this task
+
+- `owner-platform/package.json`: adds only `test:integration:postgres`.
+- `owner-platform/scripts/test-integration-postgres.mjs`: bounded real-PostgreSQL editorial runner.
+- `owner-platform/tests/editorial.integration.test.ts`: selects the validated fixture adapter without copying or changing the 22 business assertions; PostgreSQL socket ownership stays at the disposable process boundary.
+- `owner-platform/tests/recovery/postgres-runtime.mjs`: small shared cluster lifecycle plus strict editorial fixture selection; retains bounded/redacted command diagnostics from `4c2c32f`.
+- `owner-platform/tests/recovery/postgres-runtime.test.mjs`: TDD coverage for adapter metadata isolation and exact lifecycle roots.
+- `owner-platform/scripts/test-recovery-postgres.mjs`: existing native recovery consumer refactored onto the shared lifecycle.
+- `docs/owner-platform/postgres-editorial-report-2026-09-07.md`: this evidence.
+
+The task brief, coordination documents, public files, untracked `AGENTS.md`/`CLAUDE.md`, media-gap report and all unrelated artifacts are explicitly excluded.
+
+## Environment and safety contract
+
+- Node `v24.13.0`, npm `11.13.0`, Vitest `4.1.10`, Payload and both installed database adapters `3.88.0`.
+- `OWNER_POSTGRES_BIN=C:\Develop\portfolio-manuelgarciallera\owner-platform\node_modules\.cache\postgres-tools-17.11\unpacked\pgsql\bin`.
+- `initdb`, `pg_ctl`, `psql`, `createdb`, `pg_dump` and `pg_restore` all reported PostgreSQL `17.11`.
+- Missing/invalid tools fail during preflight before any run root. No ambient `DATABASE_URL`, PostgreSQL service variables, connector secrets, bootstrap secret or Node injection options are forwarded to the test child.
+- PostgreSQL metadata is accepted only for host `127.0.0.1`, database/user `owner_editorial`, a generated 64-hex password, `ssl: false`, the chosen valid port and a real exact child root matching `owner-postgres-editorial-*` directly beneath the owner cache. Unexpected fields, alternate hosts/databases/users and weak credentials are rejected.
+- `initdb` uses SCRAM for host and local authentication. The generated config binds only `127.0.0.1`, disables Unix sockets and fixes the chosen unused port; live queries verify loopback and the SCRAM verifier.
+- Cleanup requires proved child closure and proved exact-cluster shutdown. Failed/incomplete initialization or uncertain closure retains the synthetic root. When both the task and cleanup fail, the original task error remains primary. No password-bearing URL or raw incomplete diagnostic is printed.
+
+## TDD and verification evidence
+
+All commands ran from `owner-platform` on Windows unless noted.
+
+1. Baseline SQLite before edits: `npm run test:integration`.
+   - First unchanged attempt: exit `1`; Vitest worker exited unexpectedly after reporting 18 passed of 22, with no assertion failure; duration `25.37s`. This matches a previously observed intermittent worker-exit category but its cause remains undetermined.
+   - One unchanged repeat: exit `0`; 1 file, 22/22 passed; duration `26.17s`.
+2. TDD RED: `node node_modules/vitest/vitest.mjs run tests/recovery/postgres-runtime.test.mjs --config vitest.recovery.config.ts`.
+   - Exit `1`; 2 expected failures (`editorialDatabaseConfig` and `createPostgresCluster` absent), 9 prior tests passed; duration `1.71s`.
+3. TDD GREEN, same focused command.
+   - Exit `0`; 11/11 passed; duration `2.16s`.
+4. First real PostgreSQL editorial run: `$env:OWNER_POSTGRES_BIN='...\pgsql\bin'; npm run test:integration:postgres`.
+   - Exit `1`; Vitest reported an `afterAll` hook timeout while waiting on `pool.end()`. No complete business-test count was emitted, so this run is not counted as an editorial pass. The installed adapter acquires an initial pool client and installed Drizzle `destroy` clears adapter state but does not end that pool; this is the same lifecycle limitation already handled by the reviewed recovery worker.
+   - The runner propagated the nonzero result, then verified exact cluster shutdown and removed only its synthetic root. The failure was not converted to green.
+5. PostgreSQL editorial after the test-only lifecycle correction, same command.
+   - Exit `0`; the same 1 file and 22/22 cases passed; Vitest duration `28.05s`, test time `18.71s`.
+   - Parent runner observed actual Vitest child close, then queried 0 other sessions in `owner_editorial`, stopped the exact cluster, confirmed removal of `postmaster.pid` and removed only the run root.
+   - Controller's independent frozen-snapshot repeat also exited `0`, 22/22 in `27.73s`, with clean sessions and shutdown.
+6. SQLite editorial after the fixture refactor: `npm run test:integration`.
+   - Exit `0`; 1 file, 22/22 passed; duration `21.89s`.
+7. First refactored native PostgreSQL recovery: `$env:OWNER_POSTGRES_BIN='...\pgsql\bin'; npm run test:recovery:postgres`.
+   - Helpers 26/26 passed; the real run seeded, closed its worker and produced a native dump, then exited `1` on a missing retained `writeFile` import before corrupt-archive verification. Exact cluster shutdown/root cleanup still passed. The import was restored; no assertion or runtime contract was changed.
+8. Native PostgreSQL recovery repeat, same command.
+   - Exit `0`; helpers 26/26; 5 backup files, custom `PGDMP`, 4 media files and 2 page versions verified; corrupt and missing archives rejected; source state unchanged; source sessions closed; exact cluster stopped and run root removed.
+9. SQLite physical recovery: `npm run test:recovery`.
+   - Exit `0`; helpers 26/26 plus 12 workflow checks; 5 backup files, 0 observed sidecars, 4 media files and 2 page versions restored.
+10. `npm run lint`: exit `0` (final run).
+11. `npm run typecheck`: the first post-change run exited `1` on test-harness adapter return typing; explicit test adapter metadata corrected it. Final run exit `0`.
+12. Scoped `git diff --check`: exit `0`. Final process/cache inspection found no `postgres.exe` processes and no `owner-postgres-editorial-*` or `owner-postgres-recovery-*` run roots.
+
+The helper suite also retains the earlier nonzero subprocess, timeout, max-buffer and split-diagnostic cases. These prove a child failure is rejected and incomplete diagnostics are omitted rather than leaking credential fragments.
+
+## Coverage and limitations
+
+The 22 cases are Local API/Payload integration checks using a real owner session, real PostgreSQL persistence and transactions. They cover releases and immutable snapshots, partial edits, block identities, frozen assistance context/review and audit rollback, publication preparation, synthetic Figma-plan transactions, restore success/freshness/audit rollback, draft/public isolation, version history, modular article/project content, uploads with local storage disabled, and visual-preview service output.
+
+This is not browser or HTTP coverage. Figma discovery/download remains synthetic; no network provider was called. Media storage is deliberately disabled/local-isolated and this run does not verify durable object storage. It does not certify production migrations, staging, backups, account recovery, a public bridge, PDF/CV support, email, deployment, accessibility, performance or commercial readiness. PostgreSQL development schema push is evidence only for the disposable test database.
+
+The installed PostgreSQL adapter's checked-out initial pool client means the suite must rely on its bounded disposable process exiting after `Payload.destroy()`; the parent independently verifies process close and zero sessions before server shutdown. This is an explicit harness boundary, not a claim that the installed adapter closes pools in a long-lived production process.
+
+Successful editorial runs emit Payload's expected warning that no email adapter is configured. The suite does not send mail and this warning is not evidence of email delivery or configuration.
+
+## Next responsible
+
+Controller/Codex: repeat the committed `test:integration:postgres` command with the same portable binaries and perform independent read-only review. After acceptance, the owner plan still requires reviewed production migrations, staging with durable database/media backup and restore, account recovery and the controlled public bridge. Claude's public lane and the separately documented media operational gaps remain outside this commit.
