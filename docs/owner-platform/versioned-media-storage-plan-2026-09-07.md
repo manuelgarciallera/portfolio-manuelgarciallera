@@ -59,13 +59,17 @@ expect(await readMediaRevision(root, first)).toEqual([{ name: 'hero.png', bytes:
 
 Files: `src/collections/Media.ts`, `src/payload.config.ts`, new
 `src/media/revision-storage-binding.ts`, its tests, and
-`tests/editorial.integration.test.ts`. Inspect supported Payload plugin contracts
+`tests/editorial.integration.test.ts`, `src/preview/service.ts` and its tests.
+Inspect supported Payload plugin contracts
 and compare owner-only dependency cost before adopting a plugin.
 
 - [ ] Keep the existing RED regression as the acceptance case: replacing a file
   must leave a readable original plus derivatives and restore their exact bytes.
 - [ ] Bind the returned revision ID into versioned media metadata on successful
   upload, preserving it on metadata-only edits and restoring it with the version.
+- [ ] Capture that exact revision in frozen preview media references. Same-name
+  replacement must change the new snapshot hash but leave the old capture intact;
+  existing manifests lacking a revision remain explicitly legacy/unverified.
 - [ ] Add real integration tests for same-name replacement, failed update,
   draft-over-published, trash/restore, duplication and native crop regeneration.
 - [ ] Adapt Figma compensation for immutable revisions without deleting uncertain

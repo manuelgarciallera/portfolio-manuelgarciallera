@@ -241,6 +241,39 @@ it('keeps the captured title in assistant context and review after a newer draft
   expect(await payload.findByID({ collection: 'preview-snapshots', id: snapshot.id, req: input.req, overrideAccess: false })).toEqual(snapshot)
 }, 30_000)
 
+// Characterizes a release-blocking limitation of our legacy Media config, NOT
+// a successful retention gate. The initial positive retention assertion failed
+// with ENOENT on f14e052; Task 2 must add the positive round trip for the new store.
+it('characterizes missing historical bytes in the legacy local storage configuration', async () => {
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#123456' } }).png().toBuffer()
+  const replacement = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#abcdef' } }).png().toBuffer()
+  const original = await payload.create({ collection: 'media', user: owner, overrideAccess: false,
+    data: { alt: 'Historical binary', _status: 'published' },
+    file: { name: `history-${randomUUID()}.png`, data: bytes, mimetype: 'image/png', size: bytes.length },
+  })
+  const historicalFiles = new Map<string, Buffer>()
+  for (const name of [original.filename, ...Object.values(original.sizes ?? {}).map((size) => size?.filename)]) {
+    if (name) historicalFiles.set(name, await readFile(path.join(mediaDirectory, name)))
+  }
+  expect(historicalFiles.size).toBeGreaterThan(1)
+  const versions = await payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
+    where: { parent: { equals: original.id } }, sort: '-updatedAt', limit: 1,
+  })
+  const updated = await payload.update({ collection: 'media', id: original.id, user: owner, overrideAccess: false,
+    data: { alt: 'Replacement binary', _status: 'published' },
+    file: { name: `replacement-${randomUUID()}.png`, data: replacement, mimetype: 'image/png', size: replacement.length },
+  })
+  expect(updated.filename).not.toBe(original.filename)
+  for (const name of historicalFiles.keys()) {
+    await expect(readFile(path.join(mediaDirectory, name))).rejects.toMatchObject({ code: 'ENOENT' })
+  }
+  const restored = await payload.restoreVersion({ collection: 'media', id: versions.docs[0].id, user: owner, overrideAccess: false })
+  expect(restored.filename).toBe(original.filename)
+  for (const name of historicalFiles.keys()) {
+    await expect(readFile(path.join(mediaDirectory, name))).rejects.toMatchObject({ code: 'ENOENT' })
+  }
+}, 30_000)
+
 it('captures real versioned crop recipes without losing mobile overrides or using newer edits as baseline', async () => {
   const { page, req } = await createReleaseFixture()
   const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).png().toBuffer()
