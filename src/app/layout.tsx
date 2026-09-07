@@ -12,7 +12,6 @@ import {
   SITE_TITLE,
   SITE_URL,
   TWITTER_HANDLE,
-  getProfilePageJsonLd,
   getPersonJsonLd,
   getWebsiteJsonLd,
 } from "@/lib/site-config";
@@ -27,7 +26,6 @@ const playfairDisplay = Playfair_Display({
 
 const websiteJsonLd = JSON.stringify(getWebsiteJsonLd()).replace(/</g, "\\u003c");
 const personJsonLd = JSON.stringify(getPersonJsonLd()).replace(/</g, "\\u003c");
-const profilePageJsonLd = JSON.stringify(getProfilePageJsonLd()).replace(/</g, "\\u003c");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -110,7 +108,6 @@ export default function RootLayout({
       <head>
         <script id="website-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteJsonLd }} />
         <script id="person-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
-        <script id="profile-json-ld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: profilePageJsonLd }} />
         {/* Evita el flash de tema incorrecto */}
         <Script
           id="theme-init"

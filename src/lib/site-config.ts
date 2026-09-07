@@ -129,12 +129,18 @@ export function getPersonJsonLd() {
   };
 }
 
+/**
+ * `ProfilePage` describe LA pagina de perfil, no el sitio entero. Vivia en el
+ * layout raiz, asi que /casos, /proceso y /articulos se declaraban a si mismas
+ * pagina de perfil de Manuel: tres afirmaciones falsas por cada visita de un
+ * rastreador. Se emite solo desde /sobre-mi, y con su URL, no con la del dominio.
+ */
 export function getProfilePageJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     name: SITE_TITLE,
-    url: SITE_URL,
+    url: `${SITE_URL}/sobre-mi`,
     inLanguage: SITE_LANGUAGE,
     mainEntity: getPersonJsonLd(),
   };

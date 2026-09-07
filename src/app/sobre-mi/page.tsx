@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { AboutPage } from '@/features/redesign/about/AboutPage'
-import { OG_IMAGE } from '@/lib/site-config'
+import { getProfilePageJsonLd, OG_IMAGE } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Sobre mí',
@@ -16,6 +16,19 @@ export const metadata: Metadata = {
   },
 }
 
+// `ProfilePage` describe LA pagina de perfil. Estaba en el layout raiz y por tanto
+// en todas las rutas; aqui es donde de verdad corresponde.
+const profilePageJsonLd = JSON.stringify(getProfilePageJsonLd()).replace(/</g, '\\u003c')
+
 export default function SobreMiPage() {
-  return <AboutPage />
+  return (
+    <>
+      <script
+        id="profile-json-ld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: profilePageJsonLd }}
+      />
+      <AboutPage />
+    </>
+  )
 }
