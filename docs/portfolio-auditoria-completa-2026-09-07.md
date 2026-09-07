@@ -280,3 +280,18 @@ Detectado de paso: el proyecto mezcla cortes en `760px` y `767px` según el bloq
 2. **1,77 MB de JavaScript.** Bajar la frontera de cliente en `RedesignPage` y condicionar el orbe 3D por capacidad del dispositivo son los dos cambios de mayor impacto, y los dos alteran comportamiento visible: no los hago sin poder ejecutar `next build` ni comparar capturas.
 3. **`.rd-preview-viewport`**: los 36 px recortados de cada diapositiva son encuadre deliberado. Decisión de Manuel.
 4. **`.rd-research-copy` a 1440** (cw 469 / sw 820, `overflow: visible`): el contenido excede su caja sin recortarse, así que se superpone con lo vecino en lugar de desbordar. Requiere revisión visual, no medición.
+
+## Aplicado en `eabcfd8`
+
+- **Titulares contenidos.** `.rd-research-copy` medía cw 469 / sw 820 a 1440 px y cw 256 / sw 437 a 768 px: `max-width: 11ch` sobre `clamp(2.4rem, 5.4vw, 5.8rem)` deja de caber cuando la pista de la rejilla es más estrecha que el texto, y el titular se derramaba sobre el artefacto. `min(Nch, 100%)` conserva la medida ideal cuando cabe. Medido tras el cambio: cw 344 / sw 344.
+- **Objetivos táctiles.** Área activa de 44 px, en `(pointer: coarse)`, mediante pseudo-elemento centrado, sobre «Ver evidencia», `rd-article-related`, `rd-contact-linkedin`, `rd-editorial__all`, `rd-mobile-nav-contact`, `rd-skip-link`, migas, enlaces del pie y la marca; `rd-theme-btn` y `rd-menu-btn` a 2,75 rem. Ni el tamaño tipográfico ni el flujo cambian. Verificado: `rd-editorial__all` pasa de caja 179×24 a área de 44 px; los enlaces del pie, de 35 a 44.
+- **Marca fantasma.** `.rd-brand` pasa de cw 163 / sw 345 a cw 45 / sw 50.
+- **El orbe deja de competir con el primer pintado.** Se monta en `requestIdleCallback` (timeout 2,5 s) para que el fallback estático pinte antes, y bajo `prefers-reduced-motion: reduce` no se descarga: ahí la imagen fija es la respuesta correcta y se ahorran los ~870 KB de `three` + `drei`.
+- **`npm run check:layout-overflow`.** Script nuevo con Playwright que mide desbordamiento **por elemento** en 10 rutas × 6 anchos y falla con el detalle de cada incidencia. Exime el sangrado decorativo (`aria-hidden="true"`) y las regiones declaradas `overflow-x: auto | scroll`. Sustituye al criterio por documento, que daba verde sobre una página con 61 px recortados.
+
+### No aplicado, y por qué
+
+- **Gating del orbe por capacidad del dispositivo** (`deviceMemory`, `hardwareConcurrency`): ahorraría los 870 KB en la mayoría de móviles, pero hace desaparecer el orbe en pantallas donde hoy se ve. Es una decisión de diseño, no una corrección.
+- **Bajar la frontera `'use client'` en `RedesignPage`**: es el cambio de mayor impacto sobre los 1,77 MB, y también el más invasivo. Requiere `next build` y comparación de capturas, que esta sesión no puede ejecutar.
+- **`.rd-section--banner`**: su `inline-size: 100vw` incluye el ancho de la barra de desplazamiento, de ahí el `-8..368` que aparece en las mediciones. En un móvil real no hay barra y no hay desbordamiento; probé sustituirlo por `margin-inline: calc(-1 * var(--gutter))` y empeora (`-28..781`). Se queda como está.
+- **Trocear `redesign.css`** (1 824 líneas, reglas del carrusel en cinco bloques): refactor de higiene, sin efecto sobre el usuario. Pendiente.
