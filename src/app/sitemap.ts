@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     { url: `${SITE_URL}/casos`, lastModified: portfolioUpdatedAt, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${SITE_URL}/investigacion`, lastModified: portfolioUpdatedAt, changeFrequency: "monthly", priority: 0.86 },
     { url: `${SITE_URL}/sobre-mi`, lastModified: portfolioUpdatedAt, changeFrequency: "monthly", priority: 0.72 },
     { url: `${SITE_URL}/proceso`, lastModified: portfolioUpdatedAt, changeFrequency: "monthly", priority: 0.74 },
     { url: `${SITE_URL}/articulos`, lastModified: portfolioUpdatedAt, changeFrequency: "monthly", priority: 0.8 },

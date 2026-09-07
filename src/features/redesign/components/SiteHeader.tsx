@@ -8,7 +8,7 @@ import '../responsive.css'
 
 const NAV_ITEMS = [
   { href: '/casos', label: 'Proyectos' },
-  { href: '/#investigacion', label: 'Investigación' },
+  { href: '/investigacion', label: 'Investigación' },
   { href: '/proceso', label: 'Proceso' },
   { href: '/sobre-mi', label: 'Sobre mí' },
   { href: '/articulos', label: 'Blog' },
