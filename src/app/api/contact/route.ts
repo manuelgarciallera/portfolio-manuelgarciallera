@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { parseContactSubmission } from "@/lib/contact";
+import { sendContactMessage } from "@/lib/mailer";
 
 // POST /api/contact
 // Recibe { nombre, email, mensaje, website } del formulario de contacto y envia un email.
-// Envio via Resend usando fetch (sin dependencia extra). Requiere variables de entorno:
-//   RESEND_API_KEY     -> clave de Resend
-//   CONTACT_TO_EMAIL   -> destinatario (tu email)
-//   CONTACT_FROM_EMAIL -> remitente verificado (opcional; por defecto onboarding@resend.dev)
-// Mientras no existan esas variables, la ruta responde 503 y el formulario muestra aviso.
+// El transporte y sus variables de entorno estan documentados en src/lib/mailer.ts.
+// Mientras no exista configuracion, la ruta responde 503 y el formulario ofrece mailto.
+
+// SMTP necesita TCP: esta ruta no puede ejecutarse en el runtime edge.
+export const runtime = "nodejs";
 
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_REQUESTS = 5;
@@ -56,35 +57,18 @@ export async function POST(request: Request) {
     if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
     if ("spam" in parsed) return NextResponse.json({ ok: true });
 
-    const { name, email, company, message } = parsed.data;
+    const sent = await sendContactMessage(parsed.data);
 
-    const apiKey = process.env.RESEND_API_KEY;
-    const to = process.env.CONTACT_TO_EMAIL;
-    const from = process.env.CONTACT_FROM_EMAIL || "Portfolio <onboarding@resend.dev>";
-
-    if (!apiKey || !to) {
-      return NextResponse.json(
-        { ok: false, error: "El formulario está temporalmente indisponible. Puedes contactar por LinkedIn." },
-        { status: 503 },
-      );
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: email,
-        subject: `Portfolio · mensaje de ${name.replace(/[\r\n]+/g, " ")}`,
-        text: `Nombre: ${name}\nEmail: ${email}${company ? `\nOrganización: ${company}` : ""}\n\n${message}`,
-      }),
-    });
-
-    if (!res.ok) {
+    if (!sent.ok) {
+      if (sent.reason === "unconfigured") {
+        return NextResponse.json(
+          { ok: false, error: "El formulario está temporalmente indisponible. Puedes escribirme por email o LinkedIn." },
+          { status: 503 },
+        );
+      }
+      // El detalle solo va al registro del servidor: al visitante no le sirve y puede
+      // filtrar el host o el usuario del buzon.
+      console.error("[contact] envio fallido:", sent.detail);
       return NextResponse.json({ ok: false, error: "No se pudo enviar el email." }, { status: 502 });
     }
 
