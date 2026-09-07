@@ -13,6 +13,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:integration": "node scripts/test-integration.mjs",
+    "test:recovery": "node scripts/test-recovery.mjs",
     "test:controls": "node tests/document-controls.browser.mjs",
     "test:dashboard": "node tests/dashboard.browser.mjs",
     "typecheck": "tsc --noEmit"
