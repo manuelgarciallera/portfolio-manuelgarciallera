@@ -2,6 +2,10 @@
 
 Professional portfolio built with **Next.js 16 + React 19 + Three.js** using a feature-first architecture.
 
+## Coordinación y ecosistema
+
+[Mapa de productos](00_Coordinacion_IA/docs/ECOSISTEMA.md), [protocolo multi-IA](00_Coordinacion_IA/docs/PROTOCOLO.md) y [registro de avances](00_Coordinacion_IA/docs/REGISTRO.md). La coordinación está en fase PILOT; el mapa distingue implementación, propuestas y dependencias pendientes.
+
 ## Stack
 - Next.js (App Router)
 - React 19
