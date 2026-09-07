@@ -2,6 +2,8 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
+import { expectAnonymousDraftNotFound } from './anonymous-draft.mjs'
+
 const check = (condition, message) => {
   if (!condition) throw new Error(message)
 }
@@ -11,16 +13,6 @@ const equal = (actual, expected, message) => {
 }
 
 const sha256File = async (filename) => createHash('sha256').update(await readFile(filename)).digest('hex')
-
-const expectAnonymousDraftRejection = async (payload, pageId) => {
-  let rejected = false
-  try {
-    await payload.findByID({ collection: 'pages', id: pageId, depth: 0, draft: true, overrideAccess: false })
-  } catch {
-    rejected = true
-  }
-  check(rejected, 'Anonymous access unexpectedly returned a draft page.')
-}
 
 const openPayload = async ({ databaseDirectory, mediaDirectory, payloadSecret }) => {
   process.send?.({ progress: 'worker:loading-payload-module' })
@@ -119,7 +111,7 @@ const seed = async ({ credentials, databaseDirectory, mediaDirectory, payloadSec
       },
     })
     equal(edited.layout.map((block) => block.blockType), ['media', 'hero', 'customFeature'], 'Edited block order was not persisted.')
-    await expectAnonymousDraftRejection(payload, page.id)
+    await expectAnonymousDraftNotFound(() => payload.findByID({ collection: 'pages', id: page.id, depth: 0, draft: true, overrideAccess: false }))
     const versions = await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, user: owner, overrideAccess: false, limit: 100 })
     check(versions.totalDocs >= 2, 'Page draft history did not contain both seed and edit versions.')
     const files = await mediaEvidence(mediaDirectory, media)
@@ -169,8 +161,9 @@ const verifyRestore = async ({ credentials, databaseDirectory, expected, mediaDi
     equal(await mediaEvidence(mediaDirectory, media), expected.mediaFiles, 'Restored original or derivative media hashes did not match.')
     const versions = await payload.findVersions({ collection: 'pages', where: { parent: { equals: expected.pageId } }, user: owner, overrideAccess: false, limit: 100 })
     check(versions.totalDocs === expected.versionCount, 'Restored version history count did not match the backup.')
-    await expectAnonymousDraftRejection(payload, expected.pageId)
-    await payload.update({ collection: 'pages', id: expected.pageId, draft: true, overrideAccess: false, user: owner, data: { title: 'Recovery page restored independently' } })
+    await expectAnonymousDraftNotFound(() => payload.findByID({ collection: 'pages', id: expected.pageId, depth: 0, draft: true, overrideAccess: false }))
+    const independentlyEdited = await payload.update({ collection: 'pages', id: expected.pageId, draft: true, overrideAccess: false, user: owner, data: { title: 'Recovery page restored independently' } })
+    check(independentlyEdited.title === 'Recovery page restored independently', 'Independent restored edit did not persist its exact title.')
     return { restoredVersionCount: versions.totalDocs, restoredMediaFileCount: expected.mediaFiles.length }
   } finally {
     const client = payload.db?.client

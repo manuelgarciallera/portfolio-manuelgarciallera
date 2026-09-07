@@ -35,7 +35,7 @@ const safeEnvironment = () => {
 }
 
 const runUnitTests = () => new Promise((resolve, reject) => {
-  const child = spawn(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts', 'tests/recovery/backup-manifest.test.mjs'], {
+  const child = spawn(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts'], {
     cwd: ownerRoot,
     env: safeEnvironment(),
     stdio: 'inherit',
@@ -149,7 +149,7 @@ try {
 
   console.log(JSON.stringify({
     recovery: 'passed',
-    helperTests: 4,
+    helperTests: 7,
     workflowChecks: 12,
     applicationCommit,
     backupFiles: manifest.files.length,
