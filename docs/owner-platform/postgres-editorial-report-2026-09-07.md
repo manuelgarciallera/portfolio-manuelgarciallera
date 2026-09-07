@@ -4,7 +4,7 @@ Date: 2026-09-07
 
 Author: Codex implementation lane
 
-Status: implemented; round-one lifecycle correction locally verified; independent correction review pending
+Status: implemented, independently reviewed and locally verified on the final fix commit
 
 Scope: Task 1 from `postgres-editorial-task-2026-09-07.md`
 
@@ -16,7 +16,7 @@ No application runtime, schema, access rule, public source, dependency, lockfile
 
 Start base: `5f3f228e7fe59b032d0a522ed76f8d95f6b0d201`. Concurrent Claude public-only commits advanced shared HEAD through `e04487b92cb24efdc142d8746326709348288e2b` and later `1abb270`; they were preserved and are not part of this implementation delta.
 
-Initial implementation/report commit: `9e4a33afe651d36ab0cc9a50ab38d23e57e4b714`. The round-one correction and this appended evidence are committed together in the later commit containing this version of the report.
+Initial implementation/report commit: `9e4a33afe651d36ab0cc9a50ab38d23e57e4b714`. Review correction: `b3ef499227a9d0e1e018b6cea9d0cca42eb725e2`. The shared Git lock disappeared externally before normal exact-path staging; no lock deletion or alternate-index bypass was performed.
 
 ## Files in this task
 
@@ -84,7 +84,7 @@ Successful editorial runs emit Payload's expected warning that no email adapter 
 
 ## Next responsible
 
-Controller/Codex: repeat the committed `test:integration:postgres` command with the same portable binaries and perform independent read-only review. After acceptance, the owner plan still requires reviewed production migrations, staging with durable database/media backup and restore, account recovery and the controlled public bridge. Claude's public lane and the separately documented media operational gaps remain outside this commit.
+Controller/Codex: the committed repetition and scoped review are complete, as recorded below. Next requirements remain reviewed production migrations, staging with durable database/media backup and restore, account recovery and the controlled public bridge. Claude's public lane and the separately documented media operational gaps remain outside these implementation commits.
 
 ## Round-one lifecycle review correction
 
@@ -105,3 +105,13 @@ TDD and verification from `owner-platform`:
 5. `npm run lint` and `npm run typecheck`: both exit `0`.
 
 SQLite code and orchestration were not changed in this correction, so its previously recorded 22/22 editorial and physical-recovery results were not rerun. No timeout for Vitest, PostgreSQL, or recovery work was increased; the new one-second bound applies only after an already-delivered callback while awaiting independent closure evidence.
+
+## Independent final controller evidence
+
+- Before the fix, the controller repeated the frozen implementation (22/22, 27.73s) and then committed `9e4a33a` (22/22, 31.12s), plus 26 helpers, full lint and typecheck; all exited 0. This verified normal operation but did not cover the later-reviewed early-error path.
+- Final committed `b3ef499`: `npm run test:integration:postgres` with the portable binary path above exited 0. Vitest: 1 file, 22/22 cases, 26.77s. All six tools reported PostgreSQL 17.11. The runner observed the test process close, zero other database sessions, exact cluster shutdown and removal of only its synthetic run root.
+- On the same commit, `node node_modules/vitest/vitest.mjs run --config vitest.recovery.config.ts` exited 0: 4 files, 27/27 helpers, 9.57s, including the new early-error regression. Final lint/typecheck and the native PostgreSQL physical regression are implementer evidence above, not falsely attributed to a second controller run after the fix.
+- Independent read-only delta review approved the P2 correction, with no new Critical/Important/Minor findings. The reviewer did not rerun suites; controller test evidence is separate. Public commits `e04487b`, `1abb270` and `a86b40b` were excluded from these owner reviews.
+- Final Git inspection: implementation paths clean, index empty, checkpoint still `0f0adf686b2752e23c25d224f8c60815b10fd451`; no PostgreSQL process observed after completion. Unrelated coordination/private/untracked files were preserved.
+
+The expected no-email-adapter warning remains visible. No actual email, Figma/AI provider, browser UX, public build/deployment, production schema migration or external storage was validated in this increment. [Media operational gaps](media-operational-gaps-2026-09-07.md) records the next file-persistence gate and the still-unpublished CV.

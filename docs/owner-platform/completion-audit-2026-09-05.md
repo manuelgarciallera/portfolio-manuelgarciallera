@@ -20,7 +20,7 @@ comunes, no implementaciones separadas por cada mensaje.
 | Preview editorial | Operativo en local | Páginas, artículos y proyectos; `visual-editorial-preview.md`; no reproduce todavía toda la dirección artística de la web pública |
 | Versiones por fecha y descripción | Operativo en local | Releases, snapshots inmutables y planes de restauración; `release-registration-verification.md`, `restore-integration-verification.md` |
 | Puntuaciones de calidad | Evidencia registrada | Métricas con fuente/fecha/viewport; no se inventan puntuaciones ni se equiparan mediciones manuales a métricas de campo |
-| Restauración | Probada en SQLite | Vuelve al borrador y conserva publicado/histórico; rollback ante fallo de auditoría; falta ensayo PostgreSQL y almacenamiento real |
+| Restauración editorial | Probada localmente en SQLite y PostgreSQL | La suite común acredita vuelta al borrador, publicado/histórico intacto y rollback ante fallo de auditoría; `postgres-editorial-report-2026-09-07.md`. No acredita almacenamiento real ni migraciones de producción |
 | Recuperación física de base y medios | Probada localmente en SQLite y PostgreSQL | Copia conjunta, integridad, nuevo destino y edición recuperada; `postgres-recovery-report-2026-09-07.md`. No acredita el flujo de restauración de releases en PostgreSQL ni almacenamiento de objetos real |
 | Preparación de publicación | Operativo en local | Paquete → revisión → artefacto → preflight/exportación; `document-action-controls-verification.md`; no despliega ni reemplaza la web |
 | Figma | Adaptador y flujo local probado | Descubrimiento de solo lectura, aprobación e importación a borradores; persistencia con proveedor sintético; falta prueba con credenciales y archivo autorizado reales |
@@ -78,6 +78,31 @@ portfolio en producción. Los ajustes visuales antiguos no se vuelven a aplicar
 por aparecer repetidos en el historial.
 
 ## Estado de entrega
+
+### Paridad editorial PostgreSQL del 7 de septiembre de 2026
+
+`9e4a33a` incorpora `test:integration:postgres` y comparte el ciclo del cluster
+con el ensayo de recuperación existente. Mantiene los mismos 22 casos
+editoriales sin cambiar asertos de negocio, esquemas, permisos ni runtime.
+La repetición del controller sobre ese commit pasó 22/22 con PostgreSQL 17.11,
+sin sesiones pendientes y con cierre/limpieza confirmados; también pasaron
+26 helpers, lint y tipos. El implementador conserva en el informe SQLite
+22/22 y ambas recuperaciones físicas, incluidos los intentos fallidos previos.
+
+La revisión independiente detectó un P2 del harness: no equiparar un callback
+de error de Node con cierre real del proceso. Corregido en `b3ef499` con una
+prueba negativa y retención conservadora cuando el cierre no se confirma;
+revisión del delta aprobada sin nuevos hallazgos. La repetición final del
+controller sobre ese commit pasó 22/22 casos editoriales y 27/27 helpers,
+con cierre y limpieza confirmados. El ensayo PostgreSQL local queda verificado;
+no se certifican por ello staging, migraciones ni almacenamiento externo.
+
+La biblioteca sigue necesitando persistencia duradera y verificación de bytes,
+no solo filas. [Inventario concreto](media-operational-gaps-2026-09-07.md):
+fuentes asociadas a una colección image-only, PDF/CV aún no soportado,
+compensación de archivos de importaciones fallidas, retención histórica y
+lectura HTTP de borradores. Ningún CV se ha importado o publicado. Sin cambios
+públicos, nuevas dependencias, servicios cloud ni despliegue en este incremento.
 
 ### Recuperación PostgreSQL local del 7 de septiembre de 2026
 
