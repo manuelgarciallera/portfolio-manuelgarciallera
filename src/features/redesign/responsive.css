@@ -162,8 +162,10 @@
    segunda columna se renderiza de 430 a 814 y la sección entera queda fuera de
    pantalla. Entre 761 y 1023px se aplica la misma columna única que ya usa el
    móvil; a partir de 1024 vuelve la composición de dos columnas intacta. */
+/* Trasladada a redesign.css: aqui empataba en especificidad con `.rd-now` y
+   perdia por orden de cascada, asi que a 768px la seccion seguia en dos
+   columnas y la lista se salia 46px. */
 @media (min-width: 761px) and (max-width: 1023px) {
-  .rd-now { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); }
   .rd-now__intro { min-height: 0; }
   .rd-now__visual { width: min(100%, 30rem); }
 }

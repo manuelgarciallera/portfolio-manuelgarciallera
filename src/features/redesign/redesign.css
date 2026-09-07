@@ -433,6 +433,8 @@
   background: #05070b;
   color: #f7f7f4;
 }
+.rd-case-story > *,
+.rd-case-story__chapter > * { min-width: 0; }
 
 .rd-prelude-progress { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; justify-content: space-between; min-height: 3.5rem; padding: .65rem clamp(1rem, 3vw, 3rem); color: rgb(255 255 255 / .56); background: rgb(4 8 16 / .76); border-bottom: 1px solid rgb(255 255 255 / .1); backdrop-filter: blur(18px) saturate(1.25); }
 .rd-prelude-progress__title { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
@@ -451,6 +453,51 @@
 .rd-prelude-progress a::after { align-self: center; width: 0; height: 1px; content: ''; transition: width .3s ease; }
 .rd-prelude-progress li:not(.is-active) a:is(:hover, :focus-visible) { color: var(--crystal-lilac); transform: translateY(-1px); }
 .rd-prelude-progress li:not(.is-active) a:is(:hover, :focus-visible)::after { width: 1.15rem; background: currentColor; }
+
+/* ---------- Correcciones de anchura, 320-768px ----------
+   responsive.css se importa desde SiteHeader y este archivo desde RedesignPage:
+   en el grafo de modulos responsive va primero, asi que cualquier regla que
+   empate en especificidad con una base de aqui pierde. Estas correcciones tienen
+   que vivir en este archivo para surtir efecto. ---------- */
+@media (max-width: 767px) {
+  /* El preambulo pegajoso repartia titulo y ordinales con `space-between` sin
+     que ninguno pudiera encoger: a 320px medía 354px y arrastraba con el los
+     cuatro capitulos. Titulo con elipsis, ordinales en tira desplazable. */
+  .rd-prelude-progress { gap: 0.75rem; }
+  .rd-prelude-progress__title {
+    flex: 0 1 auto; min-width: 0;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .rd-prelude-progress ol {
+    flex: 1 1 auto; min-width: 0; justify-content: flex-end;
+    padding-block: 0.35rem; margin-block: -0.35rem;
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .rd-prelude-progress ol::-webkit-scrollbar { display: none; }
+  .rd-prelude-progress a { white-space: nowrap; }
+
+  /* La puerta de entrada al proyecto se salia 18px a 320px. Tres causas: el
+     boton fijaba `min-width: min(100%, 18rem)` = 288px en un hueco de 256 (ya
+     declara `width: 100%`), los items de la rejilla conservaban `min-width:
+     auto`, y «experiencia.» no cabia en el titular a 51,2px. */
+  .rd-project-gateway__primary { min-width: 0; gap: 1rem; }
+  .rd-project-gateway > *,
+  .rd-project-gateway__copy > * { min-width: 0; }
+  .rd-project-gateway__copy h2 { font-size: clamp(2.6rem, 14vw, 5rem); }
+
+  /* El visor del carrusel sangra un 10% por la derecha a proposito: en una
+     captura es direccion de arte, pero el diagrama de coordinacion es texto y
+     alli la sangria se come el resultado y el pie. */
+  .rd-preview-viewport:has(.rd-coordination-diagram) { right: 0; }
+}
+
+/* A 768px la seccion «Now» seguia en dos columnas: 18rem + 24rem + gap superan
+   el viewport y la lista perdia 46px. (La regla equivalente en responsive.css no
+   surtia efecto por el orden de cascada descrito arriba.) */
+@media (min-width: 761px) and (max-width: 1023px) {
+  .rd-now { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); }
+}
 
 .rd-case-story__chapter {
   display: grid;
@@ -1012,6 +1059,26 @@
 .rd-coordination-result { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(0.82rem, 1.4vw, 1.05rem); }
 .rd-coordination-result strong { padding: 0.45rem 0.7rem; background: #d9ff43; color: #111; }
 .rd-coordination-diagram figcaption { color: rgb(255 255 255 / 0.58); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+/* Las tres celdas son `1fr` pero conservaban `min-width: auto`, asi que la pista
+   no bajaba de su `min-content` y la fila se salia del marco por la derecha. */
+.rd-coordination-agents > span { min-width: 0; overflow-wrap: anywhere; }
+
+/* Dentro del carrusel el diagrama vive en una caja de altura fija (214px en
+   movil). Sus cuatro filas sumaban 322px: el resultado y el pie quedaban
+   cortados por abajo. Estas densidades son las mayores que caben a 320px; medido
+   a 320, 360, 390 y 430. Fuera del carrusel el diagrama tiene altura propia y no
+   necesita apretarse. */
+@media (max-width: 767px) {
+  .rd-preview-viewport .rd-coordination-diagram { padding: 0.7rem; gap: 0.4rem; }
+  .rd-preview-viewport .rd-coordination-agents { gap: 0.35rem; }
+  .rd-preview-viewport .rd-coordination-agents > span { padding: 0.4rem; font-size: 0.62rem; }
+  .rd-preview-viewport .rd-coordination-agents small { font-size: 0.46rem; letter-spacing: 0.02em; }
+  .rd-preview-viewport .rd-coordination-flow li { grid-template-columns: 1.2rem 1fr; gap: 0.45rem; padding: 0.28rem 0; font-size: 0.72rem; }
+  .rd-preview-viewport .rd-coordination-flow li span { font-size: 0.55rem; }
+  .rd-preview-viewport .rd-coordination-result { gap: 0.45rem; font-size: 0.66rem; }
+  .rd-preview-viewport .rd-coordination-result strong { padding: 0.25rem 0.45rem; }
+  .rd-preview-viewport .rd-coordination-diagram figcaption { font-size: 0.48rem; letter-spacing: 0.05em; }
+}
 .rd-preview-controls { position: absolute; left: 0; right: clamp(1rem, 3vw, 3rem); bottom: 2.2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: #fff; }
 .rd-preview-controls > span { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .rd-preview-controls > div { display: flex; gap: 0.35rem; }
@@ -1137,7 +1204,7 @@
     padding: 8rem 1.5rem 0;
   }
   .rd-hero-copy { gap: 1.5rem; }
-  .rd-hero-copy h1 { max-width: 13ch; font-size: clamp(2.75rem, 12vw, 4.15rem); line-height: 0.95; }
+  .rd-hero-copy h1 { max-width: 13ch; font-size: clamp(2.15rem, 11.5vw, 4.15rem); line-height: 0.95; }
   .rd-hero-copy a { min-height: 2.7rem; padding: 0.7rem 1rem; font-size: 0.7rem; }
   .rd-hero-art {
     width: calc(100% + 3rem); min-height: 22rem; aspect-ratio: auto; margin-inline: -1.5rem;
