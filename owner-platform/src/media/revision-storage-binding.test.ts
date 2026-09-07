@@ -1,21 +1,40 @@
-import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises'
+import { lstat, mkdtemp, mkdir, rmdir, symlink, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, expect, it } from 'vitest'
 import { Media } from '../collections/Media'
 import { createRevisionStorageCollection } from './revision-storage-binding'
 
-let root: string
+let root = ''
 let revisionRoot: string
 let staticDir: string
 beforeEach(async () => {
+  root = ''
   root = await mkdtemp(path.join(tmpdir(), 'owner-revision-binding-'))
   revisionRoot = path.join(root, 'private')
   staticDir = path.join(root, 'native')
   await mkdir(revisionRoot)
   await mkdir(staticDir)
 })
-afterEach(async () => { await rm(root, { recursive: true, force: true }) })
+const ignoreMissing = async (action: () => Promise<unknown>) => {
+  try { await action() } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+  }
+}
+afterEach(async () => {
+  if (!root) return
+  const link = path.join(root, 'link')
+  await ignoreMissing(async () => {
+    if (!(await lstat(link)).isSymbolicLink()) throw new Error('Expected the fixture junction')
+    await unlink(link)
+  })
+  // Only these directories are created by this fixture. Nonempty directories
+  // fail cleanup visibly; never traverse or remove unexpected contents.
+  for (const directory of [path.join(root, 'native'), path.join(root, 'private'), root]) {
+    await ignoreMissing(() => rmdir(directory))
+  }
+  root = ''
+})
 
 it.each(['absent', 'relative', 'missing', 'same', 'nested', 'filesystem-root'])('rejects %s storage settings before enabling uploads', async (fault) => {
   let settings = { revisionRoot, staticDir }
