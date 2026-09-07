@@ -110,6 +110,15 @@ dependencies or existing runners. Test discovery already includes the new suite.
   Match the fixture's exact protocol, host, port and media-revision path; prove
   the exception does not admit another port, host or unrelated path. Do not use
   caller Origin/Host to broaden production storage trust or leak cookies.
+- [ ] Native refetch requires an explicit optional `nativeFetchOrigin` setting
+  and exact request Origin, never Host fallback. Validate canonical HTTPS origin
+  (no credentials/path/query/hash); isolated fixture HTTP permits only literal
+  127.0.0.1 with a port. Without the setting, native editing fails closed. Select
+  the owner-authorized stored source before fetch, including body focalX/focalY
+  triggers; reject create-without-upload remote fetching. Test rejected inputs
+  against a controlled local receiver, with no leaked request or cookie. No
+  pasteURL/provider/active-config change. The revision endpoint does not redirect;
+  upstream redirect cookie reuse remains a documented deployment risk.
 - [ ] Native crop produces the expected dimensions and a new immutable revision;
   old originals/derivatives stay byte-identical and can be restored. Native
   duplication produces an independently editable record/revision without changing
