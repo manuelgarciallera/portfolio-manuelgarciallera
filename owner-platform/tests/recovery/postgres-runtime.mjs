@@ -18,8 +18,14 @@ export const runCommand = (file, args, { env = safeEnvironment(), timeout = 60_0
   execFile(file, args, { env, cwd, timeout, windowsHide: true, maxBuffer: 2 * 1024 * 1024, encoding: 'utf8' }, (error, stdout, stderr) => {
     const code = error?.code ?? 0
     if (error?.killed || !acceptedCodes.includes(code)) {
-      const detail = error?.killed ? 'timed out' : `failed (${code})`
-      reject(new Error(redact(`${path.basename(file)} ${detail}: ${stderr || stdout || error?.message || ''}`, secrets)))
+      const bufferExceeded = code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER'
+      const detail = error?.killed && !bufferExceeded ? 'timed out' : `failed (${code})`
+      // maxBuffer and forced termination may cut through a credential. Omit
+      // all captured output (and the raw error message), keeping the reason.
+      const diagnostics = bufferExceeded || error?.killed
+        ? '[Raw diagnostics omitted: subprocess output may be incomplete.]'
+        : stderr || stdout || error?.message || ''
+      reject(new Error(redact(`${path.basename(file)} ${detail}: ${diagnostics}`, secrets)))
     } else resolve({ code, stdout: redact(stdout, secrets), stderr: redact(stderr, secrets) })
   })
 })

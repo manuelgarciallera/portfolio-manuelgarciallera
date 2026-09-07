@@ -75,3 +75,24 @@ it('constructs only fixed loopback database endpoints and explicit native comman
 it('refuses a native restore directed at the source database', () => {
   expect(() => runtime.databaseCommand('pg_restore', { port: 54321, database: 'owner_source', archive: '/tmp/archive.dump' })).toThrow(/restore database/)
 })
+
+it('omits native output cut by maxBuffer without leaking a secret prefix', async () => {
+  const secret = 'synthetic-native-secret'
+  const script = `process.stderr.write('x'.repeat(2*1024*1024-10) + '${secret}');`
+  const error = await runtime.runCommand(process.execPath, ['-e', script], { secrets: [secret] }).catch((error) => error)
+  expect(error).toBeInstanceOf(Error)
+  expect(error.message).toContain('ERR_CHILD_PROCESS_STDIO_MAXBUFFER')
+  expect(error.message).toMatch(/diagnostics omitted/i)
+  expect(error.message).not.toContain('synthetic-')
+  expect(error.message.length).toBeLessThan(300)
+})
+
+it('omits a partial native diagnostic on timeout', async () => {
+  const secret = 'synthetic-native-secret'
+  const script = `process.stderr.write('synthetic-native'); setInterval(()=>{},1000)`
+  const error = await runtime.runCommand(process.execPath, ['-e', script], { secrets: [secret], timeout: 500 }).catch((error) => error)
+  expect(error).toBeInstanceOf(Error)
+  expect(error.message).toMatch(/timed out/)
+  expect(error.message).toMatch(/diagnostics omitted/i)
+  expect(error.message).not.toContain('synthetic-native')
+})
