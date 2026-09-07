@@ -190,7 +190,16 @@ describe('case-study responsive safeguards', () => {
     expect(css).toMatch(/\.rd-case-story__media\s*\{[^}]*background:\s*transparent/)
     expect(css).toMatch(/\.rd-case-phase__visual\s*\{[^}]*padding:\s*0[^}]*border-radius:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none/)
     expect(css).toMatch(/\.rd-case-phase__visual img\s*\{[^}]*border:\s*1px solid var\(--hairline\)/)
-    expect(css).toMatch(/\.rd-case-story__frame--buy-sell\s*\{[^}]*background:\s*#09142c/)
+    // Manuel: «las imagenes tienen como un reborde, no queda bien, deberia
+    // eliminarse ese reborde, dejando solo a las imagenes, es demasiada distraccion
+    // visual». La placa de color por caso desaparece con su filete y su sombra: la
+    // captura ya trae su propio radio, y lo que la separa del lienzo es la sombra de
+    // la propia imagen. La guarda no se borra, cambia de objeto: antes fijaba el
+    // color de la placa, ahora impide que la placa vuelva.
+    expect(css).toMatch(/\.rd-case-story__frame\s*\{[^}]*background:\s*transparent/)
+    expect(css).not.toMatch(/\.rd-case-story__frame--[a-z-]+\s*\{[^}]*background:/)
+    expect(css).not.toMatch(/\.rd-case-story__frame\s*\{[^}]*(?:border|box-shadow):/)
+    expect(css).toMatch(/\.rd-case-story__media img\s*\{[^}]*box-shadow:\s*0 2rem/)
     expect(css).toMatch(/\.rd-case-phase__frame--buy-sell,[^}]*\.rd-case-phase__frame--theuxunion,[^}]*\.rd-case-phase__frame--neutral\s*\{[^}]*background:\s*var\(--bg\)/)
     expect(css).not.toMatch(/\.rd-case-story__chapter--system \.rd-case-story__media\s*\{[^}]*background:/)
     expect(css).not.toMatch(/\.rd-case-phase__visual--(?:laliga|theuxunion|neutral)\s*\{[^}]*background:/)
@@ -201,7 +210,10 @@ describe('case-study responsive safeguards', () => {
 
     expect(css).toMatch(/\.rd-case-story__chapter\s*\{[^}]*margin-top:\s*clamp\(2\.5rem,\s*5vw,\s*5rem\)[^}]*border-top:\s*0/)
     expect(css).toMatch(/\.rd-case-story__chapter:last-of-type\s*\{[^}]*margin-bottom:\s*clamp\(2\.5rem,\s*5vw,\s*5rem\)/)
-    expect(css).toMatch(/\.rd-case-story__frame\s*\{[^}]*padding:\s*0 clamp\(1\.25rem,\s*3vw,\s*3\.5rem\)/)
+    // El marco ya no dibuja una placa, asi que no tiene relleno lateral. El aire
+    // respecto al borde de la columna lo da ahora la anchura, no el padding.
+    expect(css).toMatch(/\.rd-case-story__frame\s*\{[^}]*width:\s*calc\(100% - clamp\(1rem,\s*3vw,\s*3rem\)\)/)
+    expect(css).not.toMatch(/\.rd-case-story__frame\s*\{[^}]*padding:/)
     expect(css).toMatch(/\.rd-case-phase__frame\s*\{[^}]*padding:\s*0[^}]*place-items:\s*stretch/)
     expect(css).toMatch(/\.rd-case-phase__frame\[data-fit="contain"\] img\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0[^}]*height:\s*100%/)
   })
