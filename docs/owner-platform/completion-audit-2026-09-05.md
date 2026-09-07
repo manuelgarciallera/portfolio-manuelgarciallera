@@ -21,6 +21,7 @@ comunes, no implementaciones separadas por cada mensaje.
 | Versiones por fecha y descripción | Operativo en local | Releases, snapshots inmutables y planes de restauración; `release-registration-verification.md`, `restore-integration-verification.md` |
 | Puntuaciones de calidad | Evidencia registrada | Métricas con fuente/fecha/viewport; no se inventan puntuaciones ni se equiparan mediciones manuales a métricas de campo |
 | Restauración | Probada en SQLite | Vuelve al borrador y conserva publicado/histórico; rollback ante fallo de auditoría; falta ensayo PostgreSQL y almacenamiento real |
+| Recuperación física de base y medios | Probada localmente en SQLite y PostgreSQL | Copia conjunta, integridad, nuevo destino y edición recuperada; `postgres-recovery-report-2026-09-07.md`. No acredita el flujo de restauración de releases en PostgreSQL ni almacenamiento de objetos real |
 | Preparación de publicación | Operativo en local | Paquete → revisión → artefacto → preflight/exportación; `document-action-controls-verification.md`; no despliega ni reemplaza la web |
 | Figma | Adaptador y flujo local probado | Descubrimiento de solo lectura, aprobación e importación a borradores; persistencia con proveedor sintético; falta prueba con credenciales y archivo autorizado reales |
 | Asistencia IA | Contrato y revisión local | Contexto acotado, switches, importación manual de propuestas, comparación legible y decisión auditada; `assistance-review-verification.md`; sin modelo conectado ni aplicación automática |
@@ -77,6 +78,31 @@ por aparecer repetidos en el historial.
 
 ## Estado de entrega
 
+### Recuperación PostgreSQL local del 7 de septiembre de 2026
+
+`d7fe885` incorpora un ensayo con PostgreSQL 17.11 real, aislado en este equipo:
+cluster nuevo, credenciales sintéticas SCRAM, escucha solo en loopback,
+`pg_dump` custom y `pg_restore` a una base distinta. No acepta una base existente
+ni importa datos reales. La copia reúne base y cuatro archivos de imagen,
+incluidos los derivados, con manifiesto de tamaños y SHA-256.
+
+La revisión detectó que un diagnóstico recortado podía revelar un fragmento de
+secreto sintético. `4c2c32f` descarta diagnósticos incompletos o mezclados y añade
+pruebas de frontera; la revisión del delta quedó aprobada. La repetición
+independiente PostgreSQL sobre `4c2c32f` pasó: cinco archivos, cuatro medios y
+dos versiones (identidad, títulos y bloques), copias corruptas/ausentes rechazadas,
+contenido original intacto tras editar la restauración y limpieza del cluster
+confirmada. Las 24 pruebas auxiliares, lint y typecheck también pasaron.
+El [informe específico](postgres-recovery-report-2026-09-07.md) conserva las
+ejecuciones de SQLite y las limitaciones de cada prueba.
+
+Esto cierra el ensayo local con ese motor, no PostgreSQL de staging, migraciones
+revisadas, TLS, almacenamiento duradero/versionado, copias externas, recuperación
+de cuenta, aislamiento de clientes o publicación. Docker falló al arrancar;
+se usaron binarios portables ignorados por Git, sin restablecer Docker ni instalar
+servicios o dependencias. El siguiente responsable sigue siendo Codex en la
+operación del CMS; correo, SEO y cambios públicos de Claude permanecen separados.
+
 ### Revalidación operativa del 7 de septiembre de 2026
 
 Antes del incremento de recuperación física se repitieron 700 pruebas unitarias
@@ -92,9 +118,10 @@ añadieron dependencias públicas. El tag protegido sigue resolviendo al commit
 
 La auditoría `npm audit --omit=dev` del owner sigue devolviendo salida 1:
 12 paquetes moderados afectados por dos cadenas, cero altos/críticos. No se
-aplica la bajada incompatible que propone npm. PostgreSQL sigue sin estar
-disponible localmente; Docker está detenido. La validación SQLite no sustituye
-un ensayo PostgreSQL ni una copia duradera de producción.
+aplica la bajada incompatible que propone npm. En esa comprobación inicial
+PostgreSQL no estaba disponible localmente y Docker estaba detenido; el ensayo
+portable posterior se recoge arriba. SQLite por sí solo no sustituye PostgreSQL
+ni una copia duradera de producción.
 
 Incremento `aa6867f`: `npm run test:recovery` prueba la recuperación conjunta
 de SQLite y medios sintéticos en procesos separados. La ejecución independiente

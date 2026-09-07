@@ -1,6 +1,6 @@
 # Local PostgreSQL recovery evidence — 2026-09-07
 
-Status: implemented and locally verified; two native PostgreSQL runs and two SQLite regression runs passed. Controller review and a repeat against committed code remain separate. This extends the completed SQLite recovery milestone; it is not deployment or a migration of owner data.
+Status: implemented, independently reviewed and locally verified against committed code, including the diagnostic-redaction correction. This extends the completed SQLite recovery milestone; it is not deployment or a migration of owner data. The final controller evidence appears below and supplements, rather than replaces, the implementer's historical runs.
 
 ## Scope and implementation
 
@@ -61,7 +61,18 @@ Commands and workers have bounded timeouts. Cleanup verifies the exact immediate
 
 Remaining unsupported gates: production TLS/provider connectivity, managed service configuration, durable object storage, encryption/offsite retention, PITR/WAL archiving, restore-time objectives under realistic volume, migration upgrades, tenant isolation, SMTP, deployment, public publication bridge and production readiness. A successful isolated local restore does not close those gates.
 
-Next responsible: controller, independent review and repeat against the implementation commit, then update the shared ledger/Hub. No push or deployment by this implementation task.
+Next responsible: controller, close the evidence/coordination record and continue the remaining operational gates. No push or deployment by this implementation task.
+
+## Final controller verification and review
+
+- Implementation commit: `d7fe88576c5f62facb7f293f5c9c890317da6814`. Independent PostgreSQL and SQLite runs both passed against this commit; 16 helper tests, full lint and typecheck passed. Review then required the diagnostic correction described below.
+- Correction commit: `4c2c32f3ae7e2e8852125ba72434d384318cee0c`. Independent delta review approved it with no remaining blocking findings, specifically checking truncation, split chunks, mixed channels, native maxBuffer/timeout and actual-close gating. No additional application feature or public dependency was introduced.
+- Final controller command: `npm run test:recovery:postgres`, followed only on success by `npm run test:recovery`; the combined shell exited **0**. PostgreSQL recorded application commit `4c2c32f3ae7e2e8852125ba72434d384318cee0c`, PostgreSQL 17.11, custom archive, **5 files / 4 media / 2 versions**, corrupt/missing archive refusal, unchanged source editorial state, closed source sessions and verified shutdown/removal.
+- The final SQLite run also passed, **5 files / 4 media / 2 versions**, zero sidecars observed and 12 grouped workflow checks. It recorded `80be2b8a35e139a37b7fe178e0058c44f791339a`: Claude committed a public-only CSS change between the two commands. `git diff --name-only 4c2c32f..80be2b8 -- owner-platform` was empty, confirming that the owner code under test was unchanged. This is not a validation of Claude's CSS change.
+- Both commands ran the focused helper suite: **24/24 tests passed**, four files. Controller full owner lint and typecheck after the correction exited **0**. The implementer's 700-unit run above was not repeated for a diagnostic-only test-harness correction; there is no new full owner build or visual/browser audit claim.
+- Post-run read-only check found no PostgreSQL/initdb/pg_ctl processes and no `owner-postgres-recovery-*` roots. Portable tools remain cached; no real owner data was touched. Checkpoint still resolves to `0f0adf686b2752e23c25d224f8c60815b10fd451`.
+- Controller public isolation tests passed **8/8** and public-boundary checks passed **21 entries**. Separately, public unit tests at Claude's `a0c0a88` had **205/207 passing** with two frame styling expectations failing; sent to Claude in Hub `35c8df91`. This older public test result must not be represented as a complete current `check:all` or a deployment approval.
+- Review and recovery are accepted for this local increment only. Production TLS, reviewed migrations, durable/versioned media, remote retention/restore, account recovery, tenant isolation, public bridge and the reviewed CV/PDF publication remain open.
 
 ## Review correction — diagnostic truncation (P2)
 
@@ -71,4 +82,4 @@ The worker now keeps at most 16,384 bytes from one complete output channel and r
 
 For native commands, `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` and forced timeout termination suppress both captured output and the raw error message, since these may contain an incomplete credential. The executable name and buffer error code/timeout reason remain visible.
 
-TDD evidence: eight new cases use only synthetic secrets and real Node child processes. Before the correction, six failed (truncation boundary, split chunks across capacity, interleaved channels, cross-channel omission policy, native maxBuffer, timeout); the complete-secret and same-channel split cases characterized working redaction. After correction, the focused recovery suite passes **24/24 tests**, four files, exit 0. ESLint on the four changed helper/test files and `npm run typecheck` both completed with **exit 0**. The 700-test suite and real database drills were not repeated for this diagnostic-only delta, as requested by the controller. Next: controller verifies this correction and its scoped commit; no push.
+TDD evidence: eight new cases use only synthetic secrets and real Node child processes. Before the correction, six failed (truncation boundary, split chunks across capacity, interleaved channels, cross-channel omission policy, native maxBuffer, timeout); the complete-secret and same-channel split cases characterized working redaction. After correction, the focused recovery suite passes **24/24 tests**, four files, exit 0. ESLint on the four changed helper/test files and `npm run typecheck` both completed with **exit 0**. The implementer did not repeat the 700-test suite or real database drills for this diagnostic-only delta; the controller subsequently repeated both database drills and full lint/types against committed owner code, as recorded above. Delta review approved; no push.
