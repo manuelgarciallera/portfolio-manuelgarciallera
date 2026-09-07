@@ -36,7 +36,11 @@ export const PROFILE_LINKS = {
   linkedin: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_LINKEDIN) || "https://www.linkedin.com/in/manuelgarciallera/",
   github: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_GITHUB) || "https://github.com/manuelgarciallera",
   medium: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_MEDIUM),
-  orcid: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_ORCID),
+  // ORCID y Scholar son las dos senales que conectan el nombre con la identidad
+  // academica en los grafos de conocimiento. Sin valor por defecto, el hueco
+  // existia en el tipo pero nunca llegaba a sameAs.
+  orcid: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_ORCID) || "https://orcid.org/0009-0009-5893-0343",
+  scholar: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_SCHOLAR),
   behance: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_BEHANCE),
   dribbble: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_DRIBBBLE),
 } as const;
@@ -46,6 +50,7 @@ export const SITE_SOCIAL_URLS = dedupe([
   PROFILE_LINKS.github,
   PROFILE_LINKS.medium,
   PROFILE_LINKS.orcid,
+  PROFILE_LINKS.scholar,
   PROFILE_LINKS.behance,
   PROFILE_LINKS.dribbble,
 ]);
