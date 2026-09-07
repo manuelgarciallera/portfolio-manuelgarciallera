@@ -11,6 +11,13 @@ const record = (value: unknown): Record<string, unknown> => {
   return value as Record<string, unknown>
 }
 const text = (value: unknown): string | undefined => typeof value === 'string' ? value : undefined
+/** Classify captured references as well as current rows, without resolving URLs or backfilling history. */
+export const mediaReferenceStorage = (reference: Record<string, unknown>):
+  { storage: 'versioned'; storageRevision: string } | { storage: 'legacy-unverified' } => {
+  const revision = reference.storageRevision
+  return typeof revision === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(revision)
+    ? { storage: 'versioned', storageRevision: revision } : { storage: 'legacy-unverified' }
+}
 const defined = (value: Record<string, unknown>): Record<string, unknown> =>
   Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined))
 const relationId = (value: unknown): number | string | undefined => {
@@ -155,7 +162,10 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
   const mediaPlacements = await captureMediaPlacements(payload, req, projected.blocks)
   const mediaReferences = await Promise.all(projected.mediaIds.map(async (id) => {
     const media = record(await payload.findByID({ collection: 'media', id: id as number, depth: 0, overrideAccess: false, req }))
-    return defined({ id: String(media.id), alt: text(media.alt), filename: text(media.filename), mimeType: text(media.mimeType), width: typeof media.width === 'number' ? media.width : undefined, height: typeof media.height === 'number' ? media.height : undefined })
+    // Missing revisions in older manifests remain unverified. Never backfill an
+    // existing capture from today's media row or infer storage from its URL.
+    return defined({ id: String(media.id), alt: text(media.alt), filename: text(media.filename), mimeType: text(media.mimeType), width: typeof media.width === 'number' ? media.width : undefined, height: typeof media.height === 'number' ? media.height : undefined,
+      ...mediaReferenceStorage(media) })
   }))
   const updatedAt = text(page.updatedAt)
   if (!updatedAt) throw new APIError('La página no tiene una revisión actual verificable.', 400)

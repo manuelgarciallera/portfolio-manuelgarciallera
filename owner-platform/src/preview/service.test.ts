@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createPagePreviewSnapshot } from './service'
+import { createPagePreviewSnapshot, mediaReferenceStorage } from './service'
 import { buildAssistanceContextPackage } from '../assist/context'
 import type { PreviewManifest } from './manifest'
 
@@ -25,6 +25,40 @@ const brand = {
 }
 
 describe('page preview snapshot service', () => {
+  it('classifies an old frozen media reference as legacy without backfilling or mutating it', () => {
+    const reference = Object.freeze({ id: '9', filename: 'old.png' })
+    expect(mediaReferenceStorage(reference)).toEqual({ storage: 'legacy-unverified' })
+    expect(reference).toEqual({ id: '9', filename: 'old.png' })
+  })
+  it('captures the exact storage revision so same-name replacement changes only the new capture', async () => {
+    const media = { id: 9, alt: 'Image', filename: 'same.png', storageRevision: '11111111-1111-4111-8111-111111111111' }
+    const page = { id: 7, updatedAt: 'saved', brandProfile: 3, layout: [{ blockType: 'hero', image: 9 }] }
+    const payload = {
+      findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : collection === 'media' ? media : brand,
+      find: async () => ({ docs: [] }),
+      create: async ({ data }: { data: Record<string, unknown> }) => ({ id: 1, ...data }),
+    }
+    const capture = () => createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })
+    const first = await capture()
+    expect(first.manifest).toHaveProperty('mediaReferences.0.storageRevision', '11111111-1111-4111-8111-111111111111')
+    expect(first.manifest).toHaveProperty('mediaReferences.0.storage', 'versioned')
+    media.storageRevision = '22222222-2222-4222-8222-222222222222'
+    const second = await capture()
+    expect(second.manifestHash).not.toBe(first.manifestHash)
+    expect(first.manifest).toHaveProperty('mediaReferences.0.storageRevision', '11111111-1111-4111-8111-111111111111')
+  })
+
+  it.each([undefined, null, 'forged'])('marks absent or invalid storage revision %s explicitly legacy/unverified', async (storageRevision) => {
+    const page = { id: 7, updatedAt: 'saved', brandProfile: 3, layout: [{ blockType: 'hero', image: 9 }] }
+    const payload = {
+      findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : collection === 'media' ? { id: 9, filename: 'legacy.png', storageRevision } : brand,
+      find: async () => ({ docs: [] }), create: async ({ data }: { data: Record<string, unknown> }) => ({ id: 1, ...data }),
+    }
+    const capture = await createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })
+    expect(capture.manifest).toHaveProperty('mediaReferences.0.storage', 'legacy-unverified')
+    expect((capture.manifest as PreviewManifest).mediaReferences[0]).not.toHaveProperty('storageRevision')
+  })
+
   it('captures referenced recipes once, including responsive overrides, and hashes changes outside the page', async () => {
     const page = { id: 7, title: 'Inicio', updatedAt: 'saved', brandProfile: 3, layout: [
       { id: 'a', blockType: 'media', asset: 9, placement: 14 }, { id: 'b', blockType: 'media', asset: 9, placement: 14 },
