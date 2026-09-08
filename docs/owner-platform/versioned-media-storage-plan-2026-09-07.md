@@ -134,12 +134,64 @@ dependencies or existing runners. Test discovery already includes the new suite.
   types once on final code. Compare public boundary/bundle without changing
   baseline. Report any failure as a failed gate, not a passed retry.
 
-## Task 4 — Physical recovery and rollout evidence
+## Task 4 — Physical recovery of all retained revisions
 
-Consumes the reviewed Task 3 binding and HTTP fixture. Refine the exact fixture
-files before dispatch without changing real data or the active configuration.
+Consumes reviewed Task 3 (`339fb8d` + `cf28533`). Files within owner-platform:
+new `tests/recovery/versioned-media-worker.mjs`,
+`tests/recovery/versioned-media-manifest.mjs` and its `.test.mjs`;
+extend `tests/media/http-fixture.ts` only for explicit synthetic reopen settings;
+extend `scripts/test-recovery.mjs` and `scripts/test-recovery-postgres.mjs` with
+an explicit `--versioned-media` mode. Keep the legacy worker and default workflow
+unchanged. No active config, source binding, dependencies or public edits.
 
-- [ ] Prove physical backup/restore includes all retained revisions plus the DB.
+- [ ] Read `versioned-media-recovery-contract-2026-09-08.md` completely. Use the
+  existing native backup/worker/PostgreSQL machinery; no duplicated process runner.
+  The new worker reuses the reviewed HTTP fixture with explicit roots, synthetic
+  credentials/secret and database settings, no ambient application credentials.
+- [ ] Add a versioned-recovery verification wrapper around the existing physical
+  manifest. Keep that archive format and legacy helper unchanged. A fixture-side
+  inventory receipt at `media/revision-inventory.json`, itself covered by the
+  physical file manifest, records exact revision directories/states. Verify the
+  actual directory inventory too, including empty incomplete attempts, before
+  allocating a restore destination. No inference from only current DB references.
+  Establish RED: remove a recorded empty attempt from a synthetic valid backup;
+  the ordinary file-only verifier accepts it, the new strict contract must reject.
+  Also test added/unrecorded, missing, corrupt and malformed inventory inputs.
+- [ ] Seed older revision A, different published B and latest draft C through real
+  owner auth/binding. Assert distinct revision IDs, literal expected dimensions
+  and independently known original image content. Persist real media versions and
+  a frozen preview referring to an exact revision using the real snapshot service.
+  A narrowly scoped page/brand fixture is allowed, as in the existing binding test;
+  do not claim full application-schema recovery from it.
+- [ ] Include a complete unreferenced revision from an injected post-write failure
+  and an incomplete empty attempt. Record media/version/snapshot IDs, inventory,
+  original/derivative names, lengths and hashes, and verify their expected states.
+- [ ] Quiesce all writers. Parent waits for actual worker close and, in PostgreSQL,
+  no Payload sessions before native pg_dump/media copy. Back up the entire media
+  tree plus database, restore into a fresh root/database/process using the same
+  synthetic secret, and compare all recorded receipts and frozen references.
+- [ ] Corrupt and missing historical original/derivative bytes, a missing empty
+  attempt, and corrupt/missing DB artifacts reject restore BEFORE creating media
+  destination or PostgreSQL target DB. Never overwrite any existing destination.
+- [ ] After restore, use actual authenticated HTTP to restore A and download its
+  original and derivatives, proving exact old bytes. Recheck published/draft,
+  foreign-revision and orphan authorization. Edit the recovered instance and
+  prove source logical state/files and backup receipts remain unchanged.
+- [ ] New code removes only explicitly owned synthetic files/empty directories,
+  without recursive deletion. Existing fenced parent runner cleanup stays intact;
+  do not widen roots, remove locks, kill unrelated processes or alter real data.
+- [ ] Verify focused TDD cases, complete recovery helper suite, both legacy recovery
+  commands and both versioned modes. Because the shared HTTP fixture is extended,
+  repeat its HTTP integration cases on SQLite/PostgreSQL plus lint/types. No
+  public build or 783-unit rerun unless a changed runtime scope justifies it.
+  Record initial failures and process/session cleanup explicitly. Independent
+  review and own-file commit precede the next task.
+
+## Task 5 — Resource measurements and rollout evidence
+
+Consumes reviewed recovery and HTTP fixtures; refine exact benchmark files before
+dispatch. This is the remaining part of former Task 4, not a reduced release gate.
+
 - [ ] Measure realistic image sets and simultaneous requests; record latency and
   memory with method/limits. Address a demonstrated resource failure without
   weakening full revision integrity or access checks.
@@ -148,5 +200,5 @@ files before dispatch without changing real data or the active configuration.
   gates and applicable authorization. Update operational-gap status with exact
   evidence, not assumptions from the core helper.
 
-Task 1 can land independently as a tested internal capability. Tasks 2 through 4 are
+Task 1 can land independently as a tested internal capability. Tasks 2 through 5 are
 required before claiming the original media-loss defect fixed in the CMS.
