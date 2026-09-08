@@ -1,5 +1,7 @@
 import type { CaseStudy } from './types'
 
+import { NUDE_PROJECT } from '../nude-project/content'
+
 export const CASES: CaseStudy[] = [
   {
     slug: 'buy-sell-marketplace',
@@ -553,9 +555,10 @@ if (level === 'L3' && parsed.from !== 'manuel') {
     ],
     futureQuestion: '¿Qué señales permiten construir confianza profesional sin reproducir las dinámicas de popularidad de una red social?',
   },
+  NUDE_PROJECT,
   {
     slug: 'fintech-app',
-    index: '05',
+    index: '06',
     title: 'Fintech ',
     titleAccent: 'App',
     claim: 'Prototipado móvil con sistema de componentes.',
@@ -574,7 +577,7 @@ if (level === 'L3' && parsed.from !== 'manuel') {
   },
   {
     slug: 'estadio-3d',
-    index: '06',
+    index: '07',
     title: 'Estadio ',
     titleAccent: '3D',
     claim: 'Visualización espacial y experiencia en entornos deportivos.',

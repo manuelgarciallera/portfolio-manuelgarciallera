@@ -7,6 +7,7 @@ import { SiteHeader } from '../components/SiteHeader'
 import { Breadcrumbs } from '../components/Breadcrumbs'
 import { ProjectPreviewCarousel } from '../components/ProjectPreviewCarousel'
 import type { CaseStudy } from '../content/types'
+import type { CaseCardItem } from '../components/CaseCard'
 import { AiProcessBlock, PhaseNav, PhaseSection, PrototypeToComponent } from './CaseBlocks'
 import { CaseStory } from './CaseStory'
 import { NextCase } from './NextCase'
@@ -36,7 +37,7 @@ function useRevealOnScroll(): void {
   }, [])
 }
 
-export function CasePage({ study }: { study: CaseStudy }) {
+export function CasePage({ study, nextCase }: { study: CaseStudy; nextCase: CaseCardItem }) {
   const [isDark, toggleTheme] = usePortfolioTheme()
   useRevealOnScroll()
 
@@ -45,7 +46,7 @@ export function CasePage({ study }: { study: CaseStudy }) {
       ['Contexto', study.context],
       ['Contribución', study.contribution ?? study.role],
       ['Stack', study.stack.join(' · ')],
-      ['Año', study.year],
+      [study.delivery === 'design-prototype' ? 'Entrega' : 'Año', study.year],
     ],
     [study],
   )
@@ -76,7 +77,7 @@ export function CasePage({ study }: { study: CaseStudy }) {
                 <p>{study.visual.statement}</p>
                 <div className="rd-case-feature-actions">
                   <a href="#fase-prototipo">Explorar el sistema <span aria-hidden="true">↓</span></a>
-                  <a href="#fase-desarrollo">Ver la implementación <span aria-hidden="true">↓</span></a>
+                  <a href="#fase-desarrollo">{study.delivery === 'design-prototype' ? 'Explorar el prototipo' : 'Ver la implementación'} <span aria-hidden="true">↓</span></a>
                 </div>
               </div>
               <ProjectPreviewCarousel
@@ -167,7 +168,7 @@ export function CasePage({ study }: { study: CaseStudy }) {
           </div>
         </section>
 
-        <NextCase currentSlug={study.slug} />
+        <NextCase item={nextCase} />
         <ContactSection />
       </main>
       <Footer />

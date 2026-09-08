@@ -1,6 +1,7 @@
 import Image from 'next/image'
 
 import type { CaseVisual } from '../content/types'
+import { NudeProjectCover } from '../nude-project/NudeProjectCover'
 
 interface ProjectEditorialCoverProps {
   index: string
@@ -13,6 +14,7 @@ const COVER_ASSETS = {
 } as const
 
 export function ProjectEditorialCover({ visual }: ProjectEditorialCoverProps) {
+  if (visual.theme === 'nude-project') return <NudeProjectCover />
   if (visual.theme === 'buy-sell') return null
   if (visual.theme !== 'laliga' && visual.theme !== 'coordination' && visual.theme !== 'theuxunion') return null
 

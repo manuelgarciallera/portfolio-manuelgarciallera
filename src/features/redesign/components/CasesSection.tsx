@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getPublishedCases } from '../content/cases'
-import { CaseCard } from './CaseCard'
+import { CaseCard, type CaseCardItem } from './CaseCard'
 import { selectCenteredPreview } from './projectPreviewPlayback'
 
-export function CasesSection() {
+export function CasesSection({ items }: { items: CaseCardItem[] }) {
   const previewElements = useRef(new Map<string, HTMLDivElement>())
   const [activePreview, setActivePreview] = useState<string | null>(null)
 
@@ -59,7 +58,7 @@ export function CasesSection() {
         </div>
       </div>
       <div className="rd-cases">
-        {getPublishedCases().map((item) => (
+        {items.map((item) => (
           <CaseCard
             key={item.slug}
             item={item}

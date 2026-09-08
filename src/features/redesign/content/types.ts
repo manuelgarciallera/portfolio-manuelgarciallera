@@ -51,7 +51,7 @@ export interface CaseStoryBlock {
 }
 
 export interface CaseVisual {
-  theme: 'buy-sell' | 'laliga' | 'coordination' | 'theuxunion' | 'neutral'
+  theme: 'buy-sell' | 'laliga' | 'coordination' | 'theuxunion' | 'nude-project' | 'neutral'
   logoSrc: string
   logoAlt: string
   kicker: string
@@ -85,6 +85,7 @@ export interface CaseStudy {
   tags: string
   proofPoints?: Array<{ value: string; label: string }>
   published: boolean
+  delivery?: 'design-prototype'
   status?: CaseStatus
   contribution?: string
   collaboration?: string

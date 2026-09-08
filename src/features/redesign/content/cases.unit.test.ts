@@ -18,12 +18,13 @@ describe('portfolio case catalogue', () => {
     expect(unsafeLink).toBeUndefined()
   })
 
-  it('orders only the four evidence-rich projects on the home', () => {
+  it('keeps the established projects in order with the academic NudeProject case last', () => {
     expect(getPublishedCases().map(({ slug }) => slug)).toEqual([
       'buy-sell-marketplace',
       'laliga-club-operations-hub',
       'coordination-hub',
       'the-ux-union',
+      'nude-project',
     ])
   })
 

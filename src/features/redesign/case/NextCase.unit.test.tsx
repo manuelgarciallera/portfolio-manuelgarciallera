@@ -2,10 +2,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { NextCase } from './NextCase'
+import { getNextCaseCard } from '../content/card-data'
 
 describe('NextCase', () => {
   it('reuses the complete home project card for the next published case', () => {
-    const markup = renderToStaticMarkup(<NextCase currentSlug="buy-sell-marketplace" />)
+    const markup = renderToStaticMarkup(<NextCase item={getNextCaseCard('buy-sell-marketplace')} />)
 
     expect(markup).toContain('Siguiente caso de estudio')
     expect(markup).toContain('rd-case-visual--laliga')

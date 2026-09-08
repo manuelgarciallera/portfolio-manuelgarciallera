@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 import { CasesSection } from './components/CasesSection'
+import type { CaseCardItem } from './components/CaseCard'
 import { CapabilityAccordion } from './components/CapabilityAccordion'
 import { ArticlesSection } from './components/ArticlesSection'
 import { Hero } from './components/Hero'
@@ -31,7 +32,7 @@ function useRevealOnScroll(): void {
   }, [])
 }
 
-export function RedesignPage() {
+export function RedesignPage({ visualGallery, cases }: { visualGallery?: ReactNode; cases: CaseCardItem[] }) {
   const [isDark, toggleTheme] = usePortfolioTheme()
   useRevealOnScroll()
 
@@ -45,7 +46,8 @@ export function RedesignPage() {
         <div className="rd-section rd-section--banner">
           <ResearchBanner />
         </div>
-        <CasesSection />
+        {visualGallery}
+        <CasesSection items={cases} />
         <ArticlesSection />
         <ContactSection />
       </main>

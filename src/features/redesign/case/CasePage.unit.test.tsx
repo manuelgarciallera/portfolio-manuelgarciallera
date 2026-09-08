@@ -5,18 +5,19 @@ import { describe, expect, it } from 'vitest'
 
 import { getCaseBySlug } from '../content/cases'
 import { CasePage } from './CasePage'
+import { getNextCaseCard } from '../content/card-data'
 
 describe('CasePage theme hydration', () => {
   it('renders the same dark theme control as the root layout on the server', () => {
     const study = getCaseBySlug('buy-sell-marketplace')!
-    const markup = renderToStaticMarkup(<CasePage study={study} />)
+    const markup = renderToStaticMarkup(<CasePage study={study} nextCase={getNextCaseCard(study.slug)} />)
 
     expect(markup).toContain('aria-label="Activar tema claro"')
   })
 
   it('uses a branded TheUXUnion scene in the project opening instead of repeating the round UX mark', () => {
     const study = getCaseBySlug('the-ux-union')!
-    const markup = renderToStaticMarkup(<CasePage study={study} />)
+    const markup = renderToStaticMarkup(<CasePage study={study} nextCase={getNextCaseCard(study.slug)} />)
 
     const featureStart = markup.indexOf('rd-case-feature--theuxunion')
     const featureEnd = markup.indexOf('rd-meta-grid', featureStart)

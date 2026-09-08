@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { CasePage } from '@/features/redesign/case/CasePage'
 import { getCaseBySlug, getPublishedCases } from '@/features/redesign/content/cases'
+import { getNextCaseCard } from '@/features/redesign/content/card-data'
 import { PERSON_LEGAL_NAME, SITE_URL } from '@/lib/site-config'
 
 interface CaseRouteParams {
@@ -41,7 +42,7 @@ export default async function CaseRoute({ params }: CaseRouteParams) {
     name: `${study.title}${study.titleAccent ?? ''}`,
     description: study.claim,
     url: `${SITE_URL}/casos/${study.slug}`,
-    dateCreated: study.year,
+    dateCreated: /^\d{4}$/.test(study.year) ? study.year : undefined,
     creator: { '@type': 'Person', name: PERSON_LEGAL_NAME, url: SITE_URL },
     keywords: study.stack.join(', '),
   }).replace(/</g, '\\u003c')
@@ -49,7 +50,7 @@ export default async function CaseRoute({ params }: CaseRouteParams) {
   return (
     <>
       <script id={`case-json-ld-${study.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
-      <CasePage study={study} />
+      <CasePage study={study} nextCase={getNextCaseCard(study.slug)} />
     </>
   )
 }

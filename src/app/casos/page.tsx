@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { RedesignCasesIndex } from '@/features/redesign/case/RedesignCasesIndex'
 import { OG_IMAGE } from '@/lib/site-config'
+import { getCaseCards } from '@/features/redesign/content/card-data'
 
 export const metadata: Metadata = {
   title: 'Casos',
@@ -17,5 +18,5 @@ export const metadata: Metadata = {
 }
 
 export default function CasosPage() {
-  return <RedesignCasesIndex />
+  return <RedesignCasesIndex cases={getCaseCards()} />
 }
