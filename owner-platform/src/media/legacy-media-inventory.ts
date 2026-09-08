@@ -54,6 +54,7 @@ type PreparedReference = {
   reference: LegacyMediaReference
   issues: string[]
   hasValidRevision: boolean
+  unsafeFilenames: ReadonlyMap<string, string>
 }
 
 type PhysicalEntry = {
@@ -94,6 +95,13 @@ const looksLikeAbsolutePathOrUrl = (value: string): boolean =>
   win32.isAbsolute(value) ||
   /^[a-z][a-z0-9+.-]*:/iu.test(value)
 
+const looksLikeEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+$/u.test(value)
+
+const looksLikePathUrlOrEmail = (value: string): boolean =>
+  looksLikeAbsolutePathOrUrl(value) ||
+  /[\\/]/u.test(value) ||
+  looksLikeEmail(value)
+
 const isBoundedIdentifier = (value: unknown): value is string =>
   typeof value === 'string' &&
   value.length > 0 &&
@@ -101,7 +109,7 @@ const isBoundedIdentifier = (value: unknown): value is string =>
   value.trim().length > 0 &&
   isWellFormedUtf16(value) &&
   !CONTROL_CHARACTER.test(value) &&
-  !looksLikeAbsolutePathOrUrl(value)
+  !looksLikePathUrlOrEmail(value)
 
 const isSafeFilename = (value: string): boolean =>
   value.length > 0 &&
@@ -113,14 +121,22 @@ const isSafeFilename = (value: string): boolean =>
   !UNSAFE_FILENAME_CHARACTER.test(value) &&
   !/[. ]$/u.test(value) &&
   !WINDOWS_DEVICE_NAME.test(value) &&
-  value.toLowerCase() !== MANIFEST_NAME
+  value.toLowerCase() !== MANIFEST_NAME &&
+  !looksLikeEmail(value)
 
 const canonicalFilename = (value: string): string => value.normalize('NFC').toLowerCase()
 
+const unsafeFilenameEvidence = (value: string): string =>
+  'unsafe-name-' + createHash('sha256').update(value).digest('hex')
+
 const reportSafeFilename = (value: string): string =>
-  looksLikeAbsolutePathOrUrl(value)
-    ? 'unsafe-name-' + createHash('sha256').update(value).digest('hex')
-    : value
+  isSafeFilename(value) ? value : unsafeFilenameEvidence(value)
+
+const assertDenseArray = (value: readonly unknown[], label: string): void => {
+  for (let index = 0; index < value.length; index += 1) {
+    if (!Object.hasOwn(value, index)) throw new Error(label + ' cannot be sparse.')
+  }
+}
 
 const samePath = (left: string, right: string): boolean =>
   process.platform === 'win32' ? left.toLowerCase() === right.toLowerCase() : left === right
@@ -134,6 +150,7 @@ const validateReferences = (value: unknown): PreparedReference[] => {
   if (!Array.isArray(value) || value.length > MAX_REFERENCES) {
     throw new Error('Legacy media references must be a bounded array.')
   }
+  assertDenseArray(value, 'Legacy media references')
   const identities = new Set<string>()
   return value.map((candidate) => {
     if (!isRecord(candidate)) throw new Error('Each legacy media reference must be an object.')
@@ -159,6 +176,7 @@ const validateReferences = (value: unknown): PreparedReference[] => {
     if (!Array.isArray(candidate.files) || candidate.files.length > MAX_VARIANTS) {
       throw new Error('Legacy media variants must be a bounded array.')
     }
+    assertDenseArray(candidate.files, 'Legacy media variants')
     const identity = [candidate.kind, candidate.documentId, candidate.referenceId].join('\u0000')
     if (identities.has(identity)) {
       throw new Error('Legacy media reference identities must be unique.')
@@ -167,6 +185,7 @@ const validateReferences = (value: unknown): PreparedReference[] => {
 
     const issues: string[] = []
     const variants = new Set<string>()
+    const unsafeFilenames = new Map<string, string>()
     const files = candidate.files.map((fileCandidate) => {
       if (!isRecord(fileCandidate) || !isBoundedIdentifier(fileCandidate.variant)) {
         throw new Error('A legacy media variant has an invalid name.')
@@ -180,8 +199,10 @@ const validateReferences = (value: unknown): PreparedReference[] => {
         issues.push('incomplete-metadata:' + file.variant + ':filename')
       } else if (typeof fileCandidate.filename !== 'string') {
         issues.push('invalid-filename-metadata:' + file.variant)
-      } else if (looksLikeAbsolutePathOrUrl(fileCandidate.filename)) {
+      } else if (!isSafeFilename(fileCandidate.filename)) {
         issues.push('unsafe-filename:' + file.variant)
+        unsafeFilenames.set(file.variant, fileCandidate.filename)
+        file.filename = unsafeFilenameEvidence(fileCandidate.filename)
       } else {
         file.filename = fileCandidate.filename
       }
@@ -218,13 +239,16 @@ const validateReferences = (value: unknown): PreparedReference[] => {
       files,
     }
     if (storageRevision !== undefined) reference.storageRevision = storageRevision
-    return { reference, issues: sortUnique(issues), hasValidRevision }
+    return { reference, issues: sortUnique(issues), hasValidRevision, unsafeFilenames }
   })
 }
 
 const validateRoot = async (root: unknown): Promise<string> => {
   if (typeof root !== 'string' || !isAbsolute(root)) {
     throw new Error('The legacy media root must be an absolute path.')
+  }
+  if (process.platform === 'win32' && !/^[a-z]:[\\/](?![\\/])/iu.test(root)) {
+    throw new Error('The legacy media root must use a fully qualified local drive path.')
   }
   const resolved = resolve(root)
   if (samePath(resolved, parse(resolved).root)) {
@@ -303,7 +327,17 @@ const scanPhysicalEntries = async (
     const before = await lstat(path, { bigint: true })
     const canonicalName = canonicalFilename(name)
     const reportName = reportSafeFilename(name)
-    let safe = isSafeFilename(name) && before.isFile() && !before.isSymbolicLink() && before.nlink === 1n
+    const regularFile = before.isFile() && !before.isSymbolicLink()
+    if (regularFile) {
+      if (before.size > BigInt(MAX_FILE_BYTES)) {
+        throw new Error('A legacy media file exceeds the 64 MiB limit.')
+      }
+      totalObservedBytes += Number(before.size)
+      if (totalObservedBytes > MAX_TOTAL_BYTES) {
+        throw new Error('The legacy media root exceeds the 1 GiB byte limit.')
+      }
+    }
+    let safe = isSafeFilename(name) && regularFile && before.nlink === 1n
     if (safe) safe = samePath(await realpath(path), resolve(path))
     if (!safe) {
       entries.push({
@@ -314,13 +348,6 @@ const scanPhysicalEntries = async (
       })
       issues.push('unsafe-physical-entry:' + reportName)
       continue
-    }
-    if (before.size > BigInt(MAX_FILE_BYTES)) {
-      throw new Error('A legacy media file exceeds the 64 MiB limit.')
-    }
-    totalObservedBytes += Number(before.size)
-    if (totalObservedBytes > MAX_TOTAL_BYTES) {
-      throw new Error('The legacy media root exceeds the 1 GiB byte limit.')
     }
     entries.push({
       name,
@@ -380,6 +407,7 @@ export async function inspectLegacyMediaInventory(input: {
   for (const item of prepared) {
     if (item.hasValidRevision) continue
     for (const file of item.reference.files) {
+      if (item.unsafeFilenames.has(file.variant)) continue
       if (!file.filename || !isSafeFilename(file.filename)) continue
       const canonicalName = canonicalFilename(file.filename)
       const documents = documentsByFilename.get(canonicalName) ?? new Set<string>()
@@ -399,6 +427,12 @@ export async function inspectLegacyMediaInventory(input: {
     if (!item.hasValidRevision) {
       for (const file of item.reference.files) {
         if (!file.filename) continue
+        const unsafeFilename = item.unsafeFilenames.get(file.variant)
+        if (unsafeFilename !== undefined) {
+          referencedUnsafeNames.add(unsafeFilename)
+          observedFiles.push({ filename: file.filename, status: 'unsafe-entry' })
+          continue
+        }
         if (!isSafeFilename(file.filename)) {
           issues.push('unsafe-filename:' + file.variant)
           referencedUnsafeNames.add(file.filename)

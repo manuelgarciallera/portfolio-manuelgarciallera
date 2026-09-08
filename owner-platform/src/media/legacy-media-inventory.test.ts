@@ -2,7 +2,7 @@ import { link, lstat, mkdtemp, mkdir, open, readFile, rmdir, symlink, unlink, ut
 import { tmpdir } from 'node:os'
 import { join, parse } from 'node:path'
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { inspectLegacyMediaInventory, type LegacyMediaReference } from './legacy-media-inventory'
 
@@ -136,15 +136,17 @@ describe('legacy media inventory', () => {
   it('keeps unreferenced regular and unsafe physical entries without authorizing deletion', async () => {
     await createFile('orphan.png', 'abc')
     await createFile('manifest.json', '{}')
+    const manifestEvidence = 'unsafe-name-ffa5b716b5a57837f7929dfcca4b4dfdeb97210a7fd5a12d2f1978846d6f1743'
 
     const report = await inspectLegacyMediaInventory({ root, references: [] })
 
     expect(report.physicalFiles).toEqual([
-      { filename: 'manifest.json', status: 'unsafe-entry' },
       { filename: 'orphan.png', status: 'present', bytes: 3, sha256: SHA256_ABC },
+      { filename: manifestEvidence, status: 'unsafe-entry' },
     ])
-    expect(report.unreferencedFiles).toEqual(['manifest.json', 'orphan.png'])
-    expect(report.issues).toContain('unsafe-physical-entry:manifest.json')
+    expect(report.unreferencedFiles).toEqual(['orphan.png', manifestEvidence])
+    expect(report.issues).toContain('unsafe-physical-entry:' + manifestEvidence)
+    expect(report.totalObservedBytes).toBe(5)
   })
 
   it('does not URL-decode filenames while matching Unicode conservatively', async () => {
@@ -312,6 +314,14 @@ describe('legacy media inventory', () => {
     await expect(inspectLegacyMediaInventory({ root, references: [] })).rejects.toThrow()
   })
 
+  it('applies the 64 MiB limit to a regular file with an unsafe manifest name', async () => {
+    await createSparseFile('manifest.json', (64 * 1024 * 1024) + 1)
+
+    await expect(inspectLegacyMediaInventory({ root, references: [] })).rejects.toThrow(
+      /64 MiB limit/u,
+    )
+  })
+
   it('does not modify file bytes, size, or mtime while inspecting', async () => {
     const path = await createFile('hero.png', 'abc')
     const before = await lstat(path)
@@ -343,13 +353,29 @@ describe('legacy media inventory', () => {
 
     expect(report.references[0].status).toBe('incomplete')
     expect(report.references[0].issues).toEqual(['unsafe-filename:unsafe'])
-    if (report.references[0].files[0].filename === undefined) {
-      expect(report.references[0].observedFiles).toEqual([])
-    } else {
-      expect(report.references[0].observedFiles).toEqual([
-        { filename, status: 'unsafe-entry' },
-      ])
-    }
+    const evidence = report.references[0].files[0].filename
+    expect(evidence).toMatch(/^unsafe-name-[0-9a-f]{64}$/u)
+    expect(JSON.stringify(report.references[0])).not.toContain(filename)
+    expect(report.references[0].observedFiles).toEqual([
+      { filename: evidence, status: 'unsafe-entry' },
+    ])
+  })
+
+  it('sanitizes unsafe filename evidence even when a valid revision skips legacy IO', async () => {
+    const filename = '../private/revision.png'
+    const report = await inspectLegacyMediaInventory({
+      root,
+      references: [reference({
+        storageRevision: 'a3a5bc7e-88db-4a9f-a0d1-e5c5ea591e89',
+        files: [{ variant: 'original', filename }],
+      })],
+    })
+
+    expect(report.references[0].status).toBe('versioned-not-inspected')
+    expect(report.references[0].issues).toEqual(['unsafe-filename:original'])
+    expect(report.references[0].files[0].filename).toMatch(/^unsafe-name-[0-9a-f]{64}$/u)
+    expect(JSON.stringify(report.references[0])).not.toContain(filename)
+    expect(report.references[0].observedFiles).toEqual([])
   })
 
   it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
@@ -417,6 +443,16 @@ describe('legacy media inventory', () => {
   it('rejects more than 1 GiB of sparse regular files during preflight', async () => {
     for (let index = 0; index < 17; index += 1) {
       await createSparseFile('sparse-' + index + '.bin', 64 * 1024 * 1024)
+    }
+
+    await expect(inspectLegacyMediaInventory({ root, references: [] })).rejects.toThrow(
+      /1 GiB byte limit/u,
+    )
+  })
+
+  it('applies the 1 GiB limit to regular files with unsafe email-shaped names', async () => {
+    for (let index = 0; index < 17; index += 1) {
+      await createSparseFile('private-' + index + '@example.com', 64 * 1024 * 1024)
     }
 
     await expect(inspectLegacyMediaInventory({ root, references: [] })).rejects.toThrow(
@@ -513,8 +549,8 @@ describe('legacy media inventory', () => {
     expect(serialized).not.toContain(url)
     expect(report.references[0]).not.toHaveProperty('storageRevision')
     expect(report.references[0].files).toEqual([
-      { variant: 'absolute' },
-      { variant: 'remote' },
+      { variant: 'absolute', filename: expect.stringMatching(/^unsafe-name-[0-9a-f]{64}$/u) },
+      { variant: 'remote', filename: expect.stringMatching(/^unsafe-name-[0-9a-f]{64}$/u) },
     ])
     expect(report.references[0].issues).toEqual([
       'invalid-storage-revision',
@@ -539,4 +575,72 @@ describe('legacy media inventory', () => {
       references: [invalid],
     })).rejects.toThrow()
   })
+
+  it.each([
+    ['a parent-relative document ID', { documentId: '../private' }, /identifiers are invalid/u],
+    ['a path-shaped reference ID', { referenceId: 'folder/id' }, /identifiers are invalid/u],
+    ['an email-shaped document ID', { documentId: 'private@example.com' }, /identifiers are invalid/u],
+    ['a relative path variant', { files: [{ variant: '../private' }] }, /variant has an invalid name/u],
+    ['an email-shaped variant', { files: [{ variant: 'private@example.com' }] }, /variant has an invalid name/u],
+  ])('rejects %s before attempting to read the root', async (_label, overrides, expected) => {
+    const unreadableRoot = join(sandbox, 'must-not-be-read')
+
+    await expect(inspectLegacyMediaInventory({
+      root: unreadableRoot,
+      references: [reference(overrides as Partial<LegacyMediaReference>)],
+    })).rejects.toThrow(expected)
+  })
+
+  it.each([
+    ['the top-level collection', new Array(1) as LegacyMediaReference[]],
+    ['a reference file collection', [reference({ files: new Array(1) })]],
+  ])('rejects a sparse %s before attempting to read the root', async (_label, references) => {
+    const unreadableRoot = join(sandbox, 'must-not-be-read')
+
+    await expect(inspectLegacyMediaInventory({
+      root: unreadableRoot,
+      references,
+    })).rejects.toThrow(/cannot be sparse/u)
+  })
+
+  it.runIf(process.platform === 'win32')(
+    'rejects a Windows root-relative path before filesystem IO',
+    async () => {
+      await expect(inspectLegacyMediaInventory({
+        root: '\\media-that-must-not-be-read',
+        references: [],
+      })).rejects.toThrow(/fully qualified local drive/u)
+    },
+  )
+
+  it.runIf(process.platform === 'win32')(
+    'rejects Windows UNC and device namespace roots before filesystem IO',
+    async () => {
+      const actual = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises')
+      const guardedLstat = ((...args: Parameters<typeof actual.lstat>) => {
+        if (String(args[0]).startsWith('\\\\')) {
+          throw new Error('Filesystem boundary invoked for a non-local root.')
+        }
+        return actual.lstat(...args)
+      }) as typeof actual.lstat
+      vi.resetModules()
+      vi.doMock('node:fs/promises', () => ({ ...actual, lstat: guardedLstat }))
+      try {
+        const isolated = await import('./legacy-media-inventory')
+        for (const invalidRoot of [
+          '\\\\server\\share\\media',
+          '\\\\?\\C:\\media',
+          '\\\\.\\C:\\media',
+        ]) {
+          await expect(isolated.inspectLegacyMediaInventory({
+            root: invalidRoot,
+            references: [],
+          })).rejects.toThrow(/fully qualified local drive/u)
+        }
+      } finally {
+        vi.doUnmock('node:fs/promises')
+        vi.resetModules()
+      }
+    },
+  )
 })
