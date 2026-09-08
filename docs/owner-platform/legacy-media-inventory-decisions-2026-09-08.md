@@ -32,6 +32,12 @@ No autorizan migración, publicación, contratación ni modificación de datos r
    que una etiqueta generada se representa mediante otra etiqueta, respetando
    mayúsculas/minúsculas en la comparación canónica. Coste: esos nombres literales
    poco habituales requieren reconciliación privada. No se renombra ni borra nada.
+8. **Limitar también los metadatos retenidos a 8 MiB.** Procesar por páginas no
+   basta si un campo conserva objetos o valores enormes. Se rechazan evidencias
+   no escalares y variantes excesivas antes de acumular, además del límite final
+   del informe. Coste: algunos orígenes legacy malformados o desmesurados que
+   quedarían pequeños tras sanitizarlos requieren reconciliación privada previa.
+   No se modifican ni se truncan datos para hacer pasar el inventario.
 
 El [plan](legacy-media-inventory-plan-2026-09-08.md) mantiene el contrato de dos
 capas: observación física acotada y colección autorizada de referencias de Payload.
