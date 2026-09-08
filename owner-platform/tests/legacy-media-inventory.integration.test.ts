@@ -261,6 +261,34 @@ afterAll(async () => {
 })
 
 describe('Payload legacy media inventory', () => {
+  it.each([false, true])('preserves a captured legacy manifest when migration attempts overrideAccess=%s', async (overrideAccess) => {
+    // Catches a migration shortcut that disables our immutable lifecycle hooks.
+    // Even bypassing collection ACL must not rewrite or erase the captured past.
+    const databaseBefore = await databaseSnapshot()
+    const filesBefore = await physicalSnapshot()
+    const capturedBefore = await payload.findByID({
+      collection: 'preview-snapshots', id: snapshot.id,
+      user: owner, overrideAccess: false, depth: 0,
+    })
+
+    await expect(payload.update({
+      collection: 'preview-snapshots', id: snapshot.id,
+      user: owner, overrideAccess,
+      data: { sourceVersionId: 'migration-must-not-replace-captured-identity' },
+    })).rejects.toMatchObject({ status: 403 })
+    await expect(payload.delete({
+      collection: 'preview-snapshots', id: snapshot.id,
+      user: owner, overrideAccess,
+    })).rejects.toMatchObject({ status: 403 })
+
+    expect(await payload.findByID({
+      collection: 'preview-snapshots', id: snapshot.id,
+      user: owner, overrideAccess: false, depth: 0,
+    })).toEqual(capturedBefore)
+    expect(await databaseSnapshot()).toBe(databaseBefore)
+    expect(await physicalSnapshot()).toEqual(filesBefore)
+  })
+
   it('reads a real owner fixture without changing rows, versions, snapshots or physical bytes', async () => {
     const databaseBefore = await databaseSnapshot()
     const filesBefore = await physicalSnapshot()

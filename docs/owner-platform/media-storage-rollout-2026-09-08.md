@@ -84,18 +84,27 @@ Esta tarea no implementa recolección de basura ni borra biblioteca real.
 | Original legacy | `<legacyStaticDir>/<filename>` + ID y hash | `<privateRevisionRoot>/<revisionUUID>/<filename>` con los mismos bytes/hash |
 | Derivado legacy | `<legacyStaticDir>/<sizes.variant.filename>` + variante y hash | La misma revisión UUID, nombre y bytes exactos del derivado |
 | Referencia documental/versionada | ID de fila/version y metadatos antiguos completos | `storageRevision` + metadatos verificados y enlace `/api/media/revision/<documentId>/<revisionUUID>/<encodedFilename>` |
-| Snapshot congelado | ID, manifiesto y hash previos | Transformación explícitamente compatible y revalidada, con la revisión exacta que realmente existía al capturarlo |
+| Snapshot congelado | ID, manifiesto y hash previos, más evidencia auténtica de los bytes capturados | Original inmutable conservado; resolución de medios separada y versionada, ligada a esa identidad/hash y revisada antes de incorporarla |
 
    Los marcadores de esta tabla son campos obligatorios del plan, **no un mapeo
    real ya resuelto**. Guardar los valores concretos del clon antes de aprobar el
-   corte. Si el esquema antiguo de versiones/snapshots no admite esa transformación,
-   diseñar y revisar una migración versionada específica; este procedimiento no
-   concede permiso para mutarlos informalmente.
+   corte. La investigación del 8 de septiembre confirma que los snapshots rechazan
+   mutaciones incluso desde la API Local privilegiada y que su hash cubre las
+   referencias. Se retira la alternativa de transformarlos en el sitio: conservar
+   el original y diseñar/revisar una resolución separada antes de implementar el
+   corte. Esa resolución todavía no existe; véanse las
+   [fronteras verificadas y el experimento siguiente](media-migration-boundaries-2026-09-08.md).
 3. Crear revisiones usando bytes existentes completos, verificar SHA-256 y longitudes
    antes de actualizar referencias. Una versión antigua que apunta a bytes ya
    perdidos no puede reconstruirse desde los metadatos. No asignarle los bytes
    actuales ni regenerar derivados y llamarlos históricos. Marcar la pérdida y
    recuperar una copia histórica auténtica si existe; si no, la laguna permanece.
+   Preparar el esquema y los mapeos antes de activar el binding: los documentos sin
+   revisión quedarían sin URL con la configuración nueva. Las escrituras del adaptador
+   deben usar una transacción dedicada realmente viva, no solo un transactionID;
+   la implementación instalada puede volver a la conexión principal si la sesión
+   terminó. Probar rechazo antes de escribir en ese caso. Los bytes preescritos
+   quedan fuera del rollback SQL y se retienen/inventarían si este falla.
 4. Verificar cada fila del mapeo, todas las referencias y la igualdad de bytes;
    ejecutar permisos HTTP, reemplazo, edición nativa, restauración histórica,
    snapshot congelado y backup/restauración completa del clon migrado. Revisar
