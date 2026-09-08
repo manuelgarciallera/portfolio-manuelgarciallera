@@ -15,6 +15,7 @@ const MANIFEST_NAME = 'manifest.json'
 const CONTROL_CHARACTER = /\p{Cc}/u
 const UNSAFE_FILENAME_CHARACTER = /[\\/:]/u
 const WINDOWS_DEVICE_NAME = /^(?:aux|con|nul|prn|com[1-9]|lpt[1-9])(?:\.|$)/iu
+const UNSAFE_FILENAME_EVIDENCE = /^unsafe-name-[0-9a-f]{64}$/iu
 const REVISION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u
 
 export type LegacyMediaReference = {
@@ -107,6 +108,8 @@ const isBoundedIdentifier = (value: unknown): value is string =>
   value.length > 0 &&
   Array.from(value).length <= MAX_IDENTIFIER_CHARS &&
   value.trim().length > 0 &&
+  value !== '.' &&
+  value !== '..' &&
   isWellFormedUtf16(value) &&
   !CONTROL_CHARACTER.test(value) &&
   !looksLikePathUrlOrEmail(value)
@@ -122,6 +125,7 @@ const isSafeFilename = (value: string): boolean =>
   !/[. ]$/u.test(value) &&
   !WINDOWS_DEVICE_NAME.test(value) &&
   value.toLowerCase() !== MANIFEST_NAME &&
+  !UNSAFE_FILENAME_EVIDENCE.test(value) &&
   !looksLikeEmail(value)
 
 const canonicalFilename = (value: string): string => value.normalize('NFC').toLowerCase()

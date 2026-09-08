@@ -149,6 +149,51 @@ describe('legacy media inventory', () => {
     expect(report.totalObservedBytes).toBe(5)
   })
 
+  it('keeps generated unsafe-name evidence distinct from literal physical filenames', async () => {
+    const manifestEvidence = 'unsafe-name-ffa5b716b5a57837f7929dfcca4b4dfdeb97210a7fd5a12d2f1978846d6f1743'
+    const literalEvidence = 'unsafe-name-af5ec6a3c5aefea65e0f164ed3eef920a7f51882223f77a92d4527d4b1652824'
+    await createFile('manifest.json', 'a')
+    await createFile(manifestEvidence, 'bb')
+
+    const report = await inspectLegacyMediaInventory({
+      root,
+      references: [reference({
+        files: [{ variant: 'unsafe', filename: 'manifest.json' }],
+      })],
+    })
+
+    expect(report.references[0].files).toEqual([
+      { variant: 'unsafe', filename: manifestEvidence },
+    ])
+    expect(report.references[0].observedFiles).toEqual([
+      { filename: manifestEvidence, status: 'unsafe-entry' },
+    ])
+    expect(report.physicalFiles).toEqual([
+      { filename: literalEvidence, status: 'unsafe-entry' },
+      { filename: manifestEvidence, status: 'unsafe-entry' },
+    ])
+    expect(report.unreferencedFiles).toEqual([literalEvidence])
+    expect(report.issues).toEqual([
+      'unsafe-physical-entry:' + literalEvidence,
+      'unsafe-physical-entry:' + manifestEvidence,
+    ])
+    expect(report.totalObservedBytes).toBe(3)
+  })
+
+  it('reserves the unsafe-name evidence namespace case-insensitively', async () => {
+    const uppercaseEvidence = 'UNSAFE-NAME-FFA5B716B5A57837F7929DFCCA4B4DFDEB97210A7FD5A12D2F1978846D6F1743'
+    const reportedEvidence = 'unsafe-name-4199cc3670815958429e5caf43416eb2be2271cab5579ebf778e4fcb417d8765'
+    await createFile(uppercaseEvidence, 'a')
+
+    const report = await inspectLegacyMediaInventory({ root, references: [] })
+
+    expect(report.physicalFiles).toEqual([
+      { filename: reportedEvidence, status: 'unsafe-entry' },
+    ])
+    expect(report.unreferencedFiles).toEqual([reportedEvidence])
+    expect(report.issues).toEqual(['unsafe-physical-entry:' + reportedEvidence])
+  })
+
   it('does not URL-decode filenames while matching Unicode conservatively', async () => {
     await createFile('%2e%2e.png', 'abc')
     await createFile('\u00E9.png', 'abc')
@@ -287,6 +332,22 @@ describe('legacy media inventory', () => {
     ['duplicate variants', { root: 'not-read', references: [reference({ files: [{ variant: 'same' }, { variant: 'same' }] })] }],
   ])('validates %s before filesystem IO', async (_label, input) => {
     await expect(inspectLegacyMediaInventory(input as never)).rejects.toThrow()
+  })
+
+  it.each([
+    ['document ID dot', reference({ documentId: '.' }), /identifiers are invalid/u],
+    ['document ID parent dot', reference({ documentId: '..' }), /identifiers are invalid/u],
+    ['reference ID dot', reference({ referenceId: '.' }), /identifiers are invalid/u],
+    ['reference ID parent dot', reference({ referenceId: '..' }), /identifiers are invalid/u],
+    ['variant dot', reference({ files: [{ variant: '.', filename: 'hero.png' }] }), /variant has an invalid name/u],
+    ['variant parent dot', reference({ files: [{ variant: '..', filename: 'hero.png' }] }), /variant has an invalid name/u],
+  ])('rejects %s before reading the physical root', async (_label, item, expectedError) => {
+    const unreadableRoot = join(sandbox, 'must-not-be-read')
+
+    await expect(inspectLegacyMediaInventory({
+      root: unreadableRoot,
+      references: [item],
+    })).rejects.toThrow(expectedError)
   })
 
   it('requires an existing absolute non-volume-root physical directory', async () => {
