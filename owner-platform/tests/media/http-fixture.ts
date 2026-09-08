@@ -6,7 +6,7 @@ import type { Socket } from 'node:net'
 import { fileURLToPath } from 'node:url'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { buildConfig, getPayload, handleEndpoints, type Payload, type SanitizedConfig } from 'payload'
+import { buildConfig, getPayload, handleEndpoints, type CollectionConfig, type Payload, type SanitizedConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Media } from '../../src/collections/Media'
@@ -111,9 +111,28 @@ export const startHTTPRequestRecorder = async (): Promise<HTTPRequestRecorder> =
   }
 }
 
-export const startMediaHTTPFixture = async (): Promise<MediaHTTPFixture> => {
-  const root = process.env.OWNER_INTEGRATION_DIRECTORY
+// Explicit settings are only for isolated recovery workers. Their credentials,
+// database and paths never fall back to ambient application configuration.
+export type MediaHTTPReopenSettings = {
+  root: string
+  revisionRoot: string
+  staticDir: string
+  credentials: { email: string; password: string }
+  secret: string
+  seed: boolean
+  database: { engine: 'sqlite'; filename: string } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] }
+  collections?: CollectionConfig[]
+  decorateMedia?: (media: CollectionConfig) => CollectionConfig
+}
+
+export const startMediaHTTPFixture = async (settings?: MediaHTTPReopenSettings): Promise<MediaHTTPFixture> => {
+  const root = settings ? settings.root : process.env.OWNER_INTEGRATION_DIRECTORY
   if (!root || !path.isAbsolute(root)) throw new Error('OWNER_INTEGRATION_DIRECTORY must be an explicit absolute fixture root.')
+  if (settings && (!path.isAbsolute(settings.revisionRoot) || !path.isAbsolute(settings.staticDir)
+    || !settings.secret || !settings.credentials.email.endsWith('@example.invalid') || !settings.credentials.password
+    || (settings.database.engine === 'sqlite' ? !path.isAbsolute(settings.database.filename) : settings.database.pool?.host !== '127.0.0.1'))) {
+    throw new Error('Recovery fixture requires explicit synthetic credentials, private roots and a local database.')
+  }
 
   let config: SanitizedConfig | undefined
   const sockets = new Set<Socket>()
@@ -164,31 +183,32 @@ export const startMediaHTTPFixture = async (): Promise<MediaHTTPFixture> => {
     hostname: '127.0.0.1', pathname: '/api/media/revision/**', port: String(address.port), protocol: 'http' as const,
   }
   const key = `versioned-media-http-${randomUUID()}`
-  const revisionRoot = path.join(root, 'http-private-revisions')
-  const staticDir = path.join(root, 'http-unused-native-media')
+  const revisionRoot = settings?.revisionRoot ?? path.join(root, 'http-private-revisions')
+  const staticDir = settings?.staticDir ?? path.join(root, 'http-unused-native-media')
 
   let payload: Payload | undefined
   try {
-    await mkdir(revisionRoot)
-    await mkdir(staticDir)
-    const database = await editorialDatabaseConfig(process.env, {
+    await mkdir(revisionRoot, { recursive: Boolean(settings) })
+    await mkdir(staticDir, { recursive: Boolean(settings) })
+    const database: { engine: 'sqlite' } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] } = settings ? settings.database : await editorialDatabaseConfig(process.env, {
       cache: fileURLToPath(new URL('../../node_modules/.cache', import.meta.url)),
     })
-    const bound = await createRevisionStorageCollection(Media, { nativeFetchOrigin: origin, revisionRoot, staticDir })
+    const rawMedia = settings?.decorateMedia ? settings.decorateMedia(Media) : Media
+    const bound = await createRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, revisionRoot, staticDir })
     const upload = typeof bound.upload === 'object' ? bound.upload : {}
     config = await buildConfig({
-      collections: [Users, { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }],
+      collections: [Users, { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
-        ? postgresAdapter({ pool: database.pool, push: true, disableCreateDatabase: true, schemaName: 'versioned_media_http_fixture' })
-        : sqliteAdapter({ client: { url: `file:${path.join(root, 'versioned-media-http.db').replaceAll('\\', '/')}` }, transactionOptions: {} }),
+        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true, schemaName: 'versioned_media_http_fixture' })
+        : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, 'versioned-media-http.db')).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
-      secret: randomUUID() + randomUUID(),
+      secret: settings?.secret ?? randomUUID() + randomUUID(),
       sharp,
     })
     payload = await getPayload({ config, key })
-    const email = 'versioned-http-owner@example.invalid'
-    const password = randomUUID() + randomUUID()
-    await payload.create({ collection: 'users', overrideAccess: true, data: { email, password, role: 'owner' } })
+    const email = settings?.credentials.email ?? 'versioned-http-owner@example.invalid'
+    const password = settings?.credentials.password ?? randomUUID() + randomUUID()
+    if (!settings || settings.seed) await payload.create({ collection: 'users', overrideAccess: true, data: { email, password, role: 'owner' } })
 
     const login = await fetch(`${origin}/api/users/login`, {
       body: JSON.stringify({ email, password }),

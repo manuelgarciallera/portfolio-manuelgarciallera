@@ -9,10 +9,12 @@ import { build } from 'esbuild'
 import { createPhysicalBackup, restoreVerifiedBackup, snapshotFiles } from '../tests/recovery/backup-manifest.mjs'
 import { safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
+import { assertVersionedDamageRejected, restoreVersionedBackup, snapshotRevisionInventory, verifyVersionedBackup } from '../tests/recovery/versioned-media-manifest.mjs'
 
 const execFileAsync = promisify(execFile)
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
-const workerSource = path.join(ownerRoot, 'tests', 'recovery', 'payload-worker.mjs')
+const versionedMedia = process.argv.includes('--versioned-media')
+const workerSource = path.join(ownerRoot, 'tests', 'recovery', versionedMedia ? 'versioned-media-worker.mjs' : 'payload-worker.mjs')
 const tempPrefix = path.join(ownerRoot, 'node_modules', '.cache', 'owner-physical-recovery-')
 
 const runUnitTests = () => new Promise((resolve, reject) => {
@@ -58,32 +60,38 @@ try {
   })
 
   const sourceBefore = await snapshotFiles(sourceDirectory)
+  if (versionedMedia && !workersClosed()) throw new Error('Seed process must close before database/media copy.')
   const sidecars = sourceBefore.filter((file) => /^database\/owner\.db(?:-wal|-shm|-journal)$/.test(file.path))
   const manifest = await createPhysicalBackup({ applicationCommit, backupDirectory, sourceDirectory })
   const backupBefore = await snapshotFiles(backupDirectory)
 
-  await cp(backupDirectory, invalidBackupDirectory, { recursive: true, errorOnExist: true, force: false })
-  const corruptTarget = manifest.files.find((file) => file.path.startsWith('media/'))
-  if (!corruptTarget) throw new Error('Recovery fixture did not produce a media backup file.')
-  await writeFile(path.join(invalidBackupDirectory, 'data', ...corruptTarget.path.split('/')), Buffer.concat([
-    await readFile(path.join(invalidBackupDirectory, 'data', ...corruptTarget.path.split('/'))),
-    Buffer.from('corrupt'),
-  ]))
-  let corruptRejected = false
-  try {
-    await restoreVerifiedBackup({ backupDirectory: invalidBackupDirectory, restoreDirectory: invalidRestoreDirectory })
-  } catch {
-    corruptRejected = true
-  }
-  if (!corruptRejected) throw new Error('Corrupt backup was not rejected.')
-  try {
-    await stat(invalidRestoreDirectory)
-    throw new Error('Invalid restore directory was created before integrity rejection.')
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error
+  let damageCases
+  if (versionedMedia) {
+    damageCases = await assertVersionedDamageRejected({ backupDirectory, root: taskRoot, expected: seeded })
+  } else {
+    await cp(backupDirectory, invalidBackupDirectory, { recursive: true, errorOnExist: true, force: false })
+    const corruptTarget = manifest.files.find((file) => file.path.startsWith('media/'))
+    if (!corruptTarget) throw new Error('Recovery fixture did not produce a media backup file.')
+    await writeFile(path.join(invalidBackupDirectory, 'data', ...corruptTarget.path.split('/')), Buffer.concat([
+      await readFile(path.join(invalidBackupDirectory, 'data', ...corruptTarget.path.split('/'))),
+      Buffer.from('corrupt'),
+    ]))
+    let corruptRejected = false
+    try {
+      await restoreVerifiedBackup({ backupDirectory: invalidBackupDirectory, restoreDirectory: invalidRestoreDirectory })
+    } catch {
+      corruptRejected = true
+    }
+    if (!corruptRejected) throw new Error('Corrupt backup was not rejected.')
+    try {
+      await stat(invalidRestoreDirectory)
+      throw new Error('Invalid restore directory was created before integrity rejection.')
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error
+    }
   }
 
-  await restoreVerifiedBackup({ backupDirectory, restoreDirectory })
+  await (versionedMedia ? restoreVersionedBackup : restoreVerifiedBackup)({ backupDirectory, restoreDirectory })
   const restored = await runWorker(workerPath, {
     mode: 'restore', credentials, payloadSecret, expected: seeded,
     databaseDirectory: path.join(restoreDirectory, 'database'),
@@ -92,16 +100,23 @@ try {
 
   if (JSON.stringify(await snapshotFiles(sourceDirectory)) !== JSON.stringify(sourceBefore)) throw new Error('Restored edit changed the source fixture.')
   if (JSON.stringify(await snapshotFiles(backupDirectory)) !== JSON.stringify(backupBefore)) throw new Error('Restored edit changed the backup.')
+  if (versionedMedia) {
+    if (JSON.stringify(await snapshotRevisionInventory(path.join(sourceDirectory, 'media'))) !== JSON.stringify(seeded.inventory)) throw new Error('Restored edit changed source revision directories.')
+    await verifyVersionedBackup(backupDirectory)
+  }
 
   console.log(JSON.stringify({
     recovery: 'passed',
-    workflowChecks: 12,
+    ...(!versionedMedia ? { workflowChecks: 12 } : {}),
     applicationCommit,
     backupFiles: manifest.files.length,
     databaseSidecarsIncluded: sidecars.length,
     mediaFilesVerified: restored.restoredMediaFileCount,
-    pageVersionsRestored: restored.restoredVersionCount,
+    ...(versionedMedia ? { mediaVersionsRestored: restored.restoredVersionCount } : { pageVersionsRestored: restored.restoredVersionCount }),
     ambientCredentialsIgnored: true,
+    ...(versionedMedia ? { mode: 'versioned-media', damageCasesRejectedBeforeAllocation: damageCases,
+      revisionsRecovered: restored.revisionsRecovered, authenticatedHistoricalFiles: restored.authenticatedHistoricalFiles,
+      scope: 'media and real frozen previews with minimal persisted page/brand inputs', sourceFilesUnchanged: true, backupReceiptsUnchanged: true } : {}),
   }, null, 2))
 } finally {
   if (workersClosed()) {

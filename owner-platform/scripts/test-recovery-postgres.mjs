@@ -7,9 +7,11 @@ import { build } from 'esbuild'
 import { createPhysicalBackup, restoreVerifiedBackup, snapshotFiles, verifyPhysicalBackup } from '../tests/recovery/backup-manifest.mjs'
 import { createPostgresCluster, databaseCommand, preflightTools, runCommand } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
+import { assertVersionedDamageRejected, restoreVersionedBackup, verifyVersionedBackup } from '../tests/recovery/versioned-media-manifest.mjs'
 
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const cache = path.join(ownerRoot, 'node_modules', '.cache')
+const versionedMedia = process.argv.includes('--versioned-media')
 // Resolve and execute every required tool before creating a cluster or any test data.
 const { tools, versions } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 await runCommand(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts'], { cwd: ownerRoot, timeout: 60_000 }).then(({ stdout }) => console.log(stdout))
@@ -30,7 +32,7 @@ try {
   }
 
   const workerPath = path.join(root, 'runtime', 'payload-worker.mjs')
-  await build({ absWorkingDir: ownerRoot, bundle: true, entryPoints: [path.join(ownerRoot, 'tests', 'recovery', 'payload-worker.mjs')], format: 'esm', outfile: workerPath, packages: 'external', platform: 'node', target: 'node20' })
+  await build({ absWorkingDir: ownerRoot, bundle: true, entryPoints: [path.join(ownerRoot, 'tests', 'recovery', versionedMedia ? 'versioned-media-worker.mjs' : 'payload-worker.mjs')], format: 'esm', outfile: workerPath, packages: 'external', platform: 'node', target: 'node20' })
   const sourceDirectory = path.join(root, 'source')
   const backupDirectory = path.join(root, 'backup')
   const restoreDirectory = path.join(root, 'restored')
@@ -50,6 +52,13 @@ try {
   const backupBefore = await snapshotFiles(backupDirectory)
   const mediaBefore = await snapshotFiles(path.join(sourceDirectory, 'media'))
 
+  let damageCases
+  if (versionedMedia) {
+    damageCases = await assertVersionedDamageRejected({ backupDirectory, root, expected: seeded,
+      assertDatabaseAbsent: async () => assert.equal((await query('owner_source', "SELECT count(*) FROM pg_database WHERE datname='owner_restored'")).stdout.trim(), '0'),
+    })
+  }
+
   // Exercise the actual dump artifact's corrupt/missing refusal before any restore output.
   for (const damage of ['corrupt', 'missing']) {
     const invalid = path.join(root, `backup-${damage}`)
@@ -63,10 +72,10 @@ try {
     assert.equal((await query('owner_source', "SELECT count(*) FROM pg_database WHERE datname='owner_restored'")).stdout.trim(), '0')
   }
 
-  await verifyPhysicalBackup(backupDirectory)
+  await (versionedMedia ? verifyVersionedBackup : verifyPhysicalBackup)(backupDirectory)
   await postgres.command('pg_restore', ['--list', path.join(backupDirectory, 'data', 'database', 'owner.dump')])
   // Neither a database nor a media destination exists until all integrity checks pass.
-  await restoreVerifiedBackup({ backupDirectory, restoreDirectory })
+  await (versionedMedia ? restoreVersionedBackup : restoreVerifiedBackup)({ backupDirectory, restoreDirectory })
   await postgres.createDatabase('owner_restored')
   console.log('[postgres-recovery] native pg_restore into fresh database')
   await native('pg_restore', 'owner_restored', path.join(restoreDirectory, 'database', 'owner.dump'))
@@ -77,7 +86,13 @@ try {
   await assertNoPayloadSessions('owner_source')
   assert.deepEqual(await snapshotFiles(path.join(sourceDirectory, 'media')), mediaBefore)
   assert.deepEqual(await snapshotFiles(backupDirectory), backupBefore)
-  result = { recovery: 'passed', engine: 'postgres', versions, applicationCommit, backupFiles: manifest.files.length, archiveFormat: 'pg_dump custom', mediaFilesVerified: restored.restoredMediaFileCount, pageVersionsRestored: restored.restoredVersionCount, corruptAndMissingArchiveRejected: true, sourceLogicalStateUnchanged: true, sourceSessionsClosedBeforeDump: true, ambientCredentialsIgnored: true }
+  if (versionedMedia) await verifyVersionedBackup(backupDirectory)
+  result = { recovery: 'passed', engine: 'postgres', versions, applicationCommit, backupFiles: manifest.files.length, archiveFormat: 'pg_dump custom', mediaFilesVerified: restored.restoredMediaFileCount,
+    ...(versionedMedia ? { mediaVersionsRestored: restored.restoredVersionCount } : { pageVersionsRestored: restored.restoredVersionCount }),
+    corruptAndMissingArchiveRejected: true, sourceLogicalStateUnchanged: true, sourceSessionsClosedBeforeDump: true, ambientCredentialsIgnored: true }
+  if (versionedMedia) Object.assign(result, { mode: 'versioned-media', damageCasesRejectedBeforeAllocation: damageCases,
+    revisionsRecovered: restored.revisionsRecovered, authenticatedHistoricalFiles: restored.authenticatedHistoricalFiles,
+    scope: 'media and real frozen previews with minimal persisted page/brand inputs', backupReceiptsUnchanged: true })
 } catch (error) {
   failure = error
 } finally {
