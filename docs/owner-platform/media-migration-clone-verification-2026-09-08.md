@@ -2,7 +2,9 @@
 
 Fecha: 2026-09-08
 
-Incremento QA: `5873b3f`
+Implementación QA: `5873b3f`
+
+Corrección post-review verificada: `2af909e`
 
 Alcance: ensayo sintético aislado; no activa la biblioteca real ni modifica `src/payload.config.ts`.
 
@@ -51,7 +53,7 @@ Ese handle no prueba por sí solo la restauración nativa. La reproducción dire
 
 Los intentos anteriores que fallaron por configuración de Vitest o por ausencia del helper solo identificaron el arnés incompleto. La cronología conservada no demuestra una ejecución RED end-to-end del restore nativo anterior a todo código de migración; esta limitación se mantiene explícita y no se reconstruye retrospectivamente.
 
-### GREEN final SQLite
+### Resultado histórico SQLite anterior al fix `2af909e`
 
 Handle `96912`, salida 0:
 
@@ -70,7 +72,7 @@ staleSessionRejectedBeforeWrite true
 workersClosed true
 ```
 
-### GREEN final PostgreSQL
+### Resultado histórico PostgreSQL anterior al fix `2af909e`
 
 PostgreSQL portable 17.11. Handle `25875`, salida 0:
 
@@ -92,7 +94,7 @@ staleSessionRejectedBeforeWrite true
 workersClosed true
 ```
 
-### Helper, lint y tipos
+### Resultado histórico de helper, lint y tipos anterior al fix `2af909e`
 
 Handle conjunto `73632`, salida 0:
 
@@ -104,6 +106,73 @@ node node_modules/eslint/bin/eslint.js scripts/test-media-migration.mjs tests/mi
 
 npm run typecheck
 ```
+
+Estos tres resultados (`96912`, `25875` y `73632`) pertenecen al incremento original previo a I1/M1/M2. Se conservan como trazabilidad histórica y no se presentan como la verificación final de `2af909e`.
+
+## Evidencia final posterior al fix `2af909e`
+
+Las siguientes ejecuciones ejercieron el delta de corrección que después quedó congelado en `2af909e`. Los recibos de los controladores físicos imprimieron el HEAD ambiente presente al arrancar (`07a3ac7` para SQLite y `fff5488` para PostgreSQL) porque el fix aún era un delta de working tree; no hubo cambios de código entre esas ejecuciones y el commit `2af909e`.
+
+### SQLite final
+
+Comando `node scripts/test-media-migration.mjs`; sesión `9522`, chunks `a25551`, `5255c2` y final `a96080`, exit 0:
+
+```text
+migration passed
+engine sqlite
+rowsVerified 3
+originalAndDerivedFiles 8
+downloadsVerified 12
+backupFiles 13
+preparedCloneReopened true
+sourceFilesUnchanged true
+backupFilesUnchanged true
+rollbackVerified true
+staleSessionRejectedBeforeWrite true
+workersClosed true
+cleanup worker closure observed and only exact SQLite run root removed
+```
+
+### PostgreSQL 17.11 final
+
+Comando `node scripts/test-media-migration.mjs --postgres`; sesión `83623`, chunks `d8f181`, `571ff8`, `5f3fa5` y final `39608d`, exit 0:
+
+```text
+migration passed
+engine postgres
+rowsVerified 3
+sourceRowsVerified 3
+originalAndDerivedFiles 8
+downloadsVerified 12
+backupFiles 13
+preparedCloneReopened true
+sourceFilesUnchanged true
+backupFilesUnchanged true
+rollbackVerified true
+staleSessionRejectedBeforeWrite true
+workersClosed true
+cleanup exact cluster stopped and only this run root removed
+```
+
+### Helper de retención, lint y tipos finales
+
+```text
+node node_modules/vitest/vitest.mjs run --config tests/migration/vitest.config.ts
+```
+
+Chunk `c0aeb9`, exit 0: 2 archivos y 11/11 pruebas en 1,21 s. Incluye éxito/fallo de retención SQLite/PostgreSQL y las tres pruebas de transacción.
+
+```text
+node node_modules/eslint/bin/eslint.js scripts/test-media-migration.mjs tests/migration/media-migration-worker.mjs tests/migration/evidence-lifecycle.mjs tests/migration/evidence-retention.test.ts tests/recovery/postgres-runtime.mjs
+```
+
+Chunk `379ccd`, exit 0, sin salida.
+
+```text
+npm run typecheck
+```
+
+Exit 0 en 10,61 s. La revisión independiente final de `2af909e` no encontró hallazgos Critical ni Important; M3 era únicamente esta actualización de procedencia documental.
 
 ## Límites
 
