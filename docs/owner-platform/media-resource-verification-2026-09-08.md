@@ -326,3 +326,23 @@ SHA-256 del recibo original:
 `24e30026c69a97db5bc94e437d4e070b00ae616cfa99a1f527847bbf89798788`.
 SHA-256 del nuevo recibo:
 `35bc5b7bb2f50a6b3a3545e83f4e956d27d49911126af9475ed81d2ddcc0b5d5`.
+
+## Revisión cerrada del alcance medido
+
+Implementación `5035ce8`, corrección `d704ee6`. La revisión independiente detectó
+que un inicio fallido podía permitir limpieza antes de confirmar el cierre. La
+corrección marca el estado incierto antes de iniciar y conserva los archivos si
+no obtiene una confirmación real. Regresión RED 14/16 a GREEN 16/16; lint y tipos
+salida 0. La revisión focal posterior confirma el hallazgo resuelto y ninguna
+rotura Critical/Important introducida. Los 51 resultados del ensayo corregido
+no sustituyen esa comprobación del camino de fallo.
+
+El controlador contrastó directamente el recibo final, sus cuatro hashes de
+ejecutables, los nueve grupos y las 51 respuestas completas con status 200 y
+hash coincidente. Confirmó cierre de clientes/servidor, archivos sin cambios y
+que solo queda `result.json` tras la limpieza. No repitió el benchmark.
+
+Mejoras menores diferidas: ensayo de respuesta detenida hasta vencer el plazo
+de EOF y captura explícita del aviso esperado de correo, sin ocultar diagnósticos
+inesperados. No bloquean este experimento local. La revisión conjunta del
+incremento completo de medios es una puerta distinta, todavía en curso.

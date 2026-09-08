@@ -17,10 +17,12 @@ incluida publicación del último borrador. La [recuperación física completa](
 está implementada y revisada en `73a52f6`, con las revisiones retenidas y los
 intentos vacíos verificados en SQLite y PostgreSQL. La [medición local de recursos](media-resource-verification-2026-09-08.md)
 ha superado 51/51 descargas (tres recursos sintéticos, warm-up + ocho en serie +
-ocho con máximo cuatro en vuelo): revisión grande de 62148980 B, 92.6092 % del
-cap de 64 MiB; pico RSS observado 820895744 B, bajo presupuesto diagnóstico de
+ocho con máximo cuatro en vuelo): ensayo final sobre `d704ee6`, revisión grande
+de 62149485 B, 92.6100 % del cap de 64 MiB; pico RSS observado 821137408 B, bajo presupuesto diagnóstico de
 2 GiB. Incluye buffers de revisión completa y copias del fixture; no mide capacidad
-de producción ni la web pública. Revisión independiente de Task 5 pendiente.
+de producción ni la web pública. La revisión independiente de Task 5 y su
+corrección de limpieza ante inicio incierto están cerradas. La revisión conjunta
+del incremento completo `cd33df0..d704ee6` sigue pendiente en esta actualización.
 El [procedimiento de activación/migración/rollback](media-storage-rollout-2026-09-08.md)
 está documentado, sin ejecución real. Siguen pendientes persistencia del alojamiento,
 backup externo, permisos efectivos, costes/cuotas, migraciones, procedencia completa
