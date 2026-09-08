@@ -16,6 +16,7 @@ try {
     for (let i = 0; i < 6; i++) {
       const frame = frames.nth(i)
       await frame.scrollIntoViewIfNeeded()
+      await page.screenshot({ path: `tmp/process-images/loading-${width}-${i}.png` })
       await frame.locator('img').evaluate(async img => {
         let timer
         try {

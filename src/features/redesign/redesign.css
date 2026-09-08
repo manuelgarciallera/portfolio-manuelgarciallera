@@ -1167,6 +1167,10 @@
 
 /* ---------- Responsive ---------- */
 /* Los cortes siguientes solo cambian composición, nunca tamaño tipográfico. */
+@media (min-width: 768px) {
+  /* Keep the scene inside its grid column instead of extending over the copy. */
+  .rd-hero-art { max-width: 100%; }
+}
 @media (min-width: 768px) and (max-width: 1179px) {
   .rd-axes { grid-template-columns: 1fr; gap: var(--space-3); }
   .rd-hero { grid-template-columns: minmax(17rem, 0.9fr) minmax(20rem, 1.1fr); padding-inline: var(--hero-content-inset); }
