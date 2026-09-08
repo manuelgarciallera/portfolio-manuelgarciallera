@@ -34,7 +34,9 @@ Consultar los diffs y REGISTRO para evidencias focales anteriores. No volver a i
 - Barrido de recortes:11rutas×6anchos320–1440, salida0. Umbral: contenido mayoritariamente oculto. No cubre toda colisión, pequeños recortes ni `/investigacion`.
 - Menú móvil de `/proceso` en navegador integrado: apertura y cierre mediante Escape correctos. Captura móvil de primera fase inspeccionada sin superposición en ese punto.
 
-## Hallazgo abierto: imágenes de Proceso
+## Hallazgo histórico: imágenes de Proceso (cerrado posteriormente)
+
+Actualización de este turno: `090cf63` captura cada paso tras scroll antes de esperar decode. Prueba verde local y en producción en 390/768/1440. No se cambia el runtime de imágenes ni se atribuye una causa no probada. El diagnóstico siguiente se conserva como historial y ya no es un bloqueo. Ver `../deployment-090cf63-2026-09-08.md` para publicación y verificaciones actuales.
 
 El test headless falla reiteradamente esperando la sexta imagen, `human-ai.webp`. Diagnóstico: currentSrc vacío, completefalse, naturalWidth0 aunque el marco queda dentro del viewport. Añadido timeout30s con limpieza y diagnóstico; cada ancho usa página nueva, sin resolver el fallo.
 
