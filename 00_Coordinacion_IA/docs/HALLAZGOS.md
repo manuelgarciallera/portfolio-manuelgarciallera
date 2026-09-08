@@ -251,3 +251,73 @@ Durante esta sesion he usado `rm -f .git/*.lock` antes de cada operacion de git,
 por locks huerfanos del mount del puente. Eso no distingue un lock huerfano de uno
 de otro agente en curso y probablemente rompio alguna operacion de staging de
 Codex. Retirado. Un lock ajeno se clasifica antes de tocarlo.
+
+---
+
+## MAIL-001 · El formulario de contacto devolvia 503 con la configuracion ya guardada
+
+2026-09-08. `POST /api/contact` respondia `503 unconfigured` aun con las cinco
+variables presentes en Vercel (`CONTACT_TO_EMAIL`, `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASS`, todas en Production). La causa no era la configuracion
+sino el orden: una variable de entorno de Vercel solo entra en los despliegues
+creados **despues** de guardarla. El build de produccion vigente
+(`dpl_CG9PqFnwoAp2gidcqSbRvWJbFxYx`) era anterior a `SMTP_PASS`, asi que la funcion
+leia `process.env.SMTP_PASS` como `undefined` y `sendWithSmtp` devolvia
+`unconfigured` antes de abrir un socket.
+
+Resuelto con un redeploy del mismo SHA (`c6746f6d`) sobre production:
+`dpl_3PVH9Ar2DyttdHuRiVQcuxtyYiNt`, `action: redeploy`, READY.
+
+Verificacion posterior: `POST /api/contact` con carga valida devuelve
+`200 {"ok":true}`, y el registro de runtime muestra `POST /api/contact 200` sin
+linea de `[contact] envio fallido`. Como `sendMail` solo resuelve cuando el
+servidor acepta el mensaje, IONOS acepto el envio.
+
+Leccion aplicable a cualquier variable futura: guardar la variable no cambia
+produccion. Hay que redesplegar, y comprobarlo con una peticion real, no con la
+pantalla de variables.
+
+## MAIL-002 · `.env.example` documenta el transporte alternativo y no el real
+
+El fichero solo lista `RESEND_API_KEY` y `CONTACT_FROM_EMAIL`, que son la via
+secundaria. El transporte primario (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+`SMTP_PASS`, `SMTP_FROM_NAME`) no aparece, pese a estar documentado en la cabecera
+de `src/lib/mailer.ts`. Quien clone el repositorio no puede reproducir la
+configuracion que de verdad esta en produccion. Pasado a Codex por el Hub; no lo
+edito para no chocar con su arbol de trabajo.
+
+## MAIL-003 · Las dos direcciones publicas son buzones, no alias
+
+Comprobado en el panel de IONOS (contrato 41761167): tanto
+`hello@manuelgarciallera.com` como `manuel@garciallera.com` tienen buzon propio
+(cuota, cambio de contrasena, configuracion IMAP). La segunda tiene ademas un
+reenvio configurado a la direccion personal. Consecuencia practica: las dos pueden
+anadirse a Outlook como cuentas independientes, que es la unica via que preserva
+SPF y DMARC. Anadirlas como alias de la cuenta outlook.com haria que el envio
+saliera por los servidores de Microsoft con un `From` de dominio propio, y eso
+falla la alineacion.
+
+### MAIL-001 · cierre
+
+2026-09-08. Manuel confirma la recepcion del correo de prueba en su buzon. El
+circuito completo (formulario -> ruta -> SMTP de IONOS -> bandeja) queda verificado
+de extremo a extremo. Pendiente unicamente su comprobacion de que `Reply-To`
+devuelve al remitente del formulario y no a el mismo.
+
+## ID-001 · Google Scholar quedaba fuera de `sameAs`
+
+2026-09-08. `PROFILE_LINKS.orcid` tenia valor por defecto en codigo y
+`PROFILE_LINKS.scholar` no: dependia de una variable de entorno que nunca se
+definio. Consecuencia: el enlace no se pintaba en el bloque de identidad y, lo mas
+relevante, el perfil no entraba en `SITE_SOCIAL_URLS`, que es lo que alimenta
+`sameAs` de la entidad Person. Para un grafo de conocimiento, ORCID y Scholar son
+las dos aristas que convierten un nombre en una identidad academica resoluble;
+faltaba la mitad.
+
+Perfil verificado antes de enlazarlo: `user=oVTgxPMAAAAJ`, "Manuel Garcia-Llera
+Anon", correo verificado en alumnos.urjc.es, intereses declarados en HCI,
+Human-AI Interaction, UX y Embodied Interaction, con el TFG como unica entrada.
+
+Se enlaza la forma canonica `scholar.google.com/citations?user=...`, sin `hl=es` y
+sin el espejo `.es`: el lector objetivo es un supervisor internacional y no tiene
+sentido forzarle el interfaz en espanol.

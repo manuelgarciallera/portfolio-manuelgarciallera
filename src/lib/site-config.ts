@@ -53,7 +53,9 @@ export const PROFILE_LINKS = {
   // academica en los grafos de conocimiento. Sin valor por defecto, el hueco
   // existia en el tipo pero nunca llegaba a sameAs.
   orcid: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_ORCID) || "https://orcid.org/0009-0009-5893-0343",
-  scholar: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_SCHOLAR),
+  scholar:
+    cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_SCHOLAR) ||
+    "https://scholar.google.com/citations?user=oVTgxPMAAAAJ",
   behance: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_BEHANCE),
   dribbble: cleanOptionalUrl(process.env.NEXT_PUBLIC_PROFILE_DRIBBBLE),
 } as const;
