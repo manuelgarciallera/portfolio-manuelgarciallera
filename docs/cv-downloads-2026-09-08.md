@@ -67,4 +67,27 @@ del commit. Continuación CMS sigue en `docs/owner-platform/cms-audit-handoff-20
 Navegador final: 8/8 perfiles, 16 descargas correctas y sin errores JS; comprobación
 sin JavaScript correcta, salida 0. Unitarias independientes repetidas 219/219,
 36 archivos, salida 0; aviso de tiempo de plugin (sin asertos fallidos).
-Publicación se registra después de verificarla.
+Repetición del script final con aserción estricta de opacidad: otra salida 0,
+8/8 perfiles, 16 descargas y sin JS correcto (sesión 33301).
+
+## Publicado y verificado
+
+- SHA: `e7b384cf371124ee3261ac7845a20b7685c4477f`; push y lectura remota confirmados.
+- Checkpoint local/remoto `checkpoint/pre-cv-bilingual-2026-09-08` → `30ef3d8ae2ec9ae8ea4e4bf84a8457951d80cd78`.
+- Preview `dpl_3U6Czj2xrqxe4JJ7UyrW3s8AV2ms`, Ready, 35 s.
+- Producción `dpl_Ce4A1GV2uReumMJiRcc4bgHUs7Lx`, Ready, 35 s; UI indica
+  2026-09-08 10:21:23 CEST. Reconstrucción del mismo SHA con entorno Production.
+- `https://manuelgarciallera.com/sobre-mi` HTTP 200 con selector; ambos PDF
+  HTTP 200, `application/pdf`, tamaños y SHA-256 iguales a los originales.
+- Comprobación Chrome público: abrir «Descargar CV» expone Español e English
+  con URLs correctas. El barrido responsive exhaustivo anterior es local, no se
+  etiqueta como una repetición completa sobre producción.
+- Conector Vercel devolvió 404 al consultar el proyecto; se usó una pestaña propia
+  autenticada y la UI confirmó promoción y dominio. No se extrajeron credenciales.
+- Ventana anunciada a Claude mediante `1edfed90-80bc-4ee9-a926-a3ed606fa433`.
+  Sin acuse suyo observado. Producción anterior b1512cc conservada; nada de correo,
+  DNS, configuración CMS o variables alterado. Solo se publicaron fuentes Git.
+
+Siguiente responsable Codex: retomar CMS desde el informe de continuación. Claude
+conserva la auditoría del CMS y la corrección móvil de navbar/orbe; discrepancias
+editoriales del CV requieren contrastar datos, no una corrección automática.
