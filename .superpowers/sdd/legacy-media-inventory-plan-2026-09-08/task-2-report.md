@@ -144,9 +144,11 @@ endpoint was changed.
 
 - Completeness: checked every brief item against service behavior and real
   SQLite/PostgreSQL evidence. Empty Payload pagination is exercised before fixture
-  seeding. Every retained reference kind and nine literal fixture identities are
-  asserted, including the red-A version and old snapshot observing current B bytes
-  without claiming historical identity.
+  seeding. The two document identities, one draft identity, one snapshot/media
+  pair and all five independently captured version `{documentId, referenceId}`
+  pairs are asserted exactly. The version parents are also checked as A/B twice,
+  draft once and trash twice. The red-A version and old snapshot observe current B
+  bytes without claiming historical identity.
 - Quality: normalization stays in the Payload boundary service; filesystem and
   privacy decisions remain in Task 1. Helpers have one responsibility and all
   external result shapes are validated before use.
@@ -165,3 +167,36 @@ limits are deliberate: no transactional snapshot is created; the clone must be
 quiescent, and the report always says `migrationReady:false`. Historical identity
 still requires authentic backups. No real library, provider, public deployment,
 migration, activation, recovery benchmark or production-readiness claim was made.
+
+## Review fix round 1/5
+
+Review at `0bee13a` found that the real fixture constrained the total reference
+count and red-A version but not the other four retained version identities. This
+was a test-oracle gap in already-correct production behavior; no production file
+was changed.
+
+The fixture now captures the complete independent version identity set from the
+seeded database after all media operations. It asserts exactly five version
+pairs, the literal parent multiset (A/B twice, draft once, trash twice), five
+collector version entries and exact equality of every `{documentId, referenceId}`
+pair.
+
+- RED sensitivity proof: a temporary test-only mutant omitted the first expected
+  pair with `expectedVersionIdentities.slice(1)`. Command
+  `npm run test:integration -- tests/legacy-media-inventory.integration.test.ts`,
+  chunk `732fad`, exit `1`: `1/3` failed, with the diff identifying the omitted
+  `{documentId:'1', referenceId:'1'}`. The mutant was fully reverted.
+- SQLite GREEN: same focused command, chunk `b57b08`, exit `0`: `3/3` passed.
+- PostgreSQL GREEN: `npm run test:integration:postgres --
+  tests/legacy-media-inventory.integration.test.ts`, session `54815`, final chunk
+  `ce1a86`, exit `0`: the unchanged runner executed its complete config, `4`
+  files and `41/41` tests. It confirmed child close, zero remaining database
+  sessions, exact PostgreSQL 17.11 cluster stop and removal of only its validated
+  synthetic root.
+- Changed-test lint plus full TypeScript `--noEmit`, chunk `9841bc`, exit `0`, no
+  diagnostics.
+
+The deferred Minor about the fixture-owned missing-email-adapter warning was not
+changed in this fix loop. The PostgreSQL output retained that known warning and
+the pre-existing negative media tests' intentional 400/403 logs. No new failure,
+live session or cleanup concern remains.

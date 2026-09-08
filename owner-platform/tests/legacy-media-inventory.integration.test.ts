@@ -42,6 +42,7 @@ let snapshot: PreviewSnapshot
 let redVersionID: string
 let blueOriginalSHA256: string
 let emptyInventory: LegacyMediaInventory
+let expectedVersionIdentities: Array<{ documentId: string; referenceId: string }>
 const key = `legacy-media-inventory-${randomUUID()}`
 
 const fixtureUsers: CollectionConfig = {
@@ -242,6 +243,15 @@ beforeAll(async () => {
     collection: 'media', id: trashed.id, overrideAccess: false, user: owner,
     data: { deletedAt: new Date('2026-09-08T00:00:00.000Z').toISOString() },
   })
+  const seededVersions = await sortedRows('version') as Array<{
+    id: number | string
+    parent: number | string | { id: number | string }
+  }>
+  expectedVersionIdentities = seededVersions.map((version) => ({
+    documentId: String(typeof version.parent === 'object' ? version.parent.id : version.parent),
+    referenceId: String(version.id),
+  })).sort((left, right) => left.documentId.localeCompare(right.documentId)
+    || left.referenceId.localeCompare(right.referenceId))
 }, 60_000)
 
 afterAll(async () => {
@@ -269,8 +279,15 @@ describe('Payload legacy media inventory', () => {
     expect(report.references.filter(({ kind }) => kind === 'snapshot').map(({ documentId, referenceId }) => ({
       documentId, referenceId,
     }))).toEqual([{ documentId: String(original.id), referenceId: String(snapshot.id) }])
-    expect(report.references.some(({ kind, referenceId }) => kind === 'version' && referenceId === redVersionID))
-      .toBe(true)
+    const versionIdentities = report.references.filter(({ kind }) => kind === 'version')
+      .map(({ documentId, referenceId }) => ({ documentId, referenceId }))
+    expect(expectedVersionIdentities).toHaveLength(5)
+    expect(expectedVersionIdentities.map(({ documentId }) => documentId).sort()).toEqual([
+      String(original.id), String(original.id), String(draft.id),
+      String(trashed.id), String(trashed.id),
+    ].sort())
+    expect(versionIdentities).toHaveLength(5)
+    expect(versionIdentities).toEqual(expectedVersionIdentities)
     const current = report.references.find(({ kind, documentId }) =>
       kind === 'document' && documentId === String(replacement.id))!
     expect(current.state).toBe('published')

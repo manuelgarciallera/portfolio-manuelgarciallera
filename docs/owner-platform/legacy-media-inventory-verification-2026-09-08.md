@@ -31,6 +31,13 @@ presenta ese archivo actual como prueba de identidad histórica. La comparación
 independiente antes/después conserva filas, versiones, snapshots, hash del
 snapshot y SHA-256 de todos los archivos.
 
+El oráculo de versiones captura directamente de la base sembrada las cinco parejas
+`{documentId, referenceId}` y las compara exactamente con el resultado. También
+comprueba el recuento literal de cinco y la asociación de padres esperada: dos
+versiones para A/B, una para el draft y dos para el registro después enviado a
+papelera. Así, una identidad omitida o sustituida no puede esconderse detrás del
+recuento global de nueve referencias.
+
 ## Evidencia ejecutada
 
 - TDD unitario enfocado final: `19/19`, salida `0`. Cubre rechazo owner/transacción
