@@ -11,6 +11,8 @@ try {
   await page.setContent('<div class="rd-root"><div class="is-visible is-compact rd-header"><span class="rd-brand-monogram">MG</span></div></div>')
   await page.addStyleTag({ content: css })
   await page.addStyleTag({ content: 'html,body{margin:0;background:transparent} .rd-root{min-height:0;background:transparent} .rd-header{position:static!important;display:grid!important;place-items:center!important;width:64px!important;height:64px!important;padding:0!important;background:transparent!important;border:0!important;backdrop-filter:none!important} .rd-brand-monogram{opacity:1!important;transform:scale(1.65)!important;transition:none!important}' })
+  // Match the navbar's sans stack even in the standalone export document.
+  await page.addStyleTag({ content: '.rd-brand-monogram{font-family:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",sans-serif!important}' })
   const png = await page.screenshot({ omitBackground: true })
   const stats = await sharp(png).stats()
   assert.ok(stats.channels[0].max > 200 && stats.channels[0].min < 30, 'Monogram must contain visible white letters and dark background')
