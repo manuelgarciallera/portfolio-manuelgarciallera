@@ -181,7 +181,7 @@ export const createPostgresCluster = async ({ cache, kind, tools }) => {
       if ((await query(definition.databases[0], `SELECT count(*) FROM pg_authid WHERE rolname='${definition.role}' AND rolpassword LIKE 'SCRAM-SHA-256$%'`)).stdout.trim() !== '1') throw new Error('Synthetic PostgreSQL role does not use SCRAM.')
       return options(definition.databases[0])
     },
-    async shutdown({ childrenClosed }) {
+    async shutdown({ childrenClosed, retainRoot = false }) {
       let stopped = !startAttempted && (!initAttempted || initialized)
       if (startAttempted) {
         await assertTaskRoot(cache, root, definition.prefix)
@@ -195,6 +195,10 @@ export const createPostgresCluster = async ({ cache, kind, tools }) => {
         if ((await command('pg_ctl', ['status', '-D', cluster], { acceptedCodes: [3] })).code !== 3) throw new Error('Exact PostgreSQL cluster did not stop.')
         try { await stat(path.join(cluster, 'postmaster.pid')); throw new Error('PostgreSQL PID file remained after shutdown.') } catch (error) { if (error?.code !== 'ENOENT') throw error }
         stopped = true
+      }
+      if (retainRoot) {
+        if (!stopped || !childrenClosed) throw new Error(`Synthetic recovery data retained because shutdown was not proved: ${root}`)
+        return assertTaskRoot(cache, root, definition.prefix)
       }
       await cleanupTask({ cache, root, stopped, workersClosed: childrenClosed, taskPrefix: definition.prefix })
     },

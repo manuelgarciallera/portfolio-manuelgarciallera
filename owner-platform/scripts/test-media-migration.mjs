@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomBytes, randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, stat } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,11 +9,13 @@ import { build } from 'esbuild'
 import { createPhysicalBackup, restoreVerifiedBackup, snapshotFiles } from '../tests/recovery/backup-manifest.mjs'
 import { createPostgresCluster, databaseCommand, preflightTools, runCommand, safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
+import { finalizeSqliteEvidence } from '../tests/migration/evidence-lifecycle.mjs'
 
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const cache = path.join(ownerRoot, 'node_modules', '.cache')
 const sqlitePrefix = path.join(cache, 'owner-media-migration-')
 const postgresEnabled = process.argv.includes('--postgres')
+const injectFailureAfterBackup = process.argv.includes('--inject-failure-after-backup')
 const isolatedEnvironment = safeEnvironment()
 assert.equal(isolatedEnvironment.DATABASE_URL, '')
 assert.equal(isolatedEnvironment.PAYLOAD_SECRET, '')
@@ -90,6 +92,7 @@ try {
   const sourceBefore = await snapshotFiles(source)
   const manifest = await createPhysicalBackup({ applicationCommit, backupDirectory: backup, sourceDirectory: source })
   const backupBefore = await snapshotFiles(backup)
+  if (injectFailureAfterBackup) throw new Error('Injected media migration failure after the physical backup.')
 
   await restoreVerifiedBackup({ backupDirectory: backup, restoreDirectory: cloneDirectory })
   let clonePostgres
@@ -163,24 +166,20 @@ try {
 } finally {
   if (postgres) {
     try {
-      await postgres.shutdown({ childrenClosed: workersClosed() })
-      if (result) result.cleanup = 'exact cluster stopped and only this run root removed'
+      const retainedRoot = await postgres.shutdown({ childrenClosed: workersClosed(), retainRoot: Boolean(failure) })
+      if (failure) console.error(`Synthetic migration evidence retained at ${retainedRoot}`)
+      else if (result) result.cleanup = 'exact cluster stopped and only this run root removed'
     } catch (cleanupError) {
-      console.error(`Synthetic migration evidence retained at ${root}: ${cleanupError.message}`)
+      console.error(`Synthetic migration shutdown or cleanup proof failed: ${cleanupError.message}`)
       failure ??= cleanupError
     }
   } else if (root) {
     try {
-      const resolved = path.resolve(root)
-      const exactChild = path.dirname(resolved) === path.resolve(cache) && /^owner-media-migration-[A-Za-z0-9]+$/.test(path.basename(resolved))
-      assert(exactChild, 'Unsafe SQLite media migration cleanup path.')
-      assert(workersClosed(), `Synthetic migration evidence retained because worker closure was not proved: ${root}`)
-      assert((await stat(resolved)).isDirectory())
-      await rm(resolved, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
-      await assert.rejects(stat(resolved), { code: 'ENOENT' })
-      if (result) result.cleanup = 'worker closure observed and only exact SQLite run root removed'
+      const finalized = await finalizeSqliteEvidence({ cache, childrenClosed: workersClosed(), failure, root })
+      if (finalized.retained) console.error(`Synthetic migration evidence retained at ${finalized.root}`)
+      else if (result) result.cleanup = 'worker closure observed and only exact SQLite run root removed'
     } catch (cleanupError) {
-      console.error(`Synthetic migration evidence retained at ${root}: ${cleanupError.message}`)
+      console.error(`Synthetic migration shutdown or cleanup proof failed: ${cleanupError.message}`)
       failure ??= cleanupError
     }
   }

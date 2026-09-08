@@ -349,6 +349,10 @@ const migratePrepared = async (input) => {
       }),
     })
     const committed = await rowsFor(payload, input.expected.mediaId)
+    assert.deepEqual(
+      stripStorageRevision({ current: committed.current, versions: committed.versions }),
+      stripStorageRevision({ current: rowsBefore.current, versions: rowsBefore.versions }),
+    )
     assert.equal(committed.current.storageRevision, revisions.B)
     assert.equal(committed.resolutions.length, 1)
     for (const version of committed.versions) {
