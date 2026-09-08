@@ -119,4 +119,40 @@ describe('migration plan candidate (never execution authority)', () => {
     expect(createMigrationPlan({ sourceInventoryHash: hashA, references: [], evidence: [] }).status).toBe('blocked')
     expect(() => readMigrationPlan(' '.repeat(8 * 1024 * 1024 + 1))).toThrow()
   })
+
+  it('rejects overridden array methods without invoking them', () => {
+    const input = fixture()
+    let invoked = false
+    Object.defineProperty(input.references, 'map', { value: () => { invoked = true; return [] } })
+    expect(() => createMigrationPlan(input)).toThrow()
+    expect(invoked).toBe(false)
+  })
+
+  it('rejects accessor elements without invoking them', () => {
+    const input = fixture()
+    let invoked = false
+    Object.defineProperty(input.references, '0', { get: () => { invoked = true; return reference() } })
+    expect(() => createMigrationPlan(input)).toThrow()
+    expect(invoked).toBe(false)
+  })
+
+  it('rejects unknown array properties rather than silently dropping them', () => {
+    const input = fixture()
+    Object.assign(input.evidence, { approved: true })
+    expect(() => createMigrationPlan(input)).toThrow()
+  })
+
+  it('accepts equivalent key ordering inside a blocked plan missing list', () => {
+    const input = fixture()
+    input.evidence = []
+    const plan = createMigrationPlan(input)
+    const reordered = { ...plan, missing: plan.missing.map(x => ({ variant: x.variant, referenceId: x.referenceId, documentId: x.documentId, kind: x.kind })) }
+    expect(readMigrationPlan(JSON.stringify(reordered))).toEqual(plan)
+  })
+
+  it.each(['image?.webp', 'image*.webp', 'image|.webp', 'image<.webp', 'image>.webp', 'image".webp'])('rejects nonportable Windows filename %s', filename => {
+    const input = fixture()
+    input.evidence[0].filename = filename
+    expect(() => createMigrationPlan(input)).toThrow()
+  })
 })

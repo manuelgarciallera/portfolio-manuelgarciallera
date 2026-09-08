@@ -37,9 +37,16 @@ function object(value: unknown, keys: string[]): Record<string, unknown> {
 }
 
 function array(value: unknown, max: number): unknown[] {
-  if (!Array.isArray(value) || value.length > max) return fail()
-  for (let i = 0; i < value.length; i++) if (!Object.hasOwn(value, i)) return fail()
-  return value
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype || value.length > max) return fail()
+  const descriptors = Object.getOwnPropertyDescriptors(value)
+  if (Reflect.ownKeys(value).length !== value.length + 1) return fail()
+  const copy: unknown[] = []
+  for (let i = 0; i < value.length; i++) {
+    const descriptor = descriptors[String(i)]
+    if (!descriptor || !('value' in descriptor)) return fail()
+    copy.push(descriptor.value)
+  }
+  return copy
 }
 
 function id(value: unknown): string {
@@ -60,7 +67,7 @@ function identity(value: Record<string, unknown>): Identity {
 
 function filename(value: unknown): string {
   if (typeof value !== 'string' || value.length === 0 || Buffer.byteLength(value) > 255 ||
-    /[\p{Cc}\\/:]/u.test(value) || /[. ]$/u.test(value) ||
+    /[\p{Cc}\\/:<>"|?*]/u.test(value) || /[. ]$/u.test(value) ||
     /^(?:aux|con|nul|prn|com[1-9]|lpt[1-9])(?:\.|$)/iu.test(value) ||
     value.toLowerCase() === 'manifest.json' || value === '.' || value === '..' || value.includes('@') ||
     Buffer.from(value).toString('utf8') !== value) return fail()
@@ -144,9 +151,13 @@ export function readMigrationPlan(serialized: string): MigrationPlan {
   try { parsed = JSON.parse(serialized) } catch { return fail() }
   const value = object(parsed, ['schemaVersion', 'canApply', 'status', 'sourceInventoryHash', 'references', 'evidence', 'missing', 'digest'])
   const rebuilt = createMigrationPlan({ sourceInventoryHash: value.sourceInventoryHash, references: value.references, evidence: value.evidence })
-  // Compare only against the bounded, generated envelope; never recursively traverse
-  // attacker-controlled "missing" values or consider their claimed readiness valid.
+  const missing = array(value.missing, rebuilt.missing.length).map(raw => {
+    const row = object(raw, ['kind', 'documentId', 'referenceId', 'variant'])
+    return { ...identity(row), variant: id(row.variant) }
+  })
+  // Compare bounded scalar records, independent of JSON object key order. Claimed
+  // readiness never overrides the result derived from the references and evidence.
   if (value.schemaVersion !== rebuilt.schemaVersion || value.canApply !== false || value.status !== rebuilt.status ||
-    value.digest !== rebuilt.digest || JSON.stringify(value.missing) !== JSON.stringify(rebuilt.missing)) return fail()
+    value.digest !== rebuilt.digest || JSON.stringify(missing) !== JSON.stringify(rebuilt.missing)) return fail()
   return rebuilt
 }
