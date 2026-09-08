@@ -3,6 +3,7 @@ import test from 'node:test'
 import { createServer } from 'node:http'
 import { summarizeMeasurements } from './resource-measurements.mjs'
 import { runClient } from './resource-client.mjs'
+import { createMeasurementFixtureLifecycle } from '../../scripts/test-media-resources.mjs'
 
 const sample = { rss: 100, heapUsed: 20, external: 30, arrayBuffers: 10 }
 const response = { elapsedMs: 5, bytes: 7, status: 200, sha256: 'a'.repeat(64), expectedSha256: 'a'.repeat(64) }
@@ -121,4 +122,62 @@ test('client never follows redirects away from the exact delivery URL', async ()
     assert.equal(result.failures.length, 1)
   })
   assert.equal(calls, 1)
+})
+
+test('rejected initialization retains uncertain shutdown and performs zero cleanup mutations', async () => {
+  const lifecycle = createMeasurementFixtureLifecycle()
+  const startupFailure = new Error('Initialization rejected while internal shutdown also failed')
+  let cleanupMutations = 0
+  await assert.rejects(lifecycle.start(async () => { throw startupFailure }), (error) => error === startupFailure)
+  await lifecycle.close() // No handle was returned; this cannot prove server closure.
+  await assert.rejects(lifecycle.cleanup(async () => { cleanupMutations += 1 }))
+  assert.equal(cleanupMutations, 0)
+  assert.equal(lifecycle.serverClosed, false)
+})
+
+test('initialization pending and an open fixture cannot permit destructive cleanup', async () => {
+  const lifecycle = createMeasurementFixtureLifecycle()
+  let finishInitialization
+  const starting = lifecycle.start(() => new Promise((resolve) => { finishInitialization = resolve }))
+  let cleanupMutations = 0
+  try {
+    await assert.rejects(lifecycle.cleanup(async () => { cleanupMutations += 1 }))
+  } finally { finishInitialization({ close: async () => {} }); await starting }
+  await assert.rejects(lifecycle.cleanup(async () => { cleanupMutations += 1 }))
+  assert.equal(cleanupMutations, 0)
+  await lifecycle.close()
+})
+
+test('confirmed close permits cleanup after an ordinary successful initialization', async () => {
+  const lifecycle = createMeasurementFixtureLifecycle()
+  let resourceOpen = false
+  await lifecycle.start(async () => {
+    resourceOpen = true
+    return { close: async () => { resourceOpen = false } }
+  })
+  await lifecycle.close()
+  let cleanupMutations = 0
+  await lifecycle.cleanup(async () => { assert.equal(resourceOpen, false); cleanupMutations += 1 })
+  assert.equal(cleanupMutations, 1)
+  assert.equal(lifecycle.serverClosed, true)
+})
+
+test('failure before initialization leaves cleanup available for known generated files', async () => {
+  const lifecycle = createMeasurementFixtureLifecycle()
+  // A bundling/seed failure never calls start; close must not invent an open server.
+  await lifecycle.close()
+  let cleanupMutations = 0
+  await lifecycle.cleanup(async () => { cleanupMutations += 1 })
+  assert.equal(cleanupMutations, 1)
+  assert.equal(lifecycle.serverClosed, true)
+})
+
+test('rejected close preserves the cleanup block for a returned fixture handle', async () => {
+  const lifecycle = createMeasurementFixtureLifecycle()
+  await lifecycle.start(async () => ({ close: async () => { throw new Error('Server shutdown failed') } }))
+  await assert.rejects(lifecycle.close(), /Server shutdown failed/)
+  let cleanupMutations = 0
+  await assert.rejects(lifecycle.cleanup(async () => { cleanupMutations += 1 }))
+  assert.equal(cleanupMutations, 0)
+  assert.equal(lifecycle.serverClosed, false)
 })

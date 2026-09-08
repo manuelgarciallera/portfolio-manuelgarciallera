@@ -1,11 +1,17 @@
 # Recursos HTTP de revisiones: experimento local aislado
 
 **Puerta de medición local superada; preparación de producción no acreditada.**
-Ejecución única del código final el 2026-09-08, 00:41:08.549–00:41:54.513 UTC
+Ejecución inicial del código entregado en `5035ce8` el 2026-09-08, 00:41:08.549–00:41:54.513 UTC
 (02:41 Europe/Madrid), salida 0. Base de aplicación
 `cd7ce32bbf0e51351682136f3f2e1a92199a283f`; recuperación/fixture revisados en
 `73a52f6`. Los hashes de los scripts nuevos ejecutados figuran al final para
 identificar el incremento todavía sin commit durante la medición.
+
+La revisión independiente posterior encontró un fallo en la limpieza cuando la
+inicialización del fixture rechaza sin devolver un handle y tampoco acredita su
+cierre interno. Esa vía no ocurrió en esta medición satisfactoria. La corrección
+y la nueva ejecución se documentan al final; los resultados iniciales que siguen
+se conservan como evidencia histórica, no se sustituyen por los nuevos.
 
 ## Método, límites y entorno
 
@@ -208,3 +214,115 @@ El [procedimiento de rollout](media-storage-rollout-2026-09-08.md) prepara mapeo
 validación y rollback conjunto, sin ejecutar migración ni seleccionar proveedor.
 Revisión independiente de Task 5 corresponde al controlador antes de cerrar
 este alcance; no atribuir esa aceptación a esta autoevaluación.
+
+## Corrección de revisión y nueva medición del código final
+
+La revisión independiente detectó una incidencia Important en el fallo de inicio,
+no en las descargas satisfactorias anteriores: si la inicialización del fixture
+rechazaba sin devolver un handle y su cierre interno también fallaba, la variable
+de cierre seguía siendo `true` y podía autorizar limpieza con recursos aún abiertos.
+Se extrajo la misma puerta de limpieza del script a
+`createMeasurementFixtureLifecycle`, sin otro archivo/runner/fixture. Marca cierre
+incierto **antes** de invocar la inicialización; solo un `close()` resuelto después
+de un intento de inicio permite limpiar. Si falta el handle tras un rechazo, conserva
+el árbol y registra el fallo. Un fallo anterior a intentar iniciar sí puede limpiar
+archivos sintéticos conocidos. Importar el script desde tests no ejecuta el benchmark;
+el comando CLI permanece operativo.
+
+Regresión: `node --test tests/media/resource-measurements.test.mjs`, RED 14/16
+(salida 1, 614.1482 ms), con `Missing expected rejection` al autorizar limpieza en
+inicio rechazado o pendiente. GREEN 16/16 (salida 0, 820.4746 ms). Las cinco pruebas
+nuevas usan el mismo control que envuelve el bloque de borrado real y observan
+cero mutaciones de su callback de limpieza cuando inicio/cierre es incierto,
+además de permitir limpieza tras cierre confirmado o antes de cualquier inicio.
+No son asertos sobre texto fuente. Lint y tipos: salidas 0 por separado. La
+revisión focal posterior corresponde al controlador. Las observaciones menores
+sobre cuerpo HTTP estancado y diagnóstico esperado quedan fuera de esta corrección.
+
+Se ejecutó una vez `node scripts/test-media-resources.mjs` después de esta
+corrección y de terminar lint/tipos: **salida 0**, 2026-09-08T00:58:00.071Z a
+2026-09-08T00:58:46.471Z, sin pruebas pesadas concurrentes.
+Base Git `7bfabfa3719815b54827fb76b6ebda08b7f19d54`: incluye el commit de registro de
+decisión del controlador `7bfabfa`, ajeno a esta corrección. SHA-256 del orquestador
+ejecutado: `53392830bff007d9076cd12ab378366727cd9f46113d0b450600c1bc57c7fbdd`.
+Los hashes del seed, cliente y validador coinciden con los de la primera medición.
+Node/OS/arquitectura/SQLite y memoria total permanecen como arriba; memoria disponible
+reportada esta vez **7147679744 B**. Los umbrales 4 GiB
+disponibles, 2 GiB RSS, intervalos y plazos no cambian. Siembra: 20823.9108 ms;
+el worker cerró antes de abrir el servidor de medición.
+
+JPEG: documento `1`, revisión `f2d2a5aa-86f4-4e53-9c11-a3dd0c54af66`; conserva exactamente
+tamaños, dimensiones y hashes de la primera receta, y su limitación de contenido
+muy compresible. PNG: documento `2`, revisión `07ba7433-f54a-4b2a-8855-b14ea6863cd5`.
+Receta aleatoria igual, nuevas identidades y hashes; agregado **62149485 B
+(92.6099494 % de 64 MiB)**, sin ajuste.
+
+| PNG / variante | Dimensiones | Bytes | SHA-256 independiente |
+| --- | --- | ---: | --- |
+| original | 6000×3200 | 57705260 | `0b3caf84e44a227289df6c6cb76f457da934a7a44e608185e2eabe66ef821063` |
+| small | 480×256 | 218508 | `0e9aa3b04530f89b7e3c58d05ebe1c3b487b86188ca447047213122dbe965c7c` |
+| medium | 960×512 | 1019571 | `44695b1928766b57c52d7ef2f424f14abe6b06c575d4db7e82e8aed5003eca11` |
+| large | 1600×853 | 3206146 | `4877916ae3a044c0c736c72f2273564463cd19e7140c0848745fa949dd50989c` |
+
+**51/51** respuestas completas verificadas (200, longitud y hash), cero fallos
+o reintentos, 431 muestras y 985033737 B recibidos. Todas las fases:
+
+| Recurso / fase (peticiones × máximo en vuelo) | Muestras | Bytes recibidos | Grupo ms | Latencia min / mediana / max ms |
+| --- | ---: | ---: | ---: | --- |
+| JPEG original / warm-up (1×1) | 10 | 19393 | 306.294 | 109.281 / 109.281 / 109.281 |
+| JPEG original / serie (8×1) | 19 | 155144 | 509.958 | 29.097 / 31.746 / 106.613 |
+| JPEG original / concurrente (8×4) | 15 | 155144 | 416.869 | 56.877 / 65.270 / 109.365 |
+| PNG original / warm-up (1×1) | 30 | 57705260 | 1134.171 | 931.626 / 931.626 / 931.626 |
+| PNG original / serie (8×1) | 176 | 461642080 | 7039.672 | 660.943 / 744.334 / 1525.122 |
+| PNG original / concurrente (8×4) | 112 | 461642080 | 5286.796 | 1916.356 / 2422.655 / 2595.385 |
+| PNG small / warm-up (1×1) | 12 | 218508 | 458.467 | 284.678 / 284.678 / 284.678 |
+| PNG small / serie (8×1) | 34 | 1748064 | 1971.651 | 197.584 / 205.626 / 340.387 |
+| PNG small / concurrente (8×4) | 23 | 1748064 | 1645.644 | 690.034 / 730.551 / 773.224 |
+
+Memoria de cada grupo, en bytes, inicio / pico observado / final:
+
+| Recurso / fase | rss inicio / pico / final B | heapUsed inicio / pico / final B |
+| --- | --- | --- |
+| JPEG original / warm-up | 290123776 / 290123776 / 234110976 | 141698240 / 141698240 / 36041784 |
+| JPEG original / serie | 234131456 / 235700224 / 235700224 | 36107680 / 42786608 / 42786608 |
+| JPEG original / concurrente | 235700224 / 238018560 / 238018560 | 42850504 / 48802112 / 48802112 |
+| PNG original / warm-up | 238018560 / 530399232 / 528171008 | 48875528 / 49670800 / 36085912 |
+| PNG original / serie | 528216064 / 821137408 / 527659008 | 36179704 / 36907992 / 34239504 |
+| PNG original / concurrente | 527892480 / 736186368 / 408031232 | 34509320 / 34854592 / 34339296 |
+| PNG small / warm-up | 408223744 / 471535616 / 298418176 | 34625344 / 34752288 / 34379080 |
+| PNG small / serie | 298426368 / 361254912 / 297885696 | 34683064 / 35327896 / 34444560 |
+| PNG small / concurrente | 298209280 / 663433216 / 487301120 | 34764168 / 35227128 / 34636056 |
+
+| Recurso / fase | external inicio / pico / final B | arrayBuffers inicio / pico / final B |
+| --- | --- | --- |
+| JPEG original / warm-up | 5593266 / 5593306 / 4427005 | 1395128 / 1395128 / 229339 |
+| JPEG original / serie | 4436492 / 5382758 / 5382758 | 238826 / 1185092 / 1185092 |
+| JPEG original / concurrente | 5399993 / 6345158 / 6345158 | 1202327 / 2147492 / 2147492 |
+| PNG original / warm-up | 6369347 / 299347659 / 297275253 | 2171681 / 295149993 / 293081340 |
+| PNG original / serie | 297306808 / 590247352 / 297271141 | 293112895 / 586059282 / 293083071 |
+| PNG original / concurrente | 297340547 / 528104112 / 177416367 | 293152477 / 479549107 / 173228297 |
+| PNG small / warm-up | 177511245 / 240444898 / 240444898 | 173323175 / 236256479 / 63133276 |
+| PNG small / serie | 67420203 / 130359537 / 130359537 | 63232133 / 126169431 / 63134996 |
+| PNG small / concurrente | 67432670 / 487227648 / 256396293 | 63244600 / 404050090 / 252208223 |
+
+Pico RSS observado **821137408 B (783.098 MiB)**, dentro del
+presupuesto local. Se conservan las mismas limitaciones de caché, GC, muestreo,
+buffers de revisión completa y copias del transporte de fixture. Las diferencias
+entre las dos ejecuciones no constituyen una comparación controlada ni validan
+una mejora de recursos; el cambio resuelve exclusivamente la puerta de limpieza
+ante inicio incierto. Ninguna ejecución acredita alojamiento preparado.
+
+El diagnóstico real volvió a incluir `[02:58:26] WARN: No email adapter provided.
+Email will be written to console.`; no se añadió filtro ni se envió correo.
+Clientes y fixture cerrados, ocho archivos de revisión verificados sin cambios
+tras descarga. Limpieza no recursiva: **13 archivos sintéticos y 4 directorios
+vacíos**. Se conserva solo `result.json` (118053 B) en
+`owner-platform/node_modules/.cache/owner-media-resources-g5LlnS/result.json`.
+El recibo inicial `owner-media-resources-tYNy7G/result.json` permanece intacto;
+ningún dato histórico se sobrescribió. La raíz real, backups y biblioteca activa
+no se tocaron. No hubo migración, proveedor, publicación ni despliegue.
+
+SHA-256 del recibo original:
+`24e30026c69a97db5bc94e437d4e070b00ae616cfa99a1f527847bbf89798788`.
+SHA-256 del nuevo recibo:
+`35bc5b7bb2f50a6b3a3545e83f4e956d27d49911126af9475ed81d2ddcc0b5d5`.
