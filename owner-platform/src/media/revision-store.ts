@@ -76,7 +76,7 @@ const validateFileName = (name: unknown): string => {
     Buffer.byteLength(name, 'utf8') > MAX_NAME_BYTES ||
     name === '.' ||
     name === '..' ||
-    /[\\/:\u0000-\u001f\u007f]/u.test(name) ||
+    /[\\/:<>"|?*\u0000-\u001f\u007f]/u.test(name) ||
     /[. ]$/u.test(name) ||
     WINDOWS_DEVICE_NAME.test(name) ||
     name.toLowerCase() === MANIFEST_NAME

@@ -164,6 +164,26 @@ describe('media revision store', () => {
     await expect(readdir(root)).resolves.toEqual([])
   })
 
+  it.each(['<', '>', '"', '|', '?', '*'])('rejects Windows-incompatible %s before writing any part of a revision', async character => {
+    await expect(writeMediaRevision(root, [
+      { name: 'valid.png', bytes: Buffer.from('first') },
+      { name: `hero${character}.png`, bytes: Buffer.from('second') },
+    ])).rejects.toThrow()
+    await expect(readdir(root)).resolves.toEqual([])
+  })
+
+  it.each(['<', '>', '"', '|', '?', '*'])('classifies Windows-incompatible manifest name %s as unsafe before file lookup', async character => {
+    const revision = await writeMediaRevision(root, [{ name: 'hero.png', bytes: Buffer.from('image') }])
+    const manifest = await loadManifest(revision)
+    manifest.files[0].name = `hero${character}.png`
+    await saveManifest(revision, manifest)
+
+    await expect(readMediaRevision(root, revision)).rejects.toThrow('El nombre del archivo de revisión no es seguro.')
+    // Rejection does not rename, remove or rewrite the original bytes.
+    await expect(readFile(join(root, revision, 'hero.png'))).resolves.toEqual(Buffer.from('image'))
+    await expect(loadManifest(revision)).resolves.toEqual(manifest)
+  })
+
   it('rejects a filename ending in an unpaired high surrogate before allocating a revision directory', async () => {
     await expect(writeMediaRevision(root, [
       { name: 'hero\uD800', bytes: Buffer.from('image') },
