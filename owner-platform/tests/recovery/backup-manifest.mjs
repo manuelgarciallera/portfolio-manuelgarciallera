@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { cp, lstat, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 const MANIFEST_NAME = 'manifest.json'
@@ -27,9 +27,22 @@ const assertAbsent = async (directory, label) => {
   throw new Error(`${label} already exists.`)
 }
 
+// QA helper for quiescent fixtures, not an atomic filesystem security boundary.
+// Reject existing aliases at inspection time; callers still must stop writers.
+const assertUnlinkedDirectory = async (directory) => {
+  const info = await lstat(directory)
+  if (info.isSymbolicLink() || !info.isDirectory()) throw new Error('Recovery directory must be a real directory, not a link.')
+}
+
+const assertUnlinkedFile = async (filename) => {
+  const info = await lstat(filename)
+  if (info.isSymbolicLink() || !info.isFile() || info.nlink !== 1) throw new Error('Recovery files must be regular files without links.')
+}
+
 export const snapshotFiles = async (rootDirectory) => {
   const records = []
   const visit = async (directory, prefix = '') => {
+    await assertUnlinkedDirectory(directory)
     const entries = await readdir(directory, { withFileTypes: true })
     entries.sort((left, right) => left.name.localeCompare(right.name, 'en'))
     for (const entry of entries) {
@@ -38,6 +51,7 @@ export const snapshotFiles = async (rootDirectory) => {
       const relative = prefix ? `${prefix}/${entry.name}` : entry.name
       if (entry.isDirectory()) await visit(absolute, relative)
       else if (entry.isFile()) {
+        await assertUnlinkedFile(absolute)
         const bytes = await readFile(absolute)
         records.push({ path: relative, sha256: digest(bytes), size: bytes.length })
       } else throw new Error('Recovery inputs can contain only regular files and directories.')
@@ -66,6 +80,8 @@ const validManifest = (value) => {
 export const verifyPhysicalBackup = async (backupDirectory) => {
   let manifest
   try {
+    await assertUnlinkedDirectory(backupDirectory)
+    await assertUnlinkedFile(path.join(backupDirectory, MANIFEST_NAME))
     manifest = JSON.parse(await readFile(path.join(backupDirectory, MANIFEST_NAME), 'utf8'))
     if (!validManifest(manifest)) throw new Error('Invalid manifest')
     const actual = await snapshotFiles(path.join(backupDirectory, DATA_DIRECTORY))

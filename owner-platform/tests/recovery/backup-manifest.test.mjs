@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { link, mkdtemp, mkdir, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -30,6 +30,44 @@ afterEach(async () => {
 })
 
 describe('physical recovery manifest', () => {
+  it('rejects a linked source root before creating a backup', async () => {
+    const { root, source } = await fixture()
+    const alias = path.join(root, 'source-alias')
+    const backup = path.join(root, 'backup')
+    await symlink(source, alias, 'junction')
+    await expect(createPhysicalBackup({ applicationCommit: 'a'.repeat(40), sourceDirectory: alias, backupDirectory: backup })).rejects.toThrow(/link/i)
+    await expect(stat(backup)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects a linked backup root before creating the restore destination', async () => {
+    const { root, source } = await fixture()
+    const backup = path.join(root, 'backup')
+    const alias = path.join(root, 'backup-alias')
+    const restored = path.join(root, 'restored')
+    await createPhysicalBackup({ applicationCommit: 'a'.repeat(40), sourceDirectory: source, backupDirectory: backup })
+    await symlink(backup, alias, 'junction')
+    await expect(restoreVerifiedBackup({ backupDirectory: alias, restoreDirectory: restored })).rejects.toThrow(/backup/i)
+    await expect(stat(restored)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects hard-linked source bytes before allocating a backup', async () => {
+    const { root, source } = await fixture()
+    const backup = path.join(root, 'backup')
+    await link(path.join(source, 'database', 'owner.db'), path.join(root, 'other-writer.db'))
+    await expect(createPhysicalBackup({ applicationCommit: 'a'.repeat(40), sourceDirectory: source, backupDirectory: backup })).rejects.toThrow(/link/i)
+    await expect(stat(backup)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects a manifest with another writable hard-link alias', async () => {
+    const { root, source } = await fixture()
+    const backup = path.join(root, 'backup')
+    const restored = path.join(root, 'restored')
+    await createPhysicalBackup({ applicationCommit: 'a'.repeat(40), sourceDirectory: source, backupDirectory: backup })
+    await link(path.join(backup, 'manifest.json'), path.join(root, 'other-manifest.json'))
+    await expect(restoreVerifiedBackup({ backupDirectory: backup, restoreDirectory: restored })).rejects.toThrow(/backup/i)
+    await expect(stat(restored)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
   it('copies a matched database/media set and restores it independently', async () => {
     const { root, source } = await fixture()
     const backup = path.join(root, 'backup')
