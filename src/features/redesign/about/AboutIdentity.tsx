@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { ABOUT_CREDENTIALS } from '../content/about'
 import { PROFILE_LINKS } from '@/lib/site-config'
+import { CvDownloads } from './CvDownloads'
 
 /**
  * Componente de servidor a proposito. Es contenido estatico —retrato, cargo,
@@ -22,7 +23,7 @@ export function AboutIdentity() {
       <p className="rd-label rd-reveal" data-index="01">
         Perfil
       </p>
-      <div className="rd-identity__grid rd-reveal">
+      <div className="rd-identity__grid">
         <figure className="rd-identity__portrait">
           <Image
             src="/images/manuel-garcia-llera.jpg"
@@ -81,6 +82,7 @@ export function AboutIdentity() {
               <Link href="/investigacion">Investigación</Link>
             </li>
           </ul>
+          <CvDownloads />
         </div>
       </div>
     </section>
