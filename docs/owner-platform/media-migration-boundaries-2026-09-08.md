@@ -71,6 +71,18 @@ Verificación actual:
   sin hallazgos Critical/Important/Minor. Revisó código y documentación; no ejecutó
   las suites ni certificó PostgreSQL. No equivale a aceptación de Claude.
 
+### Confirmación posterior, 8 de septiembre 04:59 UTC
+
+Nueva ejecución explícita para cerrar la evidencia perdida, sin cambios de código
+ni tolerancias: `npm run test:integration:postgres`, binarios existentes 17.11.
+Sesión **38612**, chunk terminal **06e8a2**, salida **0**: **43/43** en cuatro archivos,
+77.96 s de Vitest (incluye los cinco casos del inventario). Conexiones cerradas,
+cluster exacto detenido y raíz sintética eliminada según recibo del runner.
+La salida completa saneada se conserva en el workspace local de este ensayo.
+Continúan los avisos conocidos de correo sin adaptador y los diagnósticos de
+denegaciones intencionadas del fixture; no se ocultaron. El resultado de 73852
+continúa desconocido: esta ejecución independiente no reescribe aquel histórico.
+
 ## Experimento siguiente antes de un escritor general
 
 La propuesta resultante es un ensayo aislado con **dos estados reales del mismo
