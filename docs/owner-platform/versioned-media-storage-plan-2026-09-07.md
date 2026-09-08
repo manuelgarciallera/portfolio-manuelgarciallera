@@ -16,6 +16,13 @@ editorial plus HTTP behavior before enabling it on the existing library.
 
 **Spec:** [Design](versioned-media-storage-design-2026-09-07.md).
 
+**Closure, 2026-09-08:** Tasks 1–5 are implemented and independently reviewed in
+the isolated opt-in scope. Final whole-increment review `cd33df0..d704ee6` found
+no Critical/Important issue. Historical task checklists below remain the original
+execution requirements, not the current status source. See the
+[handoff, final verification and remaining release gates](media-increment-handoff-2026-09-08.md).
+Active-library migration, activation and full CMS completion are not claimed.
+
 ## Global constraints
 
 - Public UI, checkpoint and existing media remain unchanged.

@@ -18,6 +18,7 @@ revisiones de tareas no equivalen a aprobar el CMS completo para producción.
 | Fijar previamente 2 GiB de RSS como parada diagnóstica y exigir 4 GiB disponibles para medir | Acotar el experimento local sin fingir que existe un alojamiento elegido | Abortar y revisar el método; no subir el umbral después para presentar un aprobado |
 | Preservar el espacio de trabajo y sus registros al cerrar el incremento | Contiene trabajo local no publicado y un informe de Task 3 que Git sí sigue | Mantener archivos locales; ninguna pérdida de evidencia por una limpieza automática |
 | Revisar al final el incremento completo desde `cd33df0`, identificándolo como tal | La rama compartida también contiene trabajo anterior de CMS y del portfolio | La revisión no certifica todo ese historial; una auditoría global posterior debe nombrar su propio alcance |
+| Diferir las tres mejoras menores de pruebas confirmadas en la revisión final | No hay defecto Critical/Important ni incumplimiento material; la revisión inspeccionó también los puntos de integración instalados | Queda pendiente ampliar la regresión de duplicación binaria, la respuesta detenida hasta el plazo y la captura de logs esperados; no se afirma que estén cubiertas |
 
 ## Límites que no se han levantado
 

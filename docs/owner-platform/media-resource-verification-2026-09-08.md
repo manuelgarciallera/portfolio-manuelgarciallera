@@ -345,4 +345,5 @@ que solo queda `result.json` tras la limpieza. No repitió el benchmark.
 Mejoras menores diferidas: ensayo de respuesta detenida hasta vencer el plazo
 de EOF y captura explícita del aviso esperado de correo, sin ocultar diagnósticos
 inesperados. No bloquean este experimento local. La revisión conjunta del
-incremento completo de medios es una puerta distinta, todavía en curso.
+incremento completo `cd33df0..d704ee6` terminó después sin hallazgos Critical/Important;
+véase la [entrega completa y sus límites](media-increment-handoff-2026-09-08.md).

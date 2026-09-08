@@ -22,7 +22,8 @@ de 62149485 B, 92.6100 % del cap de 64 MiB; pico RSS observado 821137408 B, bajo
 2 GiB. Incluye buffers de revisión completa y copias del fixture; no mide capacidad
 de producción ni la web pública. La revisión independiente de Task 5 y su
 corrección de limpieza ante inicio incierto están cerradas. La revisión conjunta
-del incremento completo `cd33df0..d704ee6` sigue pendiente en esta actualización.
+del incremento completo `cd33df0..d704ee6` está aprobada para su alcance aislado,
+sin hallazgos Critical/Important. [Entrega, mejoras menores y puertas abiertas](media-increment-handoff-2026-09-08.md).
 El [procedimiento de activación/migración/rollback](media-storage-rollout-2026-09-08.md)
 está documentado, sin ejecución real. Siguen pendientes persistencia del alojamiento,
 backup externo, permisos efectivos, costes/cuotas, migraciones, procedencia completa
