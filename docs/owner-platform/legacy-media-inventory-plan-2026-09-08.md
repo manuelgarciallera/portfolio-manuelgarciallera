@@ -163,6 +163,11 @@ await expect(inspectPayloadLegacyMedia({ payload, req: anonymousReq, root: missi
 ```
 
 - [ ] Inspect installed Payload find/findVersions/trash/draft option semantics.
+  Reject a request with non-null/undefined transactionID (including a Promise)
+  with status409 before any DB/filesystem call; do not mutate/remove that ID.
+  Installed findVersions failure calls killTransaction(req), which could roll
+  back a caller's edit. Test rejection preserves that same ID and never invokes
+  DB rollback. Use a separate read request for successful inventory.
   Read with `overrideAccess:false`, req, depth 0, explicit limit 100/page/sort id.
   Enumerate media (including trash) at draft:false and latest draft:true,
   all retained media versions and preview snapshots. Normalize each stored row

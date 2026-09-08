@@ -56,6 +56,11 @@ esas pérdidas, las hace explícitas para reconciliarlas con copias auténticas.
 
 Un servicio interno recibe Payload, request owner y raíz configurada por código,
 no un endpoint público. Verifica owner antes de consultar BD o disco. Todas las
+peticiones con `transactionID` presente (incluida promesa pendiente) se rechazan
+antes de leer: las operaciones instaladas llaman `killTransaction` cuando fallan
+y podrían cancelar una edición ajena. No basta quitar el ID de la misma petición.
+Usar una petición de lectura separada y quiescencia del clon como prerrequisito.
+Todas las
 lecturas usan `overrideAccess:false`, request, depth 0 y orden/paginación explícitos.
 Recorre filas Media incluyendo papelera, última vista draft, todas las versiones
 retenidas y todas las capturas de preview. Valida hashes de snapshots antes de
