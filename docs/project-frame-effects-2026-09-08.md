@@ -61,3 +61,17 @@ Próximo: recibir SHA cerrado/relevo de Claude, integrar sin solape, ejecutar
 baseline, repetir navegador sobre build y solo entonces push/despliegue autorizado.
 No se ha ejecutado esta puerta completa sobre el árbol concurrente, no hay push,
 promoción o ID nuevo de despliegue que atribuir a este cambio.
+
+## Puerta interrumpida por nueva escritura
+
+Implementación guardada en `ba4f1404c1e8419373137017df3f68bc134a4a16` sobre75bffa8.
+Vitest independiente58566 salida0, **220/220**. `check:all`51944 pasó220 unitarias,
+13 guardas, frontera21, encoding/hero/responsive, lint y tipos; durante el build
+apareció una modificación ajena de `src/features/redesign/components/HeroOrbCanvas.tsx`.
+Se interrumpió el comando: **no existe salida0 de check:all ni build validado para
+este HEAD**. No se hizo push o despliegue. Archivo del orbe preservado intacto.
+Las comprobaciones anteriores no autorizan publicar el árbol cambiado.
+
+Próximo Claude: cerrar sus escrituras públicas y entregar SHA/relevo explícito.
+Próximo Codex: repetir ambas puertas sobre ese cierre con el ajuste ya integrado,
+revisar portada en build estable y publicar con la autorización directa de Manuel.
