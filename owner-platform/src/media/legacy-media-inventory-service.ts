@@ -10,8 +10,11 @@ import {
 
 const PAGE_LIMIT = 100
 const MAX_REFERENCES = 10_000
+const MAX_NORMALIZED_REFERENCE_BYTES = 8 * 1024 * 1024
 
 type Row = Record<string, unknown>
+type SourceScalar = bigint | boolean | null | number | string | undefined
+type RetainedBudget = { normalizedBytes: number }
 
 type Page = {
   docs: unknown[]
@@ -55,6 +58,17 @@ const identity = (value: unknown, label: string): string => {
   return String(candidate)
 }
 
+const sourceScalar = (value: unknown, label: string): SourceScalar => {
+  if (value === null || value === undefined) return value
+  if (
+    typeof value === 'bigint' ||
+    typeof value === 'boolean' ||
+    typeof value === 'number' ||
+    typeof value === 'string'
+  ) return value
+  throw new TypeError(label + ' must be scalar source metadata.')
+}
+
 const pageResult = (value: unknown, requestedPage: number, label: string): Page => {
   const candidate = record(value, label + ' pagination result')
   const docs = denseArray(candidate.docs, label + ' page docs')
@@ -90,13 +104,15 @@ const pageResult = (value: unknown, requestedPage: number, label: string): Page 
   return candidate as unknown as Page
 }
 
-const collectPages = async (
+const consumePages = async (
   label: string,
   findPage: (page: number) => Promise<unknown>,
-): Promise<Row[]> => {
-  const rows: Row[] = []
+  budget: RetainedBudget,
+  consumeRow: (row: Row) => void,
+): Promise<void> => {
   const rowIDs = new Set<string>()
   let declaredTotal: number | undefined
+  let consumedRows = 0
   for (let page = 1; ; page += 1) {
     const result = pageResult(await findPage(page), page, label)
     if (result.totalDocs > MAX_REFERENCES) {
@@ -110,15 +126,19 @@ const collectPages = async (
       const row = record(value, label + ' row')
       const id = identity(row.id, label + ' row')
       if (rowIDs.has(id)) throw new TypeError(label + ' pagination contains a duplicate row ID.')
+      budget.normalizedBytes += Buffer.byteLength(id, 'utf8')
+      if (budget.normalizedBytes > MAX_NORMALIZED_REFERENCE_BYTES) {
+        throw new TypeError('Payload legacy media references exceed the 8 MiB normalized metadata limit.')
+      }
       rowIDs.add(id)
-      rows.push(row)
+      consumeRow(row)
+      consumedRows += 1
     }
     if (!result.hasNextPage) break
   }
-  if (rows.length !== declaredTotal) {
+  if (consumedRows !== declaredTotal) {
     throw new TypeError(label + ' pagination did not return its declared total.')
   }
-  return rows
 }
 
 const state = (row: Row): LegacyMediaReference['state'] => {
@@ -131,17 +151,27 @@ const state = (row: Row): LegacyMediaReference['state'] => {
 const files = (row: Row): LegacyMediaReference['files'] => {
   const output: Array<Record<string, unknown>> = [{
     variant: 'original',
-    ...(Object.hasOwn(row, 'filename') ? { filename: row.filename } : {}),
-    ...(Object.hasOwn(row, 'filesize') ? { expectedBytes: row.filesize } : {}),
+    ...(Object.hasOwn(row, 'filename')
+      ? { filename: sourceScalar(row.filename, 'Media filename') }
+      : {}),
+    ...(Object.hasOwn(row, 'filesize')
+      ? { expectedBytes: sourceScalar(row.filesize, 'Media filesize') }
+      : {}),
   }]
   if (row.sizes !== undefined && row.sizes !== null) {
     const sizes = record(row.sizes, 'Media sizes')
-    for (const variant of Object.keys(sizes).sort()) {
+    const variants = Object.keys(sizes).sort()
+    if (variants.length > 15) throw new TypeError('Media sizes exceed the 16 variant limit.')
+    for (const variant of variants) {
       const size = record(sizes[variant], 'Media size ' + variant)
       output.push({
         variant,
-        ...(Object.hasOwn(size, 'filename') ? { filename: size.filename } : {}),
-        ...(Object.hasOwn(size, 'filesize') ? { expectedBytes: size.filesize } : {}),
+        ...(Object.hasOwn(size, 'filename')
+          ? { filename: sourceScalar(size.filename, 'Media size filename') }
+          : {}),
+        ...(Object.hasOwn(size, 'filesize')
+          ? { expectedBytes: sourceScalar(size.filesize, 'Media size filesize') }
+          : {}),
       })
     }
   }
@@ -160,7 +190,7 @@ const mediaReference = (
     state: state(row),
     files: files(row),
     ...(Object.hasOwn(row, 'storageRevision')
-      ? { storageRevision: row.storageRevision as string }
+      ? { storageRevision: sourceScalar(row.storageRevision, 'Media storage revision') as string }
       : {}),
   }
 }
@@ -174,7 +204,7 @@ const versionReference = (row: Row): LegacyMediaReference => {
     state: state(storedVersion),
     files: files(storedVersion),
     ...(Object.hasOwn(storedVersion, 'storageRevision')
-      ? { storageRevision: storedVersion.storageRevision as string }
+      ? { storageRevision: sourceScalar(storedVersion.storageRevision, 'Media version storage revision') as string }
       : {}),
   }
 }
@@ -213,7 +243,9 @@ const snapshotReferences = (snapshot: Row): LegacyMediaReference[] => {
     mediaIDs.add(mediaID)
     let storageRevision: unknown
     if (media.storage === 'versioned') {
-      storageRevision = Object.hasOwn(media, 'storageRevision') ? media.storageRevision : null
+      storageRevision = Object.hasOwn(media, 'storageRevision')
+        ? sourceScalar(media.storageRevision, 'Preview snapshot storage revision')
+        : null
     } else if (media.storage === 'legacy-unverified') {
       if (Object.hasOwn(media, 'storageRevision')) storageRevision = null
     } else {
@@ -226,7 +258,9 @@ const snapshotReferences = (snapshot: Row): LegacyMediaReference[] => {
       state: 'unknown',
       files: [{
         variant: 'original',
-        ...(Object.hasOwn(media, 'filename') ? { filename: media.filename as string } : {}),
+        ...(Object.hasOwn(media, 'filename')
+          ? { filename: sourceScalar(media.filename, 'Preview snapshot filename') as string }
+          : {}),
       }],
       ...(storageRevision === undefined ? {} : { storageRevision: storageRevision as string }),
     }
@@ -236,10 +270,22 @@ const snapshotReferences = (snapshot: Row): LegacyMediaReference[] => {
 const appendBounded = (
   target: LegacyMediaReference[],
   additions: readonly LegacyMediaReference[],
+  budget: RetainedBudget,
 ): void => {
   if (target.length + additions.length > MAX_REFERENCES) {
     throw new TypeError('Payload legacy media references exceed the global 10,000 reference limit.')
   }
+  let normalizedBytes = budget.normalizedBytes
+  for (let index = 0; index < additions.length; index += 1) {
+    const serialized = JSON.stringify(additions[index], (_key, value) =>
+      typeof value === 'bigint' ? String(value) : value)
+    normalizedBytes += Buffer.byteLength(serialized, 'utf8')
+    if (target.length + index > 0) normalizedBytes += 1
+    if (normalizedBytes > MAX_NORMALIZED_REFERENCE_BYTES) {
+      throw new TypeError('Payload legacy media references exceed the 8 MiB normalized metadata limit.')
+    }
+  }
+  budget.normalizedBytes = normalizedBytes
   target.push(...additions)
 }
 
@@ -262,26 +308,27 @@ export async function inspectPayloadLegacyMedia(input: {
     sort: 'id' as const,
   }
   const references: LegacyMediaReference[] = []
-  const published = await collectPages('Published media', (page) => input.payload.find({
+  const referenceBudget = { normalizedBytes: 2 }
+  await consumePages('Published media', (page) => input.payload.find({
     ...common, collection: 'media', draft: false, page, trash: true,
-  }))
-  for (const row of published) {
-    if (row._status !== 'draft') appendBounded(references, [mediaReference('document', row)])
-  }
-  const drafts = await collectPages('Latest draft media', (page) => input.payload.find({
+  }), referenceBudget, (row) => {
+    if (row._status !== 'draft') {
+      appendBounded(references, [mediaReference('document', row)], referenceBudget)
+    }
+  })
+  await consumePages('Latest draft media', (page) => input.payload.find({
     ...common, collection: 'media', draft: true, page, trash: true,
-  }))
-  for (const row of drafts) {
-    if (row._status === 'draft') appendBounded(references, [mediaReference('draft', row)])
-  }
-  const versions = await collectPages('Media versions', (page) => input.payload.findVersions({
+  }), referenceBudget, (row) => {
+    if (row._status === 'draft') {
+      appendBounded(references, [mediaReference('draft', row)], referenceBudget)
+    }
+  })
+  await consumePages('Media versions', (page) => input.payload.findVersions({
     ...common, collection: 'media', page, trash: true,
-  }))
-  for (const row of versions) appendBounded(references, [versionReference(row)])
-  const snapshots = await collectPages('Preview snapshots', (page) => input.payload.find({
+  }), referenceBudget, (row) => appendBounded(references, [versionReference(row)], referenceBudget))
+  await consumePages('Preview snapshots', (page) => input.payload.find({
     ...common, collection: 'preview-snapshots', page,
-  }))
-  for (const row of snapshots) appendBounded(references, snapshotReferences(row))
+  }), referenceBudget, (row) => appendBounded(references, snapshotReferences(row), referenceBudget))
 
   return inspectLegacyMediaInventory({ root: input.root, references })
 }

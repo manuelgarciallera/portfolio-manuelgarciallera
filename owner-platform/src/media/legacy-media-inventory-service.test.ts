@@ -422,4 +422,99 @@ describe('inspectPayloadLegacyMedia', () => {
     expect(find.mock.calls.filter(([options]) => options.collection === 'preview-snapshots'))
       .toHaveLength(0)
   })
+
+  it('rejects snapshot references over the global budget before requesting page two', async () => {
+    const captured = Array.from({ length: 101 }, (_, index) => ({
+      id: `media-${index + 1}`,
+      filename: `missing-${index + 1}.png`,
+      storage: 'legacy-unverified',
+    }))
+    const manifest = createPreviewManifest({
+      source: { collection: 'pages', documentId: 'page-1', versionId: 'current:one' },
+      brandTokens: {}, pageBlocks: [], mediaReferences: captured,
+    })
+    const snapshotCalls: number[] = []
+    const find = vi.fn(async (options: Record<string, unknown>) => {
+      if (options.collection !== 'preview-snapshots') return emptyPage()
+      const page = options.page as number
+      snapshotCalls.push(page)
+      if (page === 2) throw new Error('Snapshot page two was requested before enforcing the reference budget.')
+      return {
+        ...emptyPage(),
+        docs: Array.from({ length: 100 }, (_, index) => ({
+          id: `snapshot-${index + 1}`,
+          schemaVersion: 1,
+          sourceCollection: 'pages',
+          sourceDocumentId: 'page-1',
+          sourceVersionId: 'current:one',
+          manifest,
+          manifestHash: manifest.hash,
+        })),
+        totalDocs: 101,
+        totalPages: 2,
+        hasNextPage: true,
+        nextPage: 2,
+      }
+    })
+
+    await expect(inspectPayloadLegacyMedia({
+      payload: fakePayload({ find }), req: ownerRequest(), root,
+    })).rejects.toThrow(/global 10,000 reference limit/u)
+    expect(snapshotCalls).toEqual([1])
+  })
+
+  it('rejects nested source metadata instead of retaining it in normalized references', async () => {
+    const nestedFilename = { captured: 'not a scalar filename' }
+    const find = vi.fn(async (options: Record<string, unknown>) =>
+      options.collection === 'media' && options.draft === false
+        ? {
+          ...emptyPage(), totalDocs: 1,
+          docs: [{ id: 'media-1', _status: 'published', filename: nestedFilename }],
+        }
+        : emptyPage())
+
+    await expect(inspectPayloadLegacyMedia({
+      payload: fakePayload({ find }), req: ownerRequest(), root,
+    })).rejects.toThrow(/scalar source metadata/u)
+  })
+
+  it('bounds normalized snapshot metadata before requesting page two', async () => {
+    const manifest = createPreviewManifest({
+      source: { collection: 'pages', documentId: 'page-1', versionId: 'current:one' },
+      brandTokens: {}, pageBlocks: [],
+      mediaReferences: [{
+        id: 'media-1',
+        filename: 'x'.repeat(90_000) + '.png',
+        storage: 'legacy-unverified',
+      }],
+    })
+    const snapshotCalls: number[] = []
+    const find = vi.fn(async (options: Record<string, unknown>) => {
+      if (options.collection !== 'preview-snapshots') return emptyPage()
+      const page = options.page as number
+      snapshotCalls.push(page)
+      if (page === 2) throw new Error('Snapshot page two was requested before enforcing the metadata budget.')
+      return {
+        ...emptyPage(),
+        docs: Array.from({ length: 100 }, (_, index) => ({
+          id: `snapshot-${index + 1}`,
+          schemaVersion: 1,
+          sourceCollection: 'pages',
+          sourceDocumentId: 'page-1',
+          sourceVersionId: 'current:one',
+          manifest,
+          manifestHash: manifest.hash,
+        })),
+        totalDocs: 101,
+        totalPages: 2,
+        hasNextPage: true,
+        nextPage: 2,
+      }
+    })
+
+    await expect(inspectPayloadLegacyMedia({
+      payload: fakePayload({ find }), req: ownerRequest(), root,
+    })).rejects.toThrow(/8 MiB normalized metadata limit/u)
+    expect(snapshotCalls).toEqual([1])
+  })
 })
