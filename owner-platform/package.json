@@ -45,6 +45,9 @@
     "vitest": "4.1.10"
   },
   "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.25.12"
+    },
     "monaco-editor": {
       "dompurify": "3.4.14"
     }
