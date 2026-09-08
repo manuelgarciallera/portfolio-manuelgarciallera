@@ -1,9 +1,11 @@
 # Task 2 report — owner-authorized Payload legacy-media inventory
 
 Status: DONE. Implementation commit: `5273653` (`feat(owner): inventory legacy Payload media`).
+Final resource fix: `c6746f6` (`fix(owner): bound Payload inventory paging`).
 Task base: `bb2e5fa449e5e4d115a94d78021f4bbf0a487224`. The controller-only
 decisions commit `180eef5` was concurrent and was not modified or included in the
-implementation commit.
+implementation commit. The later controller-only retained-evidence ruling commit
+`d45140d` is likewise separate from this implementation.
 
 ## Implemented
 
@@ -19,9 +21,15 @@ implementation commit.
   retained versions and all preview snapshots.
 - Pagination rejects malformed/changing totals, unexpected page metadata,
   truncation, stalled pages and duplicate IDs. Each source rejects more than
-  10,000 declared rows on its first page; sources are normalized and released
-  sequentially, while a separate 10,000 normalized-reference cap spans every
-  collection. Empty snapshot rows therefore remain source-bounded.
+  10,000 declared rows on its first page. Rows are normalized as each page is
+  consumed, and the global 10,000-reference cap is enforced before requesting
+  another page; complete prior Payload pages are not accumulated. Empty snapshot
+  rows remain source-bounded.
+- A conservative shared 8 MiB retained-evidence budget counts UTF-8 pagination
+  row IDs and serialized normalized references. Retained filename, filesize and
+  revision fields must be scalar, and the existing 16-file-variant limit is
+  enforced before accumulation. This fails closed on malformed legacy metadata
+  rather than retaining nested or oversized Payload values across pages.
 - Document/draft identities use document IDs; version identities use version row
   IDs and accept scalar or populated parent IDs; snapshots use each captured
   media ID plus the snapshot ID. Unsupported identity shapes are rejected.
@@ -200,3 +208,79 @@ The deferred Minor about the fixture-owned missing-email-adapter warning was not
 changed in this fix loop. The PostgreSQL output retained that known warning and
 the pre-existing negative media tests' intentional 400/403 logs. No new failure,
 live session or cleanup concern remains.
+
+## Final whole-increment resource fix
+
+The final review at `fd4fb3c` found one Important issue: `collectPages` retained
+every complete snapshot document before global reference normalization. A valid
+source could therefore retain large manifests from all pages even when the final
+report was small. The collector now validates pagination and duplicate IDs while
+consuming each row immediately. It retains only normalized references, the row
+IDs required to validate pagination uniqueness, and scalar counters/totals; the
+global reference cap is applied before a subsequent page request.
+
+The same pagewise architecture covers published Media, latest drafts, Media
+versions and preview snapshots. The exact contract remains `limit:100`, at most
+10,000 rows per source and at most 10,000 references globally, with
+`overrideAccess:false` and all existing pagination validation unchanged.
+
+Cross-layer retention review also established that the Payload/manifest boundary
+could supply nested filename, filesize or revision values. Those retained fields
+now fail closed unless scalar. The common conservative 8 MiB retained-evidence
+budget counts both UTF-8 pagination IDs (including filtered rows) and serialized
+normalized references before another page is fetched. File variants are rejected
+above the existing Task 1 maximum of 16 (original plus 15 sizes) before an array
+is accumulated. Primitive-but-invalid values remain available to Task 1's
+authoritative validation; the collector does not reproduce its privacy, filename
+or filesystem decisions. The 8 MiB accounting is deliberately conservative and
+may reject malformed legacy data that Task 1 could otherwise reduce to a smaller
+diagnostic. Controller ruling `d45140d` records that reconciliation cost.
+
+### TDD and final gates
+
+- Pagewise reference-limit RED: focused service test chunk `f424b7`, exit `1`.
+  A first snapshot page normalized 10,100 references but the old collector still
+  requested page 2. Initial pagewise GREEN: chunk `ad37d7`, `20/20`, exit `0`.
+- Bounded-retention RED: chunk `3551a8`, exit `1`, `2/22` failures. Nested
+  filename metadata reached Task 1 instead of failing closed, and 100 valid
+  sub-1-MiB manifests with large scalar filenames requested page 2 before any
+  retained-metadata bound fired. GREEN after scalar validation and the 8 MiB
+  budget: chunk `81e1d3`, `22/22`, exit `0`.
+- Final frozen-source unit command:
+  `npm test -- --run src/media/legacy-media-inventory.test.ts src/media/legacy-media-inventory-service.test.ts`;
+  chunk `e99bed`, exit `0`, `2` files and `97/97` tests.
+- Final real SQLite fixture:
+  `npm run test:integration -- tests/legacy-media-inventory.integration.test.ts`;
+  chunk `e22e96`, exit `0`, `1` file and `3/3` tests.
+- Final PostgreSQL command used the installed PostgreSQL 17.11 tools and the
+  unchanged runner (which cannot safely scope to one integration file): session
+  `26836`, final chunk `57f457`, exit `0`, `4` files and `41/41` tests. It
+  confirmed ambient credentials ignored, test process and database sessions
+  closed, exact cluster stopped and only its validated synthetic root removed.
+- A preliminary exact-runner PostgreSQL pass before pagination IDs were charged
+  to the retained-evidence budget also completed: session `92106`, final chunk
+  `aaed8a`, exit `0`, `4` files and `41/41`. It was preserved rather than lost or
+  replaced, but session `26836` is authoritative for `c6746f6`.
+- Final changed-code ESLint: chunk `d323fa`, exit `0`, no output. Full TypeScript
+  `--noEmit`: chunk `945ce4`, exit `0`, no diagnostics.
+
+The known no-email-adapter fixture warning and intentional negative media-write
+400/403 logs remain. No process, exec session, PostgreSQL database session or
+synthetic test root remains. The final-review Minor about suppressing the
+fixture-owned email warning remains explicitly deferred.
+
+Per the controller's final-wave boundary, this agent did not rerun the full 877
+unit suite, resource/recovery checks, public boundary or public build. The
+controller owns one full-unit run after `c6746f6`; earlier complete/public results
+in this report are not claimed as provenance for the final resource diff. No
+production config, Task 1 core, public code, integration fixture, runner or
+package changed in this final fix.
+
+## Controller closure after final fix
+
+Controller `npm test` on `c6746f6`: session `13367`, final chunk `2b5f2a`,
+exit `0`, **880/880**, 146 files, 99.88 s. Scoped final re-review
+`fd4fb3c..c6746f6` confirms the retained-pages finding addressed and no new
+Critical/Important in the fix. The fixture email-warning Minor remains deferred.
+Separate authorized public deployment and its own gates are recorded in
+`docs/deployment-2026-09-08.md`; they do not activate the CMS storage.
