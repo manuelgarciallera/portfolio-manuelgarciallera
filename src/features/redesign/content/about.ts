@@ -48,14 +48,14 @@ export const ABOUT_LAYERS: AboutLayer[] = [
   {
     index: '04',
     title: 'Diseño de Experiencia de Usuario',
-    place: 'UNIR · Máster oficial · 9,6/10',
+    place: 'UNIR · Máster oficial · 9,56/10',
     contribution:
       'El método aplicado a lo digital: investigación con usuarios, arquitectura de la información, sistemas de diseño y evaluación. La disciplina que convierte una intuición en una decisión defendible.',
   },
   {
     index: '05',
     title: 'Desarrollo Full Stack',
-    place: 'UNIR + KSchool · Máster · 9,5/10',
+    place: 'UNIR + KSchool · Máster · 9,86/10',
     contribution:
       'La capacidad de construir y comprobar. Angular, Next.js, Node.js y MySQL me permiten pensar más allá de la pantalla y entender cómo datos, permisos y arquitectura sostienen el producto.',
   },
@@ -98,12 +98,12 @@ export const ABOUT_CREDENTIALS: AboutCredential[] = [
   {
     title: 'Máster en Desarrollo Full Stack',
     institution: 'UNIR · KSchool',
-    detail: '9,5 / 10',
+    detail: '9,86 / 10',
   },
   {
     title: 'Máster oficial en Diseño de Experiencia de Usuario',
     institution: 'UNIR',
-    detail: '9,6 / 10',
+    detail: '9,56 / 10',
   },
   {
     title: 'Grado en Diseño Integral y Gestión de la Imagen',
