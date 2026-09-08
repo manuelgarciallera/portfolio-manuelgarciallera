@@ -50,6 +50,7 @@ esas pérdidas, las hace explícitas para reconciliarlas con copias auténticas.
 - Informe versionado, orden determinista y hash de contenido; sin rutas absolutas,
   URLs, tokens, emails, alt/caption ni contenido editorial. `migrationReady:false`
   siempre: no constituye autorización ni prueba de snapshot consistente.
+  El documento serializado se limita a 8 MiB; el exceso se rechaza explícitamente.
 
 ## Colección de referencias
 
