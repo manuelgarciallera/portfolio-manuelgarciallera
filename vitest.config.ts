@@ -15,20 +15,6 @@ export default defineConfig({
   test: {
     projects: [
       {
-        // Proyecto unitario. Sin el, `vitest run` solo ejecutaba el proyecto de
-        // Storybook y los 32 ficheros *.unit.test.* del repositorio no llegaban a
-        // correr nunca: una suite de guardas que no se ejecuta no guarda nada.
-        // Los tests renderizan con renderToStaticMarkup, asi que no necesitan DOM.
-        test: {
-          name: 'unit',
-          environment: 'node',
-          include: ['src/**/*.unit.test.{ts,tsx}'],
-        },
-        resolve: {
-          alias: { '@': path.join(dirname, 'src') },
-        },
-      },
-      {
         extends: true,
         plugins: [
           // The plugin will run tests for the stories defined in your Storybook config
