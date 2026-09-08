@@ -1788,7 +1788,7 @@
   .rd-now__list button:hover,
   .rd-now__list button:focus-visible { color: var(--crystal-lilac); }
 
-  .rd-quote-panel { min-height: clamp(31rem, 48vw, 46rem); margin-bottom: clamp(3rem, 7vw, 7rem); }
+  .rd-quote-panel { min-height: 0; margin-bottom: 0; padding-bottom: clamp(2rem, 3vw, 3rem); }
   .rd-principle { width: min(100%, 58rem); }
   #enfoque { position: relative; isolation: isolate; overflow: hidden; min-height: clamp(43rem, 62vw, 60rem); }
   #enfoque > :not(.rd-manifesto-art) { position: relative; z-index: 2; }
