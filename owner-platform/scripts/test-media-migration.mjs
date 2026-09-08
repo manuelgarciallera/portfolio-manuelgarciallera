@@ -110,6 +110,15 @@ try {
   const migrated = await runWorker(workerPath, input('prepared-migrate', cloneDirectory, clonePostgres, { expected: seeded }), ownerRoot)
   assert(workersClosed(), 'Prepared migration writer must close before binding reopen.')
   await assertNoPayloadSessions('owner_restored')
+  assert.deepEqual(migrated.candidateProof, {
+    references: seeded.rowsBefore.versions.length + 2,
+    variants: (seeded.rowsBefore.versions.length + 1) * 4 + 1,
+    physicalFiles: 8,
+    omittedSnapshotRejected: true,
+    staleInventoryRejected: true,
+    wrongBytesRejected: true,
+    canApply: false,
+  }, 'The prepared clone must verify the actual candidate before patching rows.')
 
   console.log('[media-migration] reopen migrated clone with the real binding')
   const versioned = await runWorker(workerPath, input('versioned-verify', cloneDirectory, clonePostgres, {
@@ -153,6 +162,8 @@ try {
     originalAndDerivedFiles: seeded.fileCounts.A + seeded.fileCounts.B,
     downloadsVerified: versioned.downloadsVerified,
     backupFiles: manifest.files.length,
+    candidateProof: migrated.candidateProof,
+    candidateDigest: migrated.candidateDigest,
     preparedCloneReopened: true,
     sourceFilesUnchanged: true,
     backupFilesUnchanged: true,

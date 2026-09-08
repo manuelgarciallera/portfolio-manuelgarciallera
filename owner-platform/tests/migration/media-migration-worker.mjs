@@ -11,6 +11,10 @@ import sharp from 'sharp'
 import { Users } from '../../src/collections/Users.ts'
 import { createPagePreviewSnapshot } from '../../src/preview/service.ts'
 import { readMediaRevision, writeMediaRevision } from '../../src/media/revision-store.ts'
+import { inspectPayloadLegacyMedia } from '../../src/media/legacy-media-inventory-service.ts'
+import { createMigrationPlan } from '../../src/media/migration-plan.ts'
+import { bindMigrationPlanInventory } from '../../src/media/migration-plan-inventory.ts'
+import { verifyMigrationPlanFiles } from '../../src/media/migration-plan-physical.ts'
 import { startMediaHTTPFixture } from '../media/http-fixture.ts'
 import { snapshotFiles } from '../recovery/backup-manifest.mjs'
 import {
@@ -312,6 +316,76 @@ const migratePrepared = async (input) => {
     const revisionFilesBeforeTransactions = await snapshotFiles(revisionRoot)
     const rowsBefore = await rowsFor(payload, input.expected.mediaId)
 
+    // QA-only source of trust: this isolated fixture is the sole writer and
+    // retained authentic A/B bytes before replacement. This is not a general
+    // resolver of historical evidence, a production freeze or a cutover permit.
+    const inventoryReq = await createLocalReq({ user: owner }, payload)
+    const inventory = await inspectPayloadLegacyMedia({ payload, req: inventoryReq, root: staticDir })
+    const candidate = createMigrationPlan({
+      sourceInventoryHash: inventory.hash,
+      references: inventory.references.map(({ kind, documentId, referenceId, files }) => ({
+        kind, documentId, referenceId, variants: files.map(({ variant }) => variant),
+      })),
+      evidence: inventory.references.flatMap((reference) => {
+        assert.equal(reference.documentId, String(input.expected.mediaId))
+        let label
+        if (reference.kind === 'document') label = 'B'
+        else if (reference.kind === 'version') {
+          const version = rowsBefore.versions.find(row => String(row.id) === reference.referenceId)
+          assert(version, 'QA candidate contains an unknown historical version.')
+          label = version.version.alt === 'Synthetic A' ? 'A'
+            : version.version.alt === 'Synthetic B' ? 'B' : undefined
+        } else if (reference.kind === 'snapshot') {
+          assert.equal(reference.referenceId, String(capturedBefore.id))
+          label = 'A'
+        }
+        assert(label, 'QA candidate contains a reference outside this fixture.')
+        const authentic = input.expected.revisions[label]
+        return reference.files.map(({ variant, filename }) => {
+          const archived = authentic.files.find(file => file.name === filename)
+          assert(archived, 'QA reference has no authentic archived file.')
+          return { kind: reference.kind, documentId: reference.documentId, referenceId: reference.referenceId,
+            variant, filename, bytes: archived.size, sha256: archived.sha256, revision: revisions[label],
+            evidenceHash: sha256(Buffer.from(JSON.stringify(authentic.files))) }
+        })
+      }),
+    })
+    const serializedCandidate = JSON.stringify(candidate)
+    const serializedInventory = JSON.stringify(inventory)
+    const coverage = bindMigrationPlanInventory(serializedCandidate, serializedInventory, inventory.hash)
+    const physical = await verifyMigrationPlanFiles(serializedCandidate, revisionRoot)
+    assert.equal(coverage.canApply, false)
+    assert.equal(physical.canApply, false)
+    assert.equal(coverage.planDigest, physical.planDigest)
+
+    const withoutSnapshot = createMigrationPlan({
+      sourceInventoryHash: inventory.hash,
+      references: candidate.references.filter(reference => reference.kind !== 'snapshot'),
+      evidence: candidate.evidence.filter(entry => entry.kind !== 'snapshot'),
+    })
+    assert.throws(() => bindMigrationPlanInventory(JSON.stringify(withoutSnapshot), serializedInventory, inventory.hash),
+      { code: 'inventory-coverage-mismatch' })
+    assert.throws(() => bindMigrationPlanInventory(serializedCandidate, serializedInventory, '0'.repeat(64)),
+      { code: 'inventory-integrity-mismatch' })
+    const wrongBytes = createMigrationPlan({
+      sourceInventoryHash: inventory.hash,
+      references: candidate.references,
+      evidence: candidate.evidence.map(entry => entry.revision === revisions.A
+        ? { ...entry, sha256: '0'.repeat(64) } : entry),
+    })
+    // Correct coverage is insufficient: physically wrong historical bytes must fail.
+    bindMigrationPlanInventory(JSON.stringify(wrongBytes), serializedInventory, inventory.hash)
+    await assert.rejects(verifyMigrationPlanFiles(JSON.stringify(wrongBytes), revisionRoot),
+      { code: 'candidate-file-mismatch' })
+    assert.deepEqual(await rowsFor(payload, input.expected.mediaId), rowsBefore)
+    assert.deepEqual(await snapshotFiles(revisionRoot), revisionFilesBeforeTransactions)
+    const inventoryAgain = await inspectPayloadLegacyMedia({ payload, req: inventoryReq, root: staticDir })
+    assert.equal(inventoryAgain.hash, inventory.hash, 'Source inventory changed before the QA transaction.')
+    bindMigrationPlanInventory(serializedCandidate, JSON.stringify(inventoryAgain), inventory.hash)
+    const candidateProof = { references: coverage.referenceCount, variants: coverage.variantCount,
+      physicalFiles: physical.fileCount, omittedSnapshotRejected: true, staleInventoryRejected: true,
+      wrongBytesRejected: true, canApply: false }
+
     const failedReq = await createLocalReq({ user: owner }, payload)
     await assert.rejects(runDedicatedAdapterTransaction({
       db: payload.db,
@@ -366,6 +440,8 @@ const migratePrepared = async (input) => {
     assert.deepEqual(await snapshotFiles(revisionRoot), revisionFilesBeforeTransactions)
     return {
       revisions,
+      candidateProof,
+      candidateDigest: candidate.digest,
       rollbackVerified: true,
       staleSessionRejectedBeforeWrite: true,
       migratedVersions: committed.versions.length,
