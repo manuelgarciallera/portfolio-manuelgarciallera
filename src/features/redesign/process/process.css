@@ -1,0 +1,10 @@
+.rd-process-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 25 / 26;
+  overflow: hidden;
+  border-radius: .4rem;
+  margin-bottom: 1.25rem;
+  background: #f2f2f0;
+}
+.rd-process-image img { object-fit: cover; object-position: center; }

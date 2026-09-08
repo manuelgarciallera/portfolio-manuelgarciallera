@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { SiteHeader } from '../components/SiteHeader'
 import { Breadcrumbs } from '../components/Breadcrumbs'
@@ -15,6 +16,7 @@ import {
   PROCESS_STATEMENT,
 } from '../content/process'
 import '../redesign.css'
+import './process.css'
 
 export function ProcessPage() {
   const [isDark, toggleTheme] = usePortfolioTheme()
@@ -57,6 +59,10 @@ export function ProcessPage() {
           <div className="rd-axes">
             {PROCESS_PHASES.map((phase) => (
               <article key={phase.index} className="rd-axis rd-reveal">
+                <div className="rd-process-image">
+                  {/* Landscape sources need ~1.85× the frame width when cropped to 25:26. */}
+                  <Image src={phase.image} alt="" fill loading="lazy" sizes="(max-width: 1179px) 170vw, 56vw" />
+                </div>
                 <p className="rd-case-index">{phase.index}</p>
                 <h2 className="rd-case-title">{phase.title}</h2>
                 <p className="rd-case-claim">{phase.intent}</p>

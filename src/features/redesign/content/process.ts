@@ -1,6 +1,7 @@
 export interface ProcessPhase {
   index: string
   title: string
+  image: string
   intent: string
   decides: string
   executes: string
@@ -29,6 +30,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '01',
     title: 'Encuadre',
+    image: '/art/capabilities/spatial-light.webp',
     intent: 'Definir el problema, la audiencia y la restricción real antes de dibujar nada.',
     decides: 'Problema, alcance, criterios de éxito y qué queda fuera.',
     executes: 'Recopilación de contexto, síntesis de material previo.',
@@ -37,6 +39,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '02',
     title: 'Research',
+    image: '/art/capabilities/hci-material.webp',
     intent: 'Entender el terreno con métodos, no con intuición.',
     decides: 'Qué métodos aplican y qué hallazgos son relevantes.',
     executes: 'Benchmark, evaluación heurística, ordenación de hallazgos.',
@@ -45,6 +48,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '03',
     title: 'Sistema',
+    image: '/art/capabilities/design-system.webp',
     intent: 'Tokens y componentes antes que pantallas. Sin sistema no hay escala.',
     decides: 'Dirección de arte, jerarquía, escala tipográfica, carácter del movimiento.',
     executes: 'Andamiaje de variables, estados de componente, comprobación de contraste.',
@@ -53,6 +57,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '04',
     title: 'Prototipo',
+    image: '/art/capabilities/product-system.webp',
     intent: 'Pantallas montadas con instancias del sistema, navegables desde el primer día.',
     decides: 'Composición, flujo y qué se prueba antes de programar.',
     executes: 'Montaje de variantes, responsive, documentación de estados.',
@@ -61,6 +66,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '05',
     title: 'Traspaso',
+    image: '/art/capabilities/frontend-surface.webp',
     intent: 'Del diseño al código sin traducción: los nombres del sistema son los mismos.',
     decides: 'Qué es contrato y qué es implementación libre.',
     executes: 'Lectura estructurada del diseño, generación de componentes, pruebas.',
@@ -69,6 +75,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   {
     index: '06',
     title: 'Verificación',
+    image: '/art/capabilities/human-ai.webp',
     intent: 'Lo que no se comprueba, no está hecho.',
     decides: 'Umbral de calidad aceptable y qué deuda se declara.',
     executes: 'Pruebas, auditoría de accesibilidad, medición de rendimiento.',
