@@ -13,7 +13,7 @@ import type { ContactSubmission } from "@/lib/contact";
 // si el SMTP de IONOS bloqueara la salida desde la funcion, se conmuta sin tocar codigo.
 //
 // Variables (Vercel -> Settings -> Environment Variables):
-//   CONTACT_TO_EMAIL   destinatario final
+//   CONTACT_TO_EMAIL   destinatario o destinatarios finales, separados por comas
 //   SMTP_HOST          smtp.ionos.es
 //   SMTP_PORT          587 (STARTTLS) o 465 (TLS directo)
 //   SMTP_USER          buzon completo, p. ej. hello@manuelgarciallera.com
@@ -34,6 +34,16 @@ const SEND_TIMEOUT_MS = 12_000;
 // de cabeceras (un "nombre" con \r\nBcc: ... anadiria destinatarios).
 function sanitizeHeader(value: string): string {
   return value.replace(/[\r\n]+/g, " ").trim();
+}
+
+// CONTACT_TO_EMAIL admite varias direcciones separadas por comas: Manuel quiere el
+// aviso en su buzon personal y en los dos publicos. SMTP acepta la cadena tal cual,
+// pero Resend espera un array, asi que la lista se normaliza una sola vez aqui.
+function parseRecipients(value: string): string[] {
+  return value
+    .split(",")
+    .map((address) => address.trim())
+    .filter(Boolean);
 }
 
 function buildSubject(name: string): string {
@@ -76,7 +86,7 @@ async function sendWithSmtp(submission: ContactSubmission, to: string): Promise<
   try {
     await transporter.sendMail({
       from: { name: sanitizeHeader(process.env.SMTP_FROM_NAME || "Portfolio"), address: user },
-      to,
+      to: parseRecipients(to),
       replyTo: { name: sanitizeHeader(submission.name), address: submission.email },
       subject: buildSubject(submission.name),
       text: buildText(submission),
@@ -103,7 +113,7 @@ async function sendWithResend(submission: ContactSubmission, to: string): Promis
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from,
-        to: [to],
+        to: parseRecipients(to),
         reply_to: submission.email,
         subject: buildSubject(submission.name),
         text: buildText(submission),
@@ -121,7 +131,7 @@ async function sendWithResend(submission: ContactSubmission, to: string): Promis
 
 export async function sendContactMessage(submission: ContactSubmission): Promise<MailerResult> {
   const to = process.env.CONTACT_TO_EMAIL;
-  if (!to) return { ok: false, reason: "unconfigured" };
+  if (!to || parseRecipients(to).length === 0) return { ok: false, reason: "unconfigured" };
 
   const smtp = await sendWithSmtp(submission, to);
   if (smtp.ok || smtp.reason === "send-failed") return smtp;
