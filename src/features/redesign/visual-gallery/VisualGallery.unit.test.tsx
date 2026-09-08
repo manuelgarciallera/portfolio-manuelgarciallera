@@ -3,6 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { VisualGallery } from './VisualGallery'
 
 describe('visual project gallery', () => {
+  it('offers labelled previous and next controls connected to its scroll region', () => {
+    const html = renderToStaticMarkup(<VisualGallery />)
+    expect(html).toContain('aria-label="Ver proyectos anteriores"')
+    expect(html).toContain('aria-label="Ver proyectos siguientes"')
+    expect(html.match(/aria-controls="art-gallery-track"/g)).toHaveLength(2)
+    expect(html).toContain('id="art-gallery-track"')
+  })
   it('offers five named case links with NudeProject last, not presentation screenshots', () => {
     const html = renderToStaticMarkup(<VisualGallery />)
     expect(html.match(/aria-label="Ver caso:/g)).toHaveLength(5)
