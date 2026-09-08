@@ -189,16 +189,101 @@ unchanged. No active config, source binding, dependencies or public edits.
 
 ## Task 5 — Resource measurements and rollout evidence
 
-Consumes reviewed recovery and HTTP fixtures; refine exact benchmark files before
-dispatch. This is the remaining part of former Task 4, not a reduced release gate.
+Consumes reviewed recovery and HTTP fixtures. This is the remaining part of former
+Task 4, not a reduced release gate. Execute only after Task 4's review is closed.
+Read `versioned-media-resource-method-2026-09-08.md` before implementation.
 
-- [ ] Measure realistic image sets and simultaneous requests; record latency and
-  memory with method/limits. Address a demonstrated resource failure without
-  weakening full revision integrity or access checks.
-- [ ] Document storage root permissions, orphan reconciliation, growth/retention,
-  migration and rollback. Do not activate on the current library before these
-  gates and applicable authorization. Update operational-gap status with exact
-  evidence, not assumptions from the core helper.
+Files within owner-platform: new `scripts/test-media-resources.mjs` (orchestration),
+`tests/media/resource-seed-worker.mjs` (synthetic data only),
+`tests/media/resource-client.mjs` (bounded independent HTTP client),
+`tests/media/resource-measurements.mjs` and `.test.mjs` (validated result summary).
+Add `docs/owner-platform/media-resource-verification-2026-09-08.md` and
+`docs/owner-platform/media-storage-rollout-2026-09-08.md` from repository root;
+update `media-operational-gaps-2026-09-07.md` with exact measured scope. Do not edit
+source binding/core, shared fixtures/runners, dependencies or active config merely
+to improve a number; a demonstrated runtime failure requires a recorded focused
+correction and its own TDD/review gate.
+
+Interfaces consumed: `startMediaHTTPFixture(settings)` with Task 4's explicit
+synthetic reopen settings, and existing `runWorker(workerPath, input, cwd)` /
+`workersClosed()` from `tests/recovery/worker-runner.mjs`. Reuse esbuild already
+installed to bundle the TypeScript fixture into a fresh, ignored, owned runtime.
+The seed worker uses real Payload creation and the real revision binding, closes
+before measurement, and returns document/revision identifiers, relative delivery
+paths, file lengths and independent SHA-256 receipts. It does not return cookies
+or secrets. The measurement process reopens SQLite through the reviewed fixture;
+the HTTP client is a separate child through `runWorker`, with no cookie needed
+for these deliberately published synthetic records. Authentication/security
+coverage remains Task 3/4 evidence, not inferred from the benchmark.
+
+- [ ] First define and test a pure `summarizeMeasurements({ samples, responses })`
+  result validator. Samples contain finite nonnegative `rss`, `heapUsed`,
+  `external`, and `arrayBuffers`; responses contain finite nonnegative `elapsedMs`,
+  positive `bytes`, integer `status`, and lowercase SHA-256 `sha256`/`expectedSha256`.
+  Reject empty inputs, malformed/nonfinite values, non-200 responses, differing
+  hashes, and unsafe sizes before emitting a success summary. Return sample count,
+  baseline/peak/final memory, response count/bytes and min/median/max full-response
+  latency. Do not invent percentiles from a tiny sample. Example literal test:
+
+```js
+assert.throws(() => summarizeMeasurements({ samples: [], responses: [] }))
+const sample = { rss: 100, heapUsed: 20, external: 30, arrayBuffers: 10 }
+const response = { elapsedMs: 5, bytes: 7, status: 200,
+  sha256: 'a'.repeat(64), expectedSha256: 'b'.repeat(64) }
+assert.throws(() => summarizeMeasurements({ samples: [sample], responses: [response] }))
+```
+
+- [ ] Run `node --test tests/media/resource-measurements.test.mjs`; record RED
+  from an initially insufficient implementation, then the minimum validated
+  implementation and GREEN. Tests must also use fixed literal expected summaries,
+  not rebuild the production calculation in assertions.
+- [ ] Seed two real image sets in a separate process: an ordinary 2400×1350 JPEG
+  and a high-entropy 6000×3200 PNG intended to approach the aggregate revision
+  limit. Generate synthetic bytes with Node/Sharp, no network or real assets.
+  Record actual original/derivative sizes and assert the near-limit set lies
+  between 90% and 100% of the existing 64 MiB aggregate cap. If this recipe does
+  not meet that range, report the measured discrepancy before a documented bounded
+  fixture adjustment; do not change the storage cap. Large seeding uses real
+  authenticated Local API access, not a higher HTTP fixture body limit.
+- [ ] Close the seed worker before starting a fresh measurement instance so its
+  image-generation buffers cannot be counted as HTTP server memory. For each
+  ordinary original, near-limit original and near-limit smallest derivative,
+  perform one explicitly labelled warm-up, eight serial requests, then eight
+  requests with a maximum of four in flight. Stream/hash every client response
+  to EOF with an explicit 15-second abort deadline and exact loopback URL check.
+  Verify byte count, status and hash; no discarded or silently retried failures.
+- [ ] Sample server-process memory every 25 ms plus the start/end of each group.
+  Keep client RSS out of the server figures. Record that OS file cache and fixture
+  response buffering are not controlled and that sampling may miss short peaks.
+  Record Node/OS/architecture, total/available memory, SQLite, commit, dataset,
+  request counts and elapsed times. Do not label these data production capacity,
+  browser/Core Web Vitals or a comparison against the public checkpoint.
+- [ ] Use a predeclared 2 GiB absolute server RSS diagnostic stop budget and
+  require at least 4 GiB reported available memory before starting. These protect
+  this local experiment, not a selected hosting tier or customer SLA. Stop
+  scheduling more groups if the budget is observed exceeded, preserve the failed
+  result, and close owned clients/server before cleanup. Never increase the budget
+  after seeing results just to call the gate green. Client deadlines and existing
+  process timeout remain effective. No parallel build/heavy test during sampling.
+- [ ] Run the focused node tests, then `node scripts/test-media-resources.mjs` once
+  on final code. Record every command/exit and all scenarios. If a scenario fails,
+  identify whether the cause belongs to the harness, bound input or actual delivery
+  before proposing a runtime correction. Record source/backup/library unchanged;
+  remove only known synthetic files and empty directories, nonrecursively, after
+  the client's actual close and fixture shutdown. Run lint and types for the delta;
+  do not repeat unrelated full suites for measurement-only code.
+- [ ] Write the operational rollout document: private root/OS permissions separate
+  from public mounts, database plus all revision directories as one backup unit,
+  orphan inventory without deletion, byte growth accounting, and retention that
+  checks current documents, stored versions and frozen snapshots. Specify migration
+  first on a disposable clone, exact old/new mappings, no reconstruction of already
+  lost historical bytes, validation before cutover, and rollback of matching app,
+  DB and media together. No real migration or provider selection is authorized.
+- [ ] Report measured facts separately from prerequisites still open: persistent
+  hosting, off-site backup, cost/quotas, migrations, full isolation provenance,
+  source activation and public content bridge. PDFs/fonts/CV remain subsequent
+  work. A passing local benchmark is not a finished CMS or deployment approval.
+  Independent review and explicit-file commit close this task's measured scope.
 
 Task 1 can land independently as a tested internal capability. Tasks 2 through 5 are
 required before claiming the original media-loss defect fixed in the CMS.
