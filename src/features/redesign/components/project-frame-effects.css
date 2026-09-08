@@ -1,0 +1,27 @@
+/* One shared, brief accent pulse. Inset light cannot expose a gutter or
+   intercept swipes/links; only opacity animates, not the shadow's blur. */
+.rd-preview-slide { border-radius: inherit; }
+.rd-preview-slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 65%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.rd-preview-carousel[data-frame='slide'] .rd-preview-slide[data-active='true']::after {
+  animation: rd-frame-accent-pulse 1400ms ease-out both;
+}
+@keyframes rd-frame-accent-pulse {
+  0% { opacity: 0; }
+  28% { opacity: .72; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rd-preview-carousel[data-frame='slide'] .rd-preview-slide[data-active='true']::after {
+    animation: none;
+  }
+}

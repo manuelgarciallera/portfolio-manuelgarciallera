@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import './project-frame-effects.css'
 import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { useSwipe } from '../hooks/useSwipe'

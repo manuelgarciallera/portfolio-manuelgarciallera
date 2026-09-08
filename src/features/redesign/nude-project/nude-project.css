@@ -5,11 +5,10 @@
 .rd-visual-journey--nude-project .rd-visual-journey__rail { animation-duration: 48s; }
 .rd-visual-journey--nude-project .rd-visual-journey__media--portrait img { width: min(100%, 26.875rem); height: auto; }
 .rd-case-phase__frame--nude-project { background: var(--bg); }
-.rd-project-cover.rd-nude-cover { background: #e4e2d6; perspective: 1100px; }
+.rd-project-cover.rd-nude-cover { background: #382921; perspective: 1100px; }
 .rd-nude-cover__photo {
-  position: absolute; inset: -24% 10% -28% 16%; display: block;
-  transform: rotate(-9deg) rotateY(-8deg) translateZ(0);
-  box-shadow: 1.8rem 2.5rem 4rem #48292255;
+  position: absolute; inset: -2%; display: block;
+  transform: scale(1.02) translate3d(-.5%, 0, 0);
   animation: rd-nude-depth 9s ease-in-out infinite paused;
 }
 .rd-nude-cover__photo img { object-fit: cover; object-position: 50% 50%; }
@@ -20,8 +19,8 @@
 .rd-nude-cover__lockup img { width: 68%; height: auto; filter: brightness(0) invert(1) drop-shadow(0 2px 6px #0009); }
 .rd-case-visual[data-engaged='true'] .rd-nude-cover__photo { animation-play-state: running; }
 @keyframes rd-nude-depth {
-  0%, 100% { transform: rotate(-9deg) rotateY(-8deg) translateZ(0); }
-  50% { transform: rotate(-5deg) rotateY(3deg) translateZ(28px); }
+  0%, 100% { transform: scale(1.02) translate3d(-.5%, 0, 0); }
+  50% { transform: scale(1.045) translate3d(.5%, -.5%, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .rd-nude-cover__photo { animation: none; }
