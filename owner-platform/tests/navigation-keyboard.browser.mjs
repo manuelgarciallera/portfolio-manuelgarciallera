@@ -14,6 +14,8 @@ try {
     page.on('pageerror', error => errors.push(error.message))
     await page.goto(`${base}/admin/collections/pages`, { waitUntil: 'networkidle', timeout: 120_000 })
     const opener = page.locator('.app-header__mobile-nav-toggler')
+    // Network silence does not imply that the navigation adapter has hydrated.
+    await page.waitForFunction(() => document.querySelector('.app-header__mobile-nav-toggler')?.getAttribute('aria-controls') === 'owner-mobile-navigation')
     const focused = target => target.evaluate(el => el === document.activeElement)
     // No locator.focus(): the real tab order must expose the menu.
     for (let i = 0; i < 12 && !await focused(opener); i++) await page.keyboard.press('Tab')
