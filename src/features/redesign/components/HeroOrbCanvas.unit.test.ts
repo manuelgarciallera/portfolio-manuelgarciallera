@@ -62,7 +62,55 @@ describe('HeroOrbCanvas recovered artifact', () => {
     expect(hero).toContain('isCompact={isCompact}')
     expect(canvas).toContain('isCompact: boolean')
     expect(canvas).not.toContain('PORTRAIT_RATIO')
-    expect(canvas).toContain('COMPACT_WORDMARK_Y')
+    expect(canvas).toContain('COMPACT_GEOMETRY')
+  })
+
+  // Manuel lo vio y Codex lo fotografio a 390: el orbe tapaba «uel Garci» y el
+  // nombre se partia por el guion. La causa era aritmetica, no de material: con
+  // orbY 0.34, escala 0.78 y rotulo en -0.52, el borde inferior del orbe caia en
+  // -0.46 y la primera linea empezaba en -0.28. Se solapaban 0.18 unidades.
+  //
+  // Esta guarda hace la cuenta en vez de buscar cadenas. Si alguien vuelve a mover
+  // cualquiera de los cinco numeros hasta que se toquen, falla aqui y no en el
+  // telefono de Manuel.
+  it('keeps the orb clear of the wordmark in the stacked composition', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'),
+      'utf8',
+    )
+
+    const leer = (clave: string): number => {
+      const encontrado = source.match(new RegExp(`${clave}:\\s*(-?[0-9.]+)`))
+      expect(encontrado, `falta ${clave} en COMPACT_GEOMETRY`).not.toBeNull()
+      return Number(encontrado![1])
+    }
+
+    const orbY = leer('orbY')
+    const orbScale = leer('orbScale')
+    const orbGroupOffsetY = leer('orbGroupOffsetY')
+    const orbRimScale = leer('orbRimScale')
+    const wordmarkY = leer('wordmarkY')
+    const wordmarkMaxSize = leer('wordmarkMaxSize')
+    const wordmarkLineHeight = leer('wordmarkLineHeight')
+    const wordmarkLines = leer('wordmarkLines')
+
+    // El grupo exterior escala al interior, asi que su desplazamiento tambien.
+    const centroOrbe = orbY + orbGroupOffsetY * orbScale
+    const bordeInferior = centroOrbe - orbScale * orbRimScale
+    const altoTexto = wordmarkLines * wordmarkMaxSize * wordmarkLineHeight
+    const bordeSuperiorTexto = wordmarkY + altoTexto / 2
+
+    // Separacion, no roce. Sobre fondo negro el solapamiento no refracta: tapa.
+    expect(bordeInferior).toBeGreaterThan(bordeSuperiorTexto + 0.1)
+
+    // Y la composicion entera tiene que caber en el plano visible, ~4.0 de alto.
+    const bordeSuperiorOrbe = centroOrbe + orbScale * orbRimScale
+    const bordeInferiorTexto = wordmarkY - altoTexto / 2
+    expect(bordeSuperiorOrbe).toBeLessThan(2)
+    expect(bordeInferiorTexto).toBeGreaterThan(-2)
+
+    // El nombre se parte a proposito por el espacio, nunca por el guion.
+    expect(source).toContain("const COMPACT_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera'")
   })
 
   it('reports readiness only after the scene has rendered a frame', () => {

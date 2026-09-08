@@ -21,16 +21,45 @@ import { AdditiveBlending, Color, FrontSide, Group, MathUtils } from 'three'
 // nombre se lee entero.
 const WORDMARK_Z = -0.82
 const WORDMARK_MAX_SIZE = 0.46
-// Posiciones en unidades de mundo para la composicion compacta, con el plano
-// visible en ~4.0 de alto: el orbe ocupa la mitad superior y el rotulo la inferior.
+
+// El corte entre las dos composiciones NO puede salir de la relacion de aspecto del
+// lienzo. En escritorio `.rd-hero-art` declara `aspect-ratio: 1.15`; en movil el
+// lienzo mide 320x352, 390x352 o 430x352 segun el telefono, o sea entre 0.91 y 1.22.
+// A 430 el movil es casi tan apaisado como el escritorio y esa medida los confundia.
+// Quien decide es la anchura del viewport, la misma que decide la maquetacion en CSS.
+
+// Geometria de la composicion apilada, en unidades de mundo sobre un plano visible
+// de ~4.0 de alto. Se exporta porque la unica forma seria de guardarla es hacer la
+// aritmetica, no buscar cadenas: lo que importa no es que los numeros sean estos,
+// sino que el borde inferior del orbe quede por encima de la primera linea del
+// rotulo. La version anterior fallaba justo ahi: el orbe bajaba hasta -0.46 y la
+// primera linea empezaba en -0.28, asi que la esfera se comia «uel Garci».
 //
-// El corte NO puede salir de la relacion de aspecto del lienzo. En escritorio
-// `.rd-hero-art` declara `aspect-ratio: 1.15`, y en movil el lienzo mide unos
-// 438x352, o sea 1.24: el movil es mas apaisado que el escritorio. Quien decide es
-// la anchura del viewport, la misma que decide la maquetacion en CSS.
-const COMPACT_ORB_Y = 0.34
-const COMPACT_ORB_SCALE = 0.78
-const COMPACT_WORDMARK_Y = -0.52
+// Y no basta con «rozar». La idea de que el roce produce refraccion vale en
+// escritorio, donde el orbe cruza el nombre y se ve el liquido deformar las letras.
+// Sobre fondo negro y sin raton que lo mueva, el solapamiento no refracta: tapa.
+export const COMPACT_GEOMETRY = {
+  orbY: 0.5,
+  orbScale: 0.72,
+  // Desplazamiento del grupo interior del orbe, que la escala del padre multiplica.
+  orbGroupOffsetY: -0.02,
+  // El canto Fresnel se dibuja a 1.015 del radio: es el borde real que se ve.
+  orbRimScale: 1.015,
+  wordmarkY: -0.92,
+  // Mas bajo que en apaisado. «Garcia-Llera» a 0.46 mide 3.17 de ancho y el plano
+  // a 320px solo da 3.28 utiles: el margen era del 3% y cualquier ajuste de fuente
+  // lo rompia partiendo la palabra. A 0.44 el margen sube al 7%.
+  wordmarkMaxSize: 0.44,
+  wordmarkLineHeight: 1.05,
+  // El nombre no cabe en una linea en ningun telefono: a 430px, el mas ancho, haria
+  // falta 5.06 de plano y solo hay 4.41. Antes lo partia troika por el guion y
+  // quedaba «Manuel Garcia-» / «Llera», que es el peor corte posible de este nombre.
+  // Se parte a proposito por el espacio.
+  wordmarkLines: 2,
+} as const
+
+const COMPACT_WORDMARK_TEXT = 'Manuel\nGarcía-Llera'
+const WIDE_WORDMARK_TEXT = 'Manuel García-Llera'
 
 interface HeroOrbCanvasProps {
   isDark: boolean
@@ -161,20 +190,21 @@ function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' |
   // 0.9 del ancho deja un margen visible a izquierda y derecha; el divisor es el
   // avance aproximado de «Garcia-Llera», la palabra mas larga, que nunca se parte.
   const maxWidth = plane.width * 0.9
-  const fontSize = Math.min(WORDMARK_MAX_SIZE, maxWidth / 6.9)
+  const cap = isCompact ? COMPACT_GEOMETRY.wordmarkMaxSize : WORDMARK_MAX_SIZE
+  const fontSize = Math.min(cap, maxWidth / 6.9)
 
   return (
     <Text
-      position={[0, isCompact ? COMPACT_WORDMARK_Y : -0.04, WORDMARK_Z]}
+      position={[0, isCompact ? COMPACT_GEOMETRY.wordmarkY : -0.04, WORDMARK_Z]}
       color={isDark ? '#f4f1ec' : '#171717'}
       fontSize={fontSize}
       maxWidth={maxWidth}
-      lineHeight={1.05}
+      lineHeight={COMPACT_GEOMETRY.wordmarkLineHeight}
       anchorX="center"
       anchorY="middle"
       textAlign="center"
     >
-      Manuel García-Llera
+      {isCompact ? COMPACT_WORDMARK_TEXT : WIDE_WORDMARK_TEXT}
     </Text>
   )
 }
@@ -182,7 +212,10 @@ function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' |
 // En el hero apilado el orbe sube y encoge para dejar de competir con el rotulo.
 function ResponsiveOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   return (
-    <group scale={isCompact ? COMPACT_ORB_SCALE : 1} position={[0, isCompact ? COMPACT_ORB_Y : 0, 0]}>
+    <group
+      scale={isCompact ? COMPACT_GEOMETRY.orbScale : 1}
+      position={[0, isCompact ? COMPACT_GEOMETRY.orbY : 0, 0]}
+    >
       <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} />
     </group>
   )
