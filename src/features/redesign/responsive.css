@@ -157,18 +157,10 @@
    que hoy queda fuera y lo recorta `.rd-root { overflow-x: clip }`.
    ───────────────────────────────────────────────────────────────────────── */
 
-/* «Now» a 768px: las pistas mínimas de la rejilla suman 18rem + 24rem = 672px,
-   más `gap: clamp(2rem,7vw,8rem)` y dos gutters. En un viewport de 753px la
-   segunda columna se renderiza de 430 a 814 y la sección entera queda fuera de
-   pantalla. Entre 761 y 1023px se aplica la misma columna única que ya usa el
-   móvil; a partir de 1024 vuelve la composición de dos columnas intacta. */
-/* Trasladada a redesign.css: aqui empataba en especificidad con `.rd-now` y
-   perdia por orden de cascada, asi que a 768px la seccion seguia en dos
-   columnas y la lista se salia 46px. */
-@media (min-width: 761px) and (max-width: 1023px) {
-  .rd-now__intro { min-height: 0; }
-  .rd-now__visual { width: min(100%, 30rem); }
-}
+/* «Now» entre 761 y 1023px vive entero en redesign.css, junto a la regla base y
+   despues de ella. Aqui perdia el desempate de cascada y no hacia nada; dejarlo
+   partido en dos ficheros es lo que hizo que el fallo pareciera arreglado durante
+   un dia sin estarlo. */
 
 /* La marca larga ya está oculta bajo 768px (`opacity: 0`), pero seguía
    ocupando 345px de rejilla con `white-space: nowrap` e inflaba la cabecera.

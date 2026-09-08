@@ -492,13 +492,6 @@
   .rd-preview-viewport:has(.rd-coordination-diagram) { right: 0; }
 }
 
-/* A 768px la seccion «Now» seguia en dos columnas: 18rem + 24rem + gap superan
-   el viewport y la lista perdia 46px. (La regla equivalente en responsive.css no
-   surtia efecto por el orden de cascada descrito arriba.) */
-@media (min-width: 761px) and (max-width: 1023px) {
-  .rd-now { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); }
-}
-
 /* La rejilla de metadatos del caso mantenia dos columnas en movil, asi que la
    tira de tecnologias se quedaba en unos 170px: los iconos se amontonaban y solo
    se veian los tres primeros, con el resto escondido tras un scroll horizontal
@@ -1554,7 +1547,7 @@
   .rd-case-story__media img { animation: none; transition: none; }
 }
 /* Editorial platform */
-.rd-now { display: grid; grid-template-columns: minmax(18rem,.72fr) minmax(24rem,1.28fr); gap: clamp(2rem,7vw,8rem); padding: clamp(4rem,8vw,8rem) var(--gutter); color: #0a0b0f; background: #f4f5f7; }
+.rd-now { display: grid; grid-template-columns: minmax(0,.72fr) minmax(0,1.28fr); gap: clamp(2rem,7vw,8rem); padding: clamp(4rem,8vw,8rem) var(--gutter); color: #0a0b0f; background: #f4f5f7; }
 .rd-now__intro { display: flex; flex-direction: column; justify-content: space-between; min-height: 17rem; }
 .rd-now__intro p { max-width: 24ch; margin: 0; font-size: clamp(1.45rem,2.5vw,2.7rem); line-height: 1.15; letter-spacing: -.035em; }
 .rd-now__visual {
@@ -1713,6 +1706,16 @@
 .rd-next-case__label { margin: 0 var(--gutter) clamp(2rem, 4vw, 3.5rem); color: var(--muted); font-size: .72rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
 .rd-next-case .rd-case-caption { padding-inline: var(--gutter); }
 @media(max-width:760px){.rd-now{grid-template-columns:1fr;padding:3.5rem 2rem}.rd-now__intro{min-height:auto;gap:1.5rem}.rd-now__visual{width:88%;max-width:28rem;margin:1.25rem auto .5rem}.rd-now__list button{font-size:1.45rem}.rd-editorial{padding:4rem 2rem}.rd-editorial>header,.rd-editorial__grid article{grid-template-columns:1fr}.rd-editorial__grid article>a:first-child{grid-row:auto}.rd-editorial__grid h3{font-size:1.8rem}.rd-editorial__all{margin-left:0}.rd-article-cover{min-height:22rem}.rd-articles-index>header,.rd-article-page>header{padding-inline:2rem}.rd-article-next{flex-direction:column;gap:1.5rem;padding:3rem 2rem}.rd-next-case{padding-top:3rem}.rd-tech-stack{max-width:100%;overflow-x:auto;padding-bottom:.5rem}.rd-tech-stack--compact{flex-wrap:nowrap}}
+/* Entre 761 y 1023 la seccion «Now» no cabe en dos columnas: la lista se salia
+   46px y se recortaban los cinco titulares con sus parrafos. Este bloque tiene que
+   ir DESPUES de la regla base de `.rd-now`: ambas son un solo selector de clase y
+   una media query no anade especificidad, asi que el desempate lo decide el orden
+   de aparicion. Colocado antes, como estaba, no surtia ningun efecto. */
+@media (min-width: 761px) and (max-width: 1023px) {
+  .rd-now { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); }
+  .rd-now__intro { min-height: 0; }
+  .rd-now__visual { width: min(100%, 30rem); }
+}
 @media(prefers-reduced-motion:reduce){.rd-article-cover i,.rd-now__visual,.rd-now__visual img,.rd-now__answer-visual,.rd-hero-art-fallback{animation:none!important;transition:none!important}}
 
 /* Footer reducido: un único activo real, sin collage de formas CSS. */

@@ -147,6 +147,38 @@ describe('case-study responsive safeguards', () => {
     expect(css).toMatch(/@media\(prefers-reduced-motion:reduce\)[\s\S]*\.rd-now__visual img/)
   })
 
+  it('lets the capability index shrink instead of overflowing between 761 and 1023px', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
+
+    // La regla base no puede fijar minimos rigidos. Con minmax(18rem,..) y
+    // minmax(24rem,..) las pistas suman 672px mas el gap y los gutters, no caben
+    // por debajo de ~1000px y la lista se salia 46px a 768: se recortaban los cinco
+    // titulares del acordeon con sus parrafos. Esta guarda es el arreglo de verdad,
+    // porque no depende de que gane ninguna media query.
+    expect(css).toMatch(/\.rd-now \{[^}]*grid-template-columns:\s*minmax\(0,\s*\.72fr\) minmax\(0,\s*1\.28fr\)/)
+    expect(css).not.toMatch(/\.rd-now \{[^}]*grid-template-columns:[^;]*minmax\(\d+rem/)
+
+    // Y el bloque de tablet tiene que ir DESPUES de la regla base. Las dos son un
+    // unico selector de clase y una media query no anade especificidad, asi que el
+    // desempate lo decide el orden de aparicion. Colocado antes, como estuvo un dia
+    // entero, no surtia efecto y el fallo parecia corregido sin estarlo.
+    const base = css.indexOf('.rd-now { display: grid;')
+    const tablet = css.indexOf('@media (min-width: 761px) and (max-width: 1023px)')
+    expect(base).toBeGreaterThan(-1)
+    expect(tablet).toBeGreaterThan(base)
+    expect(css).toMatch(
+      /@media \(min-width: 761px\) and \(max-width: 1023px\)[\s\S]*?\.rd-now \{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/,
+    )
+
+    // El bloque vive entero en redesign.css. Partido entre dos ficheros es como se
+    // perdio la primera vez.
+    const responsive = fs.readFileSync(
+      path.join(process.cwd(), 'src/features/redesign/responsive.css'),
+      'utf8',
+    )
+    expect(responsive).not.toMatch(/@media \(min-width: 761px\) and \(max-width: 1023px\)[\s\S]{0,200}\.rd-now/)
+  })
+
   it('keeps mobile HCI artwork in flow with breathing room and reduces new artifact motion', () => {
     const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
     expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-research-banner\s*\{[^}]*grid-template-rows:\s*auto auto/)
