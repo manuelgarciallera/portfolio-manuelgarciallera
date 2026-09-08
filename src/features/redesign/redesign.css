@@ -1130,6 +1130,7 @@
 .rd-case-contribution { color: var(--ink-soft); font-size: 0.82rem; font-weight: 500; line-height: 1.45; max-width: 56ch; }
 .rd-case-title em { font-family: var(--font-serif); font-style: italic; font-weight: 500; }
 .rd-case-tags { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.rd-case-tags.rd-education-place { text-align: left; }
 .rd-case-arrow {
   font-size: 0.72rem; color: var(--muted); text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
   transition: transform var(--dur) var(--ease-out), color 0.3s ease;

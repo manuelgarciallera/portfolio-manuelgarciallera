@@ -66,7 +66,7 @@ export function AboutPage({ identity }: { identity?: ReactNode }) {
               <article key={layer.index} className="rd-axis rd-reveal">
                 <p className="rd-case-index">{layer.index}</p>
                 <h2 className="rd-case-title">{layer.title}</h2>
-                <p className="rd-case-tags">{layer.place}</p>
+                <p className="rd-case-tags rd-education-place">{layer.place}</p>
                 <p className="rd-case-claim">{layer.contribution}</p>
               </article>
             ))}
