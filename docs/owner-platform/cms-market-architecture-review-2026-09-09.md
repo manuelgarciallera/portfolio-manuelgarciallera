@@ -90,6 +90,16 @@ La actualización automática debe proponer y comprobar cambios, no publicar cie
 
 ## Siguiente tramo de investigación
 
+### Compatibilidad comprobada en la instalación local
+
+Inspección posterior sobre `ccefa38`: `@payloadcms/ui` instalado es 3.88.0 y contiene `providers/LivePreview` y `utilities/handleLivePreview.js`. No se necesita asumir que la capacidad existe solo en documentación de una versión posterior. El helper interno declara que no es API estable: usar configuración pública, no importarlo directamente en la aplicación.
+
+La configuración actual no activa `admin.livePreview`. El helper instalado acepta URL fija o calculada, pero no ejecuta la función de URL en operación `create`. El ensayo deberá comprobar documentos nuevos antes del primer guardado; no copiar una URL basada en ID inexistente. La vista editorial actual exige ID y carga el documento mediante `findByID`, por lo que simplemente abrirla dentro de un iframe no reflejará valores sin guardar.
+
+`loadContentVisualPreview` también resuelve marca, encuadres y relaciones con permisos. No sustituirlo por un cast del mensaje a `PageVisualPreview`: el formato del formulario y el modelo visual son diferentes, y las referencias requieren resolución autorizada. El receptor deberá aceptar solo el documento esperado, acotar estructura y tamaño, comprobar origen exacto y ventana emisora, y no realizar escrituras. La presencia de un handshake en el proveedor no certifica esas garantías del futuro receptor.
+
+Resultado: capacidad de infraestructura confirmada, integración aún no implementada ni probada. Siguiente decisión técnica: compartir una proyección validada para contenido guardado y transitorio, sin convertir la vista en un renderer público alternativo ni trasladar dependencias al portfolio. Debe acompañarla prueba de contenido no guardado, mensajes ajenos, documento nuevo, relaciones privadas y vuelta a la revisión persistida. Este contraste no es un test de navegador ni un motivo para declarar Live Preview lista.
+
 ### Ampliación económica: núcleo, servicios y operación
 
 La consulta de precios permite descartar una equivalencia engañosa: editor abierto no significa IA alojada incluida. La decisión del editor debe poder tomarse sin comprar su servicio de IA. Las cifras siguientes son tarifas anunciadas en USD, no presupuestos para este CMS; no incluyen una conversión a euros, impuestos ni estimación de consumo.
