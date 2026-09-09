@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/checkpoint-pre-editor-2026-09-04]
   pull_request:
     branches: [main]
 
