@@ -185,13 +185,34 @@ function useWordmarkPlane() {
   )
 }
 
+// Avance tipografico medido sobre el render real de produccion a 1440, no estimado:
+// lienzo 571x497, plano 4.605 x 4.008, y de ahi el ancho en pixeles de cada linea.
+//
+//   «Manuel Garcia-»       6.91 em
+//   «Llera»                2.56 em
+//   «Manuel Garcia-Llera»  9.47 em
+//
+// El divisor tiene que ser el avance de la linea mas larga de CADA composicion, y
+// esas son distintas. En apaisado la linea es el nombre entero. En vertical el
+// nombre se parte a proposito por el espacio y la linea mas larga es «Garcia-Llera»,
+// de avance parecido a «Manuel Garcia-».
+//
+// El 6.9 que habia servia para las dos y solo era correcto para una. En apaisado
+// dejaba el rotulo un 5.1% mas ancho que el plano util, troika lo partia, y lo
+// partia por el guion: «Manuel Garcia-» / «Llera». El peor corte posible de este
+// nombre, en la primera pantalla del sitio.
+const WIDE_WORDMARK_ADVANCE = 9.8
+const COMPACT_WORDMARK_ADVANCE = 6.9
+
 function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'isCompact'>) {
   const plane = useWordmarkPlane()
-  // 0.9 del ancho deja un margen visible a izquierda y derecha; el divisor es el
-  // avance aproximado de «Garcia-Llera», la palabra mas larga, que nunca se parte.
+  // 0.9 del ancho deja un margen visible a izquierda y derecha.
   const maxWidth = plane.width * 0.9
   const cap = isCompact ? COMPACT_GEOMETRY.wordmarkMaxSize : WORDMARK_MAX_SIZE
-  const fontSize = Math.min(cap, maxWidth / 6.9)
+  const advance = isCompact ? COMPACT_WORDMARK_ADVANCE : WIDE_WORDMARK_ADVANCE
+  // El tope solo entra cuando el plano da de sobra: si maxWidth/9.8 supera 0.46 es
+  // que maxWidth > 4.51, y el nombre entero a 0.46 ocupa 4.36. Cabe.
+  const fontSize = Math.min(cap, maxWidth / advance)
 
   return (
     <Text

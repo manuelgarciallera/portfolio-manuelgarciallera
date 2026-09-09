@@ -113,6 +113,78 @@ describe('HeroOrbCanvas recovered artifact', () => {
     expect(source).toContain("const COMPACT_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera'")
   })
 
+  // El nombre se partia por el guion en escritorio y el orbe se comia las letras del
+  // corte. Medido sobre el render real de produccion a 1440: plano util 4.144 y la
+  // cadena a 0.46 pedia 4.355, un 5.1% de mas. El divisor 6.9 correspondia a
+  // «Manuel Garcia-», la primera linea, no a la cadena entera.
+  //
+  // Esta guarda no busca cadenas: simula el calculo del componente sobre los anchos
+  // de lienzo reales y exige que el rotulo quepa. Si vuelve a partirse, falla aqui.
+  it('sizes the wordmark so it never breaks at the hyphen', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'),
+      'utf8',
+    )
+
+    const leer = (patron: RegExp, nombre: string): number => {
+      const encontrado = source.match(patron)
+      expect(encontrado, `falta ${nombre} en HeroOrbCanvas.tsx`).not.toBeNull()
+      return Number(encontrado![1])
+    }
+
+    const avanceApaisado = leer(/WIDE_WORDMARK_ADVANCE = ([0-9.]+)/, 'WIDE_WORDMARK_ADVANCE')
+    const avanceCompacto = leer(/COMPACT_WORDMARK_ADVANCE = ([0-9.]+)/, 'COMPACT_WORDMARK_ADVANCE')
+    const topeApaisado = leer(/WORDMARK_MAX_SIZE = ([0-9.]+)/, 'WORDMARK_MAX_SIZE')
+    const topeCompacto = leer(/wordmarkMaxSize: ([0-9.]+)/, 'wordmarkMaxSize')
+
+    // Avances tipograficos medidos sobre el render, no estimados.
+    const CADENA_ENTERA = 9.47
+    const LINEA_LARGA_COMPACTA = 6.91
+    // La camara y el fov son fijos, asi que el plano del rotulo siempre mide esto de
+    // alto; solo cambia el ancho con la relacion de aspecto del lienzo.
+    const ALTO_PLANO = 4.008
+
+    const cabe = (
+      anchoLienzo: number,
+      altoLienzo: number,
+      compacto: boolean,
+    ): { fontSize: number; ocupa: number; disponible: number } => {
+      const anchoPlano = ALTO_PLANO * (anchoLienzo / altoLienzo)
+      const disponible = anchoPlano * 0.9
+      const fontSize = Math.min(
+        compacto ? topeCompacto : topeApaisado,
+        disponible / (compacto ? avanceCompacto : avanceApaisado),
+      )
+      const ocupa = fontSize * (compacto ? LINEA_LARGA_COMPACTA : CADENA_ENTERA)
+      return { fontSize, ocupa, disponible }
+    }
+
+    // Lienzos reales medidos en produccion, con su composicion.
+    const casos: Array<[string, number, number, boolean]> = [
+      ['escritorio 1440', 571, 497, false],
+      ['escritorio 1280', 508, 442, false],
+      ['escritorio 1024', 430, 374, false],
+      ['movil 430', 430, 352, true],
+      ['movil 390', 390, 352, true],
+      ['movil 360', 360, 352, true],
+      ['movil 320', 320, 352, true],
+    ]
+
+    for (const [etiqueta, ancho, alto, compacto] of casos) {
+      const { ocupa, disponible } = cabe(ancho, alto, compacto)
+      expect(ocupa, `${etiqueta}: el rotulo se sale y troika lo partiria`).toBeLessThanOrEqual(
+        disponible,
+      )
+    }
+
+    // Y que el margen no sea tan grande que el rotulo quede ridiculo en escritorio.
+    const escritorio = cabe(571, 497, false)
+    expect(escritorio.ocupa / escritorio.disponible).toBeGreaterThan(0.85)
+
+    // Un solo divisor para las dos composiciones es exactamente el fallo que hubo.
+    expect(source).not.toMatch(/maxWidth \/ 6\.9\b/)
+  })
+
   it('reports readiness only after the scene has rendered a frame', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
     expect(source).toContain('function SceneReady')
