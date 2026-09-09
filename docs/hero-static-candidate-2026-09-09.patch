@@ -1,0 +1,169 @@
+diff --git a/src/features/redesign/components/Hero.tsx b/src/features/redesign/components/Hero.tsx
+index 9cb4a1f..ecadd5d 100644
+--- a/src/features/redesign/components/Hero.tsx
++++ b/src/features/redesign/components/Hero.tsx
+@@ -1,68 +1,18 @@
+-'use client'
+-
+ import Image from 'next/image'
+-import dynamic from 'next/dynamic'
+-import { useEffect, useState } from 'react'
+-
+-const HeroOrbCanvas = dynamic(() => import('./HeroOrbCanvas').then((module) => module.HeroOrbCanvas), {
+-  ssr: false,
+-})
+ 
+ interface HeroProps {
+   isDark?: boolean
+ }
+ 
+-export function Hero({ isDark = true }: HeroProps) {
+-  const [canvasReady, setCanvasReady] = useState(false)
+-  const [reduceMotion, setReduceMotion] = useState(false)
+-  const [canMountCanvas, setCanMountCanvas] = useState(false)
+-  const [isCompact, setIsCompact] = useState(false)
+-
+-  useEffect(() => {
+-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+-    const update = () => setReduceMotion(media.matches)
+-    update()
+-    media.addEventListener('change', update)
+-    return () => media.removeEventListener('change', update)
+-  }, [])
+-
+-  // Mismo corte que usa el CSS para apilar el hero. La escena no puede deducirlo de
+-  // la relacion de aspecto del lienzo: en escritorio es 1.15 y en movil ~1.24, o
+-  // sea que el movil es el mas apaisado de los dos.
+-  useEffect(() => {
+-    const media = window.matchMedia('(max-width: 767px)')
+-    const update = () => setIsCompact(media.matches)
+-    update()
+-    media.addEventListener('change', update)
+-    return () => media.removeEventListener('change', update)
+-  }, [])
+-
+-  // El orbe pesa ~870 KB entre three y drei. Se monta cuando el navegador está
+-  // ocioso, para que el fallback estático pinte primero y no compita con el LCP.
+-  useEffect(() => {
+-    const idle = window.requestIdleCallback
+-    if (typeof idle === 'function') {
+-      const handle = idle(() => setCanMountCanvas(true), { timeout: 2500 })
+-      return () => window.cancelIdleCallback?.(handle)
+-    }
+-    const timer = window.setTimeout(() => setCanMountCanvas(true), 400)
+-    return () => window.clearTimeout(timer)
+-  }, [])
+-
++// One visual from first paint onward; identity uses the page heading font.
++export function Hero(_props: HeroProps) {
+   return (
+     <section className="rd-hero" id="inicio">
+       <div className="rd-hero-copy">
+-        <h1>
+-          Diseño sistemas digitales que conectan investigación, interfaz y código.
+-        </h1>
++        <h1>Diseño sistemas digitales que conectan investigación, interfaz y código.</h1>
+         <a href="#casos">Ver proyectos</a>
+       </div>
+-
+-      <div
+-        className="rd-hero-art"
+-        data-ready={canvasReady ? 'true' : 'false'}
+-        aria-hidden="true"
+-      >
++      <div className="rd-hero-art rd-hero-art--single">
+         <Image
+           className="rd-hero-art-fallback"
+           src="/art/hero-refractive-orb-fallback-v2.webp"
+@@ -73,13 +23,7 @@ export function Hero({ isDark = true }: HeroProps) {
+           fetchPriority="high"
+           priority
+         />
+-        <div className="rd-hero-canvas-stage">
+-          {/* Con `prefers-reduced-motion: reduce` no se descarga la escena: el
+-              fallback estático ya representa la misma pieza sin movimiento. */}
+-          {canMountCanvas && !reduceMotion ? (
+-            <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} />
+-          ) : null}
+-        </div>
++        <p className="rd-hero-name">Manuel García-Llera Añón</p>
+       </div>
+     </section>
+   )
+diff --git a/src/features/redesign/components/Hero.unit.test.tsx b/src/features/redesign/components/Hero.unit.test.tsx
+index 8621e45..5a77bc6 100644
+--- a/src/features/redesign/components/Hero.unit.test.tsx
++++ b/src/features/redesign/components/Hero.unit.test.tsx
+@@ -10,8 +10,8 @@ describe('Hero', () => {
+     const markup = renderToStaticMarkup(<Hero />)
+ 
+     expect(markup).toContain('hero-refractive-orb-fallback-v2.webp')
+-    expect(markup).toContain('rd-hero-canvas-stage')
+-    expect(markup).toContain('data-ready="false"')
++    expect(markup).toContain('Manuel García-Llera Añón')
++    expect(markup).not.toContain('rd-hero-canvas-stage')
+     expect(markup.match(/rd-hero-art-fallback/g)).toHaveLength(1)
+     expect(markup).toContain('fetchPriority="high"')
+     expect(markup).toContain('Diseño sistemas digitales que conectan investigación, interfaz y código')
+@@ -25,16 +25,12 @@ describe('Hero', () => {
+     expect(markup).not.toContain('Cómo trabajo')
+   })
+ 
+-  it('mounts one continuous WebGL object immediately instead of swapping it after interaction', () => {
+-    const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/Hero.tsx'), 'utf8')
+-
+-    expect(source).toContain("dynamic(() => import('./HeroOrbCanvas')")
+-    expect(source).toContain('<HeroOrbCanvas')
+-    expect(source).not.toContain('canvasActive')
+-    expect(source).not.toContain('activateCanvas')
+-    expect(source).not.toContain('onPointerEnter')
+-    expect(source).not.toContain('onPointerDown')
+-    expect(source).toContain('onReady={() => setCanvasReady(true)}')
++  it('renders the full identity without requiring WebGL or JavaScript', () => {
++    for (const isDark of [true, false]) {
++      const markup = renderToStaticMarkup(<Hero isDark={isDark} />)
++      expect(markup).toContain('<p class="rd-hero-name">Manuel García-Llera Añón</p>')
++      expect(markup.match(/<img\b/g)).toHaveLength(1)
++    }
+   })
+ 
+   it('uses the exact page colours inside the transparent WebGL stage', () => {
+diff --git a/src/features/redesign/components/HeroOrbCanvas.unit.test.ts b/src/features/redesign/components/HeroOrbCanvas.unit.test.ts
+index 7dd0654..0021825 100644
+--- a/src/features/redesign/components/HeroOrbCanvas.unit.test.ts
++++ b/src/features/redesign/components/HeroOrbCanvas.unit.test.ts
+@@ -56,10 +56,8 @@ describe('HeroOrbCanvas recovered artifact', () => {
+   // los dos y esa medida los confundia.
+   it('takes the stacked composition from the viewport, never from the canvas ratio', () => {
+     const canvas = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
+-    const hero = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/Hero.tsx'), 'utf8')
+-
+-    expect(hero).toContain("matchMedia('(max-width: 767px)')")
+-    expect(hero).toContain('isCompact={isCompact}')
++    // The preserved canvas accepts its composition explicitly. The public hero
++    // no longer mounts this optional scene; its identity is rendered as HTML.
+     expect(canvas).toContain('isCompact: boolean')
+     expect(canvas).not.toContain('PORTRAIT_RATIO')
+     expect(canvas).toContain('COMPACT_GEOMETRY')
+diff --git a/src/features/redesign/redesign.css b/src/features/redesign/redesign.css
+index f51c29d..beef28c 100644
+--- a/src/features/redesign/redesign.css
++++ b/src/features/redesign/redesign.css
+@@ -699,6 +699,17 @@
+   opacity: 1; transition: opacity 500ms ease;
+ }
+ .rd-hero-canvas-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; }
++.rd-hero-art--single { aspect-ratio: auto; align-content: center; gap: 1.25rem; padding-block: .5rem; }
++.rd-hero-name {
++  margin: 0; max-width: 100%; padding-inline: .5rem;
++  font-family: var(--font-sans); font-weight: 700;
++  font-size: clamp(1.5rem, 2.6vw, 3rem);
++  line-height: 1.12; letter-spacing: var(--track-display);
++  text-align: center; text-wrap: balance; color: var(--ink);
++}
++@media (prefers-reduced-motion: reduce) {
++  .rd-hero-art--single .rd-hero-art-fallback { animation: none; }
++}
+ .rd-hero-canvas-stage canvas { width: 100% !important; height: 100% !important; }
+ .rd-hero-art[data-ready='true'] .rd-hero-canvas-stage { opacity: 1; }
+ /* El fallback y el lienzo no ocupan el mismo hueco: la imagen mide el 78% del
