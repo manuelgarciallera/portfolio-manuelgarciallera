@@ -13,6 +13,14 @@ import {
 
 const fixtures = join(import.meta.dirname, '..', '__fixtures__')
 
+test('public boundary rejects the sibling owner-platform source even without package imports', async () => {
+  const result = await analyzePublicBoundary({ rootDir: join(fixtures, 'public-boundary', 'owner-root') })
+  assert.deepEqual(result.violations.map(({ specifier, reason }) => ({ specifier, reason })), [
+    { specifier: '../../owner-platform/src/runtime', reason: 'private owner/admin module' },
+  ])
+  assert.deepEqual(result.violations[0].trace, ['src/app/page.tsx', 'owner-platform/src/runtime.ts'])
+})
+
 test('public boundary parses TypeScript import forms without regex bypasses', async () => {
   const result = await analyzePublicBoundary({
     rootDir: join(fixtures, 'public-boundary', 'forbidden'),

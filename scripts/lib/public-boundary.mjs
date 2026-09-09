@@ -12,7 +12,7 @@ const FORBIDDEN_PACKAGES = [
   'lexical',
   '@lexical/',
 ]
-const PRIVATE_SEGMENTS = new Set(['owner', 'admin'])
+const PRIVATE_SEGMENTS = new Set(['owner', 'admin', 'owner-platform'])
 // Un route handler nunca viaja al navegador: Next lo ejecuta solo en el servidor.
 // Es la unica frontera que permite dependencias que no pueden entrar en el bundle publico.
 const ROUTE_HANDLER = /(^|\/)route\.(?:ts|tsx|js|jsx|mts|mjs|cts|cjs)$/
