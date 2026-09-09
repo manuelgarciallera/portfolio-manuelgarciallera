@@ -110,7 +110,9 @@ describe('HeroOrbCanvas recovered artifact', () => {
     expect(bordeInferiorTexto).toBeGreaterThan(-2)
 
     // El nombre se parte a proposito por el espacio, nunca por el guion.
-    expect(source).toContain("const COMPACT_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera'")
+    expect(source).toContain("const COMPACT_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera\\nAñón'")
+    // El apellido completo no es opcional: es la firma con la que publica.
+    expect(source).toContain("const WIDE_WORDMARK_TEXT = 'Manuel García-Llera Añón'")
   })
 
   // El nombre se partia por el guion en escritorio y el orbe se comia las letras del
@@ -138,7 +140,11 @@ describe('HeroOrbCanvas recovered artifact', () => {
     const topeCompacto = leer(/wordmarkMaxSize: ([0-9.]+)/, 'wordmarkMaxSize')
 
     // Avances tipograficos medidos sobre el render, no estimados.
-    const CADENA_ENTERA = 9.47
+    // Cadena completa «Manuel García-Llera Añón». Derivada de la medida verificada
+    // de «Manuel García-Llera» (9.47) por la razón de anchos de las dos cadenas en
+    // la fuente real, 10.884/8.412 = 1.2939. Medida, no estimada.
+    const CADENA_ENTERA = 12.25
+    // Sin cambio: al pasar a tres líneas la más larga sigue siendo «García-Llera».
     const LINEA_LARGA_COMPACTA = 6.91
     // La camara y el fov son fijos, asi que el plano del rotulo siempre mide esto de
     // alto; solo cambia el ancho con la relacion de aspecto del lienzo.
@@ -183,6 +189,8 @@ describe('HeroOrbCanvas recovered artifact', () => {
 
     // Un solo divisor para las dos composiciones es exactamente el fallo que hubo.
     expect(source).not.toMatch(/maxWidth \/ 6\.9\b/)
+    // Y el divisor apaisado no puede volver a ser el de la cadena corta.
+    expect(avanceApaisado).toBeGreaterThan(11)
   })
 
   it('reports readiness only after the scene has rendered a frame', () => {

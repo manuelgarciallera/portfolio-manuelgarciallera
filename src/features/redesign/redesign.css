@@ -701,7 +701,17 @@
 .rd-hero-canvas-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; }
 .rd-hero-canvas-stage canvas { width: 100% !important; height: 100% !important; }
 .rd-hero-art[data-ready='true'] .rd-hero-canvas-stage { opacity: 1; }
-.rd-hero-art[data-ready='true'] .rd-hero-art-fallback { opacity: 0; }
+/* El fallback y el lienzo no ocupan el mismo hueco: la imagen mide el 78% del
+   contenedor y va centrada, mientras el lienzo lo llena entero y coloca el nombre
+   abajo del todo. Con solo `opacity: 0` la imagen sigue pintando durante la
+   transicion y el nombre del lienzo asoma por debajo: se ven dos esferas.
+   Manuel lo reporto asi el 9-sep: «la bola blanca sola, y debajo otra mas pequena
+   con mi nombre». Se retira del pintado, no solo se transparenta, y se espera a
+   que el lienzo haya terminado de aparecer. */
+.rd-hero-art[data-ready='true'] .rd-hero-art-fallback {
+  opacity: 0; visibility: hidden; animation: none;
+  transition: opacity 500ms ease, visibility 0s linear 650ms;
+}
 @keyframes rd-hero-fallback-breathe {
   0%, 100% { transform: translate3d(0, .25rem, 0) scale(.985); }
   50% { transform: translate3d(0, -.35rem, 0) scale(1.012); }

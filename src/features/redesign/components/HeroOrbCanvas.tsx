@@ -45,7 +45,7 @@ export const COMPACT_GEOMETRY = {
   orbGroupOffsetY: -0.02,
   // El canto Fresnel se dibuja a 1.015 del radio: es el borde real que se ve.
   orbRimScale: 1.015,
-  wordmarkY: -0.92,
+  wordmarkY: -1.16,
   // Mas bajo que en apaisado. «Garcia-Llera» a 0.46 mide 3.17 de ancho y el plano
   // a 320px solo da 3.28 utiles: el margen era del 3% y cualquier ajuste de fuente
   // lo rompia partiendo la palabra. A 0.44 el margen sube al 7%.
@@ -55,11 +55,11 @@ export const COMPACT_GEOMETRY = {
   // falta 5.06 de plano y solo hay 4.41. Antes lo partia troika por el guion y
   // quedaba «Manuel Garcia-» / «Llera», que es el peor corte posible de este nombre.
   // Se parte a proposito por el espacio.
-  wordmarkLines: 2,
+  wordmarkLines: 3,
 } as const
 
-const COMPACT_WORDMARK_TEXT = 'Manuel\nGarcía-Llera'
-const WIDE_WORDMARK_TEXT = 'Manuel García-Llera'
+const COMPACT_WORDMARK_TEXT = 'Manuel\nGarcía-Llera\nAñón'
+const WIDE_WORDMARK_TEXT = 'Manuel García-Llera Añón'
 
 interface HeroOrbCanvasProps {
   isDark: boolean
@@ -201,7 +201,7 @@ function useWordmarkPlane() {
 // dejaba el rotulo un 5.1% mas ancho que el plano util, troika lo partia, y lo
 // partia por el guion: «Manuel Garcia-» / «Llera». El peor corte posible de este
 // nombre, en la primera pantalla del sitio.
-const WIDE_WORDMARK_ADVANCE = 9.8
+const WIDE_WORDMARK_ADVANCE = 12.68
 const COMPACT_WORDMARK_ADVANCE = 6.9
 
 function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'isCompact'>) {
