@@ -90,6 +90,33 @@ La actualización automática debe proponer y comprobar cambios, no publicar cie
 
 ## Siguiente tramo de investigación
 
+### Ampliación económica: núcleo, servicios y operación
+
+La consulta de precios permite descartar una equivalencia engañosa: editor abierto no significa IA alojada incluida. La decisión del editor debe poder tomarse sin comprar su servicio de IA. Las cifras siguientes son tarifas anunciadas en USD, no presupuestos para este CMS; no incluyen una conversión a euros, impuestos ni estimación de consumo.
+
+| Opción | Dato observado | Consecuencia para el piloto |
+| --- | --- | --- |
+| Payload | Licencia MIT en el repositorio principal; Visual Editor figura como «Coming Soon» en enterprise [9][2] | No basar el calendario en un producto anunciado ni confundirlo con Live Preview disponible en documentación |
+| Puck Cloud | Pay-as-you-go: coste del modelo +20%; Launch 199 USD/mes; Growth 799 USD/mes [10] | No necesario para evaluar el editor abierto; mantener IA como integración separable |
+| Sanity | Free anuncia datasets públicos; Growth 15 USD/asiento/mes y datasets privados o públicos [11] | No comparar solo el precio cero: comprobar privacidad y necesidades de roles antes de una posible migración |
+| Railway | Hobby mínimo 5 USD de consumo y Pro mínimo 20 USD, con créditos incluidos y excedentes [12] | Un mínimo no es el coste total de aplicación, base, volumen, tráfico y copias |
+
+Puck especifica que BYOK en Launch/Growth sigue enrutando solicitudes por sus servidores. Por tanto, aportar clave propia no convierte el procesamiento en local ni elimina intermediarios. El plan sin cuota fija factura uso; no es IA gratuita. [10] Recomendación: excluir Puck Cloud del presupuesto inicial y evaluar únicamente el núcleo si el ensayo funcional lo justifica.
+
+En Payload, MIT corresponde al software cubierto por esa licencia, no a un compromiso de alojamiento, soporte o acceso a funciones enterprise. Esta lectura no es una revisión jurídica de todas las dependencias y activos. No se ha fijado aún un inventario de licencias por versión; tampoco se han aceptado condiciones nuevas. [9]
+
+No se obtuvieron tarifas comparables de Builder ni Render en las páginas consultadas: su representación recuperada no expuso importes utilizables. La URL `/pricing` de Payload devolvió 404. Esas ausencias se registran como información pendiente, no como coste cero ni como prueba de que no ofrezcan tarifas. [13][14]
+
+### Escenario de presupuesto que falta medir
+
+Para el primer owner, el presupuesto debe separar aplicación Node, PostgreSQL, medios y derivados, segunda copia independiente, transferencia, monitorización e IA opcional. Añadir también el trabajo periódico de mantenimiento; no presentarlo como dinero facturado por el proveedor, pero sí como esfuerzo propio necesario.
+
+Escenario de cálculo propuesto, todavía no una medida del CMS: un editor, un proceso owner, 1 GB de base y 5 GB de medios antes de versiones. La retención puede multiplicar el volumen; el tamaño final depende de derivados, originales y frecuencia de sustitución. Medir primero memoria bajo edición/subida y el crecimiento real de versiones evita elegir un plan que solo sirva para el arranque.
+
+Un presupuesto de consumo se calcula con recursos medidos y retención: `cómputo + base + medios/derivados/versiones + copia independiente + tráfico + servicios opcionales`. En planes con crédito incluido no se suma dos veces el mínimo y el consumo cubierto. No se da aquí un total mensual porque faltan memoria/CPU observadas, retención y destino. Ninguna tarifa anunciada demuestra por sí sola que el sistema pueda restaurarse.
+
+Decisión provisional: continuar el desarrollo local sin cuota nueva; conservar Payload; no contratar IA/editor cloud; solicitar autorización únicamente ante una opción de alojamiento con presupuesto y alcance concretos. Reutilizar un servidor ya pagado podría evitar una nueva factura, pero todavía no se ha identificado uno autorizado ni su capacidad disponible.
+
 Faltan comparativa económica con supuestos de uso, revisión de licencias por edición, repositorios fijados a SHA y pruebas ejecutables de los candidatos, estudios de tareas móvil/desktop, y contraste específico de IA y conectores. No se afirma que Puck o Live Preview sean mejores en nuestro entorno hasta ejecutar sus ensayos. El objetivo final sigue siendo un producto utilizable y mantenible, no un catálogo de tecnologías.
 
 ## Fuentes
@@ -104,3 +131,9 @@ Consultadas el 9 de septiembre de 2026. Documentación mutable; sin versión fij
 6. Builder, [Components-only Mode](https://site.builder.io/c/docs/guides/components-only-mode).
 7. Sanity, [Overlays and click-to-edit](https://www.sanity.io/docs/visual-editing/visual-editing-overlays).
 8. GrapesJS, [Storage Manager](https://grapesjs.com/docs/modules/Storage.html).
+9. Payload, [LICENSE.md en main](https://github.com/payloadcms/payload/blob/main/LICENSE.md), licencia mutable consultada; no inventario jurídico versionado.
+10. Puck, [Pricing](https://puckeditor.com/pricing), tarifas cloud y aclaración BYOK.
+11. Sanity, [Pricing](https://www.sanity.io/pricing), planes y privacidad de datasets.
+12. Railway, [Pricing](https://railway.com/pricing), mínimos, créditos y consumo.
+13. Builder, [Pricing](https://www.builder.io/pricing), consulta sin importes comparables recuperados.
+14. Render, [Pricing](https://render.com/pricing), consulta sin importes comparables recuperados.
