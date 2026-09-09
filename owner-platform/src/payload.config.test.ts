@@ -1,7 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { getTranslation, initI18n } from '@payloadcms/translations'
 
 import configPromise from './payload.config'
+
+vi.hoisted(() => {
+  vi.stubEnv('PAYLOAD_SECRET', 'synthetic-config-test-secret-not-for-runtime')
+  vi.stubEnv('DATABASE_URL', '')
+})
+afterAll(() => vi.unstubAllEnvs())
 
 describe('owner Payload configuration', () => {
   it('places the editorial preview in the form flow, not the fixed-height action toolbar', async () => {

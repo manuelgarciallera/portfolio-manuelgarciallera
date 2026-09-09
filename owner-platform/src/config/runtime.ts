@@ -97,11 +97,14 @@ export const resolveRuntimeConfig = ({
   if (databaseUrl && !isPostgresDatabaseUrl(databaseUrl)) {
     throw new Error('DATABASE_URL must be a valid PostgreSQL connection URL')
   }
+  if (!isSecurePayloadSecret(payloadSecret)) {
+    throw new Error('A secure PAYLOAD_SECRET is required in local runtime')
+  }
   return {
     database: databaseUrl
       ? { kind: 'postgres', url: databaseUrl }
       : { kind: 'sqlite', url: `file:.data/${localDatabaseName ?? 'owner-platform'}.db` },
-    payloadSecret: payloadSecret || DEVELOPMENT_PAYLOAD_SECRET,
+    payloadSecret,
     productionBuild: false,
   }
 }

@@ -333,11 +333,18 @@ write, build, publication, or deployment path.
 ## Local development
 
 From the repository root, run `npm run owner:install` and then
-`npm --prefix owner-platform run dev`. The development
+configure a private `PAYLOAD_SECRET` in `owner-platform/.env` (or the process
+environment), then run `npm --prefix owner-platform run dev`. Use a random value
+of at least 32 characters; for example generate one locally with
+`node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
+Never commit or share that output. Missing, short and known placeholder secrets
+are rejected in local runtime as well as production. Keep the same private key
+across local restarts. If replacing the former development fallback, existing
+sessions must sign in again; this change does not rotate keys or edit data for you.
+The development
 command creates the ignored `.data/` directory and Payload uses
 `.data/owner-platform.db` unless `DATABASE_URL` is explicitly provided. The
-fallback Payload secret is deliberately named and limited to development; it
-must never be used outside local development.
+build-only fallback is reserved for the isolated production build, not runtime.
 
 The first owner is provisioned privately. Set an unpredictable
 `OWNER_BOOTSTRAP_SECRET` of at least 32 characters, then submit Payload's

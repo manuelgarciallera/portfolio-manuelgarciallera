@@ -12,7 +12,7 @@ describe('owner platform runtime configuration', () => {
     expect(() => assertProductionRuntimeEnvironment({ nodeEnv: 'production', databaseUrl: 'postgres://localhost/qa', payloadSecret: ' '.repeat(40) })).toThrow(/PAYLOAD_SECRET/)
   })
   it('supports an isolated local SQLite filename without changing the default database', () => {
-    expect(resolveRuntimeConfig({ nodeEnv: 'development', localDatabaseName: 'qa-editorial' }).database)
+    expect(resolveRuntimeConfig({ nodeEnv: 'development', localDatabaseName: 'qa-editorial', payloadSecret: 'synthetic-local-secret-long-enough-for-tests' }).database)
       .toEqual({ kind: 'sqlite', url: 'file:.data/qa-editorial.db' })
   })
   it.each(['../owner', 'file:test', '/tmp/test', 'qa.db', ''] )('rejects invalid local database names: %s', (localDatabaseName) => {
@@ -21,17 +21,23 @@ describe('owner platform runtime configuration', () => {
   it('never lets a local database override production PostgreSQL requirements', () => {
     expect(() => resolveRuntimeConfig({ nodeEnv: 'production', localDatabaseName: 'qa-editorial', payloadSecret: 'a-long-and-valid-production-secret-value' })).toThrow(/DATABASE_URL/)
   })
-  it('uses ignored SQLite storage and an explicit development-only secret locally', () => {
+  it.each([undefined, '', 'change-me', 'short', ' '.repeat(40), 'owner-platform-development-only-secret', 'owner-platform-build-only-non-runtime-secret'])(
+    'rejects unsafe local JWT signing secrets (%s)', (payloadSecret) => {
+      expect(() => resolveRuntimeConfig({ nodeEnv: 'development', payloadSecret })).toThrow(/PAYLOAD_SECRET/)
+    },
+  )
+
+  it('uses ignored SQLite storage with an explicitly configured local secret', () => {
     expect(
       resolveRuntimeConfig({
         nodeEnv: 'development',
         nextPhase: undefined,
-        payloadSecret: undefined,
+        payloadSecret: 'synthetic-local-secret-long-enough-for-tests',
         databaseUrl: undefined,
       }),
     ).toEqual({
       database: { kind: 'sqlite', url: 'file:.data/owner-platform.db' },
-      payloadSecret: 'owner-platform-development-only-secret',
+      payloadSecret: 'synthetic-local-secret-long-enough-for-tests',
       productionBuild: false,
     })
   })
@@ -41,7 +47,7 @@ describe('owner platform runtime configuration', () => {
       resolveRuntimeConfig({
         nodeEnv: 'development',
         nextPhase: undefined,
-        payloadSecret: 'local-custom-secret',
+        payloadSecret: 'synthetic-local-secret-long-enough-for-tests',
         databaseUrl: 'postgresql://localhost/portfolio_owner',
       }).database,
     ).toEqual({ kind: 'postgres', url: 'postgresql://localhost/portfolio_owner' })
