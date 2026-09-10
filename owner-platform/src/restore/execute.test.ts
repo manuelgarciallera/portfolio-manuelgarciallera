@@ -32,6 +32,7 @@ const makePayload = (events: string[]) => ({
       targetCapsuleHash: targetCapsule.hash,
       targetDraftSnapshot: 11,
       targetPage: 7,
+      targetSnapshot: 13,
     }
     if (collection === 'draft-snapshots') return { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
     if (collection === 'preview-snapshots') return { id: 13, manifest: confirmationManifest, manifestHash: confirmationManifest.hash }
@@ -54,7 +55,7 @@ describe('executeOwnerRestorePlan', () => {
       commit: vi.fn(async () => { events.push('commit') }),
       rollback: vi.fn(async () => { events.push('rollback') }),
       createDraft: vi.fn(async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:2026-09-04T23:15:00.000Z' } } } }),
-      createPreview: vi.fn(async () => { events.push('snapshot:preview'); return { id: 72 } }),
+      createPreview: vi.fn(async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } }),
     }
     const result = await executeOwnerRestorePlan({
       confirmation: 'EJECUTAR RESTAURACIÓN',
@@ -88,7 +89,7 @@ describe('executeOwnerRestorePlan', () => {
     payload.findByID.mockImplementation(async ({ collection }) => collection === 'pages'
       ? { id: 7, updatedAt: '2026-09-04T23:11:00.000Z' }
       : collection === 'restore-plans'
-        ? { confirmationSnapshot: 13, id: 50, status: 'confirmed', targetCapsuleHash: targetCapsule.hash, targetDraftSnapshot: 11, targetPage: 7 }
+        ? { confirmationSnapshot: 13, id: 50, status: 'confirmed', targetCapsuleHash: targetCapsule.hash, targetDraftSnapshot: 11, targetPage: 7, targetSnapshot: 13 }
         : collection === 'draft-snapshots'
           ? { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
           : { id: 13, manifest: confirmationManifest, manifestHash: confirmationManifest.hash })

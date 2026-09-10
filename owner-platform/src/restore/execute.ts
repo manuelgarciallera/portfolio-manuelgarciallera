@@ -1,4 +1,5 @@
 import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
+import { isDeepStrictEqual } from 'node:util'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -96,6 +97,11 @@ export const executeOwnerRestorePlan = async ({
     }
     const resultDraft = await dependencies.createDraft({ pageId, payload, req })
     const resultPreview = await dependencies.createPreview({ pageId, payload, req })
+    const targetPreview = await verifiedSnapshot(payload, req, relationId(plan.targetSnapshot, 'El snapshot visual objetivo'))
+    const resultManifest = record(resultPreview.manifest, 'El manifiesto resultante')
+    if (!isDeepStrictEqual(resultManifest.mediaReferences, targetPreview.manifest.mediaReferences)) {
+      throw new APIError('Las imágenes no coinciden con la versión objetivo; la restauración se ha cancelado sin publicar cambios.', 409)
+    }
     const resultCapsule = record(resultDraft.capsule, 'La cápsula resultante')
     const source = record(resultCapsule.source, 'La procedencia resultante')
     const data = executeRestorePlanData(

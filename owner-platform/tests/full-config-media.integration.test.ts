@@ -6,6 +6,11 @@ import { createLocalReq } from 'payload'
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
 import { createPagePreviewSnapshot } from '../src/preview/service'
+import { createPageDraftSnapshot } from '../src/recovery/service'
+import { createOwnerRelease } from '../src/releases/service'
+import { prepareOwnerRestorePlan } from '../src/restore/prepare'
+import { confirmOwnerRestorePlan } from '../src/restore/service'
+import { executeOwnerRestorePlan } from '../src/restore/execute'
 
 let fixture: MediaHTTPFixture
 afterAll(async () => { await fixture?.close() })
@@ -56,6 +61,12 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   await fixture.payload.update({ collection: 'pages', id: page.id, draft: true, req, overrideAccess: false, data: { brandProfile: brand.id } })
   const first = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
   expect(first.manifest).toHaveProperty('mediaReferences.0.storageRevision', media.storageRevision)
+  const draftSnapshot = await createPageDraftSnapshot({ payload: fixture.payload as never, req, pageId: page.id })
+  const release = await createOwnerRelease({ payload: fixture.payload as never, req, input: {
+    name: 'Before media replacement', changeSummary: 'Synthetic restore target',
+    gitCommit: 'a'.repeat(40), previewSnapshot: first.id, draftSnapshot: draftSnapshot.id,
+    quality: [{ viewport: 'desktop', performance: 80, usability: 80, accessibility: 80, source: 'manual', measuredAt: '2026-09-10T08:00:00.000Z' }],
+  } })
   const replacementBytes = await sharp({ create: { width: 600, height: 400, channels: 3, background: '#ff5500' } }).png().toBuffer()
   const replacementBody = new FormData()
   replacementBody.set('_payload', JSON.stringify({ alt: 'Replacement image' }))
@@ -70,4 +81,12 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   expect(stored.manifest).toEqual(first.manifest)
   expect(Buffer.from(await (await fixture.request(media.url)).arrayBuffer())).toEqual(bytes)
   expect(Buffer.from(await (await fixture.request(replacement.url)).arrayBuffer())).toEqual(replacementBytes)
+  const plan = await prepareOwnerRestorePlan({ payload: fixture.payload as never, req, releaseId: String(release.id) })
+  expect(plan.status).toBe('ready')
+  const baseline = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
+  await confirmOwnerRestorePlan({ payload: fixture.payload as never, req, planId: String(plan.id), currentSnapshot: baseline.id, confirmation: 'CONFIRMAR RESTAURACIÓN' })
+  const before = await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, req, overrideAccess: false })
+  await expect(executeOwnerRestorePlan({ payload: fixture.payload as never, req, planId: String(plan.id), confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toThrow(/imágenes/i)
+  expect(await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, req, overrideAccess: false })).toEqual(before)
+  expect((await fixture.payload.findByID({ collection: 'restore-plans', id: String(plan.id), req, overrideAccess: false })).status).toBe('confirmed')
 }, 60_000)
