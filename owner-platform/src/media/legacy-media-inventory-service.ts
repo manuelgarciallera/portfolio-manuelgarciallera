@@ -1,6 +1,7 @@
 import { APIError, type Payload, type PayloadRequest } from 'payload'
 
 import { isOwner } from '../access/owner'
+import { validateRevision } from './revision-manifest'
 import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 import {
   inspectLegacyMediaInventory,
@@ -289,11 +290,10 @@ const appendBounded = (
   target.push(...additions)
 }
 
-export async function inspectPayloadLegacyMedia(input: {
+async function collectPayloadMediaReferences(input: {
   payload: Payload
   req: PayloadRequest
-  root: string
-}): Promise<LegacyMediaInventory> {
+}): Promise<LegacyMediaReference[]> {
   if (!isOwner(input?.req?.user)) throw new APIError('An owner session is required.', 403)
   if (input.req.transactionID !== undefined && input.req.transactionID !== null) {
     throw new APIError('Legacy media inventory requires a request without an active transaction.', 409)
@@ -330,5 +330,38 @@ export async function inspectPayloadLegacyMedia(input: {
     ...common, collection: 'preview-snapshots', page,
   }), referenceBudget, (row) => appendBounded(references, snapshotReferences(row), referenceBudget))
 
-  return inspectLegacyMediaInventory({ root: input.root, references })
+  return references
+}
+
+export async function inspectPayloadLegacyMedia(input: {
+  payload: Payload
+  req: PayloadRequest
+  root: string
+}): Promise<LegacyMediaInventory> {
+  return inspectLegacyMediaInventory({ root: input.root, references: await collectPayloadMediaReferences(input) })
+}
+
+export type PayloadRevisionReferenceGroup = {
+  revision: string
+  references: Pick<LegacyMediaReference, 'kind' | 'documentId' | 'referenceId'>[]
+}
+
+/** Owner-only discovery for a quiescent backup workflow, not an online snapshot.
+ * Callers must stop writers before collecting DB and object copies. Legacy or
+ * invalid revisions fail closed: they require migration, never silent exclusion.
+ * This inventories references, not orphaned objects or their byte integrity.
+ */
+export async function collectPayloadRevisionReferences(input: {
+  payload: Payload
+  req: PayloadRequest
+}): Promise<PayloadRevisionReferenceGroup[]> {
+  const groups = new Map<string, PayloadRevisionReferenceGroup>()
+  for (const reference of await collectPayloadMediaReferences(input)) {
+    if (typeof reference.storageRevision !== 'string') throw new TypeError('Media reference requires a versioned storage revision.')
+    validateRevision(reference.storageRevision)
+    const group = groups.get(reference.storageRevision) ?? { revision: reference.storageRevision, references: [] }
+    group.references.push({ kind: reference.kind, documentId: reference.documentId, referenceId: reference.referenceId })
+    groups.set(reference.storageRevision, group)
+  }
+  return [...groups.values()].sort((left, right) => left.revision.localeCompare(right.revision, 'en'))
 }

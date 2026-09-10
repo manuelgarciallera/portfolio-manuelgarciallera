@@ -7,6 +7,9 @@ import { S3Client } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { createObjectRevisionStore } from '../../src/media/object-revision-store.ts'
 import { startMediaHTTPFixture } from '../media/http-fixture.ts'
+import { PreviewSnapshots } from '../../src/collections/PreviewSnapshots.ts'
+import { collectPayloadRevisionReferences } from '../../src/media/legacy-media-inventory-service.ts'
+import { createLocalReq } from 'payload'
 
 // A provider owned by this child only: no persistence and no parent-held Map.
 // Exiting the seed process destroys the original provider and all its objects.
@@ -87,6 +90,7 @@ process.once('message', async (input) => {
     fixture = await startMediaHTTPFixture({ root: input.mediaDirectory,
       revisionRoot: path.join(input.mediaDirectory, 'unused-revisions'), staticDir: path.join(input.mediaDirectory, 'unused-native'),
       credentials: input.credentials, secret: input.payloadSecret, seed: input.mode === 'seed',
+      collections: [PreviewSnapshots],
       database: input.postgres ? { engine: 'postgres', pool: input.postgres }
         : { engine: 'sqlite', filename: path.join(input.databaseDirectory, 'owner.db') },
     }, store)
@@ -99,9 +103,14 @@ process.once('message', async (input) => {
         where: { parent: { equals: first.id } }, limit: 100, depth: 0 })
       assert.equal(versions.docs.length, versions.totalDocs)
       const second = await upload(fixture, '#0000ff', first.id)
+      const references = await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) })
+      assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision].sort())
       const revisions = []
-      for (const [doc, color] of [[first, '#ff0000'], [second, '#0000ff']]) {
-        const exported = await store.exportRevision(doc.storageRevision)
+      // Export IDs discovered from the database, not the upload receipt list.
+      for (const group of references) {
+        const doc = group.revision === first.storageRevision ? first : second
+        const color = group.revision === first.storageRevision ? '#ff0000' : '#0000ff'
+        const exported = await store.exportRevision(group.revision)
         assert.equal(exported.files.length, 4, 'Original and three derivatives')
         assert.deepEqual(exported.files.find((file) => file.name === doc.filename).bytes, await image(color))
         const directory = path.join(input.mediaDirectory, doc.storageRevision)
@@ -110,11 +119,13 @@ process.once('message', async (input) => {
         await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(exported.manifest), { flag: 'wx', mode: 0o600 })
         revisions.push({ id: doc.storageRevision, files: exported.files.map(({ name, bytes }) => ({ name, sha256: sha(bytes) })) })
       }
+      revisions.sort((left, right) => left.id === first.storageRevision ? -1 : right.id === first.storageRevision ? 1 : 0)
       await verifyFiles(fixture, first.id, revisions[0], 404)
       await verifyFiles(fixture, first.id, revisions[1], 200)
-      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
+      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, references, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
     } else {
       const expected = input.expected
+      assert.deepEqual(await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) }), expected.references, 'Recovered reference inventory')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
       assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')

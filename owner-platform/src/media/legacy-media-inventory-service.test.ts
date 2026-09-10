@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createPreviewManifest } from '../preview/manifest'
 import { inspectPayloadLegacyMedia } from './legacy-media-inventory-service'
+import * as inventoryService from './legacy-media-inventory-service'
 
 type Page = {
   docs: unknown[]
@@ -54,6 +55,40 @@ const fakePayload = ({
   findVersions,
   db: { rollbackTransaction },
 } as unknown as Payload)
+
+describe('collectPayloadRevisionReferences', () => {
+  const revision = '123e4567-e89b-42d3-a456-426614174000'
+  it('groups current, draft, historical and verified snapshot references without a filesystem root', async () => {
+    const manifest = createPreviewManifest({ source: { collection: 'pages', documentId: 'page-1', versionId: 'version-1' },
+      brandTokens: {}, pageBlocks: [], mediaReferences: [{ id: '41', storage: 'versioned', storageRevision: revision }] })
+    const payload = fakePayload({
+      find: async (options) => ({ ...emptyPage(), totalDocs: 1, docs: options.collection === 'preview-snapshots'
+        ? [{ id: 'snapshot-1', schemaVersion: 1, sourceCollection: 'pages', sourceDocumentId: 'page-1', sourceVersionId: 'version-1', manifest, manifestHash: manifest.hash }]
+        : [{ id: 41, _status: options.draft ? 'draft' : 'published', storageRevision: revision }] }),
+      findVersions: async () => ({ ...emptyPage(), totalDocs: 1, docs: [{ id: 77, parent: 41, version: { storageRevision: revision } }] }),
+    })
+    expect(await inventoryService.collectPayloadRevisionReferences({ payload, req: ownerRequest() })).toEqual([
+      { revision, references: [
+        { kind: 'document', documentId: '41', referenceId: '41' },
+        { kind: 'draft', documentId: '41', referenceId: '41' },
+        { kind: 'version', documentId: '41', referenceId: '77' },
+        { kind: 'snapshot', documentId: '41', referenceId: 'snapshot-1' },
+      ] },
+    ])
+  })
+
+  it.each([undefined, null, 'invalid', '../outside'])('rejects unsupported revision %s instead of silently excluding media', async (storageRevision) => {
+    const payload = fakePayload({ find: async (options) => options.collection === 'media' && options.draft === false
+      ? { ...emptyPage(), totalDocs: 1, docs: [{ id: 41, _status: 'published', storageRevision }] } : emptyPage() })
+    await expect(inventoryService.collectPayloadRevisionReferences({ payload, req: ownerRequest() })).rejects.toThrow()
+  })
+
+  it('rejects anonymous use before the database boundary', async () => {
+    const find = vi.fn(async () => { throw new Error('Database reached') })
+    await expect(inventoryService.collectPayloadRevisionReferences({ payload: fakePayload({ find }), req: ownerRequest({ user: undefined }) })).rejects.toMatchObject({ status: 403 })
+    expect(find).not.toHaveBeenCalled()
+  })
+})
 
 describe('inspectPayloadLegacyMedia', () => {
   let root: string
