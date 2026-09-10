@@ -169,6 +169,9 @@ export interface Project {
   id: number;
   _order?: string | null;
   title: string;
+  /**
+   * Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.
+   */
   slug: string;
   summary: string;
   heroImage: number | Media;
@@ -389,6 +392,9 @@ export interface Technology {
   id: number;
   _order?: string | null;
   name: string;
+  /**
+   * Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.
+   */
   slug: string;
   icon: number | Media;
   brandColor?: string | null;
@@ -406,6 +412,9 @@ export interface Article {
   id: number;
   _order?: string | null;
   title: string;
+  /**
+   * Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.
+   */
   slug: string;
   excerpt: string;
   coverImage?: (number | null) | Media;
@@ -541,6 +550,9 @@ export interface Page {
    */
   useCurrentMedia?: boolean | null;
   title: string;
+  /**
+   * Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.
+   */
   slug: string;
   /**
    * Obligatorio al publicar. Los borradores pueden guardarse sin asignarlo.
@@ -710,6 +722,9 @@ export interface BrandProfile {
   id: number;
   _order?: string | null;
   name: string;
+  /**
+   * Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.
+   */
   slug: string;
   /**
    * Roles semánticos. Se validan completamente al publicar.
@@ -732,7 +747,13 @@ export interface BrandProfile {
       }[]
     | null;
   typography?: {
+    /**
+     * Una familia instalada en el dispositivo, por ejemplo Georgia, o genérica como serif. No descarga fuentes; si no está disponible se usa la fuente del sistema.
+     */
     primaryFamily?: string | null;
+    /**
+     * Una familia, por ejemplo Arial o sans-serif. Sin CSS, listas ni URL. Vacío conserva la fuente del sistema.
+     */
     secondaryFamily?: string | null;
     fontAssets?: (number | Media)[] | null;
   };
