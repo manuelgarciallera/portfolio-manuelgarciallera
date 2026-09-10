@@ -22,7 +22,9 @@ const confirmationManifest = createPreviewManifest({
   source: { collection: 'pages', documentId: '7', versionId: 'current:2026-09-04T23:10:00.000Z' },
 })
 
-const makePayload = (events: string[]) => ({
+const makePayload = (events: string[], persistedPin: unknown = 13) => {
+  let pageWasUpdated = false
+  return ({
   create: vi.fn(async ({ collection, data }) => { events.push(`create:${collection}`); return { id: 90, ...data } }),
   findByID: vi.fn(async ({ collection }) => {
     if (collection === 'restore-plans') return {
@@ -36,20 +38,38 @@ const makePayload = (events: string[]) => ({
     }
     if (collection === 'draft-snapshots') return { capsule: targetCapsule, capsuleHash: targetCapsule.hash, id: 11 }
     if (collection === 'preview-snapshots') return { id: 13, manifest: confirmationManifest, manifestHash: confirmationManifest.hash }
-    return { id: 7, updatedAt: '2026-09-04T23:10:00.000Z' }
+    return { id: 7, updatedAt: '2026-09-04T23:10:00.000Z',
+      restoredMediaSnapshot: pageWasUpdated ? persistedPin : null }
   }),
   update: vi.fn(async ({ collection, data }) => {
     events.push(`update:${collection}`)
+    if (collection === 'pages') pageWasUpdated = true
     return collection === 'pages'
-      ? { docs: [{ id: 7, updatedAt: '2026-09-04T23:15:00.000Z', ...data }] }
+      ? { docs: [{ id: 7, updatedAt: '2026-09-04T23:15:00.000Z', ...data, restoredMediaSnapshot: 13 }] }
       : { id: 50, ...data }
   }),
 })
+}
 
 describe('executeOwnerRestorePlan', () => {
-  it('restores only a draft atomically, snapshots the result and marks the plan executed', async () => {
+  it.each([null, 12, {}, { id: 13 }, ['13']].map(pin => ({ pin })))('rolls back when the persisted pin is invalid ($pin), even if update reports the right pin', async ({ pin: persistedPin }) => {
     const events: string[] = []
-    const payload = makePayload(events)
+    const payload = makePayload(events, persistedPin)
+    const dependencies = {
+      begin: async () => { events.push('begin'); return true },
+      commit: async () => { events.push('commit') },
+      rollback: async () => { events.push('rollback') },
+      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:new' } } } },
+      createPreview: async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } },
+    }
+    await expect(executeOwnerRestorePlan({ confirmation: 'EJECUTAR RESTAURACIÓN',
+      dependencies, payload, planId: 50, req: { payload, user: owner },
+    })).rejects.toMatchObject({ status: 409 })
+    expect(events).toEqual(['begin', 'update:pages', 'rollback'])
+  })
+  it.each([13, '13'])('restores only a draft atomically with persisted pin %j, snapshots the result and marks the plan executed', async (persistedPin) => {
+    const events: string[] = []
+    const payload = makePayload(events, persistedPin)
     const dependencies = {
       begin: vi.fn(async () => { events.push('begin'); return true }),
       commit: vi.fn(async () => { events.push('commit') }),
@@ -87,7 +107,7 @@ describe('executeOwnerRestorePlan', () => {
     const events: string[] = []
     const payload = makePayload(events)
     payload.findByID.mockImplementation(async ({ collection }) => collection === 'pages'
-      ? { id: 7, updatedAt: '2026-09-04T23:11:00.000Z' }
+      ? { id: 7, updatedAt: '2026-09-04T23:11:00.000Z', restoredMediaSnapshot: null }
       : collection === 'restore-plans'
         ? { confirmationSnapshot: 13, id: 50, status: 'confirmed', targetCapsuleHash: targetCapsule.hash, targetDraftSnapshot: 11, targetPage: 7, targetSnapshot: 13 }
         : collection === 'draft-snapshots'

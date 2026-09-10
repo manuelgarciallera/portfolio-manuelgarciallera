@@ -35,6 +35,7 @@ import { snapshotFiles } from './recovery/backup-manifest.mjs'
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
 let rejectRestoreAudit = false
+let corruptRestoredPin: number | null | undefined
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
@@ -59,6 +60,12 @@ beforeAll(async () => {
           if (rejectedAssistanceAudit && data.action === rejectedAssistanceAudit) throw new Error('QA assistance audit unavailable')
           return data
         }, ...(collection.hooks.beforeChange ?? [])] },
+      } : collection.slug === 'pages' ? {
+        ...collection, hooks: { ...collection.hooks, beforeChange: [
+          ...(collection.hooks.beforeChange ?? []),
+          // Fault injection belongs only to this isolated fixture.
+          ({ data }) => corruptRestoredPin === undefined ? data : { ...data, restoredMediaSnapshot: corruptRestoredPin },
+        ] },
       } : collection),
       // Never connect to the developer's configured database or reuse their credentials.
       // Both adapters receive only metadata validated for this isolated run.
@@ -448,6 +455,39 @@ it('restores the captured page as a draft while preserving the published revisio
   const history = await payload.findVersions({ collection: 'pages', user: owner, overrideAccess: false, where: { and: [{ parent: { equals: page.id } }, { 'version.title': { equals: 'Published revision' } }] } })
   expect(history.totalDocs).toBeGreaterThan(0)
   await expect(executeOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number, confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toThrow(/confirmado/i)
+}, 30_000)
+
+it.each(['missing', 'wrong'] as const)('rolls back a %s historical binding even on a page without images, then permits a clean retry', async mode => {
+  const { page, req, release } = await createReleaseFixture()
+  await payload.update({ collection: 'pages', id: page.id, user: owner, overrideAccess: false,
+    data: { _status: 'published', title: 'Published to preserve' } })
+  await payload.update({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false,
+    data: { title: 'Latest draft to preserve' } })
+  const plan = await prepareOwnerRestorePlan({ payload: payload as never, releaseId: release.id as number, req })
+  const current = await createPagePreviewSnapshot({ payload, req, pageId: page.id })
+  expect(current.manifest).toHaveProperty('mediaReferences', [])
+  await confirmOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number,
+    currentSnapshot: current.id, confirmation: 'CONFIRMAR RESTAURACIÓN' })
+  const counts = async () => Promise.all((['draft-snapshots', 'preview-snapshots', 'audit-events'] as const)
+    .map(async collection => (await payload.count({ collection, user: owner, overrideAccess: false })).totalDocs))
+  const read = (draft: boolean) => payload.findByID({ collection: 'pages', id: page.id, draft, depth: 0, user: owner, overrideAccess: false })
+  const versions = async () => (await payload.findVersions({ collection: 'pages', user: owner, overrideAccess: false,
+    depth: 0, limit: 1000, where: { parent: { equals: page.id } } })).docs
+    .map(({ id, version }) => ({ id, version })).sort((a, b) => String(a.id).localeCompare(String(b.id)))
+  const before = { draft: await read(true), published: await read(false), counts: await counts(), versions: await versions() }
+  corruptRestoredPin = mode === 'missing' ? null : current.id
+  try {
+    await expect(executeOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number,
+      confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toMatchObject({ status: 409 })
+  } finally { corruptRestoredPin = undefined }
+  expect({ draft: await read(true), published: await read(false), counts: await counts(), versions: await versions() }).toEqual(before)
+  const unchanged = await payload.findByID({ collection: 'restore-plans', id: plan.id as number, user: owner, overrideAccess: false })
+  expect(unchanged.status).toBe('confirmed')
+  expect(unchanged.resultDraftSnapshot).toBeNull()
+  await executeOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number, confirmation: 'EJECUTAR RESTAURACIÓN' })
+  expect((await read(true)).title).toBe('Release page')
+  expect((await read(true)).restoredMediaSnapshot).not.toBeNull()
+  expect(await read(false)).toEqual(before.published)
 }, 30_000)
 
 it('rolls back page, result snapshots and plan when the restore audit cannot be saved', async () => {

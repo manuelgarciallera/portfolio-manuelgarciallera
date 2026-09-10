@@ -62,6 +62,7 @@ export const executeOwnerRestorePlan = async ({
   }), 'El plan')
   if (plan.status !== 'confirmed') throw new APIError('Solo puede ejecutarse un plan confirmado.', 409)
   const pageId = relationId(plan.targetPage, 'La página objetivo')
+  const targetSnapshotId = relationId(plan.targetSnapshot, 'El snapshot visual objetivo')
   const target = await verifiedDraftSnapshot(payload, req, relationId(plan.targetDraftSnapshot, 'El snapshot objetivo'))
   if (target.capsuleHash !== plan.targetCapsuleHash || target.capsule.source.documentId !== String(pageId)) {
     throw new APIError('La cápsula objetivo no coincide con el plan confirmado.', 409)
@@ -85,7 +86,7 @@ export const executeOwnerRestorePlan = async ({
     if (currentVersionId !== confirmationSnapshot.manifest.source.versionId) {
       throw new APIError('La página cambió después de confirmar el plan; crea uno nuevo.', 409)
     }
-    const updateResult = record(await withRestoredPageMedia(req, relationId(plan.targetSnapshot, 'El snapshot visual objetivo'), () => payload.update!({
+    const updateResult = record(await withRestoredPageMedia(req, targetSnapshotId, () => payload.update!({
       collection: 'pages',
       data: target.capsule.state,
       draft: true,
@@ -96,9 +97,19 @@ export const executeOwnerRestorePlan = async ({
     if (!Array.isArray(updateResult.docs) || updateResult.docs.length !== 1) {
       throw new APIError('La página cambió durante la restauración; la transacción se ha cancelado.', 409)
     }
+    // Verify persisted draft state in this transaction, not only update's return
+    // value. Even a page without images must retain the historical binding.
+    const restored = record(await payload.findByID({
+      collection: 'pages', depth: 0, draft: true, id: pageId, overrideAccess: false, req,
+    }), 'La página restaurada')
+    const persistedPin = restored.restoredMediaSnapshot
+    if ((typeof persistedPin !== 'string' && typeof persistedPin !== 'number') ||
+      String(persistedPin) !== String(targetSnapshotId)) {
+      throw new APIError('No se conservó la referencia histórica de las imágenes; la restauración se ha cancelado.', 409)
+    }
     const resultDraft = await dependencies.createDraft({ pageId, payload, req })
     const resultPreview = await dependencies.createPreview({ pageId, payload, req })
-    const targetPreview = await verifiedSnapshot(payload, req, relationId(plan.targetSnapshot, 'El snapshot visual objetivo'))
+    const targetPreview = await verifiedSnapshot(payload, req, targetSnapshotId)
     const resultManifest = record(resultPreview.manifest, 'El manifiesto resultante')
     if (!isDeepStrictEqual(resultManifest.mediaReferences, targetPreview.manifest.mediaReferences)) {
       throw new APIError('Las imágenes no coinciden con la versión objetivo; la restauración se ha cancelado sin publicar cambios.', 409)

@@ -28,4 +28,6 @@ No es una barrera frente a código servidor arbitrario: ese código ya pertenece
 
 ## Límite y siguiente defensa
 
+Actualización posterior: la defensa de lectura persistida se implementa y verifica en `restore-persisted-binding-2026-09-10.md`; el párrafo siguiente conserva el estado de este primer incremento.
+
 El fallo concreto queda corregido en la prueba Next; no se afirma despliegue ni disponibilidad en un teléfono físico. Conviene que el ejecutor de restauración rechace y revierta explícitamente una referencia histórica ausente o incorrecta antes de marcar éxito, además de comparar contenido y referencias de imágenes. Esa defensa adicional todavía no forma parte de este cambio.
