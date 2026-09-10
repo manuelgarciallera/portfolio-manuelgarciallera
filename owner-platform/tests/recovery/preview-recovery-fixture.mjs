@@ -4,6 +4,7 @@ import { AuditEvents } from '../../src/collections/AuditEvents.ts'
 import { PreviewSnapshots } from '../../src/collections/PreviewSnapshots.ts'
 import { editorialAccess, editorialVersions } from '../../src/collections/shared.ts'
 import { createPagePreviewSnapshot } from '../../src/preview/service.ts'
+import { loadSnapshotVisualPreview } from '../../src/preview/snapshot-visual.ts'
 
 // Minimal persisted inputs for the real snapshot service, not the complete app schema.
 export const previewRecoveryCollections = [PreviewSnapshots, AuditEvents,
@@ -41,6 +42,12 @@ export const verifyRecoveryPreview = async (fixture, owner, expected) => {
   assert.deepEqual(snapshot.manifest, expected.manifest, 'Frozen preview is not backfilled from current media')
   assert.equal(snapshot.manifestHash, expected.hash)
   assert.equal(String(snapshot.createdBy), String(owner.id))
+  const visual = await loadSnapshotVisualPreview({ req: await createLocalReq({ user: owner }, fixture.payload), snapshotId: String(expected.id) })
+  assert.equal(visual.title, 'Frozen object recovery')
+  assert.equal(visual.blocks[0].type, 'hero')
+  assert.equal(visual.warnings.length, 0, 'Real captured brand and media project without current data')
+  const mediaId = expected.manifest.mediaReferences[0].id
+  assert.equal(visual.assets[mediaId].url, `/api/media/snapshot/${expected.id}/${mediaId}`)
   const audit = await fixture.payload.findByID({ collection: 'audit-events', id: expected.auditId, user: owner, overrideAccess: false, depth: 0 })
   assert.equal(audit.action, 'preview.snapshot.created')
   assert.equal(String(audit.subjectId), String(expected.pageId))

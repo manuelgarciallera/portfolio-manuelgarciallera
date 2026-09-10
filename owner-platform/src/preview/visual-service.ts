@@ -35,6 +35,15 @@ export const loadContentVisualPreview = async ({ payload, req, collection, docum
     if (!reads.has(key)) reads.set(key, payload.findByID({ collection, id, draft: true, depth: 0, overrideAccess: false, req }).then(record))
     return reads.get(key)!
   }
+  return projectContentVisualPreview({ read, collection, documentId })
+}
+
+/** Data-only projection shared by live drafts and strictly captured sources. */
+export const projectContentVisualPreview = async ({ read, collection, documentId, presentAsset = presentPreviewAsset }: {
+  read: (collection: PreviewCollection | 'brand-profiles' | 'media' | 'media-placements', id: string) => Promise<Record<string, unknown>>
+  collection: PreviewCollection; documentId: string
+  presentAsset?: (value: unknown, id: string) => PreviewAsset
+}): Promise<PageVisualPreview> => {
   const page = await read(collection, documentId)
   const source = record(page)
   const result: PageVisualPreview = { collection, id: documentId, title: text(source.title), updatedAt: text(source.updatedAt), status: text(source._status), blocks: [], assets: {}, brand: null, warnings: [] }
@@ -107,7 +116,7 @@ export const loadContentVisualPreview = async ({ payload, req, collection, docum
     result.blocks.push(item)
   }
   for (const id of mediaIds) {
-    try { result.assets[id] = presentPreviewAsset(await read('media', id), id) }
+    try { result.assets[id] = presentAsset(await read('media', id), id) }
     catch { result.warnings.push(`No se pudo cargar el medio ${id}.`) }
   }
   return result

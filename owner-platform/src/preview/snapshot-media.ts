@@ -14,15 +14,21 @@ const record = (value: unknown): Record<string, unknown> => {
  * No current-document lookup or legacy fallback: a capture cannot silently change.
  * An HTTP consumer must independently apply private/no-store and sandbox headers.
  */
-export async function readSnapshotMedia({ req, snapshotId, mediaId, store }: Input): Promise<{ bytes: Buffer; mimeType: string; filename: string }> {
+export async function loadValidatedSnapshot(req: PayloadRequest, snapshotId: string) {
   if (!isOwner(req.user)) throw new Error('Owner required')
-  if (![snapshotId, mediaId].every(id => /^[A-Za-z0-9_-]{1,128}$/.test(id))) throw new Error('Invalid identity')
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(snapshotId)) throw new Error('Invalid identity')
   const doc = record(await req.payload.findByID({ collection: 'preview-snapshots', id: snapshotId, depth: 0, overrideAccess: false, req }))
   const manifest = record(doc.manifest) as unknown as PreviewManifest
   if (hashPreviewManifest(manifest) !== doc.manifestHash || manifest.schemaVersion !== 1 || doc.schemaVersion !== 1 ||
     manifest.source.collection !== 'pages' || doc.sourceCollection !== manifest.source.collection ||
     doc.sourceDocumentId !== manifest.source.documentId || doc.sourceVersionId !== manifest.source.versionId) throw new Error('Invalid snapshot provenance')
   if (!Array.isArray(manifest.mediaReferences)) throw new Error('Invalid captured references')
+  return { doc, manifest }
+}
+
+export async function readSnapshotMedia({ req, snapshotId, mediaId, store }: Input): Promise<{ bytes: Buffer; mimeType: string; filename: string }> {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(mediaId)) throw new Error('Invalid identity')
+  const { manifest } = await loadValidatedSnapshot(req, snapshotId)
   const refs = manifest.mediaReferences.map(record)
   const selected = refs.filter(ref => ref.id === mediaId)
   if (selected.length !== 1) throw new Error('Captured media missing or ambiguous')
