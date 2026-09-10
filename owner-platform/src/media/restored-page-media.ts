@@ -2,7 +2,7 @@ import { APIError, type CollectionBeforeChangeHook, type Payload, type PayloadRe
 import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 
 // Server-owned capability, never an HTTP context flag. Only the restore operation
-// can write this hidden relationship; ordinary updates preserve the stored pin.
+// can assign this protected relationship; an explicit owner form action can clear it.
 const activeRestores = new WeakMap<object, string | number>()
 export const withRestoredPageMedia = async <T>(req: object, snapshot: string | number, write: () => Promise<T>): Promise<T> => {
   if (activeRestores.has(req)) throw new Error('Nested media restore is not supported')
@@ -11,7 +11,7 @@ export const withRestoredPageMedia = async <T>(req: object, snapshot: string | n
 }
 export const bindRestoredPageMedia: CollectionBeforeChangeHook = ({ data, req, originalDoc }) => ({
   ...data,
-  restoredMediaSnapshot: activeRestores.get(req) ?? originalDoc?.restoredMediaSnapshot ?? null,
+  restoredMediaSnapshot: activeRestores.get(req) ?? (data.useCurrentMedia === true ? null : originalDoc?.restoredMediaSnapshot ?? null),
 })
 
 const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}

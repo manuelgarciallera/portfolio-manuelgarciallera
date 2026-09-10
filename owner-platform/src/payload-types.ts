@@ -536,6 +536,10 @@ export interface Page {
   id: number;
   _order?: string | null;
   restoredMediaSnapshot?: (number | null) | PreviewSnapshot;
+  /**
+   * Esta página conserva imágenes de una versión restaurada. Marca esta opción y guarda el borrador para usar las imágenes actuales. No cambia otras páginas ni elimina las capturas anteriores.
+   */
+  useCurrentMedia?: boolean | null;
   title: string;
   slug: string;
   /**
@@ -1412,6 +1416,7 @@ export interface ArticlesSelect<T extends boolean = true> {
 export interface PagesSelect<T extends boolean = true> {
   _order?: T;
   restoredMediaSnapshot?: T;
+  useCurrentMedia?: T;
   title?: T;
   slug?: T;
   brandProfile?: T;

@@ -161,7 +161,19 @@ export const Pages: CollectionConfig = {
   versions: editorialVersions,
   fields: [
     editorialPreviewField,
-    { name: 'restoredMediaSnapshot', type: 'relationship', relationTo: 'preview-snapshots', admin: { hidden: true }, access: { create: () => false, update: () => false } },
+    { name: 'restoredMediaSnapshot', type: 'relationship', relationTo: 'preview-snapshots',
+      label: 'Captura de origen de las imágenes',
+      admin: { readOnly: true, condition: (data) => Boolean(data?.restoredMediaSnapshot) },
+      access: { create: () => false, update: () => false },
+    },
+    { name: 'useCurrentMedia', type: 'checkbox', virtual: true, defaultValue: false,
+      label: 'Usar las imágenes actuales de la biblioteca',
+      admin: {
+        readOnly: false, // Payload makes virtual fields read-only unless explicitly editable.
+        condition: (data) => Boolean(data?.restoredMediaSnapshot),
+        description: 'Esta página conserva imágenes de una versión restaurada. Marca esta opción y guarda el borrador para usar las imágenes actuales. No cambia otras páginas ni elimina las capturas anteriores.',
+      },
+    },
     { name: 'title', type: 'text', required: true },
     slugField,
     {

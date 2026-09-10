@@ -93,6 +93,8 @@ it('edits a real CMS page using versioned media with the full owner configuratio
     { parent: { equals: media.id } }, { 'version.storageRevision': { equals: media.storageRevision } },
   ] } })
   expect((await fixture.request(media.url)).status).toBe(404)
+  await fixture.payload.update({ collection: 'pages', id: page.id, req, overrideAccess: false, data: { _status: 'published' } })
+  const publishedPage = await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: false, depth: 0, req, overrideAccess: false })
   const plan = await prepareOwnerRestorePlan({ payload: fixture.payload as never, req, releaseId: String(release.id) })
   expect(plan.status).toBe('ready')
   const baseline = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
@@ -110,4 +112,18 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   const afterEdit = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
   expect(afterEdit.manifest).toHaveProperty('mediaReferences.0.storageRevision', media.storageRevision)
   expect(afterEdit.manifest).toHaveProperty('pageTitle', 'Edited after restoration')
+  const invalidEdit = await fixture.request(`/api/pages/${page.id}?draft=true`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ useCurrentMedia: true, title: '' }) })
+  expect(invalidEdit.status).toBe(400)
+  const stillPinned = await loadPageVisualPreview({ payload: fixture.payload, req, pageId: String(page.id) })
+  expect(stillPinned.assets[String(media.id)].url).toBe(`/api/media/snapshot/${first.id}/${media.id}`)
+  const unpinned = await fixture.request(`/api/pages/${page.id}?draft=true`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ useCurrentMedia: true, title: 'Current library selected' }) })
+  expect(unpinned.status).toBe(200)
+  const current = await loadPageVisualPreview({ payload: fixture.payload, req, pageId: String(page.id) })
+  expect(current.assets[String(media.id)].url).toBe(replacement.url)
+  expect(current.title).toBe('Current library selected')
+  expect(Buffer.from(await (await fixture.request(current.assets[String(media.id)].url)).arrayBuffer())).toEqual(replacementBytes)
+  expect(await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: false, depth: 0, req, overrideAccess: false })).toEqual(publishedPage)
+  expect((await fixture.payload.findByID({ collection: 'preview-snapshots', id: first.id, req, overrideAccess: false })).manifest).toEqual(first.manifest)
 }, 60_000)
