@@ -41,6 +41,11 @@ permiso, esquema de base de datos, dependencia o componente público.
 
 ## Pendientes y decisión de alcance
 
+Actualización posterior: el ensayo sintético completo se integra y verifica en
+[recuperación ligada al inventario](./inventory-bound-recovery-2026-09-10.md).
+El párrafo siguiente describe el alcance de esta iteración previa, no el estado
+posterior del ensayo. La migración y aceptación del proveedor real siguen pendientes.
+
 El ensayo completo de recuperación owner aún reproduce revisiones mediante el
 transporte directamente. Se retiró únicamente nuestra aserción experimental
 `migrationCandidate` que fallaba por una integración todavía ausente; no se ha

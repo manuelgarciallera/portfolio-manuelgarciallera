@@ -42,9 +42,11 @@ try {
   const restoreDirectory = path.join(root, 'restored')
   const credentials = { email: `recovery-${randomUUID()}@example.invalid`, password: randomBytes(32).toString('hex') }
   const payloadSecret = randomBytes(32).toString('hex')
-  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: postgres.options(database), credentials, payloadSecret, mediaDirectory, expected, fullOwner })
+  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: postgres.options(database), credentials, payloadSecret, mediaDirectory, expected, fullOwner,
+    operationDirectory: path.join(root, 'operations', mode) })
   const applicationCommit = (await runCommand('git', ['rev-parse', 'HEAD'], { cwd: ownerRoot })).stdout.trim()
   const seeded = await runWorker(workerPath, input('seed', 'owner_source', path.join(sourceDirectory, 'media')), ownerRoot)
+  if (fullOwner) assert(seeded.migrationCandidate?.inventoryHash && seeded.migrationCandidate?.planDigest, 'Full owner recovery needs an inventory-bound migration candidate, not a manual object replay')
   assert(workersClosed(), 'Seed process must close before pg_dump and media copy.')
   await assertNoPayloadSessions('owner_source')
   await mkdir(path.join(sourceDirectory, 'database'))
@@ -64,12 +66,14 @@ try {
   }
   if (objectMedia) {
     damageCases = 0
-    for (const targetFile of ['0.bin', '1.bin', 'manifest.json']) {
+    const targetFiles = ['0.bin', '1.bin', 'manifest.json'].map(name => path.join(seeded.revisions[0].id, name))
+    if (fullOwner) targetFiles.push(path.join('migration', 'plan.json'), path.join('migration', 'inventory.json'))
+    for (const targetFile of targetFiles) {
       for (const damage of ['corrupt', 'missing']) {
         const invalid = path.join(root, `object-invalid-${damageCases++}`)
         const target = `${invalid}-restore`
         await cp(backupDirectory, invalid, { recursive: true, force: false, errorOnExist: true })
-        const damaged = path.join(invalid, 'data', 'media', seeded.revisions[0].id, targetFile)
+        const damaged = path.join(invalid, 'data', 'media', targetFile)
         if (damage === 'missing') await rm(damaged)
         else await writeFile(damaged, 'synthetic corruption')
         await assert.rejects(restoreVerifiedBackup({ backupDirectory: invalid, restoreDirectory: target }), /integrity/)
@@ -101,6 +105,7 @@ try {
   await native('pg_restore', 'owner_restored', path.join(restoreDirectory, 'database', 'owner.dump'))
   const restored = await runWorker(workerPath, input('restore', 'owner_restored', path.join(restoreDirectory, 'media'), seeded), ownerRoot)
   if (objectMedia) assert.notEqual(restored.pid, seeded.pid, 'Recovery uses a different process')
+  if (fullOwner) assert.equal(restored.migrationCopyVerified, true, 'Restored files must traverse journaled copy and reconciliation')
   await assertNoPayloadSessions('owner_restored')
   // Logical comparison: custom-format archives from independent dumps are not deterministic.
   await runWorker(workerPath, input('verify', 'owner_source', path.join(sourceDirectory, 'media'), seeded), ownerRoot)
@@ -126,7 +131,9 @@ try {
   }
   if (fullOwner) Object.assign(result, { mode: 'full-owner-object-media',
     scope: 'Complete owner configuration installed from native migrations; synthetic page, brand, media, preview, draft snapshot, release and restore workflow',
-    planExecuted: restored.planExecuted, pageEditedAfterRecovery: restored.pageEditedAfterRecovery })
+    planExecuted: restored.planExecuted, pageEditedAfterRecovery: restored.pageEditedAfterRecovery,
+    migrationCopyVerified: restored.migrationCopyVerified, retainedFiles: restored.retainedFiles,
+    reconciledRevisions: restored.reconciledRevisions })
 } catch (error) {
   failure = error
 } finally {
