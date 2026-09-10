@@ -40,8 +40,11 @@ Hub `portfolio-profesional::portfolio-closure`; no hay dos escritores activos.
 
 ## Límites y siguiente cierre
 
-El barrido automatizado de 11 rutas, dos anchos y dos temas debe terminar sin
-hallazgos pendientes y repetirse en lo afectado tras cualquier corrección.
+Barrido automatizado completado: 11 rutas × 390/1440 × claro/oscuro, 44/44
+combinaciones verdes sobre build de producción local con movimiento reducido.
+Sin errores JS, overflow, imágenes rotas observadas ni violaciones axe detectadas.
+Evidencia local: `tmp/portfolio-closure/audit.json`. El hero animado se verifica
+aparte; los resultados anteriores no equivalen a comprobar WebGL en 44 escenarios.
 Las capturas son Chromium emulado, no un teléfono físico ni una certificación
 de accesibilidad. No se afirma ausencia universal de defectos.
 
