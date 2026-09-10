@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
+import { createHash } from 'node:crypto'
 
 vi.mock('server-only', () => ({}))
 
 import { createDraftCapsule } from '../recovery/capsule'
 import { createPublicationArtifact } from './artifact'
 import { createPublicationBundle } from './bundle'
+import { createPublicationExport } from './export'
+import { hashPublicationPreflight } from './preflight'
 import { createOwnerPublicationPreflight } from './preflight-service'
 
 const owner = { collection: 'users', id: 1, role: 'owner' }
@@ -49,11 +52,23 @@ describe('owner publication preflight service', () => {
     findByID.mockImplementation(async ({ collection }) => collection === 'publication-artifacts'
       ? { artifact: badArtifact, artifactHash: badArtifact.hash, bundle: 80, bundleHash: badBundle.hash, id: 100, pageCount: 1 }
       : { bundle: badBundle, bundleHash: badBundle.hash, id: 80, pageCount: 1 })
-    const legacy = Object.freeze({ id: 109, artifact: 100, checkedAt: '2026-09-05T08:10:00.000Z', status: 'ready', issueCount: 0, preflightHash: `sha256:${'c'.repeat(64)}` })
+    const checkedAt = '2026-09-05T08:10:00.000Z'
+    const exported = createPublicationExport({ artifact: badArtifact, bundle: badBundle, exportedAt: checkedAt })
+    // Historical rule set checked blocks/SEO but not URL segments. Independent
+    // construction keeps this fixture valid even when today's validator changes.
+    const historicalData = { artifactHash: badArtifact.hash, checkedAt, exportHash: exported.hash,
+      issueCount: 0, issues: [], pageCount: 1, schemaVersion: 1 as const, status: 'ready' as const }
+    const historicalHash = `sha256:${createHash('sha256').update(JSON.stringify(historicalData, Object.keys(historicalData).sort())).digest('hex')}`
+    const report = Object.freeze({ ...historicalData, hash: historicalHash })
+    expect(hashPublicationPreflight(report)).toBe(historicalHash)
+    const legacy = Object.freeze({ id: 109, artifact: 100, artifactHash: badArtifact.hash, checkedAt, createdBy: 1,
+      exportHash: exported.hash, status: 'ready', issueCount: 0, pageCount: 1, schemaVersion: 1, preflightHash: historicalHash, report })
+    const before = JSON.stringify(legacy)
     find.mockResolvedValue({ docs: [legacy], totalDocs: 1 })
     const result = await createOwnerPublicationPreflight({ artifactId: 100, checkedAt: '2026-09-10T18:00:00.000Z', payload, req: { user: owner } })
     expect(result).toMatchObject({ id: 110, status: 'blocked', issueCount: 1, report: { issues: [expect.objectContaining({ code: 'invalid_slug' })] } })
     expect(legacy.status).toBe('ready')
+    expect(JSON.stringify(legacy)).toBe(before)
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'publication-preflights' }))
   })
 

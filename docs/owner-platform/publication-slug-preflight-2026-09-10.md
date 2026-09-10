@@ -27,3 +27,9 @@ La auditoría del servicio detectó además un retorno temprano de cualquier inf
 - Sin esquema, permisos, dependencias nuevas, cambios públicos ni datos reales.
 
 Pendiente operativo general: staging con almacenamiento real y TLS válido, recuperación verificada y puente de publicación controlado. No resuelto por este parche.
+
+## Seguimiento: evidencia histórica íntegra
+
+Sobre base a10b65e se sustituye el fixture parcial del servicio por uno completo con report, hashes, fecha, relación, autor y metadatos. Representa las reglas anteriores que comprobaban bloques y SEO pero no el segmento URL. Su SHA-256 se construye de forma independiente y el verificador confirma integridad antes de ejecutar el servicio; no es una firma criptográfica de autoría.
+
+GREEN inicial4/4 `5f1de8`. Mutación temporal de retorno ciego del informe guardado: un fallo esperado `8fecf8`, devuelve ready antiguo. Mutación retirada íntegramente, diff del runtime vacío `b0fae0`; GREEN publicación69/18 `d9962a`. Esta evidencia cierra la observación de registro legacy incompleto, no la de fechas futuras/empates ni concurrencia. Solo cambia la prueba y este recibo; no se repite build o full de runtime sin cambios.
