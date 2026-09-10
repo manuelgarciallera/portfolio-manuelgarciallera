@@ -65,6 +65,20 @@ const verifyFiles = async (fixture, id, revision, publicStatus) => {
   }
 }
 
+const verifySnapshotOnly = async (fixture, store, mediaId, revision) => {
+  const files = await store.read(revision.id)
+  assert.equal(files.length, revision.files.length)
+  for (const expected of revision.files) {
+    const file = files.find(({ name }) => name === expected.name)
+    assert(file)
+    assert.equal(sha(file.bytes), expected.sha256, 'Snapshot-only bytes survive internally')
+    const url = `/api/media/revision/${mediaId}/${revision.id}/${encodeURIComponent(file.name)}`
+    for (const authenticated of [true, false]) {
+      assert.equal((await fixture.request(url, {}, authenticated)).status, 404, 'Backup retention must not grant a historical URL after version removal')
+    }
+  }
+}
+
 process.once('message', async (input) => {
   let fixture, client
   try {
@@ -98,21 +112,31 @@ process.once('message', async (input) => {
     assert.equal(owner?.role, 'owner', 'Restored owner can log in through real HTTP')
     let result
     if (input.mode === 'seed') {
-      const first = await upload(fixture, '#ff0000')
-      const snapshot = await captureRecoveryPreview(fixture, owner, first)
+      const captured = await upload(fixture, '#ffff00')
+      const snapshot = await captureRecoveryPreview(fixture, owner, captured)
+      const first = await upload(fixture, '#ff0000', captured.id)
       const versions = await fixture.payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
         where: { parent: { equals: first.id } }, limit: 100, depth: 0 })
       assert.equal(versions.docs.length, versions.totalDocs)
       const second = await upload(fixture, '#0000ff', first.id)
+      // Model retention on this isolated fixture only. Resolve exact rows first;
+      // never delete objects or a live application's versions.
+      const capturedVersions = versions.docs.filter(({ version }) => version.storageRevision === captured.storageRevision).map(({ id }) => id)
+      assert(capturedVersions.length > 0)
+      await fixture.payload.db.deleteVersions({ collection: 'media', where: { and: [
+        { parent: { equals: captured.id } }, { id: { in: capturedVersions } },
+      ] } })
       await verifyRecoveryPreview(fixture, owner, snapshot)
       const references = await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) })
-      assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision].sort())
-      assert(references.find(({ revision }) => revision === first.storageRevision).references.some(({ kind }) => kind === 'snapshot'), 'Historical image must be retained by its real frozen preview')
+      assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision, captured.storageRevision].sort())
+      assert(references.find(({ revision }) => revision === captured.storageRevision).references.some(({ kind }) => kind === 'snapshot'), 'Historical image must be retained by its real frozen preview')
+      assert(references.find(({ revision }) => revision === captured.storageRevision).references.every(({ kind }) => kind === 'snapshot'), 'Snapshot-only retention must not rely on a surviving media version')
       const revisions = []
       // Export IDs discovered from the database, not the upload receipt list.
       for (const group of references) {
-        const doc = group.revision === first.storageRevision ? first : second
-        const color = group.revision === first.storageRevision ? '#ff0000' : '#0000ff'
+        const doc = [first, second, captured].find(({ storageRevision }) => storageRevision === group.revision)
+        assert(doc)
+        const color = group.revision === first.storageRevision ? '#ff0000' : group.revision === second.storageRevision ? '#0000ff' : '#ffff00'
         const exported = await store.exportRevision(group.revision)
         assert.equal(exported.files.length, 4, 'Original and three derivatives')
         assert.deepEqual(exported.files.find((file) => file.name === doc.filename).bytes, await image(color))
@@ -122,16 +146,20 @@ process.once('message', async (input) => {
         await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(exported.manifest), { flag: 'wx', mode: 0o600 })
         revisions.push({ id: doc.storageRevision, files: exported.files.map(({ name, bytes }) => ({ name, sha256: sha(bytes) })) })
       }
-      revisions.sort((left, right) => left.id === first.storageRevision ? -1 : right.id === first.storageRevision ? 1 : 0)
+      const order = [first.storageRevision, second.storageRevision, captured.storageRevision]
+      revisions.sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id))
       await verifyFiles(fixture, first.id, revisions[0], 404)
       await verifyFiles(fixture, first.id, revisions[1], 200)
-      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
+      await verifySnapshotOnly(fixture, store, first.id, revisions[2])
+      result = { mediaId: first.id, versionId: versions.docs.find(({ version }) => version.storageRevision === first.storageRevision).id,
+        revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
     } else {
       const expected = input.expected
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
       assert.deepEqual(await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) }), expected.references, 'Recovered reference inventory')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
+      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2])
       assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')
       if (input.mode === 'verify') {
         result = { sourceLogicalStateUnchanged: true }
@@ -151,7 +179,8 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 404)
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
-      result = { pid: process.pid, recoveredRevisions: 2, recoveredFiles: 8, login: true, history: true, independentEdit: true, frozenPreview: true }
+      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2])
+      result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')

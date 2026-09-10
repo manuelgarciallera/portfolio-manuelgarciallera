@@ -118,6 +118,7 @@ try {
       revisionsRecovered: restored.recoveredRevisions, damageCasesRejectedBeforeAllocation: damageCases + 2,
       login: restored.login, history: restored.history, independentEdit: restored.independentEdit,
       frozenPreview: restored.frozenPreview,
+      snapshotOnlyRetention: restored.snapshotOnlyRetention,
       scope: 'Media and real preview/audit with minimal page/brand fixtures; fresh synthetic S3 provider per child', backupReceiptsUnchanged: true })
   }
 } catch (error) {
