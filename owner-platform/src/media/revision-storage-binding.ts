@@ -49,15 +49,44 @@ export const createRevisionStorageCollection = async (
   collection: CollectionConfig,
   settings: { nativeFetchOrigin?: string; revisionRoot: string; staticDir: string },
 ): Promise<CollectionConfig> => {
+  const revisionRoot = await provisionedRoot(settings?.revisionRoot)
+  const staticDir = await provisionedRoot(settings?.staticDir)
+  if (contains(revisionRoot, staticDir) || contains(staticDir, revisionRoot)) {
+    throw new Error('Revision storage must be separate from native static storage.')
+  }
+  return createTransportRevisionStorageCollection(collection, {
+    staticDir, nativeFetchOrigin: settings.nativeFetchOrigin,
+    store: {
+      read: (revision) => readMediaRevision(revisionRoot, revision),
+      write: (files) => writeMediaRevision(revisionRoot, files),
+    },
+  })
+}
+
+/** Server-owned transport. It must verify immutable, complete revisions before returning.
+ * This binding retains document authorization; the store must never accept request-selected buckets.
+ * staticDir is a provisioned scratch directory, not a public mount or a persistence fallback.
+ */
+export const createTransportRevisionStorageCollection = async (
+  collection: CollectionConfig,
+  settings: {
+    nativeFetchOrigin?: string
+    staticDir: string
+    store: {
+      read: (revision: string) => Promise<{ name: string; bytes: Buffer }[]>
+      write: (files: { name: string; bytes: Buffer }[]) => Promise<string>
+    }
+  },
+): Promise<CollectionConfig> => {
   if (collection.slug !== 'media' || !collection.upload || !collection.versions ||
     collection.fields.some((field) => 'name' in field && field.name === 'storageRevision')) {
     throw new Error('Expected the raw versioned Media collection.')
   }
-  const revisionRoot = await provisionedRoot(settings?.revisionRoot)
   const staticDir = await provisionedRoot(settings?.staticDir)
   const nativeFetchOrigin = configuredNativeOrigin(settings?.nativeFetchOrigin)
-  if (contains(revisionRoot, staticDir) || contains(staticDir, revisionRoot)) {
-    throw new Error('Revision storage must be separate from native static storage.')
+  const store = settings.store
+  if (!store || typeof store.read !== 'function' || typeof store.write !== 'function') {
+    throw new Error('A complete server revision transport is required.')
   }
   const upload = typeof collection.upload === 'object' ? collection.upload : {}
   // Only actual restoreVersion operations can grant a single-use capability.
@@ -112,7 +141,7 @@ export const createRevisionStorageCollection = async (
           const candidates = [selected, ...Object.values(object(selected.sizes)).map(object)]
           const metadata = candidates.find((entry) => entry.filename === filename)
           if (!metadata) return missing()
-          const files = await readMediaRevision(revisionRoot, revision)
+          const files = await store.read(revision)
           const file = files.find((entry) => entry.name === filename)
           if (!file) return missing()
           return new Response(new Uint8Array(file.bytes), { headers: {
@@ -188,7 +217,7 @@ export const createRevisionStorageCollection = async (
           if (String(restore.parent) !== String(originalDoc.id) || !isDeepStrictEqual(binaryMetadata(data), binaryMetadata(restore.version))) {
             throw new APIError('Restored media must match its stored version.', 400)
           }
-          if (typeof restore.version.storageRevision === 'string') await readMediaRevision(revisionRoot, restore.version.storageRevision)
+          if (typeof restore.version.storageRevision === 'string') await store.read(restore.version.storageRevision)
           return data
         }
         if (Object.hasOwn(data, 'storageRevision') && data.storageRevision !== originalDoc?.storageRevision) {
@@ -209,7 +238,7 @@ export const createRevisionStorageCollection = async (
             if (typeof filename === 'string') addFile(filename, req.payloadUploadSizes?.[name])
           }
           // Keep an orphan if a later hook/transaction fails; never guess cleanup.
-          data.storageRevision = await writeMediaRevision(revisionRoot, [...files].map(([name, bytes]) => ({ name, bytes })))
+          data.storageRevision = await store.write([...files].map(([name, bytes]) => ({ name, bytes })))
         } else {
           const merged = { ...originalDoc, ...data, storageRevision: originalDoc?.storageRevision }
           if (!isDeepStrictEqual(binaryMetadata(merged), binaryMetadata(originalDoc ?? {}))) {

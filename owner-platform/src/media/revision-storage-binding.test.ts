@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, expect, it } from 'vitest'
 import { Media } from '../collections/Media'
-import { createRevisionStorageCollection } from './revision-storage-binding'
+import { createRevisionStorageCollection, createTransportRevisionStorageCollection } from './revision-storage-binding'
 import { readMediaRevision } from './revision-store'
 
 let root = ''
@@ -46,6 +46,10 @@ it.each(['absent', 'relative', 'missing', 'same', 'nested', 'filesystem-root'])(
   if (fault === 'nested') settings.revisionRoot = root
   if (fault === 'filesystem-root') settings.revisionRoot = path.parse(root).root
   await expect(createRevisionStorageCollection(Media, settings)).rejects.toThrow()
+})
+
+it.each([undefined, null, {}, { read: 'not callable', write: async () => '' }])('rejects an incomplete server transport before enabling the collection: %j', async (store) => {
+  await expect(createTransportRevisionStorageCollection(Media, { staticDir, store: store as never })).rejects.toThrow(/transport/i)
 })
 
 it('rejects a linked root and leaves the supplied collection unchanged', async () => {

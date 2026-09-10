@@ -1,8 +1,13 @@
 import { createServer, type Server } from 'node:http'
+import { mkdtemp, readdir, rmdir } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import { S3Client } from '@aws-sdk/client-s3'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { createObjectRevisionStore } from './object-revision-store'
+import { createTransportRevisionStorageCollection } from './revision-storage-binding'
+import { Media } from '../collections/Media'
 
 describe('object revision transport with real S3 HTTP requests', () => {
   let server: Server
@@ -91,6 +96,52 @@ describe('object revision transport with real S3 HTTP requests', () => {
     expect(puts.map((request) => request.condition)).toEqual(['*', '*', '*', '*', '*'])
     expect(puts[2].key).toBe(`owner-media/${first}/manifest.json`)
     expect(puts[4].key).toBe(`owner-media/${second}/manifest.json`)
+  })
+
+  it('binds uploads and guarded historical reads to object storage without writing native files', async () => {
+    const staticDir = await mkdtemp(path.join(tmpdir(), 'owner-object-binding-'))
+    try {
+      const bound = await createTransportRevisionStorageCollection(Media, { store: store(), staticDir })
+      const save = bound.hooks!.beforeChange!.at(-1)!
+      const data = await save({ data: { filename: 'original.png', mimeType: 'image/png', sizes: {
+        small: { filename: 'small.webp', mimeType: 'image/webp' },
+      } }, req: { file: { data: Buffer.from('original-image') }, payloadUploadSizes: { small: Buffer.from('small-image') } } } as never)
+      expect(await store().read(data.storageRevision)).toEqual(files())
+      const published = { ...data, id: '1', _status: 'published' }
+      const handler = bound.endpoints && bound.endpoints.find((entry) => entry.path.startsWith('/revision/'))?.handler
+      if (!handler) throw new Error('Missing guarded revision endpoint')
+      // Only the database boundary is substituted; uploads and object HTTP are real.
+      const request = (current = published, user: unknown = null) => ({
+        routeParams: { id: '1', revision: data.storageRevision, filename: 'small.webp' }, user,
+        payload: {
+          findByID: async (args: { overrideAccess: boolean }) => {
+            expect(args.overrideAccess).toBe(false)
+            return current
+          },
+          findVersions: async (args: { overrideAccess: boolean; where: unknown }) => {
+            expect(args.overrideAccess).toBe(false)
+            expect(args.where).toEqual({ and: [{ parent: { equals: '1' } }, { 'version.storageRevision': { equals: data.storageRevision } }] })
+            return { docs: [{ version: published }] }
+          },
+        },
+      })
+      const response = await handler(request() as never)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('small-image')
+      expect(response.headers.get('cache-control')).toBe('private, no-store')
+      expect(response.headers.get('content-type')).toBe('image/webp')
+      const before = requests.length
+      expect((await handler(request({ ...published, _status: 'draft' }) as never)).status).toBe(404)
+      const replacement = { ...published, storageRevision: '22222222-2222-4222-8222-222222222222' }
+      expect((await handler(request(replacement) as never)).status).toBe(404)
+      expect(requests.length).toBe(before)
+      const historical = await handler(request(replacement, { id: 1, collection: 'users', role: 'owner' }) as never)
+      expect(historical.status).toBe(200)
+      expect(await historical.text()).toBe('small-image')
+      objects.set(`owner-media/${data.storageRevision}/files/1`, Buffer.from('broken'))
+      expect((await handler(request() as never)).status).toBe(404)
+      expect(await readdir(staticDir)).toEqual([])
+    } finally { await rmdir(staticDir) }
   })
 
   it('retains partial writes with a reconcilable revision and never commits a manifest after failure', async () => {

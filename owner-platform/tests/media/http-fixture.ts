@@ -11,7 +11,7 @@ import sharp from 'sharp'
 
 import { Media } from '../../src/collections/Media'
 import { Users } from '../../src/collections/Users'
-import { createRevisionStorageCollection } from '../../src/media/revision-storage-binding'
+import { createRevisionStorageCollection, createTransportRevisionStorageCollection } from '../../src/media/revision-storage-binding'
 import { editorialDatabaseConfig } from '../recovery/postgres-runtime.mjs'
 
 const maxRequestBytes = 8 * 1024 * 1024
@@ -125,7 +125,10 @@ export type MediaHTTPReopenSettings = {
   decorateMedia?: (media: CollectionConfig) => CollectionConfig
 }
 
-export const startMediaHTTPFixture = async (settings?: MediaHTTPReopenSettings): Promise<MediaHTTPFixture> => {
+export const startMediaHTTPFixture = async (
+  settings?: MediaHTTPReopenSettings,
+  transport?: Parameters<typeof createTransportRevisionStorageCollection>[1]['store'],
+): Promise<MediaHTTPFixture> => {
   const root = settings ? settings.root : process.env.OWNER_INTEGRATION_DIRECTORY
   if (!root || !path.isAbsolute(root)) throw new Error('OWNER_INTEGRATION_DIRECTORY must be an explicit absolute fixture root.')
   if (settings && (!path.isAbsolute(settings.revisionRoot) || !path.isAbsolute(settings.staticDir)
@@ -183,8 +186,9 @@ export const startMediaHTTPFixture = async (settings?: MediaHTTPReopenSettings):
     hostname: '127.0.0.1', pathname: '/api/media/revision/**', port: String(address.port), protocol: 'http' as const,
   }
   const key = `versioned-media-http-${randomUUID()}`
-  const revisionRoot = settings?.revisionRoot ?? path.join(root, 'http-private-revisions')
-  const staticDir = settings?.staticDir ?? path.join(root, 'http-unused-native-media')
+  const prefix = transport ? 'object-' : ''
+  const revisionRoot = settings?.revisionRoot ?? path.join(root, `${prefix}http-private-revisions`)
+  const staticDir = settings?.staticDir ?? path.join(root, `${prefix}http-unused-native-media`)
 
   let payload: Payload | undefined
   try {
@@ -194,13 +198,15 @@ export const startMediaHTTPFixture = async (settings?: MediaHTTPReopenSettings):
       cache: fileURLToPath(new URL('../../node_modules/.cache', import.meta.url)),
     })
     const rawMedia = settings?.decorateMedia ? settings.decorateMedia(Media) : Media
-    const bound = await createRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, revisionRoot, staticDir })
+    const bound = transport
+      ? await createTransportRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, store: transport, staticDir })
+      : await createRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, revisionRoot, staticDir })
     const upload = typeof bound.upload === 'object' ? bound.upload : {}
     config = await buildConfig({
       collections: [Users, { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
-        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true, schemaName: 'versioned_media_http_fixture' })
-        : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, 'versioned-media-http.db')).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
+        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true, schemaName: transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture' })
+        : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
       secret: settings?.secret ?? randomUUID() + randomUUID(),
       sharp,
