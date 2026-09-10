@@ -36,6 +36,19 @@ const server = createServer(async (req, res) => {
   } catch { res.writeHead(500); res.end() }
 })
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
+// Compare the pre-backup API receipts to the independently reopened database.
+// This catches dropped page history or changed brand/layout even when images and
+// the frozen preview still render. Only JSON-visible data crosses worker IPC.
+const logicalEditorial = async (fixture, owner, snapshot) => {
+  const options = { user: owner, overrideAccess: false, depth: 0 }
+  const page = await fixture.payload.findByID({ ...options, collection: 'pages', id: snapshot.pageId, draft: true })
+  const brand = await fixture.payload.findByID({ ...options, collection: 'brand-profiles', id: snapshot.brandId })
+  const versions = await fixture.payload.findVersions({ ...options, collection: 'pages',
+    where: { parent: { equals: snapshot.pageId } }, limit: 100, sort: 'id' })
+  assert(versions.totalDocs >= 3, 'The seeded page retains its intermediate editorial edits')
+  assert.equal(versions.docs.length, versions.totalDocs, 'The recovery receipt covers every synthetic page version')
+  return JSON.parse(JSON.stringify({ page, brand, versions: versions.docs }))
+}
 const logicalMedia = async (fixture, owner, id) => {
   // JSON IPC drops undefined keys; use explicit nulls for optional version fields.
   const pick = (doc) => ({ id: doc.id ?? null, revision: doc.storageRevision ?? null, alt: doc.alt ?? null,
@@ -134,6 +147,10 @@ process.once('message', async (input) => {
     if (input.mode === 'seed') {
       const captured = await upload(fixture, '#ffff00')
       const snapshot = await captureRecoveryPreview(fixture, owner, captured)
+      for (const title of ['Intermediate draft before backup', 'Frozen object recovery']) {
+        await fixture.payload.update({ collection: 'pages', id: snapshot.pageId, user: owner,
+          overrideAccess: false, draft: true, data: { title } })
+      }
       const first = await upload(fixture, '#ff0000', captured.id)
       const versions = await fixture.payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
         where: { parent: { equals: first.id } }, limit: 100, depth: 0 })
@@ -172,9 +189,12 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, first.id, revisions[1], 200)
       await verifySnapshotOnly(fixture, store, first.id, revisions[2], snapshot)
       result = { mediaId: first.id, versionId: versions.docs.find(({ version }) => version.storageRevision === first.storageRevision).id,
-        revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
+        revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id),
+        editorial: await logicalEditorial(fixture, owner, snapshot) }
     } else {
       const expected = input.expected
+      assert.deepEqual(await logicalEditorial(fixture, owner, expected.snapshot), expected.editorial,
+        'Recovered draft, full page history and brand must match their pre-backup receipts')
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
       assert.deepEqual(await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) }), expected.references, 'Recovered reference inventory')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
@@ -201,7 +221,8 @@ process.once('message', async (input) => {
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
       await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       await verifySnapshotInBrowser(fixture, owner, expected.snapshot, input.credentials)
-      result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true, snapshotBrowser: true }
+      result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true, snapshotBrowser: true,
+        pageVersionsRestored: expected.editorial.versions.length, editorialStateUnchanged: true }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')
