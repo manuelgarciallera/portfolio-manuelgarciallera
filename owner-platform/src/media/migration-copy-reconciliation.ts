@@ -1,6 +1,6 @@
 import type { createObjectRevisionStore } from './object-revision-store'
 import { readMigrationCopyJournal } from './migration-copy-journal'
-import { readMigrationPlan, type MigrationPlan } from './migration-plan'
+import { migrationRevisionFiles, readMigrationPlan, type MigrationPlan, type MigrationRevisionFile } from './migration-plan'
 import { bindMigrationPlanInventory } from './migration-plan-inventory'
 import { digest } from './revision-manifest'
 type Input = { journalRoot: string; journalId: string; serializedPlan: string; serializedInventory: string;
@@ -23,8 +23,8 @@ export async function reconcileMigrationCopy(input: Input) {
       journal.destinationId !== input.expectedDestinationId ||
       JSON.stringify([...journal.revisions].sort()) !== JSON.stringify([...new Set(plan.evidence.map(entry => entry.revision))].sort())) throw fail()
   } catch { throw fail() }
-  const groups = new Map<string, Map<string, MigrationPlan['evidence'][number]>>()
-  for (const entry of plan.evidence) {
+  const groups = new Map<string, Map<string, MigrationRevisionFile>>()
+  for (const entry of migrationRevisionFiles(plan)) {
     const files = groups.get(entry.revision) ?? new Map()
     files.set(entry.filename, entry)
     groups.set(entry.revision, files)

@@ -31,7 +31,7 @@ afterEach(async () => {
     await rm(root, { recursive: true })
   }
 })
-async function fixture(count = 1) {
+async function fixture(count = 1, retainThumbnail = false) {
   const legacy = path.join(root, 'legacy')
   const sourceRoot = path.join(root, 'revisions')
   await mkdir(legacy); await mkdir(sourceRoot)
@@ -39,20 +39,25 @@ async function fixture(count = 1) {
   const references = []
   const evidence = []
   const revisions = []
+  const retainedFiles = []
   for (let index = 0; index < count; index++) {
     const filename = index === 0 ? 'hero.png' : `hero${index}.png`
     const id = String(index + 1)
     await writeFile(path.join(legacy, filename), bytes)
     references.push({ kind: 'document' as const, documentId: id, referenceId: id, state: 'published' as const,
       files: [{ variant: 'original', filename, expectedBytes: bytes.length }] })
-    const revision = await writeMediaRevision(sourceRoot, [{ name: filename, bytes }])
+    const thumbnail = { name: 'thumb.png', bytes: Buffer.from('tiny') }
+    const revision = await writeMediaRevision(sourceRoot, [{ name: filename, bytes }, ...(retainThumbnail ? [thumbnail] : [])])
     revisions.push(revision)
+    if (retainThumbnail) retainedFiles.push({ filename: thumbnail.name, bytes: thumbnail.bytes.length,
+      sha256: sha(thumbnail.bytes), revision, evidenceHash: '2'.repeat(64) })
     evidence.push({ kind: 'document', documentId: id, referenceId: id, variant: 'original', filename,
       bytes: bytes.length, sha256: sha(bytes), revision, evidenceHash: '2'.repeat(64) })
   }
   const inventory = await inspectLegacyMediaInventory({ root: legacy, references })
   const plan = createMigrationPlan({ sourceInventoryHash: inventory.hash,
-    references: references.map(({ kind, documentId, referenceId }) => ({ kind, documentId, referenceId, variants: ['original'] })), evidence })
+    references: references.map(({ kind, documentId, referenceId }) => ({ kind, documentId, referenceId, variants: ['original'] })), evidence,
+    ...(retainThumbnail ? { retainedFiles } : {}) })
   const journal = await createMigrationCopyJournal(root, { planDigest: plan.digest, inventoryHash: inventory.hash,
     destinationId: 'test-destination', revisions })
   journals.push(journal)
@@ -61,6 +66,23 @@ async function fixture(count = 1) {
 }
 const reconciliation = (input: Awaited<ReturnType<typeof fixture>>) => reconcileMigrationCopy({ ...input,
   journalRoot: root, journalId: input.journal.id, expectedDestinationId: 'test-destination' })
+
+it('copies and reconciles retained thumbnail bytes without adding editorial references', async () => {
+  const input = await fixture(1, true)
+  expect(await copyMigrationRevisions(input)).toMatchObject({ fileCount: 2, totalBytes: 24, canApply: false })
+  expect(await provider!.storage.read(input.revision)).toEqual([
+    { name: 'hero.png', bytes: input.bytes }, { name: 'thumb.png', bytes: Buffer.from('tiny') },
+  ])
+  expect(await reconciliation(input)).toMatchObject({ revisions: [{ observation: 'matched', journalState: 'verified' }], canApply: false })
+  const prefix = `cms-media/${input.revision}/`
+  const manifest = JSON.parse(provider!.objects.get(`${prefix}manifest.json`)!.toString())
+  const altered = Buffer.from('evil')
+  manifest.files[1].sha256 = sha(altered)
+  provider!.objects.set(`${prefix}files/1`, altered)
+  provider!.objects.set(`${prefix}manifest.json`, Buffer.from(JSON.stringify(manifest)))
+  expect(await reconciliation(input)).toMatchObject({ revisions: [{ observation: 'mismatch', journalState: 'verified' }], canApply: false })
+  expect(JSON.parse(input.serializedPlan).references[0].variants).toEqual(['original'])
+})
 
 it('reconciles verified bytes without changing journal or objects', async () => {
   const input = await fixture()

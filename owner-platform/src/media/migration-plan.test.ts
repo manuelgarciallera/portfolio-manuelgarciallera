@@ -18,6 +18,45 @@ const fixture = () => ({
 })
 
 describe('migration plan candidate (never execution authority)', () => {
+  const retained = () => ({ filename: 'thumb.webp', bytes: 10, sha256: hashA, revision: revisionA, evidenceHash: hashB })
+  it('roundtrips retained files with a distinct schema and a digest binding every byte claim', () => {
+    const plan = createMigrationPlan({ ...fixture(), retainedFiles: [retained()] })
+    expect(plan.schemaVersion).toBe(2)
+    expect(readMigrationPlan(JSON.stringify(plan))).toEqual(plan)
+    const changed = structuredClone(plan)
+    changed.retainedFiles![0].bytes++
+    expect(() => readMigrationPlan(JSON.stringify(changed))).toThrow()
+    expect(() => readMigrationPlan(JSON.stringify({ ...plan, schemaVersion: 1 }))).toThrow()
+    const removed = { ...plan }
+    delete removed.retainedFiles
+    expect(() => readMigrationPlan(JSON.stringify(removed))).toThrow()
+    expect(createMigrationPlan(fixture()).schemaVersion).toBe(1)
+  })
+
+  it('does not use retained physical files to satisfy missing historical references', () => {
+    const input = fixture()
+    input.references.push(reference('snapshot', 'missing'))
+    const plan = createMigrationPlan({ ...input, retainedFiles: [retained()] })
+    expect(plan).toMatchObject({ status: 'blocked', canApply: false,
+      missing: [{ kind: 'snapshot', documentId: 'media-1', referenceId: 'missing', variant: 'original' }] })
+    expect(plan.references).toHaveLength(2)
+    expect(plan.evidence).toHaveLength(1)
+  })
+
+  it.each([
+    { revision: revisionB }, { filename: 'PHOTO.webp' }, { filename: '../secret' },
+    { bytes: 0 }, { bytes: 64 * 1024 * 1024 }, { sha256: 'invalid' }, { evidenceHash: 'invalid' },
+  ])('rejects unreferenced revisions, aliases, unsafe or oversized retained files %#', changes => {
+    expect(() => createMigrationPlan({ ...fixture(), retainedFiles: [{ ...retained(), ...changes }] })).toThrow()
+  })
+
+  it('counts retained files toward the physical revision limit and rejects duplicates', () => {
+    const files = Array.from({ length: 15 }, (_, i) => ({ ...retained(), filename: `thumb-${i}.webp` }))
+    expect(createMigrationPlan({ ...fixture(), retainedFiles: files }).status).toBe('awaiting-physical-verification')
+    expect(() => createMigrationPlan({ ...fixture(), retainedFiles: [...files, retained()] })).toThrow()
+    expect(() => createMigrationPlan({ ...fixture(), retainedFiles: [retained(), retained()] })).toThrow()
+  })
+
   it('keeps complete candidates awaiting physical verification, never executable', () => {
     const plan = createMigrationPlan(fixture())
     expect(plan.status).toBe('awaiting-physical-verification')

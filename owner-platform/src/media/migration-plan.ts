@@ -3,17 +3,19 @@ import { createHash } from 'node:crypto'
 type Kind = 'document' | 'draft' | 'version' | 'snapshot'
 type Identity = { kind: Kind; documentId: string; referenceId: string }
 type Reference = Identity & { variants: string[] }
-type Evidence = Identity & {
-  variant: string; filename: string; bytes: number; sha256: string
+export type MigrationRevisionFile = {
+  filename: string; bytes: number; sha256: string
   revision: string; evidenceHash: string
 }
+type Evidence = Identity & { variant: string } & MigrationRevisionFile
 export type MigrationPlan = {
-  schemaVersion: 1
+  schemaVersion: 1 | 2
   canApply: false
   status: 'blocked' | 'awaiting-physical-verification'
   sourceInventoryHash: string
   references: Reference[]
   evidence: Evidence[]
+  retainedFiles?: MigrationRevisionFile[]
   missing: (Identity & { variant: string })[]
   digest: string
 }
@@ -86,7 +88,8 @@ function canonical(value: unknown): string {
  * The caller must later prove that the supplied reference set matches a frozen inventory.
  */
 export function createMigrationPlan(input: unknown): MigrationPlan {
-  const value = object(input, ['sourceInventoryHash', 'references', 'evidence'])
+  const withRetention = typeof input === 'object' && input !== null && Object.hasOwn(input, 'retainedFiles')
+  const value = object(input, ['sourceInventoryHash', 'references', 'evidence', ...(withRetention ? ['retainedFiles'] : [])])
   const sourceInventoryHash = hash(value.sourceInventoryHash)
   const identities = new Set<string>()
   const expected = new Map<string, Identity & { variant: string }>()
@@ -103,7 +106,7 @@ export function createMigrationPlan(input: unknown): MigrationPlan {
   }).sort((a, b) => compare(identityKey(a), identityKey(b)))
 
   const seen = new Set<string>()
-  const revisionFiles = new Map<string, Map<string, Evidence>>()
+  const revisionFiles = new Map<string, Map<string, MigrationRevisionFile>>()
   const evidence = array(value.evidence, 160_000).map(raw => {
     const row = object(raw, ['kind', 'documentId', 'referenceId', 'variant', 'filename', 'bytes', 'sha256', 'revision', 'evidenceHash'])
     const ref = identity(row)
@@ -115,7 +118,7 @@ export function createMigrationPlan(input: unknown): MigrationPlan {
       typeof row.revision !== 'string' || !UUID.test(row.revision)) return fail()
     const entry: Evidence = { ...ref, variant, filename: filename(row.filename), bytes: row.bytes as number,
       sha256: hash(row.sha256), revision: row.revision, evidenceHash: hash(row.evidenceHash) }
-    const files = revisionFiles.get(entry.revision) ?? new Map<string, Evidence>()
+    const files = revisionFiles.get(entry.revision) ?? new Map<string, MigrationRevisionFile>()
     const canonicalName = entry.filename.normalize('NFC').toLowerCase()
     const previous = files.get(canonicalName)
     if (previous && (previous.filename !== entry.filename || previous.bytes !== entry.bytes || previous.sha256 !== entry.sha256)) return fail()
@@ -123,6 +126,21 @@ export function createMigrationPlan(input: unknown): MigrationPlan {
     revisionFiles.set(entry.revision, files)
     return entry
   }).sort((a, b) => compare(fileKey(a), fileKey(b)))
+
+  // Physical retention is not a logical reference or historical proof. Only
+  // supplement revisions already referenced by evidence; never add orphan ones.
+  const retainedFiles = withRetention ? array(value.retainedFiles, 10_000).map(raw => {
+    const row = object(raw, ['filename', 'bytes', 'sha256', 'revision', 'evidenceHash'])
+    if (!Number.isSafeInteger(row.bytes) || (row.bytes as number) <= 0 || (row.bytes as number) > MAX_REVISION_BYTES ||
+      typeof row.revision !== 'string' || !UUID.test(row.revision)) return fail()
+    const entry: MigrationRevisionFile = { filename: filename(row.filename), bytes: row.bytes as number,
+      sha256: hash(row.sha256), revision: row.revision, evidenceHash: hash(row.evidenceHash) }
+    const files = revisionFiles.get(entry.revision)
+    const key = entry.filename.normalize('NFC').toLowerCase()
+    if (!files || files.has(key)) return fail()
+    files.set(key, entry)
+    return entry
+  }).sort((a, b) => compare(JSON.stringify([a.revision, a.filename]), JSON.stringify([b.revision, b.filename]))) : undefined
 
   let totalBytes = 0
   let totalFiles = 0
@@ -136,9 +154,10 @@ export function createMigrationPlan(input: unknown): MigrationPlan {
   const missing = [...expected.entries()].filter(([key]) => !seen.has(key)).map(([, item]) => item)
     .sort((a, b) => compare(fileKey(a), fileKey(b)))
   const body: Omit<MigrationPlan, 'digest'> = {
-    schemaVersion: 1, canApply: false,
+    schemaVersion: withRetention ? 2 : 1, canApply: false,
     status: missing.length || references.length === 0 ? 'blocked' : 'awaiting-physical-verification',
     sourceInventoryHash, references, evidence, missing,
+    ...(withRetention ? { retainedFiles } : {}),
   }
   const serialized = canonical(body)
   if (Buffer.byteLength(serialized) + 80 > MAX_JSON_BYTES) return fail()
@@ -149,8 +168,10 @@ export function readMigrationPlan(serialized: string): MigrationPlan {
   if (typeof serialized !== 'string' || Buffer.byteLength(serialized) > MAX_JSON_BYTES) return fail()
   let parsed: unknown
   try { parsed = JSON.parse(serialized) } catch { return fail() }
-  const value = object(parsed, ['schemaVersion', 'canApply', 'status', 'sourceInventoryHash', 'references', 'evidence', 'missing', 'digest'])
-  const rebuilt = createMigrationPlan({ sourceInventoryHash: value.sourceInventoryHash, references: value.references, evidence: value.evidence })
+  const withRetention = typeof parsed === 'object' && parsed !== null && Object.hasOwn(parsed, 'retainedFiles')
+  const value = object(parsed, ['schemaVersion', 'canApply', 'status', 'sourceInventoryHash', 'references', 'evidence', 'missing', 'digest', ...(withRetention ? ['retainedFiles'] : [])])
+  const rebuilt = createMigrationPlan({ sourceInventoryHash: value.sourceInventoryHash, references: value.references, evidence: value.evidence,
+    ...(withRetention ? { retainedFiles: value.retainedFiles } : {}) })
   const missing = array(value.missing, rebuilt.missing.length).map(raw => {
     const row = object(raw, ['kind', 'documentId', 'referenceId', 'variant'])
     return { ...identity(row), variant: id(row.variant) }
@@ -161,3 +182,7 @@ export function readMigrationPlan(serialized: string): MigrationPlan {
     value.digest !== rebuilt.digest || JSON.stringify(missing) !== JSON.stringify(rebuilt.missing)) return fail()
   return rebuilt
 }
+
+/** For consumers of a validated plan. Retained files grant no content access. */
+export const migrationRevisionFiles = (plan: MigrationPlan): MigrationRevisionFile[] =>
+  [...plan.evidence, ...(plan.retainedFiles ?? [])]

@@ -1,5 +1,5 @@
 import type { createObjectRevisionStore } from './object-revision-store'
-import { readMigrationPlan, type MigrationPlan } from './migration-plan'
+import { migrationRevisionFiles, readMigrationPlan, type MigrationPlan, type MigrationRevisionFile } from './migration-plan'
 import { bindMigrationPlanInventory } from './migration-plan-inventory'
 import { verifyMigrationPlanFiles } from './migration-plan-physical'
 import { readMediaRevision } from './revision-store'
@@ -36,8 +36,8 @@ export async function copyMigrationRevisions(input: Input) {
     // revision below so total library buffers are never retained in memory.
     await verifyMigrationPlanFiles(serializedPlan, sourceRoot)
   } catch { throw new MigrationRevisionCopyError('preflight-failed', []) }
-  const groups = new Map<string, Map<string, MigrationPlan['evidence'][number]>>()
-  for (const entry of plan.evidence) {
+  const groups = new Map<string, Map<string, MigrationRevisionFile>>()
+  for (const entry of migrationRevisionFiles(plan)) {
     const files = groups.get(entry.revision) ?? new Map()
     files.set(entry.filename, entry)
     groups.set(entry.revision, files)

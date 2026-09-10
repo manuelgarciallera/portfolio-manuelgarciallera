@@ -61,6 +61,21 @@ describe('physical migration candidate observation (not authorization)', () => {
   const rebuild = (plan: MigrationPlan) => createMigrationPlan({ sourceInventoryHash: plan.sourceInventoryHash,
     references: plan.references, evidence: plan.evidence })
 
+  it('preserves retained derivatives without inventing a snapshot reference to them', async () => {
+    const { plan } = await fixture([{ name: 'hero.png', bytes: Buffer.from('old') },
+      { name: 'thumb.png', bytes: Buffer.from('small') }])
+    const snapshot = { kind: 'snapshot', documentId: 'media1', referenceId: 'snapshot1' }
+    const retained = plan.evidence[1]
+    const candidate = createMigrationPlan({ sourceInventoryHash: inventoryHash,
+      references: [{ ...snapshot, variants: ['original'] }],
+      evidence: [{ ...plan.evidence[0], ...snapshot, variant: 'original' }],
+      retainedFiles: [{ revision: retained.revision, filename: retained.filename, bytes: retained.bytes,
+        sha256: retained.sha256, evidenceHash: retained.evidenceHash }],
+    })
+    expect(candidate.references).toEqual([{ ...snapshot, variants: ['original'] }])
+    await expect(observe(candidate)).resolves.toMatchObject({ revisionCount: 1, fileCount: 2, totalBytes: 8, canApply: false })
+  })
+
   it('compares original and derivative bytes without writing or granting permission', async () => {
     const { plan, directory } = await fixture([
       { name: 'hero.png', bytes: Buffer.from('old') },

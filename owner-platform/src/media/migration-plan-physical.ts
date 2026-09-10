@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readMigrationPlan, type MigrationPlan } from './migration-plan'
+import { migrationRevisionFiles, readMigrationPlan, type MigrationPlan, type MigrationRevisionFile } from './migration-plan'
 import { readMediaRevision } from './revision-store'
 
 export type MigrationFileObservation = {
@@ -35,8 +35,8 @@ export async function verifyMigrationPlanFiles(serialized: string, root: string)
   catch { throw new MigrationFileObservationError('candidate-invalid') }
   if (plan.status === 'blocked') throw new MigrationFileObservationError('candidate-blocked')
 
-  const revisions = new Map<string, Map<string, MigrationPlan['evidence'][number]>>()
-  for (const entry of plan.evidence) {
+  const revisions = new Map<string, Map<string, MigrationRevisionFile>>()
+  for (const entry of migrationRevisionFiles(plan)) {
     const files = revisions.get(entry.revision) ?? new Map()
     // readMigrationPlan already rejects contradictory aliases in a revision.
     files.set(entry.filename, entry)
