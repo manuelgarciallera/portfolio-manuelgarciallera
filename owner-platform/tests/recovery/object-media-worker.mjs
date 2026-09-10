@@ -31,6 +31,16 @@ const server = createServer(async (req, res) => {
   } catch { res.writeHead(500); res.end() }
 })
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
+const logicalMedia = async (fixture, owner, id) => {
+  // JSON IPC drops undefined keys; use explicit nulls for optional version fields.
+  const pick = (doc) => ({ id: doc.id ?? null, revision: doc.storageRevision ?? null, alt: doc.alt ?? null,
+    status: doc._status ?? null, width: doc.width ?? null, height: doc.height ?? null })
+  const current = await fixture.payload.findByID({ collection: 'media', id, user: owner, overrideAccess: false, depth: 0 })
+  const versions = await fixture.payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
+    where: { parent: { equals: id } }, limit: 100, depth: 0 })
+  assert.equal(versions.docs.length, versions.totalDocs, 'Complete synthetic history')
+  return { current: pick(current), versions: versions.docs.map((doc) => ({ id: doc.id, parent: doc.parent, version: pick(doc.version) })).sort((a, b) => Number(a.id) - Number(b.id)) }
+}
 const image = (color) => sharp({ create: { width: 1200, height: 800, channels: 3, background: color } }).png().toBuffer()
 const upload = async (fixture, color, id) => {
   const body = new FormData()
@@ -55,14 +65,14 @@ const verifyFiles = async (fixture, id, revision, publicStatus) => {
 process.once('message', async (input) => {
   let fixture, client
   try {
-    assert(['seed', 'restore'].includes(input.mode))
+    assert(['seed', 'restore', 'verify'].includes(input.mode))
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
     client = new S3Client({ endpoint: `http://127.0.0.1:${server.address().port}`, region: 'auto', forcePathStyle: true, maxAttempts: 1,
       credentials: { accessKeyId: 'synthetic', secretAccessKey: 'synthetic' },
       requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED' })
     const store = createObjectRevisionStore({ client, bucket: 'test-bucket', prefix: 'recovery-media' })
     assert.equal(objects.size, 0, 'Each child starts with an empty provider')
-    if (input.mode === 'restore') {
+    if (input.mode !== 'seed') {
       for (const revision of input.expected.revisions) {
         assert(/^[0-9a-f-]{36}$/.test(revision.id), 'Synthetic revision must be a safe directory name')
         const directory = path.join(input.mediaDirectory, revision.id)
@@ -73,11 +83,12 @@ process.once('message', async (input) => {
         await store.restore(revision.id, manifest, files)
       }
     }
-    await mkdir(input.databaseDirectory, { recursive: true })
+    if (!input.postgres) await mkdir(input.databaseDirectory, { recursive: true })
     fixture = await startMediaHTTPFixture({ root: input.mediaDirectory,
       revisionRoot: path.join(input.mediaDirectory, 'unused-revisions'), staticDir: path.join(input.mediaDirectory, 'unused-native'),
       credentials: input.credentials, secret: input.payloadSecret, seed: input.mode === 'seed',
-      database: { engine: 'sqlite', filename: path.join(input.databaseDirectory, 'owner.db') },
+      database: input.postgres ? { engine: 'postgres', pool: input.postgres }
+        : { engine: 'sqlite', filename: path.join(input.databaseDirectory, 'owner.db') },
     }, store)
     const owner = (await fixture.payload.auth({ headers: new Headers({ Cookie: fixture.cookie }) })).user
     assert.equal(owner?.role, 'owner', 'Restored owner can log in through real HTTP')
@@ -101,11 +112,15 @@ process.once('message', async (input) => {
       }
       await verifyFiles(fixture, first.id, revisions[0], 404)
       await verifyFiles(fixture, first.id, revisions[1], 200)
-      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, pid: process.pid }
+      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
     } else {
       const expected = input.expected
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
+      assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')
+      if (input.mode === 'verify') {
+        result = { sourceLogicalStateUnchanged: true }
+      } else {
       const restored = await fixture.request(`/api/media/versions/${expected.versionId}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
       })
@@ -121,6 +136,7 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 404)
       result = { pid: process.pid, recoveredRevisions: 2, recoveredFiles: 8, login: true, history: true, independentEdit: true }
+      }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')
     await fixture.close(); fixture = undefined
@@ -135,6 +151,11 @@ process.once('message', async (input) => {
     if (server.listening) await new Promise((resolve) => server.close(resolve))
     await new Promise((resolve) => process.send({ ok: false, error: error.message }, resolve))
     process.exitCode = 1
-  } finally { process.disconnect?.() }
+  } finally {
+    process.disconnect?.()
+    // The parent waits for process close and separately verifies zero PG sessions.
+    // Payload destroy alone does not terminate its PostgreSQL pool.
+    if (input.postgres) process.exit(process.exitCode ?? 0)
+  }
 })
 process.send?.({ ready: true })

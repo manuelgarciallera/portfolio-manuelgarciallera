@@ -12,6 +12,8 @@ import { assertVersionedDamageRejected, restoreVersionedBackup, verifyVersionedB
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const cache = path.join(ownerRoot, 'node_modules', '.cache')
 const versionedMedia = process.argv.includes('--versioned-media')
+const objectMedia = process.argv.includes('--object-media')
+if (versionedMedia && objectMedia) throw new Error('Choose one media recovery mode.')
 // Resolve and execute every required tool before creating a cluster or any test data.
 const { tools, versions } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 await runCommand(process.execPath, [path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'), 'run', '--config', 'vitest.recovery.config.ts'], { cwd: ownerRoot, timeout: 60_000 }).then(({ stdout }) => console.log(stdout))
@@ -32,7 +34,7 @@ try {
   }
 
   const workerPath = path.join(root, 'runtime', 'payload-worker.mjs')
-  await build({ absWorkingDir: ownerRoot, bundle: true, entryPoints: [path.join(ownerRoot, 'tests', 'recovery', versionedMedia ? 'versioned-media-worker.mjs' : 'payload-worker.mjs')], format: 'esm', outfile: workerPath, packages: 'external', platform: 'node', target: 'node20' })
+  await build({ absWorkingDir: ownerRoot, bundle: true, entryPoints: [path.join(ownerRoot, 'tests', 'recovery', objectMedia ? 'object-media-worker.mjs' : versionedMedia ? 'versioned-media-worker.mjs' : 'payload-worker.mjs')], format: 'esm', outfile: workerPath, packages: 'external', platform: 'node', target: 'node20' })
   const sourceDirectory = path.join(root, 'source')
   const backupDirectory = path.join(root, 'backup')
   const restoreDirectory = path.join(root, 'restored')
@@ -58,6 +60,22 @@ try {
       assertDatabaseAbsent: async () => assert.equal((await query('owner_source', "SELECT count(*) FROM pg_database WHERE datname='owner_restored'")).stdout.trim(), '0'),
     })
   }
+  if (objectMedia) {
+    damageCases = 0
+    for (const targetFile of ['0.bin', '1.bin', 'manifest.json']) {
+      for (const damage of ['corrupt', 'missing']) {
+        const invalid = path.join(root, `object-invalid-${damageCases++}`)
+        const target = `${invalid}-restore`
+        await cp(backupDirectory, invalid, { recursive: true, force: false, errorOnExist: true })
+        const damaged = path.join(invalid, 'data', 'media', seeded.revisions[0].id, targetFile)
+        if (damage === 'missing') await rm(damaged)
+        else await writeFile(damaged, 'synthetic corruption')
+        await assert.rejects(restoreVerifiedBackup({ backupDirectory: invalid, restoreDirectory: target }), /integrity/)
+        await assert.rejects(stat(target), { code: 'ENOENT' })
+        assert.equal((await query('owner_source', "SELECT count(*) FROM pg_database WHERE datname='owner_restored'")).stdout.trim(), '0')
+      }
+    }
+  }
 
   // Exercise the actual dump artifact's corrupt/missing refusal before any restore output.
   for (const damage of ['corrupt', 'missing']) {
@@ -80,6 +98,7 @@ try {
   console.log('[postgres-recovery] native pg_restore into fresh database')
   await native('pg_restore', 'owner_restored', path.join(restoreDirectory, 'database', 'owner.dump'))
   const restored = await runWorker(workerPath, input('restore', 'owner_restored', path.join(restoreDirectory, 'media'), seeded), ownerRoot)
+  if (objectMedia) assert.notEqual(restored.pid, seeded.pid, 'Recovery uses a different process')
   await assertNoPayloadSessions('owner_restored')
   // Logical comparison: custom-format archives from independent dumps are not deterministic.
   await runWorker(workerPath, input('verify', 'owner_source', path.join(sourceDirectory, 'media'), seeded), ownerRoot)
@@ -93,6 +112,13 @@ try {
   if (versionedMedia) Object.assign(result, { mode: 'versioned-media', damageCasesRejectedBeforeAllocation: damageCases,
     revisionsRecovered: restored.revisionsRecovered, authenticatedHistoricalFiles: restored.authenticatedHistoricalFiles,
     scope: 'media and real frozen previews with minimal persisted page/brand inputs', backupReceiptsUnchanged: true })
+  if (objectMedia) {
+    delete result.pageVersionsRestored
+    Object.assign(result, { mode: 'object-media', mediaFilesVerified: restored.recoveredFiles,
+      revisionsRecovered: restored.recoveredRevisions, damageCasesRejectedBeforeAllocation: damageCases + 2,
+      login: restored.login, history: restored.history, independentEdit: restored.independentEdit,
+      scope: 'Users/Media fixture; real SDK with fresh synthetic S3 provider per child', backupReceiptsUnchanged: true })
+  }
 } catch (error) {
   failure = error
 } finally {
