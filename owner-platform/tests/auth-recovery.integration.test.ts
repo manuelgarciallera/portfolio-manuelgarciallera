@@ -5,6 +5,7 @@ import type { SendEmailOptions } from 'payload'
 
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
+import { resolveOwnerServerURL } from '../src/config/server-url'
 
 let fixture: MediaHTTPFixture
 const email = 'recovery-owner@example.invalid'
@@ -22,7 +23,7 @@ beforeAll(async () => {
   })
   // Replace only delivery: real REST, tokens, database, Users and password hashing.
   fixture.payload.email.sendEmail = async message => { inbox.push(message) }
-  fixture.payload.config.serverURL = fixture.origin
+  fixture.payload.config.serverURL = resolveOwnerServerURL({ value: fixture.origin, nodeEnv: 'test' })!
 }, 60_000)
 
 it('rejects superseded and expired recovery links without changing the password', async () => {

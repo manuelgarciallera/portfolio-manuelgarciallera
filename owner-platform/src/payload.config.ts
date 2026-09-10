@@ -30,6 +30,7 @@ import { FigmaImportPlans } from './collections/FigmaImportPlans'
 import { FigmaImportReviews } from './collections/FigmaImportReviews'
 import { FigmaImportExecutions } from './collections/FigmaImportExecutions'
 import { resolveRuntimeConfig } from './config/runtime'
+import { resolveOwnerServerURL } from './config/server-url'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
 import { editorialLabels } from './config/editorial-labels'
@@ -60,6 +61,7 @@ const groupCollections = (group: string, collections: CollectionConfig[]): Colle
   collections.map((collection) => ({ ...collection, labels: editorialLabels(collection.slug) ?? collection.labels, admin: { ...collection.admin, group } }))
 
 export default buildConfig({
+  serverURL: resolveOwnerServerURL({ value: process.env.OWNER_SERVER_URL, nodeEnv: process.env.NODE_ENV, productionBuild: runtime.productionBuild }),
   // The owner interface is Spanish, like our custom controls. This is UI i18n,
   // not content localization: it adds no locale fields or schema migration.
   i18n: { fallbackLanguage: 'es', supportedLanguages: { es } },
