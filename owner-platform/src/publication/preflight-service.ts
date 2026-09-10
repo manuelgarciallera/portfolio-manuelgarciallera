@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { APIError } from 'payload'
+import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -65,15 +65,24 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
     exported = createPublicationExport({ artifact, bundle, exportedAt: checkedAt })
     report = createPublicationPreflight(exported, checkedAt)
   } catch { throw new APIError('No se pudo crear un preflight íntegro.', 409) }
-  const created = await payload.create({
-    collection: 'publication-preflights',
-    data: { artifact: storedArtifactId, artifactHash, checkedAt, createdBy: req.user.id, exportHash: exported.hash, issueCount: report.issueCount, pageCount: report.pageCount, preflightHash: report.hash, report, schemaVersion: report.schemaVersion, status: report.status },
-    overrideAccess: true,
-    req,
-  })
-  await recordAuditEvent({
-    input: { action: 'publication.preflight.created', metadata: { artifactHash, blockerCount: report.issues.filter(({ severity }) => severity === 'blocker').length, exportHash: exported.hash, issueCount: report.issueCount, preflightHash: report.hash, status: report.status }, outcome: 'success', subject: { collection: 'publication-preflights', id: relationId(created, 'El preflight') } },
-    payload: payload as never, req, user: req.user,
-  })
-  return created
+  // Own the transaction: never commit a caller's unrelated writes, and fail
+  // closed if the adapter cannot make the report and audit atomic.
+  if (!await initTransaction(req as never)) throw new APIError('No se pudo abrir una transacción exclusiva de preflight.', 503)
+  try {
+    const created = await payload.create({
+      collection: 'publication-preflights',
+      data: { artifact: storedArtifactId, artifactHash, checkedAt, createdBy: req.user.id, exportHash: exported.hash, issueCount: report.issueCount, pageCount: report.pageCount, preflightHash: report.hash, report, schemaVersion: report.schemaVersion, status: report.status },
+      overrideAccess: true,
+      req,
+    })
+    await recordAuditEvent({
+      input: { action: 'publication.preflight.created', metadata: { artifactHash, blockerCount: report.issues.filter(({ severity }) => severity === 'blocker').length, exportHash: exported.hash, issueCount: report.issueCount, preflightHash: report.hash, status: report.status }, outcome: 'success', subject: { collection: 'publication-preflights', id: relationId(created, 'El preflight') } },
+      payload: payload as never, req, user: req.user,
+    })
+    await commitTransaction(req as never)
+    return created
+  } catch (error) {
+    try { await killTransaction(req as never) } catch { /* Preserve the original operation failure. */ }
+    throw error
+  }
 }

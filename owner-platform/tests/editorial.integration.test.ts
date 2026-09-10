@@ -39,6 +39,7 @@ let rejectRestoreAudit = false
 let corruptRestoredPin: number | null | undefined
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
+let rejectPreflightAudit = false
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const postgresCache = path.join(ownerRoot, 'node_modules', '.cache')
 let mediaDirectory: string
@@ -59,6 +60,7 @@ beforeAll(async () => {
           if (rejectRestoreAudit && data.action === 'restore.executed') throw new Error('QA restore audit unavailable')
           if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
           if (rejectedAssistanceAudit && data.action === rejectedAssistanceAudit) throw new Error('QA assistance audit unavailable')
+          if (rejectPreflightAudit && data.action === 'publication.preflight.created') throw new Error('QA preflight audit unavailable')
           return data
         }, ...(collection.hooks.beforeChange ?? [])] },
       } : collection.slug === 'pages' ? {
@@ -119,6 +121,25 @@ const createReleaseFixture = async () => {
   } }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
   return { page, req, release }
 }
+
+it('rolls back a preflight when its audit fails and permits a clean retry', async () => {
+  const { req, release } = await createReleaseFixture()
+  const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'Atomic QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
+  const review = await createOwnerPublicationReview({ payload: payload as never, req, bundleId: String(bundle.id), decision: 'approved', confirmation: 'APROBAR PAQUETE' })
+  const artifact = await createOwnerPublicationArtifact({ payload: payload as never, req, reviewId: String(review.id), confirmation: 'GENERAR ARTEFACTO' })
+  const reports = () => payload.find({ collection: 'publication-preflights', user: owner, overrideAccess: false, where: { artifact: { equals: artifact.id } } })
+  rejectPreflightAudit = true
+  try {
+    await expect(createOwnerPublicationPreflight({ payload: payload as never, req, artifactId: String(artifact.id) })).rejects.toThrow('QA preflight audit unavailable')
+  } finally { rejectPreflightAudit = false }
+  expect((await reports()).totalDocs).toBe(0)
+  const created = await createOwnerPublicationPreflight({ payload: payload as never, req, artifactId: String(artifact.id) })
+  expect((await reports()).totalDocs).toBe(1)
+  const audits = await payload.find({ collection: 'audit-events', user: owner, overrideAccess: false, where: { and: [
+    { action: { equals: 'publication.preflight.created' } }, { subjectId: { equals: String(created.id) } },
+  ] } })
+  expect(audits.totalDocs).toBe(1)
+}, 30_000)
 
 it('rejects malformed page slugs without changing the saved draft or its history', async () => {
   const slug = `slug-qa-${randomUUID()}`

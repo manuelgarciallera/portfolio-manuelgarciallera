@@ -1,7 +1,14 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHash } from 'node:crypto'
 
 vi.mock('server-only', () => ({}))
+vi.mock('payload', async (importOriginal) => ({
+  ...await importOriginal<typeof import('payload')>(),
+  initTransaction: vi.fn(async () => true),
+  commitTransaction: vi.fn(async () => {}),
+  killTransaction: vi.fn(async () => {}),
+}))
+import { commitTransaction, initTransaction, killTransaction } from 'payload'
 
 import { createDraftCapsule } from '../recovery/capsule'
 import { createPublicationArtifact } from './artifact'
@@ -25,10 +32,33 @@ const setup = () => {
 }
 
 describe('owner publication preflight service', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('fails closed without writing or closing a transaction it does not own', async () => {
+    const { create, payload } = setup()
+    vi.mocked(initTransaction).mockResolvedValueOnce(false)
+    await expect(createOwnerPublicationPreflight({ artifactId: 100, payload, req: { user: owner } })).rejects.toThrow(/transacción exclusiva/)
+    expect(create).not.toHaveBeenCalled()
+    expect(commitTransaction).not.toHaveBeenCalled()
+    expect(killTransaction).not.toHaveBeenCalled()
+  })
+
+  it('rolls back an audit failure without claiming success', async () => {
+    const { create, payload } = setup()
+    create.mockImplementation(async ({ collection, data }) => {
+      if (collection === 'audit-events') throw new Error('Audit unavailable')
+      return { id: 110, ...data }
+    })
+    await expect(createOwnerPublicationPreflight({ artifactId: 100, payload, req: { user: owner } })).rejects.toThrow('Audit unavailable')
+    expect(killTransaction).toHaveBeenCalledTimes(1)
+    expect(commitTransaction).not.toHaveBeenCalled()
+  })
   it('revalidates the approved artifact, persists one immutable report, and audits it', async () => {
     const { create, find, findByID, payload } = setup()
     const result = await createOwnerPublicationPreflight({ artifactId: 100, checkedAt: '2026-09-05T08:10:00.000Z', payload, req: { user: owner } })
     expect(result).toMatchObject({ id: 110, status: 'ready', issueCount: 0 })
+    expect(commitTransaction).toHaveBeenCalledTimes(1)
+    expect(killTransaction).not.toHaveBeenCalled()
     expect(findByID).toHaveBeenCalledTimes(2)
     expect(find).toHaveBeenCalledWith(expect.objectContaining({ collection: 'publication-preflights', where: { artifact: { equals: 100 } } }))
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'publication-preflights', data: expect.objectContaining({ artifact: 100, artifactHash: artifact.hash, createdBy: 1, status: 'ready' }), overrideAccess: true }))
