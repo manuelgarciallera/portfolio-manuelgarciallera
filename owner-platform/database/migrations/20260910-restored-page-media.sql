@@ -9,11 +9,11 @@ SET LOCAL statement_timeout = '30s';
 ALTER TABLE "pages" ADD COLUMN "restored_media_snapshot_id" integer;
 ALTER TABLE "_pages_v" ADD COLUMN "version_restored_media_snapshot_id" integer;
 
-ALTER TABLE "pages" ADD CONSTRAINT "pages_restored_media_snapshot_fk"
+ALTER TABLE "pages" ADD CONSTRAINT "pages_restored_media_snapshot_id_preview_snapshots_id_fk"
   FOREIGN KEY ("restored_media_snapshot_id") REFERENCES "preview_snapshots" ("id") ON DELETE SET NULL;
-ALTER TABLE "_pages_v" ADD CONSTRAINT "pages_v_restored_media_snapshot_fk"
+ALTER TABLE "_pages_v" ADD CONSTRAINT "_pages_v_version_restored_media_snapshot_id_preview_snapshots_id_fk"
   FOREIGN KEY ("version_restored_media_snapshot_id") REFERENCES "preview_snapshots" ("id") ON DELETE SET NULL;
 
 CREATE INDEX "pages_restored_media_snapshot_idx" ON "pages" ("restored_media_snapshot_id");
-CREATE INDEX "_pages_v_version_restored_media_snapshot_idx" ON "_pages_v" ("version_restored_media_snapshot_id");
+CREATE INDEX "_pages_v_version_version_restored_media_snapshot_idx" ON "_pages_v" ("version_restored_media_snapshot_id");
 COMMIT;
