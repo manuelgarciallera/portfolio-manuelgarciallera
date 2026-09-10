@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterAll, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
 import { createLocalReq } from 'payload'
@@ -12,6 +13,7 @@ import { prepareOwnerRestorePlan } from '../src/restore/prepare'
 import { confirmOwnerRestorePlan } from '../src/restore/service'
 import { executeOwnerRestorePlan } from '../src/restore/execute'
 import { loadPageVisualPreview } from '../src/preview/visual-service'
+import { editorialDatabaseConfig } from './recovery/postgres-runtime.mjs'
 
 let fixture: MediaHTTPFixture
 afterAll(async () => { await fixture?.close() })
@@ -19,10 +21,15 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   const directory = process.env.OWNER_INTEGRATION_DIRECTORY
   if (!directory || !path.isAbsolute(directory)) throw new Error('Explicit isolated QA directory required')
   const root = path.join(directory, `full-config-${randomUUID()}`)
+  const selected = await editorialDatabaseConfig(process.env, {
+    cache: fileURLToPath(new URL('../node_modules/.cache', import.meta.url)),
+  })
   fixture = await startMediaHTTPFixture({ root, revisionRoot: path.join(root, 'revisions'), staticDir: path.join(root, 'scratch'),
     credentials: { email: 'full-config@example.invalid', password: randomUUID() + randomUUID() },
     secret: randomUUID() + randomUUID(), seed: true,
-    database: { engine: 'sqlite', filename: path.join(root, 'full.db') }, fullOwnerConfig: true })
+    database: selected.engine === 'postgres' ? { engine: 'postgres', pool: selected.pool }
+      : { engine: 'sqlite', filename: path.join(root, 'full.db') }, fullOwnerConfig: true })
+  expect(fixture.payload.db.name).toBe(process.env.OWNER_INTEGRATION_ENGINE === 'postgres' ? 'postgres' : 'sqlite')
   const body = new FormData()
   const bytes = await sharp({ create: { width: 600, height: 400, channels: 3, background: '#2255aa' } }).png().toBuffer()
   body.set('_payload', JSON.stringify({ alt: 'Synthetic full CMS image', _status: 'published' }))

@@ -211,7 +211,8 @@ export const startMediaHTTPFixture = async (
         ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : collection), ...(settings?.collections ?? [])]
         : [Users, mediaCollection, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
-        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true, schemaName: transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture' })
+        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true,
+          schemaName: settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture' })
         : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
       secret: settings?.secret ?? randomUUID() + randomUUID(),

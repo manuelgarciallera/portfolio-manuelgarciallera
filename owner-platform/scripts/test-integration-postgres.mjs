@@ -5,6 +5,10 @@ import { createPostgresCluster, preflightTools, runCommand, safeEnvironment } fr
 
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const cache = path.join(ownerRoot, 'node_modules', '.cache')
+const testFiles = process.argv.slice(2)
+if (testFiles.some(file => !/^tests\/[A-Za-z0-9_/-]+\.integration\.test\.ts$/.test(file) || file.includes('..'))) {
+  throw new Error('Pass explicit integration test paths below tests/, not runner flags.')
+}
 // Tool validation runs before a cluster, password or database is created.
 const { tools, versions } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 const postgres = await createPostgresCluster({ cache, kind: 'editorial', tools })
@@ -27,6 +31,7 @@ try {
     testRun = await runCommand(process.execPath, [
       path.join(ownerRoot, 'node_modules', 'vitest', 'vitest.mjs'),
       'run', '--config', 'vitest.integration.config.ts',
+      ...testFiles,
     ], { cwd: ownerRoot, env, secrets: [pool.password], timeout: 180_000 })
   } catch (error) {
     childClosed = error?.childClosed === true
@@ -39,7 +44,7 @@ try {
   result = {
     integration: 'passed',
     engine: 'postgres',
-    suite: 'tests/editorial.integration.test.ts',
+    suites: testFiles.length ? testFiles : ['tests/**/*.integration.test.ts'],
     versions,
     ambientCredentialsIgnored: true,
     testProcessClosed: true,
