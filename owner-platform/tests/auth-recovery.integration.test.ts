@@ -168,3 +168,46 @@ it('unlocks a locked account only after a valid recovery token', async () => {
   expect(recovered.lockUntil == null).toBe(true)
   expect((await post('login', { email: targetEmail, password: nextPassword })).status).toBe(200)
 }, 60_000)
+
+it('rolls back password and session changes when recovery fails after persistence', async () => {
+  const targetEmail = 'late-failure@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  const login = await post('login', { email: targetEmail, password: targetPassword })
+  expect(login.status).toBe(200)
+  const existingJWT = (await login.json()).token as string
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const stored = () => fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  const before = await stored()
+  const nextPassword = randomUUID() + randomUUID()
+  // Native reset has persisted the new hash and session before beforeLogin.
+  // Inject only this downstream failure; keep real DB transactions and our hooks.
+  const hooks = fixture.payload.collections.users.config.hooks
+  const original = hooks.beforeLogin
+  let reached = false
+  let changedHash = false
+  let changedSessions = false
+  hooks.beforeLogin = [...(original ?? []), async ({ req }) => {
+    reached = true
+    const pending = await req.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true, req })
+    changedHash = pending.hash !== before.hash
+    changedSessions = JSON.stringify(pending.sessions) !== JSON.stringify(before.sessions)
+    throw new Error('Synthetic post-write recovery failure')
+  }]
+  try {
+    expect((await post('reset-password', { token: before.resetPasswordToken, password: nextPassword })).status).toBe(500)
+    expect(reached).toBe(true)
+    expect(changedHash).toBe(true)
+    expect(changedSessions).toBe(true)
+  } finally { hooks.beforeLogin = original }
+  const after = await stored()
+  for (const key of ['hash', 'salt', 'resetPasswordToken', 'resetPasswordExpiration', 'sessions', 'loginAttempts', 'lockUntil'] as const) {
+    expect(after[key]).toEqual(before[key])
+  }
+  const me = await fixture.request('/api/users/me', { headers: { Authorization: `JWT ${existingJWT}` } }, false)
+  expect((await me.json()).user).toMatchObject({ email: targetEmail })
+  expect((await post('login', { email: targetEmail, password: targetPassword })).status).toBe(200)
+  expect((await post('reset-password', { token: before.resetPasswordToken, password: nextPassword })).status).toBe(200)
+  expect((await post('login', { email: targetEmail, password: nextPassword })).status).toBe(200)
+}, 60_000)
