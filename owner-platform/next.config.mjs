@@ -8,6 +8,10 @@ const root = path.dirname(fileURLToPath(import.meta.url))
 const nextConfig = {
   poweredByHeader: false,
   turbopack: { root },
+  headers: async () => [{
+    source: '/admin/:path*',
+    headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+  }],
 }
 
 export default withPayload(nextConfig)
