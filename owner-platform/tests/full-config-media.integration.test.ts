@@ -11,6 +11,7 @@ import { createOwnerRelease } from '../src/releases/service'
 import { prepareOwnerRestorePlan } from '../src/restore/prepare'
 import { confirmOwnerRestorePlan } from '../src/restore/service'
 import { executeOwnerRestorePlan } from '../src/restore/execute'
+import { loadPageVisualPreview } from '../src/preview/visual-service'
 
 let fixture: MediaHTTPFixture
 afterAll(async () => { await fixture?.close() })
@@ -81,12 +82,25 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   expect(stored.manifest).toEqual(first.manifest)
   expect(Buffer.from(await (await fixture.request(media.url)).arrayBuffer())).toEqual(bytes)
   expect(Buffer.from(await (await fixture.request(replacement.url)).arrayBuffer())).toEqual(replacementBytes)
+  await fixture.payload.db.deleteVersions({ collection: 'media', where: { and: [
+    { parent: { equals: media.id } }, { 'version.storageRevision': { equals: media.storageRevision } },
+  ] } })
+  expect((await fixture.request(media.url)).status).toBe(404)
   const plan = await prepareOwnerRestorePlan({ payload: fixture.payload as never, req, releaseId: String(release.id) })
   expect(plan.status).toBe('ready')
   const baseline = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
   await confirmOwnerRestorePlan({ payload: fixture.payload as never, req, planId: String(plan.id), currentSnapshot: baseline.id, confirmation: 'CONFIRMAR RESTAURACIÓN' })
-  const before = await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, req, overrideAccess: false })
-  await expect(executeOwnerRestorePlan({ payload: fixture.payload as never, req, planId: String(plan.id), confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toThrow(/imágenes/i)
-  expect(await fixture.payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0, req, overrideAccess: false })).toEqual(before)
-  expect((await fixture.payload.findByID({ collection: 'restore-plans', id: String(plan.id), req, overrideAccess: false })).status).toBe('confirmed')
+  await executeOwnerRestorePlan({ payload: fixture.payload as never, req, planId: String(plan.id), confirmation: 'EJECUTAR RESTAURACIÓN' })
+  const restored = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
+  expect(restored.manifest).toHaveProperty('mediaReferences.0.storageRevision', media.storageRevision)
+  const visual = await loadPageVisualPreview({ payload: fixture.payload, req, pageId: String(page.id) })
+  expect(visual.assets[String(media.id)].url).toBe(`/api/media/snapshot/${first.id}/${media.id}`)
+  expect(Buffer.from(await (await fixture.request(visual.assets[String(media.id)].url)).arrayBuffer())).toEqual(bytes)
+  expect(await fixture.payload.findByID({ collection: 'media', id: media.id, req, overrideAccess: false })).toHaveProperty('storageRevision', replacement.storageRevision)
+  const forged = await fixture.request(`/api/pages/${page.id}?draft=true`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: 'Edited after restoration', restoredMediaSnapshot: second.id }) })
+  expect(forged.status).toBe(200)
+  const afterEdit = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
+  expect(afterEdit.manifest).toHaveProperty('mediaReferences.0.storageRevision', media.storageRevision)
+  expect(afterEdit.manifest).toHaveProperty('pageTitle', 'Edited after restoration')
 }, 60_000)

@@ -5,6 +5,7 @@ import { resolvePageBrand } from '../brand/inheritance'
 import { createPreviewManifest } from './manifest'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { normalizeMediaPlacement } from '../media/placement'
+import { resolveRestoredPageMedia } from '../media/restored-page-media'
 
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new APIError('Datos editoriales no válidos.', 400)
@@ -159,9 +160,10 @@ export const createPagePreviewSnapshot = async ({ payload, req, pageId }: { payl
   const brand = await payload.findByID({ collection: 'brand-profiles', id: brandId as number, depth: 0, overrideAccess: false, req })
   const resolvedBrand = resolvePageBrand(brand, page.brandOverrides)
   const projected = projectLayout(page.layout)
+  const resolveMedia = await resolveRestoredPageMedia({ payload, req, page })
   const mediaPlacements = await captureMediaPlacements(payload, req, projected.blocks)
   const mediaReferences = await Promise.all(projected.mediaIds.map(async (id) => {
-    const media = record(await payload.findByID({ collection: 'media', id: id as number, depth: 0, overrideAccess: false, req }))
+    const media = resolveMedia(record(await payload.findByID({ collection: 'media', id: id as number, depth: 0, overrideAccess: false, req })))
     // Missing revisions in older manifests remain unverified. Never backfill an
     // existing capture from today's media row or infer storage from its URL.
     return defined({ id: String(media.id), alt: text(media.alt), filename: text(media.filename), mimeType: text(media.mimeType), width: typeof media.width === 'number' ? media.width : undefined, height: typeof media.height === 'number' ? media.height : undefined,

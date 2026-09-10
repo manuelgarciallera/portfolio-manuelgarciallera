@@ -1,5 +1,6 @@
 import { APIError, commitTransaction, initTransaction, killTransaction } from 'payload'
 import { isDeepStrictEqual } from 'node:util'
+import { withRestoredPageMedia } from '../media/restored-page-media'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -84,14 +85,14 @@ export const executeOwnerRestorePlan = async ({
     if (currentVersionId !== confirmationSnapshot.manifest.source.versionId) {
       throw new APIError('La página cambió después de confirmar el plan; crea uno nuevo.', 409)
     }
-    const updateResult = record(await payload.update({
+    const updateResult = record(await withRestoredPageMedia(req, relationId(plan.targetSnapshot, 'El snapshot visual objetivo'), () => payload.update!({
       collection: 'pages',
       data: target.capsule.state,
       draft: true,
       overrideAccess: false,
       req,
       where: { and: [{ id: { equals: pageId } }, { updatedAt: { equals: page.updatedAt } }] },
-    }), 'El resultado de restauración')
+    })), 'El resultado de restauración')
     if (!Array.isArray(updateResult.docs) || updateResult.docs.length !== 1) {
       throw new APIError('La página cambió durante la restauración; la transacción se ha cancelado.', 409)
     }

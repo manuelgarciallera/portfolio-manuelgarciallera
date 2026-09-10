@@ -5,6 +5,7 @@ import { normalizePageBrandOverrides, resolvePageBrand } from '../brand/inherita
 import { validateBrandProfile } from '../brand/validation'
 import { editorialAccess, editorialPreviewField, editorialVersions, slugField } from './shared'
 import { seoField } from './seo'
+import { bindRestoredPageMedia } from '../media/restored-page-media'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -154,12 +155,13 @@ export const Pages: CollectionConfig = {
     useAsTitle: 'title',
   },
   access: editorialAccess,
-  hooks: { beforeValidate: [validatePageBrandPublication] },
+  hooks: { beforeValidate: [validatePageBrandPublication], beforeChange: [bindRestoredPageMedia] },
   orderable: true,
   trash: true,
   versions: editorialVersions,
   fields: [
     editorialPreviewField,
+    { name: 'restoredMediaSnapshot', type: 'relationship', relationTo: 'preview-snapshots', admin: { hidden: true }, access: { create: () => false, update: () => false } },
     { name: 'title', type: 'text', required: true },
     slugField,
     {

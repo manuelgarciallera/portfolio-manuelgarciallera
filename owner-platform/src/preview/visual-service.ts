@@ -7,6 +7,7 @@ import { presentPreviewAsset, type PreviewAsset } from '../media/placement-previ
 import { projectLexical } from './service'
 import { createPreviewManifest } from './manifest'
 import { contentPreviewLayout, isPreviewCollection, type PreviewCollection } from './content-layout'
+import { resolveRestoredPageMedia } from '../media/restored-page-media'
 
 export type PreviewText = Parameters<typeof RichText>[0]['data']
 export type VisualImage = { assetId?: string; caption?: string; alt?: string; placement?: MediaPlacement }
@@ -35,7 +36,21 @@ export const loadContentVisualPreview = async ({ payload, req, collection, docum
     if (!reads.has(key)) reads.set(key, payload.findByID({ collection, id, draft: true, depth: 0, overrideAccess: false, req }).then(record))
     return reads.get(key)!
   }
-  return projectContentVisualPreview({ read, collection, documentId })
+  const page = await read(collection, documentId)
+  const resolveMedia = collection === 'pages' ? await resolveRestoredPageMedia({ payload, req, page }) : (media: Record<string, unknown>) => media
+  const pinnedMedia = new Set<string>()
+  return projectContentVisualPreview({ read: async (kind, id) => {
+    const value = await read(kind, id)
+    if (kind !== 'media') return value
+    const resolved = resolveMedia(value)
+    if (resolved !== value) pinnedMedia.add(id)
+    return resolved
+  }, presentAsset: (value, id) => {
+    const asset = presentPreviewAsset(value, id)
+    return pinnedMedia.has(id)
+      ? { ...asset, url: `/api/media/snapshot/${encodeURIComponent(String(page.restoredMediaSnapshot))}/${encodeURIComponent(id)}` }
+      : asset
+  }, collection, documentId })
 }
 
 /** Data-only projection shared by live drafts and strictly captured sources. */

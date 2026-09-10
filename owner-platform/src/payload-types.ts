@@ -535,6 +535,7 @@ export interface Article {
 export interface Page {
   id: number;
   _order?: string | null;
+  restoredMediaSnapshot?: (number | null) | PreviewSnapshot;
   title: string;
   slug: string;
   /**
@@ -649,6 +650,56 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "preview-snapshots".
+ */
+export interface PreviewSnapshot {
+  id: number;
+  schemaVersion: number;
+  sourceCollection: string;
+  sourceDocumentId: string;
+  sourceVersionId: string;
+  manifest:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  manifestHash: string;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  role: 'owner';
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand-profiles".
  */
 export interface BrandProfile {
@@ -698,56 +749,6 @@ export interface BrandProfile {
   createdAt: string;
   deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "preview-snapshots".
- */
-export interface PreviewSnapshot {
-  id: number;
-  schemaVersion: number;
-  sourceCollection: string;
-  sourceDocumentId: string;
-  sourceVersionId: string;
-  manifest:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  manifestHash: string;
-  createdBy: number | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  role: 'owner';
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1410,6 +1411,7 @@ export interface ArticlesSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   _order?: T;
+  restoredMediaSnapshot?: T;
   title?: T;
   slug?: T;
   brandProfile?: T;
