@@ -22,13 +22,13 @@ it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres').each(['legacy', '
   const root = path.join(process.env.OWNER_INTEGRATION_DIRECTORY!, database)
   await mkdir(root)
   const migrationDir = fileURLToPath(new URL(`../database/${mode === 'objects' ? 'object-storage' : 'baseline'}`, import.meta.url))
-  let config = createOwnerConfig()
   const provider = mode === 'objects' ? await startObjectProviderFixture() : undefined
   let payload: Payload | undefined
   let pool: Pool | undefined
-  try {
+  const openInstance = async () => {
+    let config = createOwnerConfig()
     if (provider) config = await configureMediaStorage(config, { ...provider.environment, OWNER_MEDIA_SCRATCH_DIR: root, OWNER_SERVER_URL: 'http://127.0.0.1:12346' })
-    payload = await getPayload({ key: database, config: await buildConfig({
+    return getPayload({ key: `${database}-${randomUUID()}`, config: await buildConfig({
       ...config,
       typescript: { ...config.typescript, autoGenerate: false },
       collections: config.collections?.map(collection => collection.slug !== 'media' ? collection : {
@@ -36,6 +36,9 @@ it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres').each(['legacy', '
       }),
       db: postgresAdapter({ pool: { ...selected.pool, database }, push: false, disableCreateDatabase: true, migrationDir }),
     }) })
+  }
+  try {
+    payload = await openInstance()
     pool = (payload.db as unknown as { pool: Pool }).pool
     let files: string[] = []
     try { files = await readdir(migrationDir) } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
@@ -73,6 +76,21 @@ it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres').each(['legacy', '
     expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0 })).toEqual(saved)
     expect(await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, depth: 0 })).toEqual(versions)
     expect(await payload.findByID({ collection: 'media', id: media.id, depth: 0 })).toEqual(savedMedia)
+    // Reopen with a fresh Payload instance, adapter and assembled configuration.
+    // This is not a process restart or a provider durability claim.
+    const previous = payload
+    await previous.destroy()
+    payload = undefined
+    payload = await openInstance()
+    expect(payload).not.toBe(previous)
+    expect(payload.db).not.toBe(previous.db)
+    pool = (payload.db as unknown as { pool: Pool }).pool
+    expect(await payload.find({ collection: 'payload-migrations', limit: 100 })).toEqual(applied)
+    expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0 })).toEqual(saved)
+    expect(await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, depth: 0 })).toEqual(versions)
+    expect(await payload.findByID({ collection: 'media', id: media.id, depth: 0 })).toEqual(savedMedia)
+    await payload.db.migrate({ migrations })
+    expect(await payload.find({ collection: 'payload-migrations', limit: 100 })).toEqual(applied)
     if (provider) {
       const revision = (media as unknown as { storageRevision: string }).storageRevision
       expect((await provider.storage.read(revision)).find(file => file.name === media.filename)?.bytes).toEqual(image)
