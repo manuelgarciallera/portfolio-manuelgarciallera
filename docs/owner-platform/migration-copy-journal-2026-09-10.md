@@ -33,9 +33,10 @@ It never authorizes retries, metadata backfill or cutover (`canApply:false`).
   JSON destination coercion; RED `1c1a47` confirms numeric ID accepted. Explicit
   string validation added for destination and both hashes. Concurrent-append
   characterization and cleanup nesting included.
-- Independent review found no blockers for this internal candidate. Direct sync
-  failure injection remains untested; no claim that every filesystem failure has
-  been exercised.
+- Independent review found no blockers for this internal candidate. Follow-up
+  [reconciliation work](migration-copy-reconciliation-2026-09-10.md) adds direct
+  sync-failure injection and verifies poisoning; not every filesystem failure or
+  power-loss scenario has been exercised.
 - Final unit suite `e11582`: 1153/1153 in 161 files, 65.95s. Types/lint `024b5b`
   exit 0; public boundary 21 entries (`4a09e6`), diff check clean. No new build,
   browser or PostgreSQL verification claimed for this internal file-copy change.

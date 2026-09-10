@@ -9,6 +9,7 @@ import { writeMediaRevision } from './revision-store'
 import { startObjectProviderFixture } from '../../tests/media/object-provider-fixture'
 import { copyMigrationRevisions } from './migration-revision-copy'
 import { createMigrationCopyJournal, readMigrationCopyJournal } from './migration-copy-journal'
+import { reconcileMigrationCopy } from './migration-copy-reconciliation'
 
 let root: string
 let identity: { dev: number; ino: number }
@@ -58,6 +59,60 @@ async function fixture(count = 1) {
   return { revision: revisions[0], revisions, bytes, sourceRoot, serializedPlan: JSON.stringify(plan), serializedInventory: JSON.stringify(inventory),
     expectedInventoryHash: inventory.hash, destination: provider!.storage, journal }
 }
+const reconciliation = (input: Awaited<ReturnType<typeof fixture>>) => reconcileMigrationCopy({ ...input,
+  journalRoot: root, journalId: input.journal.id, expectedDestinationId: 'test-destination' })
+
+it('reconciles verified bytes without changing journal or objects', async () => {
+  const input = await fixture()
+  await copyMigrationRevisions(input)
+  const journalBefore = await readFile(path.join(root, `${input.journal.id}.jsonl`))
+  const objectsBefore = [...provider!.objects].map(([key, bytes]) => [key, Buffer.from(bytes)])
+  expect(await reconciliation(input)).toMatchObject({ canApply: false,
+    revisions: [{ revision: input.revision, journalState: 'verified', observation: 'matched' }] })
+  expect(await readFile(path.join(root, `${input.journal.id}.jsonl`))).toEqual(journalBefore)
+  expect([...provider!.objects]).toEqual(objectsBefore)
+})
+it('does not translate an unreadable attempted destination into missing or retry permission', async () => {
+  const input = await fixture()
+  await input.journal.attempt(input.revision)
+  expect(await reconciliation(input)).toMatchObject({ canApply: false,
+    revisions: [{ revision: input.revision, journalState: 'uncertain', observation: 'unreadable' }] })
+  expect(provider!.objects.size).toBe(0)
+})
+it('checks pending revisions too, because journal state is not proof of destination absence', async () => {
+  const input = await fixture()
+  await copyMigrationRevisions(input)
+  const journal = await createMigrationCopyJournal(root, { ...input.journal, revisions: [...input.journal.revisions] })
+  journals.push(journal)
+  expect(await reconciliation({ ...input, journal })).toMatchObject({ canApply: false,
+    revisions: [{ revision: input.revision, journalState: 'pending', observation: 'matched' }] })
+})
+it('detects target bytes and manifest changed together against the independent migration candidate', async () => {
+  const input = await fixture()
+  await copyMigrationRevisions(input)
+  const prefix = `cms-media/${input.revision}/`
+  const changed = Buffer.from('different byte value')
+  const manifest = JSON.parse(provider!.objects.get(`${prefix}manifest.json`)!.toString())
+  manifest.files[0].size = changed.length
+  manifest.files[0].sha256 = sha(changed)
+  provider!.objects.set(`${prefix}files/0`, changed)
+  provider!.objects.set(`${prefix}manifest.json`, Buffer.from(JSON.stringify(manifest)))
+  expect(await reconciliation(input)).toMatchObject({ canApply: false,
+    revisions: [{ revision: input.revision, journalState: 'verified', observation: 'mismatch' }] })
+})
+it('refuses a different expected logical destination', async () => {
+  const input = await fixture()
+  await expect(reconcileMigrationCopy({ ...input, journalRoot: root, journalId: input.journal.id,
+    expectedDestinationId: 'another-destination' })).rejects.toThrow(/context/)
+})
+it('discards observations if journal changes during provider reads', async () => {
+  const input = await fixture()
+  const destination = { async read(revision: string) {
+    await input.journal.attempt(revision)
+    return provider!.storage.read(revision)
+  } }
+  await expect(reconciliation({ ...input, destination: { ...input.destination, ...destination } })).rejects.toThrow(/changed/)
+})
 
 it('copies exact bytes and immutable revision identity without mutating source or granting cutover', async () => {
   const input = await fixture()

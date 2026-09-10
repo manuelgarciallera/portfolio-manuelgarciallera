@@ -1,9 +1,9 @@
-import { lstat, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdtemp, open, readFile, rm, writeFile } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { afterEach, beforeEach, expect, it } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createMigrationCopyJournal, readMigrationCopyJournal } from './migration-copy-journal'
 
 let root: string
@@ -47,6 +47,22 @@ it('rejects simultaneous append and permits a later verification after the first
     await journal.verified(revision)
     expect(await readMigrationCopyJournal(root, journal.id)).toMatchObject({ verified: [revision], uncertain: [] })
   } finally { await journal.close() }
+})
+it('poisons the writer after sync failure, retaining the uncertain intent without further append', async () => {
+  const journal = await createMigrationCopyJournal(root, metadata)
+  const probe = await open(path.join(root, 'probe'), 'wx')
+  const prototype = Object.getPrototypeOf(probe)
+  await probe.close()
+  const sync = vi.spyOn(prototype, 'sync').mockRejectedValueOnce(new Error('Injected sync failure'))
+  try {
+    await expect(journal.attempt(revision)).rejects.toThrow()
+    sync.mockRestore()
+    const before = await readFile(path.join(root, `${journal.id}.jsonl`))
+    await expect(journal.verified(revision)).rejects.toThrow()
+    await expect(journal.attempt(revision)).rejects.toThrow()
+    expect(await readFile(path.join(root, `${journal.id}.jsonl`))).toEqual(before)
+    expect(await readMigrationCopyJournal(root, journal.id)).toMatchObject({ uncertain: [revision], verified: [] })
+  } finally { sync.mockRestore(); await journal.close() }
 })
 it('persists an attempt before completion and reconstructs uncertainty after reopening', async () => {
   const journal = await createMigrationCopyJournal(root, metadata)
