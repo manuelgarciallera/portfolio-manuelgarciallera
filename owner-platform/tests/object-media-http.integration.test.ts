@@ -120,3 +120,64 @@ it('does not create a media document when object writes fail', async () => {
     expect((await fixture.payload.count({ collection: 'media', overrideAccess: true })).totalDocs).toBe(before.totalDocs)
   } finally { failWrites = false }
 })
+
+it.each(['create', 'update'] as const)('rolls back %s after successful object writes while retaining private recoverable bytes', async (operation) => {
+  const original = operation === 'update' ? (await (await upload()).json()).doc : undefined
+  const docsBefore = await fixture.payload.count({ collection: 'media', overrideAccess: true })
+  const versionsBefore = await fixture.payload.findVersions({ collection: 'media', overrideAccess: true, pagination: false })
+  const objectsBefore = new Set(objects.keys())
+  const input = await sharp({ create: { width: 1200, height: 800, channels: 3, background: '#88cc22' } }).png().toBuffer()
+  const form = new FormData()
+  form.set('_payload', JSON.stringify({ alt: 'Must roll back after object write', _status: 'published' }))
+  form.set('file', new File([input], original?.filename ?? `failed-${randomUUID()}.png`, { type: 'image/png' }))
+  let failedDocument: { id: string | number; filename: string; storageRevision: string } | undefined
+  let completeBytes: { name: string; bytes: Buffer }[] = []
+  const hooks = fixture.payload.collections.media.config.hooks.afterChange
+  const failureHook: (typeof hooks)[number] = async ({ doc }) => {
+    failedDocument = { id: doc.id, filename: doc.filename, storageRevision: doc.storageRevision }
+    // The failure occurs after Payload has a persisted document in its transaction
+    // and after every binary and manifest has reached the provider.
+    completeBytes = await storage.read(doc.storageRevision)
+    throw new Error('Synthetic failure after complete object write')
+  }
+  hooks.push(failureHook)
+  try {
+    const response = await fixture.request(original ? `/api/media/${original.id}` : '/api/media', {
+      method: original ? 'PATCH' : 'POST', body: form,
+    })
+    expect(response.status).toBe(500)
+  } finally {
+    const index = hooks.indexOf(failureHook)
+    if (index < 0) throw new Error('Fixture failure hook disappeared')
+    hooks.splice(index, 1)
+  }
+  expect(failedDocument).toBeDefined()
+  const failed = failedDocument!
+  expect(completeBytes.length).toBeGreaterThan(1)
+  expect(completeBytes.find((file) => file.name === failed.filename)!.bytes).toEqual(input)
+  expect((await fixture.payload.count({ collection: 'media', overrideAccess: true })).totalDocs).toBe(docsBefore.totalDocs)
+  const versionsAfter = await fixture.payload.findVersions({ collection: 'media', overrideAccess: true, pagination: false })
+  expect(versionsAfter.docs.map((version) => version.id).sort()).toEqual(versionsBefore.docs.map((version) => version.id).sort())
+  if (original) {
+    const current = await fixture.payload.findByID({ collection: 'media', id: original.id, overrideAccess: true })
+    expect(current).toMatchObject({ alt: original.alt, storageRevision: original.storageRevision, filename: original.filename })
+    expect((await fixture.request(original.url, {}, false)).status).toBe(200)
+  } else {
+    expect((await fixture.request(`/api/media/${failed.id}`)).status).toBe(404)
+  }
+  expect([...objects.keys()].filter((key) => !objectsBefore.has(key)).sort()).toEqual([
+    ...completeBytes.map((_, index) => `cms-media/${failed.storageRevision}/files/${index}`),
+    `cms-media/${failed.storageRevision}/manifest.json`,
+  ].sort())
+  expect(await storage.read(failed.storageRevision)).toEqual(completeBytes)
+  for (const file of completeBytes) {
+    const url = `/api/media/revision/${failed.id}/${failed.storageRevision}/${encodeURIComponent(file.name)}`
+    expect((await fixture.request(url)).status).toBe(404)
+    expect((await fixture.request(url, {}, false)).status).toBe(404)
+  }
+  // A later successful upload gets its own revision, never silently adopts the orphan.
+  const retry = await upload()
+  expect(retry.status).toBe(201)
+  expect((await retry.json()).doc.storageRevision).not.toBe(failed.storageRevision)
+  expect(await storage.read(failed.storageRevision)).toEqual(completeBytes)
+}, 30_000)
