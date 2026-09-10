@@ -65,7 +65,20 @@ const verifyFiles = async (fixture, id, revision, publicStatus) => {
   }
 }
 
-const verifySnapshotOnly = async (fixture, store, mediaId, revision) => {
+const verifySnapshotOnly = async (fixture, store, mediaId, revision, snapshot) => {
+  const original = snapshot.manifest.mediaReferences.find(ref => ref.id === String(mediaId))
+  assert(original)
+  const capturedURL = `/api/media/snapshot/${snapshot.id}/${mediaId}`
+  const capturedResponse = await fixture.request(capturedURL)
+  assert.equal(capturedResponse.status, 200, 'Owner can read snapshot-only original through private HTTP')
+  assert.equal(capturedResponse.headers.get('cache-control'), 'private, no-store')
+  assert.equal(capturedResponse.headers.get('x-content-type-options'), 'nosniff')
+  assert.equal(capturedResponse.headers.get('content-security-policy'), "default-src 'none'; sandbox")
+  assert.equal(capturedResponse.headers.get('content-type'), 'image/png')
+  assert.equal(sha(Buffer.from(await capturedResponse.arrayBuffer())), revision.files.find(file => file.name === original.filename).sha256)
+  assert.equal((await fixture.request(capturedURL, {}, false)).status, 404)
+  assert.equal((await fixture.request(`/api/media/snapshot/${snapshot.id}/999999`)).status, 404)
+  assert.equal((await fixture.request(`/api/media/snapshot/999999/${mediaId}`)).status, 404)
   const files = await store.read(revision.id)
   assert.equal(files.length, revision.files.length)
   for (const expected of revision.files) {
@@ -150,7 +163,7 @@ process.once('message', async (input) => {
       revisions.sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id))
       await verifyFiles(fixture, first.id, revisions[0], 404)
       await verifyFiles(fixture, first.id, revisions[1], 200)
-      await verifySnapshotOnly(fixture, store, first.id, revisions[2])
+      await verifySnapshotOnly(fixture, store, first.id, revisions[2], snapshot)
       result = { mediaId: first.id, versionId: versions.docs.find(({ version }) => version.storageRevision === first.storageRevision).id,
         revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
     } else {
@@ -159,7 +172,7 @@ process.once('message', async (input) => {
       assert.deepEqual(await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) }), expected.references, 'Recovered reference inventory')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
-      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2])
+      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')
       if (input.mode === 'verify') {
         result = { sourceLogicalStateUnchanged: true }
@@ -179,7 +192,7 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 404)
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
-      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2])
+      await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true }
       }
     }

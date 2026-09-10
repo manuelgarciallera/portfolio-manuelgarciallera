@@ -5,6 +5,7 @@ import { APIError, type CollectionConfig, type PayloadRequest } from 'payload'
 
 import { isOwner } from '../access/owner'
 import { readMediaRevision, writeMediaRevision } from './revision-store'
+import { readSnapshotMedia } from '../preview/snapshot-media'
 
 const revisionID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 const object = (value: unknown): Record<string, unknown> =>
@@ -120,6 +121,20 @@ export const createTransportRevisionStorageCollection = async (
     ],
     upload: { ...upload, staticDir, disableLocalStorage: true, handlers: [() => missing()] },
     endpoints: [...(collection.endpoints || []), {
+      path: '/snapshot/:snapshotId/:mediaId', method: 'get',
+      handler: async (req) => {
+        try {
+          const { snapshotId, mediaId } = req.routeParams ?? {}
+          if (typeof snapshotId !== 'string' || typeof mediaId !== 'string') return missing()
+          const file = await readSnapshotMedia({ req, snapshotId, mediaId, store })
+          return new Response(new Uint8Array(file.bytes), { headers: {
+            'Content-Type': file.mimeType, 'Content-Length': String(file.bytes.length),
+            'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; sandbox",
+            'Cache-Control': 'private, no-store',
+          } })
+        } catch { return missing() }
+      },
+    }, {
       path: '/revision/:id/:revision/:filename', method: 'get',
       handler: async (req) => {
         try {
