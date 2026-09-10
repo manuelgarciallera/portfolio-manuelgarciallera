@@ -6,6 +6,7 @@ import type { SendEmailOptions } from 'payload'
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
 import { resolveOwnerServerURL } from '../src/config/server-url'
+import { createOwnerEmailAdapter } from '../src/config/email'
 
 let fixture: MediaHTTPFixture
 const email = 'recovery-owner@example.invalid'
@@ -21,8 +22,14 @@ beforeAll(async () => {
     credentials: { email, password }, secret: randomUUID() + randomUUID(), seed: true,
     database: { engine: 'sqlite', filename: path.join(root, 'auth.db') },
   })
-  // Replace only delivery: real REST, tokens, database, Users and password hashing.
-  fixture.payload.email.sendEmail = async message => { inbox.push(message) }
+  // Real owner/official adapter; intercept only external delivery, not local REST.
+  const nativeFetch = globalThis.fetch
+  vi.stubGlobal('fetch', async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+    if (String(input) !== 'https://api.resend.com/emails') return nativeFetch(input, init)
+    inbox.push(JSON.parse(String(init?.body)))
+    return Response.json({ id: randomUUID() })
+  })
+  fixture.payload.email = createOwnerEmailAdapter({ apiKey: 're_synthetic_test_only', fromAddress: 'cms@example.invalid' })({ payload: fixture.payload })
   fixture.payload.config.serverURL = resolveOwnerServerURL({ value: fixture.origin, nodeEnv: 'test' })!
 }, 60_000)
 
@@ -47,7 +54,7 @@ it('rejects superseded and expired recovery links without changing the password'
   expect((await post('reset-password', { token: newer, password: replacement })).status).toBe(403)
   expect((await post('login', { email: targetEmail, password: targetPassword })).status).toBe(200)
 }, 60_000)
-afterAll(async () => { await fixture?.close() })
+afterAll(async () => { try { await fixture?.close() } finally { vi.unstubAllGlobals() } })
 const post = (route: string, data: unknown) => fixture.request(`/api/users/${route}`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
 }, false)
