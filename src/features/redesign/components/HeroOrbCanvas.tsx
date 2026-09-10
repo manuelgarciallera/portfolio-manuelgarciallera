@@ -1,15 +1,15 @@
 'use client'
 
-import { MeshDistortMaterial, MeshTransmissionMaterial, Text } from '@react-three/drei'
+import { MeshDistortMaterial, MeshTransmissionMaterial } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useMemo, useRef } from 'react'
-import { AdditiveBlending, Color, FrontSide, Group, MathUtils } from 'three'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { AdditiveBlending, CanvasTexture, Color, FrontSide, Group, MathUtils, SRGBColorSpace } from 'three'
 
 // El nombre vive dentro de la escena, detras del orbe. Su tamano estaba fijado en
 // unidades de mundo, asi que en un lienzo estrecho (movil) el rotulo era mas ancho
 // que el plano visible y se cortaba por los dos lados: se leia «Man ... llera».
-// Aqui se mide el plano a la profundidad del texto y se deja que troika reparta
-// el nombre en dos lineas cuando no cabe en una.
+// Se mide el plano a la profundidad del texto y el avance de la fuente real del
+// titular: una linea en escritorio y tres lineas explicitas en movil.
 //
 // La composicion cambia con la forma del lienzo, y no por capricho. En apaisado el
 // orbe se posa sobre el centro del nombre: ese es el efecto, y el criterio de
@@ -133,7 +133,10 @@ function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps,
           resolution={isCompact ? 256 : 384}
           thickness={0.55}
           ior={1.28}
-          transmission={1}
+          transmission={isCompact ? 0.72 : 1}
+          color="#f4f1ec"
+          emissive="#e8e4df"
+          emissiveIntensity={isCompact ? 0.25 : 0}
           anisotropicBlur={0.12}
           attenuationColor="#ffffff"
           attenuationDistance={8}
@@ -206,27 +209,47 @@ const COMPACT_WORDMARK_ADVANCE = 6.9
 
 function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'isCompact'>) {
   const plane = useWordmarkPlane()
+  // Rasterise with the browser's actual heading font. No external font request;
+  // the resulting plane still sits behind the glass and is refracted by it.
+  const wordmark = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Wordmark canvas unavailable')
+    const heading = document.querySelector('.rd-hero-copy h1') || document.body
+    const style = getComputedStyle(heading)
+    const font = `${style.fontWeight} 128px ${style.fontFamily}`
+    const lines = (isCompact ? COMPACT_WORDMARK_TEXT : WIDE_WORDMARK_TEXT).split('\n')
+    context.font = font
+    canvas.width = Math.ceil(Math.max(...lines.map(line => context.measureText(line).width))) + 32
+    canvas.height = lines.length * 150 + 32
+    context.font = font
+    context.fillStyle = isDark ? '#f4f1ec' : '#171717'
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    lines.forEach((line, index) => {
+      const y = 16 + (index + .5) * 150
+      context.fillText(line, canvas.width / 2, y)
+    })
+    const texture = new CanvasTexture(canvas)
+    texture.colorSpace = SRGBColorSpace
+    return { texture, width: canvas.width / 128, height: canvas.height / 128 }
+  }, [isDark, isCompact])
+  useEffect(() => () => wordmark.texture.dispose(), [wordmark])
   // 0.9 del ancho deja un margen visible a izquierda y derecha.
   const maxWidth = plane.width * 0.9
   const cap = isCompact ? COMPACT_GEOMETRY.wordmarkMaxSize : WORDMARK_MAX_SIZE
   const advance = isCompact ? COMPACT_WORDMARK_ADVANCE : WIDE_WORDMARK_ADVANCE
   // El tope solo entra cuando el plano da de sobra: si maxWidth/9.8 supera 0.46 es
   // que maxWidth > 4.51, y el nombre entero a 0.46 ocupa 4.36. Cabe.
-  const fontSize = Math.min(cap, maxWidth / advance)
+  const fontSize = Math.min(cap, maxWidth / Math.max(advance, wordmark.width))
 
   return (
-    <Text
+    <mesh
       position={[0, isCompact ? COMPACT_GEOMETRY.wordmarkY : -0.04, WORDMARK_Z]}
-      color={isDark ? '#f4f1ec' : '#171717'}
-      fontSize={fontSize}
-      maxWidth={maxWidth}
-      lineHeight={COMPACT_GEOMETRY.wordmarkLineHeight}
-      anchorX="center"
-      anchorY="middle"
-      textAlign="center"
     >
-      {isCompact ? COMPACT_WORDMARK_TEXT : WIDE_WORDMARK_TEXT}
-    </Text>
+      <planeGeometry args={[wordmark.width * fontSize, wordmark.height * fontSize]} />
+      <meshBasicMaterial map={wordmark.texture} transparent depthWrite={false} toneMapped={false} />
+    </mesh>
   )
 }
 

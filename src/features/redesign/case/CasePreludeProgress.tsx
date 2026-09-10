@@ -17,7 +17,7 @@ export function CasePreludeProgress() {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible instanceof HTMLElement) setActive(visible.dataset.storyStep ?? 'opening')
+        if (visible?.target instanceof HTMLElement) setActive(visible.target.dataset.storyStep ?? 'opening')
       },
       { rootMargin: '-30% 0px -55%', threshold: [0.05, 0.35, 0.7] },
     )

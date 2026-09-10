@@ -9,11 +9,12 @@ describe('Hero', () => {
   it('opens with one human promise, one visual and one primary action', () => {
     const markup = renderToStaticMarkup(<Hero />)
 
-    expect(markup).toContain('hero-refractive-orb-fallback-v2.webp')
+    // A different static orb must not flash before the interactive scene.
+    expect(markup).not.toContain('hero-refractive-orb-fallback-v2.webp')
     expect(markup).toContain('rd-hero-canvas-stage')
     expect(markup).toContain('data-ready="false"')
     expect(markup.match(/rd-hero-art-fallback/g)).toHaveLength(1)
-    expect(markup).toContain('fetchPriority="high"')
+    expect(markup).toContain('Manuel García-Llera Añón')
     expect(markup).toContain('Diseño sistemas digitales que conectan investigación, interfaz y código')
     expect(markup).not.toContain('productos que se entienden, se usan y evolucionan')
     expect(markup).toContain('Ver proyectos')

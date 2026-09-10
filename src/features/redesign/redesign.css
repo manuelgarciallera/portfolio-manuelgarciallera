@@ -436,7 +436,7 @@
 .rd-case-story > *,
 .rd-case-story__chapter > * { min-width: 0; }
 
-.rd-prelude-progress { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; justify-content: space-between; min-height: 3.5rem; padding: .65rem clamp(1rem, 3vw, 3rem); color: rgb(255 255 255 / .56); background: rgb(4 8 16 / .76); border-bottom: 1px solid rgb(255 255 255 / .1); backdrop-filter: blur(18px) saturate(1.25); }
+.rd-prelude-progress { position: sticky; top: 0; z-index: 12; display: flex; align-items: center; justify-content: space-between; min-height: 3.5rem; padding: .65rem clamp(1rem, 3vw, 3rem); color: #c4c8d0; background: #040810; border-bottom: 1px solid rgb(255 255 255 / .1); }
 .rd-prelude-progress__title { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
 .rd-prelude-progress ol { display: flex; gap: clamp(.8rem, 2.5vw, 2.5rem); margin: 0; padding: 0; list-style: none; }
 .rd-prelude-progress a { display: flex; gap: .45rem; color: inherit; font-size: .72rem; text-decoration: none; transition: color .25s ease, transform .3s var(--ease-out); }
@@ -694,27 +694,17 @@
   background: var(--bg);
 }
 .rd-hero-art-fallback {
-  width: min(78%, 42rem); height: auto; object-fit: contain;
-  filter: saturate(.88) contrast(1.04); animation: rd-hero-fallback-breathe 7s ease-in-out infinite;
-  opacity: 1; transition: opacity 500ms ease;
+  width: 90%; display: grid; justify-items: center; gap: 1rem;
 }
+.rd-hero-static-orb { width: min(65%, 22rem); height: auto; object-fit: contain; }
+.rd-hero-fallback-name { margin: 0; color: var(--ink); font-family: var(--font-sans); font-size: clamp(1.5rem, 3vw, 3rem); font-weight: 700; line-height: 1.05; text-align: center; text-wrap: balance; }
 .rd-hero-canvas-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; }
 .rd-hero-canvas-stage canvas { width: 100% !important; height: 100% !important; }
 .rd-hero-art[data-ready='true'] .rd-hero-canvas-stage { opacity: 1; }
-/* El fallback y el lienzo no ocupan el mismo hueco: la imagen mide el 78% del
-   contenedor y va centrada, mientras el lienzo lo llena entero y coloca el nombre
-   abajo del todo. Con solo `opacity: 0` la imagen sigue pintando durante la
-   transicion y el nombre del lienzo asoma por debajo: se ven dos esferas.
-   Manuel lo reporto asi el 9-sep: «la bola blanca sola, y debajo otra mas pequena
-   con mi nombre». Se retira del pintado, no solo se transparenta, y se espera a
-   que el lienzo haya terminado de aparecer. */
+/* La carga normal muestra primero el nombre HTML, nunca una esfera distinta.
+   La alternativa estatica solo se usa sin animacion o si falla la escena. */
 .rd-hero-art[data-ready='true'] .rd-hero-art-fallback {
-  opacity: 0; visibility: hidden; animation: none;
-  transition: opacity 500ms ease, visibility 0s linear 650ms;
-}
-@keyframes rd-hero-fallback-breathe {
-  0%, 100% { transform: translate3d(0, .25rem, 0) scale(.985); }
-  50% { transform: translate3d(0, -.35rem, 0) scale(1.012); }
+  visibility: hidden;
 }
 
 /* ---------- Secciones ---------- */
@@ -1082,7 +1072,7 @@
 .rd-coordination-flow li span { color: #d9ff43; font-size: 0.62rem; }
 .rd-coordination-result { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(0.82rem, 1.4vw, 1.05rem); }
 .rd-coordination-result strong { padding: 0.45rem 0.7rem; background: #d9ff43; color: #111; }
-.rd-coordination-diagram figcaption { color: rgb(255 255 255 / 0.58); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.rd-coordination-diagram > figcaption { color: #b9bec7; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
 /* Las tres celdas son `1fr` pero conservaban `min-width: auto`, asi que la pista
    no bajaba de su `min-content` y la fila se salia del marco por la derecha. */
 .rd-coordination-agents > span { min-width: 0; overflow-wrap: anywhere; }
@@ -1461,7 +1451,7 @@
 .rd-case-phase__frame--coordination,
 .rd-case-phase__frame--theuxunion,
 .rd-case-phase__frame--neutral { background: var(--bg); }
-.rd-case-phase__visual figcaption,
+.rd-case-phase__visual > figcaption,
 .rd-case-phase__visual-label {
   margin-top: 0.85rem; color: var(--muted); font-size: 0.66rem;
   font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase;
@@ -1920,7 +1910,7 @@
 }
 
 /* Visual case journeys */
-.rd-visual-journey{overflow:hidden;padding:clamp(4rem,8vw,8rem) 0;color:#f7f7f5;background:#10131b}.rd-visual-journey>header{display:grid;grid-template-columns:.65fr 1.35fr;gap:2rem;padding:0 var(--gutter) clamp(3rem,7vw,7rem)}.rd-visual-journey>header p{color:#c9ced8;font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.7rem}.rd-visual-journey>header h2{max-width:12ch;margin:0;font-size:clamp(2.8rem,6vw,6.5rem);line-height:.92;letter-spacing:-.06em}.rd-visual-journey figure{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(16rem,.7fr);margin:0 0 clamp(5rem,10vw,10rem);padding:0 var(--gutter);align-items:center}.rd-visual-journey figure.is-offset{grid-template-columns:minmax(16rem,.7fr) minmax(0,1.3fr)}.rd-visual-journey figure.is-offset>div{order:2}.rd-visual-journey figure>div{min-height:clamp(22rem,48vw,50rem);display:grid;place-items:center;overflow:hidden;background:rgb(255 255 255/.05)}.rd-visual-journey figure img{width:100%;height:auto}.rd-visual-journey figcaption{display:grid;gap:1rem;padding:clamp(2rem,5vw,5rem)}.rd-visual-journey figcaption span{color:#ff7847;font-size:.7rem;font-weight:600;letter-spacing:.12em}.rd-visual-journey figcaption strong{font-size:clamp(1.8rem,3.5vw,4rem);line-height:.95}.rd-visual-journey figcaption p{color:#c9ced8;font-weight:500;line-height:1.55}.rd-visual-journey__rail{display:flex;width:max-content;gap:3rem;margin-bottom:clamp(5rem,9vw,9rem);animation:rd-rail 24s linear infinite}.rd-visual-journey__rail span{font:500 clamp(2.5rem,6vw,7rem)/1 var(--font-serif);font-style:italic;white-space:nowrap;color:rgb(255 255 255/.18)}.rd-visual-journey__rail.is-reverse{margin:0;animation-direction:reverse}.rd-visual-journey--laliga{background:#0c1228}.rd-visual-journey--theuxunion{background:#1a1024}.rd-visual-journey--coordination{background:#101411}.rd-visual-journey--coordination .rd-visual-journey__rail span{color:#d9ff43}.rd-visual-journey--theuxunion .rd-visual-journey__rail span{color:#de4dff}@keyframes rd-rail{to{transform:translateX(-50%)}}@media(max-width:760px){.rd-visual-journey>header,.rd-visual-journey figure,.rd-visual-journey figure.is-offset{grid-template-columns:1fr;padding-inline:2rem}.rd-visual-journey figure.is-offset>div{order:0}.rd-visual-journey figure>div{min-height:20rem}.rd-visual-journey figcaption{padding:1.5rem 0 0}.rd-visual-journey__rail{gap:1.5rem}}@media(prefers-reduced-motion:reduce){.rd-visual-journey__rail{animation:none}}
+.rd-visual-journey{overflow:hidden;padding:clamp(4rem,8vw,8rem) 0;color:#f7f7f5;background:#10131b}.rd-visual-journey>header{display:grid;grid-template-columns:.65fr 1.35fr;gap:2rem;padding:0 var(--gutter) clamp(3rem,7vw,7rem)}.rd-visual-journey>header p{color:#c9ced8;font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.7rem}.rd-visual-journey>header h2{max-width:12ch;margin:0;font-size:clamp(2.8rem,6vw,6.5rem);line-height:.92;letter-spacing:-.06em}.rd-visual-journey figure{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(16rem,.7fr);margin:0 0 clamp(5rem,10vw,10rem);padding:0 var(--gutter);align-items:center}.rd-visual-journey figure.is-offset{grid-template-columns:minmax(16rem,.7fr) minmax(0,1.3fr)}.rd-visual-journey figure.is-offset>div{order:2}.rd-visual-journey figure>div{min-height:clamp(22rem,48vw,50rem);display:grid;place-items:center;overflow:hidden;background:rgb(255 255 255/.05)}.rd-visual-journey figure img{width:100%;height:auto}.rd-visual-journey figcaption{display:grid;gap:1rem;padding:clamp(2rem,5vw,5rem)}.rd-visual-journey figcaption span{color:#ff7847;font-size:.7rem;font-weight:600;letter-spacing:.12em}.rd-visual-journey figcaption strong{font-size:clamp(1.8rem,3.5vw,4rem);line-height:.95}.rd-visual-journey figcaption p{color:#c9ced8;font-weight:500;line-height:1.55}.rd-visual-journey__rail{display:flex;width:max-content;gap:3rem;margin-bottom:clamp(5rem,9vw,9rem);animation:rd-rail 24s linear infinite}.rd-visual-journey__rail span{font:500 clamp(2.5rem,6vw,7rem)/1 var(--font-serif);font-style:italic;white-space:nowrap;color:rgb(255 255 255/.4)}.rd-visual-journey__rail.is-reverse{margin:0;animation-direction:reverse}.rd-visual-journey--laliga{background:#0c1228}.rd-visual-journey--theuxunion{background:#1a1024}.rd-visual-journey--coordination{background:#101411}.rd-visual-journey--coordination .rd-visual-journey__rail span{color:#d9ff43}.rd-visual-journey--theuxunion .rd-visual-journey__rail span{color:#de4dff}@keyframes rd-rail{to{transform:translateX(-50%)}}@media(max-width:760px){.rd-visual-journey>header,.rd-visual-journey figure,.rd-visual-journey figure.is-offset{grid-template-columns:1fr;padding-inline:2rem}.rd-visual-journey figure.is-offset>div{order:0}.rd-visual-journey figure>div{min-height:20rem}.rd-visual-journey figcaption{padding:1.5rem 0 0}.rd-visual-journey__rail{gap:1.5rem}}@media(prefers-reduced-motion:reduce){.rd-visual-journey__rail{animation:none}}
 .rd-visual-journey__media--portrait img {
   width: min(100%, clamp(18rem, 28vw, 30rem));
   max-height: 72vh;

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 
 const HeroOrbCanvas = dynamic(() => import('./HeroOrbCanvas').then((module) => module.HeroOrbCanvas), {
   ssr: false,
@@ -12,11 +12,26 @@ interface HeroProps {
   isDark?: boolean
 }
 
+class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  componentDidCatch() { this.props.onFailure() }
+  render() { return this.state.failed ? null : this.props.children }
+}
+
 export function Hero({ isDark = true }: HeroProps) {
   const [canvasReady, setCanvasReady] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [canMountCanvas, setCanMountCanvas] = useState(false)
   const [isCompact, setIsCompact] = useState(false)
+  const [sceneFailed, setSceneFailed] = useState(false)
+
+  // A stalled GPU/import must not leave an empty panel indefinitely.
+  useEffect(() => {
+    if (!canMountCanvas || canvasReady || reduceMotion || sceneFailed) return
+    const timer = window.setTimeout(() => setSceneFailed(true), 15000)
+    return () => window.clearTimeout(timer)
+  }, [canMountCanvas, canvasReady, reduceMotion, sceneFailed])
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -37,8 +52,7 @@ export function Hero({ isDark = true }: HeroProps) {
     return () => media.removeEventListener('change', update)
   }, [])
 
-  // El orbe pesa ~870 KB entre three y drei. Se monta cuando el navegador está
-  // ocioso, para que el fallback estático pinte primero y no compita con el LCP.
+  // El titular y el nombre están en HTML; la escena no compite con ellos por el LCP.
   useEffect(() => {
     const idle = window.requestIdleCallback
     if (typeof idle === 'function') {
@@ -60,24 +74,25 @@ export function Hero({ isDark = true }: HeroProps) {
 
       <div
         className="rd-hero-art"
-        data-ready={canvasReady ? 'true' : 'false'}
+        data-ready={canvasReady && !reduceMotion && !sceneFailed ? 'true' : 'false'}
         aria-hidden="true"
       >
-        <Image
-          className="rd-hero-art-fallback"
-          src="/art/hero-refractive-orb-fallback-v2.webp"
-          alt=""
-          width={1400}
-          height={1400}
-          sizes="(max-width: 767px) 78vw, 42vw"
-          fetchPriority="high"
-          priority
-        />
+        <div className="rd-hero-art-fallback">
+          {(reduceMotion || sceneFailed) && <Image
+            className="rd-hero-static-orb"
+            src="/art/hero-refractive-orb-fallback-v2.webp"
+            alt=""
+            width={1400}
+            height={1400}
+            sizes="(max-width: 767px) 78vw, 42vw"
+          />}
+          <p className="rd-hero-fallback-name">Manuel García-Llera Añón</p>
+        </div>
         <div className="rd-hero-canvas-stage">
-          {/* Con `prefers-reduced-motion: reduce` no se descarga la escena: el
-              fallback estático ya representa la misma pieza sin movimiento. */}
-          {canMountCanvas && !reduceMotion ? (
-            <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} />
+          {canMountCanvas && !reduceMotion && !sceneFailed ? (
+            <SceneBoundary onFailure={() => setSceneFailed(true)}>
+              <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} />
+            </SceneBoundary>
           ) : null}
         </div>
       </div>
