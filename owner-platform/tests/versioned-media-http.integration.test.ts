@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import sharp from 'sharp'
 import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 
@@ -122,7 +122,20 @@ it('duplicates a revision-backed image through the authenticated native REST end
   const duplicate = (await response.json()).doc as Record<string, unknown>
   expect(duplicate.id).not.toBe(source.id)
   expect(duplicate.storageRevision).not.toBe(sourceRevision)
-  expect(await readMediaRevision(fixture.revisionRoot, duplicate.storageRevision as string)).toHaveLength(sourceFiles.length)
+  const duplicateFiles = await readMediaRevision(fixture.revisionRoot, revision(duplicate))
+  // Payload may rename a duplicate; compare the complete binary inventory,
+  // including multiplicity, rather than requiring the original filenames.
+  const inventory = (files: { bytes: Buffer }[]) => files.map(({ bytes }) =>
+    `${bytes.length}:${createHash('sha256').update(bytes).digest('hex')}`).sort()
+  expect(duplicateFiles.length).toBeGreaterThan(1)
+  expect(inventory(duplicateFiles)).toEqual(inventory(sourceFiles))
+  for (const file of duplicateFiles) {
+    const url = `/api/media/revision/${duplicate.id}/${revision(duplicate)}/${encodeURIComponent(file.name)}`
+    const download = await fixture.request(url)
+    expect(download.status).toBe(200)
+    expect(Buffer.from(await download.arrayBuffer())).toEqual(file.bytes)
+    expect((await fixture.request(url, {}, false)).status).toBe(404)
+  }
   expect(await readMediaRevision(fixture.revisionRoot, sourceRevision)).toEqual(sourceFiles)
 
   const edit = await fixture.request(`/api/media/${duplicate.id}?draft=true`, {
@@ -133,6 +146,13 @@ it('duplicates a revision-backed image through the authenticated native REST end
   expect((await edit.json()).doc).toMatchObject({ alt: 'Independently edited duplicate', id: duplicate.id })
   const unchangedSource = await fixture.payload.findByID({ collection: 'media', id: source.id as number, overrideAccess: true })
   expect(unchangedSource).toMatchObject({ alt: source.alt, storageRevision: sourceRevision })
+  const croppedResponse = await crop(duplicate)
+  expect(croppedResponse.status).toBe(200)
+  const croppedDuplicate = (await croppedResponse.json()).doc as Record<string, unknown>
+  expect(croppedDuplicate).toMatchObject({ width: 600, height: 400 })
+  expect(revision(croppedDuplicate)).not.toBe(revision(duplicate))
+  expect(await readMediaRevision(fixture.revisionRoot, revision(duplicate))).toEqual(duplicateFiles)
+  expect(await readMediaRevision(fixture.revisionRoot, sourceRevision)).toEqual(sourceFiles)
 })
 
 it('delivers only authorized exact revisions and ignores ranges without advertising partial responses', async () => {
