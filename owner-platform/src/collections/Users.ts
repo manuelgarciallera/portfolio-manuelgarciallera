@@ -1,12 +1,14 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
+import { ownerForgotPassword } from '../auth/forgot-password'
 
 // Server-owned operation marker: never trust a body/context flag for recovery.
 const recoveryRequests = new WeakSet<PayloadRequest>()
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  endpoints: [{ path: '/forgot-password', method: 'post', handler: ownerForgotPassword }],
   admin: {
     useAsTitle: 'email',
   },

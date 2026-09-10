@@ -1,4 +1,7 @@
 import { APIError, type EmailAdapter } from 'payload'
+export class OwnerEmailDeliveryError extends APIError {
+  constructor() { super('Owner email delivery failed', 503) }
+}
 export type OwnerEmailInput = { apiKey?: string; fromAddress?: string; nodeEnv?: string; productionBuild?: boolean }
 const unavailable: EmailAdapter = () => ({
   name: 'owner-email-unconfigured', defaultFromName: 'CMS', defaultFromAddress: 'owner@example.invalid',
@@ -46,7 +49,7 @@ export const createOwnerEmailAdapter = ({ apiKey, fromAddress, nodeEnv, producti
         return { id: receipt.id }
       } catch {
         // Do not leak provider messages, addresses or credentials to REST/logs.
-        throw new APIError('Owner email delivery failed', 503)
+        throw new OwnerEmailDeliveryError()
       } finally { clearTimeout(timer); controller.abort() }
     },
   })

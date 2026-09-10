@@ -95,9 +95,13 @@ it('rolls back a rejected delivery and preserves the previously issued recovery 
   const before = await stored()
   expect(typeof before.resetPasswordToken).toBe('string')
   rejectDelivery = true
+  await expect(fixture.payload.forgotPassword({ collection: 'users', data: { email: targetEmail } })).rejects.toThrow('Owner email delivery failed')
   const failed = await post('forgot-password', { email: targetEmail })
-  expect(failed.status).toBe(503)
+  const unknown = await post('forgot-password', { email: 'absent-during-outage@example.invalid' })
+  expect(failed.status).toBe(200)
   const body = await failed.text()
+  expect(body).toBe(await unknown.text())
+  expect(failed.headers.get('cache-control')).toBe('no-store')
   expect(body).not.toContain('sensitive-provider-detail')
   expect(body).not.toContain(targetEmail)
   const after = await stored()
@@ -109,6 +113,11 @@ it('rolls back a rejected delivery and preserves the previously issued recovery 
   expect((await post('reset-password', { token: before.resetPasswordToken, password: replacement })).status).toBe(200)
   expect((await post('login', { email: targetEmail, password: replacement })).status).toBe(200)
 }, 60_000)
+
+it('does not disguise malformed recovery requests as accepted delivery requests', async () => {
+  expect((await post('forgot-password', {})).status).toBe(400)
+  expect((await post('forgot-password', { email: { injected: true } })).status).toBe(400)
+})
 
 it('revokes previous sessions on recovery but preserves ordinary concurrent logins and the new session', async () => {
   const targetEmail = 'session-owner@example.invalid'
