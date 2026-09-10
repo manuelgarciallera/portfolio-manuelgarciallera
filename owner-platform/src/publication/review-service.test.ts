@@ -11,6 +11,7 @@ vi.mock('payload', async (importOriginal) => ({
 import { createDraftCapsule } from '../recovery/capsule'
 import { createPublicationBundle } from './bundle'
 import { createOwnerPublicationReview } from './review-service'
+import { ValidationError } from 'payload'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const capsule = createDraftCapsule({
@@ -24,6 +25,29 @@ const bundle = createPublicationBundle({ entries: [{
 const bundleHash = bundle.hash
 
 describe('createOwnerPublicationReview', () => {
+  it.each([true, false])('only maps a competing unique-field failure when a committed decision exists (%s)', async (committed) => {
+    const error = new ValidationError({ collection: 'publication-reviews', errors: [{ path: 'bundle', message: 'Value must be unique' }] })
+    const payload = {
+      create: vi.fn(async () => { throw error }),
+      findByID: vi.fn(async () => ({ bundle, bundleHash, id: 80 })),
+      find: vi.fn().mockResolvedValueOnce({ docs: [] }).mockResolvedValueOnce({ docs: committed ? [{ id: 90, bundle: 80 }] : [] }),
+    }
+    const result = createOwnerPublicationReview({ bundleId: 80, confirmation: 'APROBAR PAQUETE', decision: 'approved', payload, req: { user: owner } })
+    if (committed) await expect(result).rejects.toMatchObject({ status: 409 })
+    else await expect(result).rejects.toBe(error)
+  })
+
+  it('does not disguise an audit failure as a competing decision', async () => {
+    const error = new Error('Audit unavailable')
+    const payload = {
+      create: vi.fn(async ({ collection, data }) => { if (collection === 'audit-events') throw error; return { id: 90, ...data } }),
+      findByID: vi.fn(async () => ({ bundle, bundleHash, id: 80 })),
+      find: vi.fn(async () => ({ docs: [] })),
+    }
+    await expect(createOwnerPublicationReview({ bundleId: 80, confirmation: 'APROBAR PAQUETE', decision: 'approved', payload, req: { user: owner } })).rejects.toBe(error)
+    expect(payload.find).toHaveBeenCalledTimes(1)
+  })
+
   it('verifies the immutable bundle, prevents repeat decisions and audits approval', async () => {
     const create = vi.fn(async ({ collection, data }) => collection === 'publication-reviews' ? { id: 90, ...data } : { id: 91, ...data })
     const payload = {

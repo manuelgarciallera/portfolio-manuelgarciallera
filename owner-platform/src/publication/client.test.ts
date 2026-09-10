@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { generatePublicationArtifact, listPublicationCandidates, orderPublicationCandidates, preparePublicationBundle, reorderPublicationSelection, reviewPublicationBundle, runPublicationPreflight } from './client'
 
+it('explains a competing decision without displaying untrusted response details', async () => {
+  const request = vi.fn(async () => new Response(JSON.stringify({ error: 'internal SQL details' }), { status: 409 }))
+  await expect(reviewPublicationBundle(80, { confirmation: 'APROBAR PAQUETE', decision: 'approved' }, request)).rejects.toThrow('No se puede registrar esta decisión. Recarga el paquete y revisa su estado; no se ha sustituido ninguna decisión.')
+})
+
 describe('publication bundle preparation client', () => {
   it('loads a bounded list of immutable release candidates', async () => {
     const request = vi.fn(async () => new Response(JSON.stringify({

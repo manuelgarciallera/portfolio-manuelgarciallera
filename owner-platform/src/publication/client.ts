@@ -105,6 +105,7 @@ export const reviewPublicationBundle = async (
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })
+  if (response.status === 409) throw new Error('No se puede registrar esta decisión. Recarga el paquete y revisa su estado; no se ha sustituido ninguna decisión.')
   if (!response.ok) return failure()
   let result: unknown
   try { result = await response.json() as unknown } catch { return failure() }

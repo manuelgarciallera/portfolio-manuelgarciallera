@@ -124,6 +124,44 @@ const createReleaseFixture = async () => {
   return { page, req, release }
 }
 
+it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('resolves simultaneous opposing publication decisions with one audited winner and a conflict', async () => {
+  const { req, release } = await createReleaseFixture()
+  const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'Concurrent QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
+  let arrivals = 0
+  let releaseReaders!: () => void
+  const bothRead = new Promise<void>((resolve) => { releaseReaders = resolve })
+  // Both requests observe no decision before either may write. All SQL,
+  // transactions, access hooks and unique constraints remain real.
+  const servicePayload = {
+    create: payload.create.bind(payload), findByID: payload.findByID.bind(payload),
+    find: async (args: Parameters<Payload['find']>[0]) => {
+      const result = await payload.find(args)
+      if (args.collection === 'publication-reviews' && arrivals < 2) {
+        arrivals += 1
+        if (arrivals === 2) releaseReaders()
+        await bothRead
+      }
+      return result
+    },
+  }
+  const requests = await Promise.all([createLocalReq({ user: owner }, payload), createLocalReq({ user: owner }, payload)])
+  const results = await Promise.allSettled((['approved', 'rejected'] as const).map((decision, index) => createOwnerPublicationReview({
+    payload: servicePayload as never, req: requests[index], bundleId: String(bundle.id), decision,
+    confirmation: decision === 'approved' ? 'APROBAR PAQUETE' : 'RECHAZAR PAQUETE',
+  })))
+  expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+  const loser = results.find((result) => result.status === 'rejected') as PromiseRejectedResult
+  const reviews = await payload.find({ collection: 'publication-reviews', user: owner, overrideAccess: false, where: { bundle: { equals: bundle.id } } })
+  expect(reviews.totalDocs).toBe(1)
+  const audits = await payload.find({ collection: 'audit-events', user: owner, overrideAccess: false, where: { and: [
+    { subjectCollection: { equals: 'publication-bundles' } }, { subjectId: { equals: String(bundle.id) } },
+    { action: { in: ['publication.bundle.approved', 'publication.bundle.rejected'] } },
+  ] } })
+  expect(audits.totalDocs).toBe(1)
+  expect(audits.docs[0].action).toBe(`publication.bundle.${reviews.docs[0].decision}`)
+  expect(loser.reason).toMatchObject({ status: 409 })
+}, 30_000)
+
 it.each(['bundle', 'approved', 'rejected', 'artifact'] as const)('rolls back %s when publication audit fails and allows retry', async (stage) => {
   const { req, release } = await createReleaseFixture()
   const makeBundle = () => createOwnerPublicationBundle({ payload: payload as never, req, name: 'Atomic flow QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })

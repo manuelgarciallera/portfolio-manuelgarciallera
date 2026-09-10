@@ -1,4 +1,4 @@
-import { APIError } from 'payload'
+import { APIError, ValidationError } from 'payload'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -41,5 +41,16 @@ export const createOwnerPublicationReview = async ({ bundleId, confirmation, dec
       payload: payload as never, req, user: req.user,
     })
     return created
+  }).catch(async (error: unknown) => {
+    // The unique index is the final arbiter when two requests pass the read
+    // check together. Inspect committed state only after rollback completes.
+    if (error instanceof ValidationError && error.data.errors.some(({ path }) => path === 'bundle' || path === 'reviewHash')) {
+      let winner
+      try {
+        winner = await payload.find({ collection: 'publication-reviews', depth: 0, limit: 1, overrideAccess: false, req, where: { bundle: { equals: bundleId } } })
+      } catch { throw error }
+      if (winner.docs.length) throw new APIError('El paquete ya ha sido revisado y decidido.', 409)
+    }
+    throw error
   })
 }
