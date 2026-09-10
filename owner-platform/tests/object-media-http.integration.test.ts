@@ -1,58 +1,30 @@
-import { createServer } from 'node:http'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { S3Client } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 
 vi.mock('server-only', () => ({}))
 
-import { createObjectRevisionStore } from '../src/media/object-revision-store'
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
+import { startObjectProviderFixture } from './media/object-provider-fixture'
 
 // This small provider fixture exercises real Payload REST + S3 SDK end to end.
 // The separate transport suite supplies timeouts and ambiguous-response faults.
-const objects = new Map<string, Buffer>()
-let failWrites = false
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url!, 'http://127.0.0.1')
-  const key = decodeURIComponent(url.pathname.replace(/^\/test-bucket\/?/, ''))
-  if (url.searchParams.has('list-type')) {
-    const keys = [...objects.keys()].filter((entry) => entry.startsWith(url.searchParams.get('prefix')!))
-    res.setHeader('Content-Type', 'application/xml')
-    res.end(`<ListBucketResult><IsTruncated>false</IsTruncated>${keys.map((entry) => `<Contents><Key>${entry}</Key></Contents>`).join('')}</ListBucketResult>`)
-  } else if (req.method === 'PUT') {
-    const chunks: Buffer[] = []
-    for await (const chunk of req) chunks.push(Buffer.from(chunk))
-    if (failWrites || req.headers['if-none-match'] !== '*' || objects.has(key)) {
-      res.writeHead(failWrites ? 503 : 412); res.end(); return
-    }
-    objects.set(key, Buffer.concat(chunks)); res.end()
-  } else if (req.method === 'GET' && objects.has(key)) {
-    const bytes = objects.get(key)!
-    res.setHeader('Content-Length', bytes.length); res.end(bytes)
-  } else { res.writeHead(404); res.end() }
-})
-let client: S3Client
-let storage: ReturnType<typeof createObjectRevisionStore>
+let provider: Awaited<ReturnType<typeof startObjectProviderFixture>>
+let objects: Map<string, Buffer>
+let storage: Awaited<ReturnType<typeof startObjectProviderFixture>>['storage']
 let fixture: MediaHTTPFixture
 
 beforeAll(async () => {
-  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
-  const address = server.address()
-  if (!address || typeof address === 'string') throw new Error('Missing provider fixture port')
-  client = new S3Client({ endpoint: `http://127.0.0.1:${address.port}`, region: 'auto', forcePathStyle: true, maxAttempts: 1,
-    credentials: { accessKeyId: 'synthetic-key', secretAccessKey: 'synthetic-secret' },
-    requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED' })
-  storage = createObjectRevisionStore({ client, bucket: 'test-bucket', prefix: 'cms-media' })
+  provider = await startObjectProviderFixture()
+  objects = provider.objects
+  storage = provider.storage
   fixture = await startMediaHTTPFixture(undefined, storage)
 }, 60_000)
 
 afterAll(async () => {
   try { await fixture?.close() } finally {
-    client?.destroy()
-    server.closeAllConnections()
-    if (server.listening) await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))
+    await provider?.close()
   }
 })
 
@@ -114,11 +86,11 @@ it('uploads, crops, restores and revokes object-backed media through authenticat
 
 it('does not create a media document when object writes fail', async () => {
   const before = await fixture.payload.count({ collection: 'media', overrideAccess: true })
-  failWrites = true
+  provider.failures.writes = true
   try {
     expect((await upload()).status).toBeGreaterThanOrEqual(400)
     expect((await fixture.payload.count({ collection: 'media', overrideAccess: true })).totalDocs).toBe(before.totalDocs)
-  } finally { failWrites = false }
+  } finally { provider.failures.writes = false }
 })
 
 it.each(['create', 'update'] as const)('rolls back %s after successful object writes while retaining private recoverable bytes', async (operation) => {
