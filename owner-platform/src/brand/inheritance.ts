@@ -1,4 +1,5 @@
 import type { BrandProfileInput, MotionSettings, SemanticColor, UsageWeight } from './model'
+import { normalizeTypography, type TypographySettings } from './typography'
 import { normalizeHex, validateBrandProfile, validateMotion, validateUsageWeights } from './validation'
 
 export type PageBrandOverrides = {
@@ -9,6 +10,7 @@ export type PageBrandOverrides = {
 }
 
 export type ResolvedBrand = {
+  typography?: TypographySettings
   colors: SemanticColor[]
   usageWeights: UsageWeight[]
   motion: MotionSettings
@@ -98,7 +100,8 @@ export const resolvePageBrand = (base: unknown, overrides: unknown): ResolvedBra
   const motionErrors = validateMotion(motion)
   if (motionErrors.length) throw new Error(motionErrors.join(' '))
 
-  const resolved = { colors, usageWeights, motion }
+  const typography = normalizeTypography(profile.typography)
+  const resolved = { colors, usageWeights, motion, ...(typography ? { typography } : {}) }
   const errors = validateBrandProfile(resolved)
   if (errors.length) throw new Error(`La marca resuelta no es válida: ${errors.join(' ')}`)
   return resolved

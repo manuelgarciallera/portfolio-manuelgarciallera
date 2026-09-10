@@ -23,6 +23,19 @@ const base = {
 } as const
 
 describe('resolvePageBrand', () => {
+  it('preserves detached family names without copying font asset relations', () => {
+    const typography = { primaryFamily: '  Georgia  ', secondaryFamily: 'Segoe UI', fontAssets: [42] }
+    const resolved = resolvePageBrand({ ...base, typography }, undefined)
+    expect(resolved).toMatchObject({ typography: { primaryFamily: 'Georgia', secondaryFamily: 'Segoe UI' } })
+    expect(Object.keys((resolved as unknown as { typography: object }).typography)).toHaveLength(2)
+    expect(typography.primaryFamily).toBe('  Georgia  ')
+  })
+  it('omits empty typography to preserve legacy brand captures', () => {
+    expect(resolvePageBrand({ ...base, typography: { primaryFamily: '', secondaryFamily: null } }, undefined)).toEqual(base)
+  })
+  it.each(['url(https://example.com/font)', 'Arial; color:red', 'A'.repeat(101), 42])('rejects malformed family names: %s', (primaryFamily) => {
+    expect(() => resolvePageBrand({ ...base, typography: { primaryFamily } }, undefined)).toThrow(/tipogr/i)
+  })
   it('inherits when Payload hydrates unused optional fields and empty arrays', () => {
     expect(resolvePageBrand(base, {
       accent: undefined, surface: undefined, usageWeights: [],

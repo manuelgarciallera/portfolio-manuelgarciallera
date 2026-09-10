@@ -3,6 +3,7 @@ import { RichText, LinkJSXConverter } from '@payloadcms/richtext-lexical/react'
 import type { MediaPlacement } from '../media/placement'
 import type { PageVisualPreview, PreviewText } from '../preview/visual-service'
 import styles from './PagePreview.module.css'
+import { previewFontStack } from '../brand/typography'
 
 const PreviewMedia = ({ id, preview, placement, alt }: { id?: string; preview: PageVisualPreview; placement?: MediaPlacement; alt?: string }) => {
   const asset = id ? preview.assets[id] : undefined
@@ -39,7 +40,9 @@ const Text = ({ content, preview }: { content?: PreviewText; preview: PageVisual
 
 export const PagePreviewDocument = ({ preview }: { preview: PageVisualPreview }) => {
   const colors = Object.fromEntries(preview.brand?.colors.map(({ role, value }) => [role, value]) ?? [])
-  return <article className={styles.document} style={{ '--preview-background': colors.background ?? '#ffffff', '--preview-text': colors.text ?? '#161616', '--preview-surface': colors.surface ?? '#f2f2f2', '--preview-accent': colors.accent ?? '#165dcc' } as CSSProperties}>
+  return <article className={styles.document}
+    data-heading-font={preview.brand?.typography?.primaryFamily ? true : undefined}
+    style={{ '--preview-background': colors.background ?? '#ffffff', '--preview-text': colors.text ?? '#161616', '--preview-surface': colors.surface ?? '#f2f2f2', '--preview-accent': colors.accent ?? '#165dcc', '--preview-heading-font': previewFontStack(preview.brand?.typography?.primaryFamily), '--preview-body-font': previewFontStack(preview.brand?.typography?.secondaryFamily) } as CSSProperties}>
     {preview.blocks.length === 0 && <p>Este documento todavía no tiene bloques.</p>}
     {preview.blocks.map((block, index) => <section className={styles.block} key={index} data-block-type={block.type}>
       {block.eyebrow && <p className={styles.eyebrow}>{block.eyebrow}</p>}

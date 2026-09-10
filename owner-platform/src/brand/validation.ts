@@ -1,3 +1,4 @@
+import { normalizeTypography } from './typography'
 import {
   BRAND_COLOR_ROLES,
   MOTION_EASINGS,
@@ -160,5 +161,8 @@ export const validateBrandProfile = (profile: unknown): string[] => {
     if (error) errors.push(error)
   }
   errors.push(...validateMotion(profile.motion))
+  try { normalizeTypography(profile.typography) } catch (error) {
+    errors.push(error instanceof Error ? error.message : 'La tipografía no es válida.')
+  }
   return errors
 }

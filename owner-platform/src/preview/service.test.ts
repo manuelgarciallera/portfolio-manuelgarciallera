@@ -25,6 +25,22 @@ const brand = {
 }
 
 describe('page preview snapshot service', () => {
+  it('freezes typography and changes only a new capture when the family changes', async () => {
+    const profile = { ...brand, typography: { primaryFamily: 'Georgia', secondaryFamily: 'Arial' } }
+    const page = { id: 7, updatedAt: 'saved', brandProfile: 3, layout: [] }
+    const payload = {
+      findByID: async ({ collection }: { collection: string }) => collection === 'pages' ? page : profile,
+      find: async () => ({ docs: [] }),
+      create: async ({ data }: { data: Record<string, unknown> }) => ({ id: 1, ...data }),
+    }
+    const capture = () => createPagePreviewSnapshot({ payload: payload as never, req: { user: owner } as never, pageId: 7 })
+    const first = await capture()
+    profile.typography.primaryFamily = 'Arial'
+    const second = await capture()
+    expect(first.manifest).toHaveProperty('brandTokens.typography.primaryFamily', 'Georgia')
+    expect(second.manifest).toHaveProperty('brandTokens.typography.primaryFamily', 'Arial')
+    expect(first.manifestHash).not.toBe(second.manifestHash)
+  })
   it('classifies an old frozen media reference as legacy without backfilling or mutating it', () => {
     const reference = Object.freeze({ id: '9', filename: 'old.png' })
     expect(mediaReferenceStorage(reference)).toEqual({ storage: 'legacy-unverified' })

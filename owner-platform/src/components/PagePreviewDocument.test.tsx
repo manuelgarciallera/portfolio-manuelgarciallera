@@ -12,6 +12,16 @@ const preview: PageVisualPreview = { collection: 'pages', id: '7', title: 'Pági
 ] }
 
 describe('editorial page rendering', () => {
+  it('renders separate title and body font stacks without fetching font files', () => {
+    const markup = renderToStaticMarkup(<PagePreviewDocument preview={{ ...preview, brand: {
+      colors: [], usageWeights: [], motion: { duration: 600, stagger: 0, travel: 0, easing: 'ease', reducedMotion: 'reduce' },
+      typography: { primaryFamily: 'Georgia', secondaryFamily: 'monospace' },
+    } } as PageVisualPreview} />)
+    expect(markup).toContain('--preview-heading-font:&quot;Georgia&quot;, system-ui, sans-serif')
+    expect(markup).toContain('--preview-body-font:monospace')
+    expect(markup).toContain('data-heading-font="true"')
+    expect(markup).not.toContain('@font-face')
+  })
   it('renders grouped galleries, contextual image text, citations, notes and metrics', () => {
     const markup = renderToStaticMarkup(<PagePreviewDocument preview={{ ...preview, collection: 'projects', blocks: [
       { type: 'hero', heading: 'Proyecto', description: 'Su resumen' },
@@ -32,6 +42,7 @@ describe('editorial page rendering', () => {
   })
   it('preserves block order, captions and separate responsive crop settings', () => {
     const markup = renderToStaticMarkup(<PagePreviewDocument preview={preview} />)
+    expect(markup).not.toContain('data-heading-font')
     expect(markup.indexOf('Primero')).toBeLessThan(markup.indexOf('Segundo'))
     expect(markup).toContain('alt="Portada"')
     expect(markup).toContain('--desktop-ratio:16 / 9')

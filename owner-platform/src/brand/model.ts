@@ -33,6 +33,7 @@ export type MotionSettings = {
 }
 
 export type BrandProfileInput = {
+  typography?: import('./typography').TypographySettings | null
   colors?: SemanticColor[] | null
   usageWeights?: UsageWeight[] | null
   motion?: Partial<MotionSettings> | null

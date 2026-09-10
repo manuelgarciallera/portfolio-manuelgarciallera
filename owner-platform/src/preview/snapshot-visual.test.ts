@@ -48,7 +48,7 @@ describe('snapshot visual projection', () => {
     const f = setup()
     f.doc.manifest = createPreviewManifest({ ...f.doc.manifest,
       pageBlocks: [{ blockType: 'media', asset: '9', placement: '14' }], mediaReferences: [...f.doc.manifest.mediaReferences],
-      brandTokens: { colors: [{ role: 'background', value: '#123456' }, { role: 'text', value: '#FFFFFF' },
+      brandTokens: { typography: { primaryFamily: 'Georgia', secondaryFamily: 'monospace' }, colors: [{ role: 'background', value: '#123456' }, { role: 'text', value: '#FFFFFF' },
         { role: 'surface', value: '#111111' }, { role: 'mutedText', value: '#AAAAAA' }, { role: 'accent', value: '#FF4B44' },
         { role: 'interaction', value: '#00D4E6' }, { role: 'success', value: '#21A366' }, { role: 'danger', value: '#FF4B44' }],
         usageWeights: [{ role: 'background', weight: 100 }], motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' } },
@@ -57,6 +57,7 @@ describe('snapshot visual projection', () => {
     f.doc.manifestHash = f.doc.manifest.hash
     const result = await loadSnapshotVisualPreview({ req: f.req as never, snapshotId: '2' })
     expect(result.brand?.colors).toContainEqual({ role: 'background', value: '#123456' })
+    expect(result.brand?.typography).toEqual({ primaryFamily: 'Georgia', secondaryFamily: 'monospace' })
     expect(result.blocks[0].placement).toEqual({ asset: '9', fit: 'cover', frame: '4:3', focalX: .2, focalY: .8, zoom: 1.5, overrides: { mobile: { frame: '9:16', zoom: 2 } } })
     expect(result.warnings).toEqual([])
     expect(f.findByID).toHaveBeenCalledTimes(1)
