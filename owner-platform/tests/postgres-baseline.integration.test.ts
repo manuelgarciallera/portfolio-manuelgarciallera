@@ -10,8 +10,10 @@ import sharp from 'sharp'
 import { editorialDatabaseConfig } from './recovery/postgres-runtime.mjs'
 vi.mock('server-only', () => ({}))
 import { createOwnerConfig } from '../src/payload.config'
+import { configureMediaStorage } from '../src/config/media-storage'
+import { startObjectProviderFixture } from './media/object-provider-fixture'
 
-it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('installs the active CMS using migrations, preserves edits on repeat, and records its applied baseline', async () => {
+it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres').each(['legacy', 'objects'] as const)('installs %s CMS using migrations and preserves edits on repeat', async mode => {
   const selected = await editorialDatabaseConfig(process.env, { cache: fileURLToPath(new URL('../node_modules/.cache', import.meta.url)) })
   if (selected.engine !== 'postgres') throw new Error('Isolated PostgreSQL required')
   const database = `baseline_${randomUUID().replaceAll('-', '')}`
@@ -19,11 +21,13 @@ it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('installs the act
   try { await control.query(`CREATE DATABASE "${database}"`) } finally { await control.end() }
   const root = path.join(process.env.OWNER_INTEGRATION_DIRECTORY!, database)
   await mkdir(root)
-  const migrationDir = fileURLToPath(new URL('../database/baseline', import.meta.url))
-  const config = createOwnerConfig()
+  const migrationDir = fileURLToPath(new URL(`../database/${mode === 'objects' ? 'object-storage' : 'baseline'}`, import.meta.url))
+  let config = createOwnerConfig()
+  const provider = mode === 'objects' ? await startObjectProviderFixture() : undefined
   let payload: Payload | undefined
   let pool: Pool | undefined
   try {
+    if (provider) config = await configureMediaStorage(config, { ...provider.environment, OWNER_MEDIA_SCRATCH_DIR: root, OWNER_SERVER_URL: 'http://127.0.0.1:12346' })
     payload = await getPayload({ key: database, config: await buildConfig({
       ...config,
       typescript: { ...config.typescript, autoGenerate: false },
@@ -61,15 +65,20 @@ it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('installs the act
     const saved = await payload.update({ collection: 'pages', id: page.id, user: owner, overrideAccess: false, draft: true, depth: 0, data: { title: 'Edited after installation' } })
     const versions = await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, depth: 0 })
     const applied = await payload.find({ collection: 'payload-migrations', limit: 100 })
-    expect(applied.docs).toHaveLength(1)
+    expect(applied.docs).toHaveLength(mode === 'objects' ? 2 : 1)
     expect(applied.docs[0].batch).toBe(1)
     await payload.db.migrate({ migrations })
     expect(await payload.find({ collection: 'payload-migrations', limit: 100 })).toEqual(applied)
     expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, depth: 0 })).toEqual(saved)
     expect(await payload.findVersions({ collection: 'pages', where: { parent: { equals: page.id } }, depth: 0 })).toEqual(versions)
-    expect(await readFile(path.join(root, media.filename!))).toEqual(image)
+    if (provider) {
+      const revision = (media as unknown as { storageRevision: string }).storageRevision
+      expect((await provider.storage.read(revision)).find(file => file.name === media.filename)?.bytes).toEqual(image)
+      expect(await readdir(root)).toEqual([])
+    } else expect(await readFile(path.join(root, media.filename!))).toEqual(image)
   } finally {
     await payload?.destroy()
+    await provider?.close()
     // The adapter retains a checked-out reconnect client. The existing isolated
     // controller waits for Vitest exit, verifies sessions, then stops the cluster.
   }
