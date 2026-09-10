@@ -4,6 +4,7 @@ import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { hashPublicationBundle, type PublicationBundle } from './bundle'
 import { createPublicationReview, type PublicationReviewDecision } from './review'
+import { withPublicationTransaction } from './transaction'
 
 type ReviewPayload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -16,6 +17,7 @@ export const createOwnerPublicationReview = async ({ bundleId, confirmation, dec
   payload: ReviewPayload; req: { user?: unknown }
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
+  const owner = req.user
   const expected = decision === 'approved' ? 'APROBAR PAQUETE' : 'RECHAZAR PAQUETE'
   if (confirmation !== expected) throw new APIError('La confirmación no coincide con la decisión.', 400)
   const existing = await payload.find({ collection: 'publication-reviews', depth: 0, limit: 1, overrideAccess: false, req, where: { bundle: { equals: bundleId } } })
@@ -27,15 +29,17 @@ export const createOwnerPublicationReview = async ({ bundleId, confirmation, dec
   try { verifiedHash = hashPublicationBundle(bundleDoc.bundle as PublicationBundle) }
   catch { throw new APIError('El paquete no supera la verificación de integridad.', 409) }
   if (bundleDoc.bundleHash !== verifiedHash) throw new APIError('El hash almacenado del paquete no coincide.', 409)
-  const review = createPublicationReview({ bundleHash: verifiedHash, bundleId: storedBundleId, decision, decidedAt: now ?? new Date().toISOString(), decidedBy: req.user.id, note })
-  const created = await payload.create({
-    collection: 'publication-reviews',
-    data: { bundle: storedBundleId, bundleHash: verifiedHash, decision, decidedAt: review.decidedAt, decidedBy: req.user.id, note: review.note, reviewHash: review.hash, schemaVersion: review.schemaVersion },
-    overrideAccess: true, req,
+  const review = createPublicationReview({ bundleHash: verifiedHash, bundleId: storedBundleId, decision, decidedAt: now ?? new Date().toISOString(), decidedBy: owner.id, note })
+  return withPublicationTransaction(req, async () => {
+    const created = await payload.create({
+      collection: 'publication-reviews',
+      data: { bundle: storedBundleId, bundleHash: verifiedHash, decision, decidedAt: review.decidedAt, decidedBy: owner.id, note: review.note, reviewHash: review.hash, schemaVersion: review.schemaVersion },
+      overrideAccess: true, req,
+    })
+    await recordAuditEvent({
+      input: { action: `publication.bundle.${decision}`, metadata: { bundleHash: verifiedHash, reviewHash: review.hash }, outcome: 'success', subject: { collection: 'publication-bundles', id: bundleId } },
+      payload: payload as never, req, user: req.user,
+    })
+    return created
   })
-  await recordAuditEvent({
-    input: { action: `publication.bundle.${decision}`, metadata: { bundleHash: verifiedHash, reviewHash: review.hash }, outcome: 'success', subject: { collection: 'publication-bundles', id: bundleId } },
-    payload: payload as never, req, user: req.user,
-  })
-  return created
 }

@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
+// SQL transaction behavior is exercised by the shared helper and real adapters.
+vi.mock('payload', async (importOriginal) => ({
+  ...await importOriginal<typeof import('payload')>(),
+  initTransaction: vi.fn(async () => true),
+  commitTransaction: vi.fn(async () => {}),
+  killTransaction: vi.fn(async () => {}),
+}))
+
 import { createDraftCapsule } from '../recovery/capsule'
 import { createPublicationArtifact } from './artifact'
 import { createPublicationBundle } from './bundle'

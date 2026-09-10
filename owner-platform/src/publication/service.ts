@@ -4,6 +4,7 @@ import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { verifiedDraftSnapshot, verifiedSnapshot, type RestorePayload } from '../restore/service'
 import { createPublicationBundle } from './bundle'
+import { withPublicationTransaction } from './transaction'
 
 const record = (value: unknown, label: string): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new APIError(`${label} no es válido.`, 400)
@@ -31,6 +32,7 @@ export const createOwnerPublicationBundle = async ({
   req: { user?: unknown }
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
+  const owner = req.user
   if (confirmation !== 'PREPARAR PUBLICACIÓN') throw new APIError('La confirmación de preparación no coincide.', 400)
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 120) throw new APIError('El nombre del paquete no es válido.', 400)
   if (!Array.isArray(releaseIds) || releaseIds.length < 1 || releaseIds.length > 100) throw new APIError('Selecciona entre una y cien versiones.', 400)
@@ -62,29 +64,31 @@ export const createOwnerPublicationBundle = async ({
   } catch (error) {
     throw new APIError(error instanceof Error ? error.message : 'El paquete no es válido.', 400)
   }
-  const created = await payload.create({
-    collection: 'publication-bundles',
-    data: {
-      bundle,
-      bundleHash: bundle.hash,
-      createdBy: req.user.id,
-      name: name.trim(),
-      pageCount: bundle.entries.length,
-      schemaVersion: bundle.schemaVersion,
-    },
-    overrideAccess: true,
-    req,
+  return withPublicationTransaction(req, async () => {
+    const created = await payload.create({
+      collection: 'publication-bundles',
+      data: {
+        bundle,
+        bundleHash: bundle.hash,
+        createdBy: owner.id,
+        name: name.trim(),
+        pageCount: bundle.entries.length,
+        schemaVersion: bundle.schemaVersion,
+      },
+      overrideAccess: true,
+      req,
+    })
+    await recordAuditEvent({
+      input: {
+        action: 'publication.bundle.created',
+        metadata: { bundleHash: bundle.hash, pageCount: bundle.entries.length },
+        outcome: 'success',
+        subject: { collection: 'publication-bundles', id: relationId(created, 'El paquete') },
+      },
+      payload: payload as never,
+      req,
+      user: req.user,
+    })
+    return created
   })
-  await recordAuditEvent({
-    input: {
-      action: 'publication.bundle.created',
-      metadata: { bundleHash: bundle.hash, pageCount: bundle.entries.length },
-      outcome: 'success',
-      subject: { collection: 'publication-bundles', id: relationId(created, 'El paquete') },
-    },
-    payload: payload as never,
-    req,
-    user: req.user,
-  })
-  return created
 }

@@ -40,6 +40,7 @@ let corruptRestoredPin: number | null | undefined
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
 let rejectPreflightAudit = false
+let rejectedPublicationAudit: string | undefined
 const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const postgresCache = path.join(ownerRoot, 'node_modules', '.cache')
 let mediaDirectory: string
@@ -61,6 +62,7 @@ beforeAll(async () => {
           if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
           if (rejectedAssistanceAudit && data.action === rejectedAssistanceAudit) throw new Error('QA assistance audit unavailable')
           if (rejectPreflightAudit && data.action === 'publication.preflight.created') throw new Error('QA preflight audit unavailable')
+          if (rejectedPublicationAudit && data.action === rejectedPublicationAudit) throw new Error('QA publication audit unavailable')
           return data
         }, ...(collection.hooks.beforeChange ?? [])] },
       } : collection.slug === 'pages' ? {
@@ -121,6 +123,40 @@ const createReleaseFixture = async () => {
   } }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
   return { page, req, release }
 }
+
+it.each(['bundle', 'approved', 'rejected', 'artifact'] as const)('rolls back %s when publication audit fails and allows retry', async (stage) => {
+  const { req, release } = await createReleaseFixture()
+  const makeBundle = () => createOwnerPublicationBundle({ payload: payload as never, req, name: 'Atomic flow QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
+  let execute = makeBundle
+  let collection: 'publication-bundles' | 'publication-reviews' | 'publication-artifacts' = 'publication-bundles'
+  let action = 'publication.bundle.created'
+  if (stage !== 'bundle') {
+    const bundle = await makeBundle()
+    const decision = stage === 'rejected' ? 'rejected' : 'approved'
+    const makeReview = () => createOwnerPublicationReview({ payload: payload as never, req, bundleId: String(bundle.id), decision, confirmation: decision === 'approved' ? 'APROBAR PAQUETE' : 'RECHAZAR PAQUETE' })
+    execute = makeReview
+    collection = 'publication-reviews'
+    action = `publication.bundle.${decision}`
+    if (stage === 'artifact') {
+      const review = await makeReview()
+      execute = () => createOwnerPublicationArtifact({ payload: payload as never, req, reviewId: String(review.id), confirmation: 'GENERAR ARTEFACTO' })
+      collection = 'publication-artifacts'
+      action = 'publication.artifact.created'
+    }
+  }
+  const countRecords = () => payload.count({ collection, user: owner, overrideAccess: false })
+  const countAudits = () => payload.count({ collection: 'audit-events', user: owner, overrideAccess: false, where: { action: { equals: action } } })
+  const beforeRecords = (await countRecords()).totalDocs
+  const beforeAudits = (await countAudits()).totalDocs
+  rejectedPublicationAudit = action
+  try { await expect(execute()).rejects.toThrow('QA publication audit unavailable') }
+  finally { rejectedPublicationAudit = undefined }
+  expect((await countRecords()).totalDocs).toBe(beforeRecords)
+  expect((await countAudits()).totalDocs).toBe(beforeAudits)
+  await execute()
+  expect((await countRecords()).totalDocs).toBe(beforeRecords + 1)
+  expect((await countAudits()).totalDocs).toBe(beforeAudits + 1)
+}, 30_000)
 
 it('rolls back a preflight when its audit fails and permits a clean retry', async () => {
   const { req, release } = await createReleaseFixture()
