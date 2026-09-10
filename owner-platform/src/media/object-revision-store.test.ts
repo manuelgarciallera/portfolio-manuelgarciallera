@@ -2,6 +2,7 @@ import { createServer, type Server } from 'node:http'
 import { mkdtemp, readdir, rmdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { createHash } from 'node:crypto'
 import { S3Client } from '@aws-sdk/client-s3'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -22,6 +23,9 @@ describe('object revision transport with real S3 HTTP requests', () => {
   let truncatedList: boolean
   let failAfterPut: number
   let shortBodyKey: string
+  let corruptPut: number
+  let concurrentPut: number
+  let rewriteRecovery: boolean
 
   const client = () => {
     const result = new S3Client({
@@ -40,7 +44,7 @@ describe('object revision transport with real S3 HTTP requests', () => {
 
   beforeEach(async () => {
     objects = new Map(); requests = []; clients = []
-    failPut = 0; putCount = 0; holdKey = ''; rejectPut = false; truncatedList = false; failAfterPut = 0; shortBodyKey = ''
+    failPut = 0; putCount = 0; holdKey = ''; rejectPut = false; truncatedList = false; failAfterPut = 0; shortBodyKey = ''; corruptPut = 0; concurrentPut = 0; rewriteRecovery = false
     server = createServer(async (req, res) => {
       const url = new URL(req.url!, 'http://127.0.0.1')
       const key = decodeURIComponent(url.pathname.replace(/^\/test-bucket\/?/, ''))
@@ -58,9 +62,18 @@ describe('object revision transport with real S3 HTTP requests', () => {
         const chunks: Buffer[] = []
         for await (const chunk of req) chunks.push(Buffer.from(chunk))
         putCount++
+        if (putCount === concurrentPut) objects.set(key, Buffer.from('concurrent-writer'))
         if (rejectPut || (objects.has(key) && req.headers['if-none-match'] === '*')) return error(412, 'PreconditionFailed')
         if (putCount === failPut) return error(503, 'ServiceUnavailable')
         objects.set(key, Buffer.concat(chunks))
+        if (putCount === corruptPut) objects.set(key, Buffer.from('unexpected-provider-bytes'))
+        if (rewriteRecovery && key.startsWith('recovered-media/') && key.endsWith('/manifest.json')) {
+          const manifest = JSON.parse(objects.get(key)!.toString())
+          const replacement = Buffer.alloc(manifest.files[0].size, 65)
+          objects.set(key.replace('/manifest.json', '/files/0'), replacement)
+          manifest.files[0].sha256 = createHash('sha256').update(replacement).digest('hex')
+          objects.set(key, Buffer.from(JSON.stringify(manifest)))
+        }
         if (putCount === failAfterPut) return error(503, 'ServiceUnavailable')
         res.setHeader('ETag', '"synthetic-etag"')
         res.end()
@@ -96,6 +109,119 @@ describe('object revision transport with real S3 HTTP requests', () => {
     expect(puts.map((request) => request.condition)).toEqual(['*', '*', '*', '*', '*'])
     expect(puts[2].key).toBe(`owner-media/${first}/manifest.json`)
     expect(puts[4].key).toBe(`owner-media/${second}/manifest.json`)
+  })
+
+  const recoveryStore = (timeoutMs = 15000) => createObjectRevisionStore({ client: client(), bucket: 'test-bucket', prefix: 'recovered-media', timeoutMs })
+
+  it('restores a verified revision to an empty namespace without changing its database identifier', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    const snapshot = await store().read(revision)
+    const sourceKeys = [...objects.keys()]
+    const recovery = recoveryStore()
+    expect(await recovery.restore(revision, manifest, snapshot)).toBe(revision)
+    expect(await recoveryStore().read(revision)).toEqual(files())
+    expect(await store().read(revision)).toEqual(files())
+    expect(sourceKeys.every((key) => objects.has(key))).toBe(true)
+    const puts = requests.filter(({ method, key }) => method === 'PUT' && key.startsWith('recovered-media/'))
+    expect(puts.map(({ condition }) => condition)).toEqual(['*', '*', '*'])
+    expect(puts.at(-1)!.key).toBe(`recovered-media/${revision}/manifest.json`)
+  })
+
+  it.each(['identity', 'corrupt', 'missing', 'extra', 'name'])('rejects a %s recovery package before contacting the destination', async (fault) => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    const snapshot = files()
+    if (fault === 'identity') manifest.revision = '22222222-2222-4222-8222-222222222222'
+    if (fault === 'corrupt') snapshot[0].bytes = Buffer.from('corrupt')
+    if (fault === 'missing') snapshot.pop()
+    if (fault === 'extra') snapshot.push({ name: 'extra.png', bytes: Buffer.from('extra') })
+    if (fault === 'name') snapshot[0].name = '../unsafe'
+    const before = requests.length
+    await expect(recoveryStore().restore(revision, manifest, snapshot)).rejects.toThrow()
+    expect(requests.length).toBe(before)
+  })
+
+  it('refuses a nonempty revision prefix without replacing or deleting any object', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    const foreignKey = `recovered-media/${revision}/unexpected`
+    objects.set(foreignKey, Buffer.from('keep'))
+    const before = new Map(objects)
+    const requestStart = requests.length
+    await expect(recoveryStore().restore(revision, manifest, files())).rejects.toThrow()
+    expect(objects).toEqual(before)
+    expect(requests.slice(requestStart).some(({ method }) => method !== 'GET')).toBe(false)
+  })
+
+  it('keeps an interrupted restore private and refuses to overwrite its partial destination on retry', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    failPut = putCount + 2
+    const recovery = recoveryStore()
+    const error = await recovery.restore(revision, manifest, files()).catch((value: unknown) => value) as Error & { revision: string }
+    expect(error.revision).toBe(revision)
+    expect(objects.has(`recovered-media/${revision}/manifest.json`)).toBe(false)
+    expect(objects.get(`recovered-media/${revision}/files/0`)).toEqual(files()[0].bytes)
+    await expect(recovery.read(revision)).rejects.toThrow()
+    const afterFailure = new Map(objects)
+    failPut = 0
+    await expect(recovery.restore(revision, manifest, files())).rejects.toThrow()
+    expect(objects).toEqual(afterFailure)
+    expect(await store().read(revision)).toEqual(files())
+  })
+
+  it('does not report recovery success when post-write verification detects corrupt destination bytes', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    corruptPut = putCount + 1
+    await expect(recoveryStore().restore(revision, manifest, files())).rejects.toMatchObject({ revision })
+    expect(objects.get(`recovered-media/${revision}/files/0`)).toEqual(Buffer.from('unexpected-provider-bytes'))
+    expect(requests.some(({ method }) => method === 'DELETE')).toBe(false)
+    expect(await store().read(revision)).toEqual(files())
+  })
+
+  it('compares the final recovered bytes to the approved backup even if the destination manifest is replaced consistently', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    rewriteRecovery = true
+    await expect(recoveryStore().restore(revision, manifest, files())).rejects.toMatchObject({ revision })
+    expect(await store().read(revision)).toEqual(files())
+  })
+
+  it('preserves a competing writer arriving after the empty LIST and stops before committing the manifest', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    concurrentPut = putCount + 2
+    await expect(recoveryStore().restore(revision, manifest, files())).rejects.toMatchObject({ revision })
+    expect(objects.get(`recovered-media/${revision}/files/0`)).toEqual(files()[0].bytes)
+    expect(objects.get(`recovered-media/${revision}/files/1`)).toEqual(Buffer.from('concurrent-writer'))
+    expect(objects.has(`recovered-media/${revision}/manifest.json`)).toBe(false)
+    expect(requests.some(({ method }) => method === 'DELETE')).toBe(false)
+    expect(await store().read(revision)).toEqual(files())
+  })
+
+  it('snapshots recovery inputs before awaiting the provider', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    const snapshot = files()
+    const restoration = recoveryStore().restore(revision, manifest, snapshot)
+    snapshot[0].bytes.fill(0)
+    manifest.files[0].name = 'changed.png'
+    await expect(restoration).resolves.toBe(revision)
+    expect(await recoveryStore().read(revision)).toEqual(files())
+  })
+
+  it('bounds restoration through the final verification body, not just the PUT responses', async () => {
+    const revision = await store().write(files())
+    const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
+    holdKey = `recovered-media/${revision}/files/0`
+    const started = performance.now()
+    await expect(recoveryStore(200).restore(revision, manifest, files())).rejects.toMatchObject({ revision })
+    expect(performance.now() - started).toBeLessThan(2000)
+    expect(objects.has(`recovered-media/${revision}/manifest.json`)).toBe(true)
+    holdKey = ''
+    expect(await recoveryStore().read(revision)).toEqual(files())
   })
 
   it('binds uploads and guarded historical reads to object storage without writing native files', async () => {

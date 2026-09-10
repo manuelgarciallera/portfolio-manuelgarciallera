@@ -72,15 +72,8 @@ export const createObjectRevisionStore = ({ client, bucket, prefix, timeoutMs = 
     }
   }
 
-  return {
-    async write(files: { name: string; bytes: Buffer }[]): Promise<string> {
-      const snapshot = snapshotFiles(files)
-      const revision = randomUUID()
-      const signal = AbortSignal.timeout(timeoutMs)
-      const manifest: Manifest = {
-        schema: 1, revision,
-        files: snapshot.map(({ name, bytes }) => ({ name, size: bytes.length, sha256: digest(bytes) })),
-      }
+  const putRevision = async (manifest: Manifest, snapshot: { name: string; bytes: Buffer }[], signal: AbortSignal) => {
+      const revision = manifest.revision
       const put = async (key: string, bytes: Buffer, contentType: string) => {
         signal.throwIfAborted()
         await client.send(new PutObjectCommand({
@@ -97,10 +90,9 @@ export const createObjectRevisionStore = ({ client, bucket, prefix, timeoutMs = 
         // A lost response may hide a successful write. Never delete or overwrite.
         throw new ObjectRevisionWriteError(revision, cause)
       }
-    },
-    async read(revision: string): Promise<{ name: string; bytes: Buffer }[]> {
+  }
+  const readRevision = async (revision: string, signal: AbortSignal): Promise<{ name: string; bytes: Buffer }[]> => {
       validateRevision(revision)
-      const signal = AbortSignal.timeout(timeoutMs)
       const bytes = await readBytes(manifestKey(revision), MAX_MANIFEST_BYTES, signal)
       const manifest = validateManifest(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), revision)
       await assertInventory(revision, manifest, signal)
@@ -113,6 +105,48 @@ export const createObjectRevisionStore = ({ client, bucket, prefix, timeoutMs = 
       await assertInventory(revision, manifest, signal)
       signal.throwIfAborted()
       return result
+  }
+  return {
+    async write(files: { name: string; bytes: Buffer }[]): Promise<string> {
+      const snapshot = snapshotFiles(files)
+      const manifest: Manifest = {
+        schema: 1, revision: randomUUID(),
+        files: snapshot.map(({ name, bytes }) => ({ name, size: bytes.length, sha256: digest(bytes) })),
+      }
+      return putRevision(manifest, snapshot, AbortSignal.timeout(timeoutMs))
+    },
+    read(revision: string): Promise<{ name: string; bytes: Buffer }[]> {
+      return readRevision(revision, AbortSignal.timeout(timeoutMs))
+    },
+    /** Recovery primitive for a server-approved backup, never a public upload API.
+     * Destination revision prefix must be empty. Partial failures are retained:
+     * retry in a fresh recovery namespace, not by overwriting a partial restore.
+     * A manifest proves byte consistency, not the provenance of the backup.
+     */
+    async restore(revision: string, backupManifest: unknown, files: { name: string; bytes: Buffer }[]): Promise<string> {
+      validateRevision(revision)
+      const manifest = validateManifest(backupManifest, revision)
+      const snapshot = snapshotFiles(files)
+      if (snapshot.length !== manifest.files.length || snapshot.some((file, index) => {
+        const entry = manifest.files[index]
+        return file.name !== entry.name || file.bytes.length !== entry.size || digest(file.bytes) !== entry.sha256
+      })) throw new Error('Recovery bytes do not match the approved manifest.')
+      const signal = AbortSignal.timeout(timeoutMs)
+      try {
+        const existing = await client.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: base(revision), MaxKeys: 1 }), { abortSignal: signal })
+        if (existing.IsTruncated || existing.Contents?.length) throw new Error('Recovery destination is not empty.')
+        await putRevision(manifest, snapshot, signal)
+        const restored = await readRevision(revision, signal)
+        if (restored.length !== snapshot.length || restored.some((file, index) =>
+          file.name !== snapshot[index].name || !file.bytes.equals(snapshot[index].bytes))) {
+          throw new Error('Recovered revision differs from the approved backup.')
+        }
+        signal.throwIfAborted()
+        return revision
+      } catch (cause) {
+        if (cause instanceof ObjectRevisionWriteError) throw cause
+        throw new ObjectRevisionWriteError(revision, cause)
+      }
     },
   }
 }
