@@ -123,6 +123,8 @@ export type MediaHTTPReopenSettings = {
   database: { engine: 'sqlite'; filename: string } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] }
   collections?: CollectionConfig[]
   fullOwnerConfig?: boolean
+  schemaName?: string
+  transformOwnerCollection?: (collection: CollectionConfig) => CollectionConfig
   decorateMedia?: (media: CollectionConfig) => CollectionConfig
 }
 
@@ -132,6 +134,7 @@ export const startMediaHTTPFixture = async (
 ): Promise<MediaHTTPFixture> => {
   const root = settings ? settings.root : process.env.OWNER_INTEGRATION_DIRECTORY
   if (!root || !path.isAbsolute(root)) throw new Error('OWNER_INTEGRATION_DIRECTORY must be an explicit absolute fixture root.')
+  if (settings?.schemaName && !/^[a-z][a-z0-9_]{0,62}$/.test(settings.schemaName)) throw new Error('Invalid fixture schema name.')
   if (settings && (!path.isAbsolute(settings.revisionRoot) || !path.isAbsolute(settings.staticDir)
     || !settings.secret || !settings.credentials.email.endsWith('@example.invalid') || !settings.credentials.password
     || (settings.database.engine === 'sqlite' ? !path.isAbsolute(settings.database.filename) : settings.database.pool?.host !== '127.0.0.1'))) {
@@ -208,11 +211,11 @@ export const startMediaHTTPFixture = async (
     config = await buildConfig({
       ...ownerConfig,
       collections: ownerConfig
-        ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : collection), ...(settings?.collections ?? [])]
+        ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : settings?.transformOwnerCollection?.(collection) ?? collection), ...(settings?.collections ?? [])]
         : [Users, mediaCollection, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
         ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true,
-          schemaName: settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture' })
+          schemaName: settings?.schemaName ?? (settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture') })
         : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
       secret: settings?.secret ?? randomUUID() + randomUUID(),
