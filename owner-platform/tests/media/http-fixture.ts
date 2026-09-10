@@ -122,6 +122,7 @@ export type MediaHTTPReopenSettings = {
   seed: boolean
   database: { engine: 'sqlite'; filename: string } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] }
   collections?: CollectionConfig[]
+  fullOwnerConfig?: boolean
   decorateMedia?: (media: CollectionConfig) => CollectionConfig
 }
 
@@ -202,8 +203,13 @@ export const startMediaHTTPFixture = async (
       ? await createTransportRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, store: transport, staticDir })
       : await createRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, revisionRoot, staticDir })
     const upload = typeof bound.upload === 'object' ? bound.upload : {}
+    const ownerConfig = settings?.fullOwnerConfig ? (await import('../../src/payload.config')).createOwnerConfig() : undefined
+    const mediaCollection = { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }
     config = await buildConfig({
-      collections: [Users, { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }, ...(settings?.collections ?? [])],
+      ...ownerConfig,
+      collections: ownerConfig
+        ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : collection), ...(settings?.collections ?? [])]
+        : [Users, mediaCollection, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
         ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true, schemaName: transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture' })
         : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),

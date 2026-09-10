@@ -4,7 +4,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { es } from '@payloadcms/translations/languages/es'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { buildConfig, type CollectionConfig } from 'payload'
+import { buildConfig, type CollectionConfig, type Config } from 'payload'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
@@ -61,7 +61,9 @@ const db =
 const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>
   collections.map((collection) => ({ ...collection, labels: editorialLabels(collection.slug) ?? collection.labels, admin: { ...collection.admin, group } }))
 
-export default buildConfig({
+// Fresh raw configuration lets isolated acceptance fixtures replace infrastructure
+// without mutating an already sanitized app config or the default runtime.
+export const createOwnerConfig = (): Config => ({
   email: createOwnerEmailAdapter({ apiKey: process.env.OWNER_EMAIL_API_KEY, fromAddress: process.env.OWNER_EMAIL_FROM, nodeEnv: process.env.NODE_ENV, productionBuild: runtime.productionBuild }),
   serverURL: resolveOwnerServerURL({ value: process.env.OWNER_SERVER_URL, nodeEnv: process.env.NODE_ENV, productionBuild: runtime.productionBuild }),
   // The owner interface is Spanish, like our custom controls. This is UI i18n,
@@ -108,3 +110,5 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 })
+
+export default buildConfig(createOwnerConfig())
