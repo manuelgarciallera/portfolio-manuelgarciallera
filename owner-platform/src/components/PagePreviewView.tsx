@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { AdminViewServerProps } from 'payload'
 import { isOwner } from '../access/owner'
 import { loadContentVisualPreview } from '../preview/visual-service'
+import { loadSnapshotVisualPreview } from '../preview/snapshot-visual'
 import { isPreviewCollection } from '../preview/content-layout'
 import { PagePreviewCanvas } from './PagePreviewCanvas'
 import { PagePreviewDocument } from './PagePreviewDocument'
@@ -12,6 +13,21 @@ export const PagePreviewView = async ({ initPageResult, params }: AdminViewServe
   const req = initPageResult.req
   if (!isOwner(req.user)) redirect('/admin/login')
   const segments = params?.segments
+  if (Array.isArray(segments) && segments[0] === 'snapshot-preview') {
+    const id = segments[1]
+    if (segments.length !== 2 || !id || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) notFound()
+    const returnURL = `/admin/collections/preview-snapshots/${encodeURIComponent(id)}`
+    let preview
+    try { preview = await loadSnapshotVisualPreview({ req, snapshotId: id }) }
+    catch { return <section className={styles.view}><h1>No se pudo preparar la captura</h1><p>La captura no está disponible o no se ha podido validar. No se ha sustituido por el contenido actual.</p><Link href={returnURL}>Volver a la captura</Link></section> }
+    return <section className={styles.view}>
+      <header><h1>Captura histórica: {preview.title}</h1><Link href={returnURL}>Volver a la captura</Link></header>
+      <p>Guardada: {preview.updatedAt}. Esta vista es de solo lectura; no es el borrador actual ni publica contenido.</p>
+      <p>Solo se muestran datos conservados en la captura. Las imágenes requieren el almacenamiento histórico disponible. Los módulos y animaciones específicos no se reproducen aquí.</p>
+      {preview.warnings.length > 0 && <details open><summary>Limitaciones de esta captura ({preview.warnings.length})</summary><ul>{preview.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul></details>}
+      <PagePreviewCanvas><PagePreviewDocument preview={preview} /></PagePreviewCanvas>
+    </section>
+  }
   const generic = Array.isArray(segments) && segments[0] === 'content-preview'
   const collection = generic ? segments[1] : 'pages'
   const id = Array.isArray(segments) ? segments[generic ? 2 : 1] : undefined

@@ -48,6 +48,7 @@ export const PreviewSnapshots: CollectionConfig = {
     beforeDelete: [enforceImmutablePreviewDelete],
   },
   fields: [
+    { name: 'historicalPreview', type: 'ui', admin: { components: { Field: './components/PagePreviewLink#PagePreviewLink' } } },
     { name: 'schemaVersion', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'sourceCollection', type: 'text', required: true, index: true, admin: { readOnly: true } },
     { name: 'sourceDocumentId', type: 'text', required: true, index: true, admin: { readOnly: true } },
