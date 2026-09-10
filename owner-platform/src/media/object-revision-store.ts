@@ -118,6 +118,18 @@ export const createObjectRevisionStore = ({ client, bucket, prefix, timeoutMs = 
     read(revision: string): Promise<{ name: string; bytes: Buffer }[]> {
       return readRevision(revision, AbortSignal.timeout(timeoutMs))
     },
+    /** In-memory package only: caller must persist it in an approved private backup.
+     * It contains no client credentials or namespace configuration.
+     */
+    async exportRevision(revision: string): Promise<{ manifest: Manifest; files: { name: string; bytes: Buffer }[] }> {
+      const signal = AbortSignal.timeout(timeoutMs)
+      const files = await readRevision(revision, signal)
+      const manifest: Manifest = { schema: 1, revision, files: files.map(({ name, bytes }) => ({
+        name, size: bytes.length, sha256: digest(bytes),
+      })) }
+      signal.throwIfAborted()
+      return { manifest, files }
+    },
     /** Recovery primitive for a server-approved backup, never a public upload API.
      * Destination revision prefix must be empty. Partial failures are retained:
      * retry in a fresh recovery namespace, not by overwriting a partial restore.

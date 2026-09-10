@@ -1,5 +1,5 @@
 import { createServer, type Server } from 'node:http'
-import { mkdtemp, readdir, rmdir } from 'node:fs/promises'
+import { mkdtemp, readdir, rmdir, readFile, writeFile, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
@@ -112,6 +112,45 @@ describe('object revision transport with real S3 HTTP requests', () => {
   })
 
   const recoveryStore = (timeoutMs = 15000) => createObjectRevisionStore({ client: client(), bucket: 'test-bucket', prefix: 'recovered-media', timeoutMs })
+
+  it('exports a self-contained verified package that restores without reading its source again', async () => {
+    const source = store()
+    const revision = await source.write(files())
+    const backup = await source.exportRevision(revision)
+    expect(backup.manifest).toEqual({ schema: 1, revision, files: files().map(({ name, bytes }) => ({
+      name, size: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'),
+    })) })
+    expect(backup.files).toEqual(files())
+    expect(Object.keys(backup).sort()).toEqual(['files', 'manifest'])
+    const directory = await mkdtemp(path.join(tmpdir(), 'owner-object-backup-'))
+    const paths = [path.join(directory, '0.bin'), path.join(directory, '1.bin'), path.join(directory, 'manifest.json')]
+    try {
+      for (const [index, file] of backup.files.entries()) await writeFile(paths[index], file.bytes, { flag: 'wx', mode: 0o600 })
+      await writeFile(paths[2], JSON.stringify(backup.manifest), { flag: 'wx', mode: 0o600 })
+      // Retire the source SDK clients and only this fixture's source objects.
+      clients.forEach((value) => value.destroy())
+      for (const key of [...objects.keys()]) if (key.startsWith('owner-media/')) objects.delete(key)
+      const before = requests.length
+      const manifest = JSON.parse(await readFile(paths[2], 'utf8'))
+      const restoredFiles = await Promise.all(manifest.files.map(async (entry: { name: string }, index: number) => ({
+        name: entry.name, bytes: await readFile(paths[index]),
+      })))
+      const recovered = recoveryStore()
+      await expect(recovered.restore(revision, manifest, restoredFiles)).resolves.toBe(revision)
+      expect(await recovered.read(revision)).toEqual(files())
+      expect(requests.slice(before).some(({ key }) => key.startsWith('owner-media/'))).toBe(false)
+    } finally {
+      for (const file of paths) await unlink(file).catch((error: NodeJS.ErrnoException) => { if (error.code !== 'ENOENT') throw error })
+      await rmdir(directory)
+    }
+  })
+
+  it('does not export a package when one source derivative fails integrity validation', async () => {
+    const source = store()
+    const revision = await source.write(files())
+    objects.set(`owner-media/${revision}/files/1`, Buffer.from('damaged'))
+    await expect(source.exportRevision(revision)).rejects.toThrow()
+  })
 
   it('restores a verified revision to an empty namespace without changing its database identifier', async () => {
     const revision = await store().write(files())
