@@ -18,6 +18,7 @@
     "test:recovery:postgres": "node scripts/test-recovery-postgres.mjs",
     "test:controls": "node tests/document-controls.browser.mjs",
     "test:dashboard": "node tests/dashboard.browser.mjs",
+    "test:production:editor": "node scripts/test-production-http.mjs --browser-editor",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

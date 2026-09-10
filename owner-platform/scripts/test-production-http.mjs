@@ -9,14 +9,18 @@ import { build } from 'esbuild'
 import { createPostgresCluster, preflightTools, runCommand, safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
 import { verifyProductionBrowserLogin } from '../tests/production/browser-login.mjs'
+import { startBrowserProxy } from '../tests/production/browser-proxy.mjs'
+import { verifyBrowserTLS } from '../tests/production/browser-tls-preflight.mjs'
 import { verifyProductionObjectMedia } from '../tests/production/object-media.mjs'
 import { verifyObjectTLS } from '../tests/production/object-tls-preflight.mjs'
 
 const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')
 const objectMedia = process.argv.includes('--object-media')
+const browserEditor = process.argv.includes('--browser-editor')
 const openssl = process.env.OWNER_TEST_OPENSSL || (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl')
-if (objectMedia) await runCommand(openssl, ['version'])
+if (objectMedia || browserEditor) await runCommand(openssl, ['version'])
+if (browserEditor) await verifyBrowserTLS({ cwd, openssl })
 if (objectMedia) await verifyObjectTLS({ cwd, openssl })
 const { tools } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 const env = safeEnvironment()
@@ -39,6 +43,7 @@ let app
 let closed = true
 let closePromise
 let objectEnvironment
+let browserProxy
 let infrastructureClosed = true
 try {
   const pool = await postgres.initialize()
@@ -66,6 +71,10 @@ try {
     objectEnvironment = await startProductionObjectEnvironment({ root: postgres.root, openssl })
     Object.assign(env, objectEnvironment.environment)
   }
+  if (browserEditor) {
+    browserProxy = await startBrowserProxy({ root: postgres.root, openssl, targetOrigin: origin })
+    env.OWNER_SERVER_URL = browserProxy.origin
+  }
   const stop = async () => {
     if (closed) return
     if (process.platform === 'win32') await runCommand('taskkill', ['/PID', String(app.pid), '/T', '/F'])
@@ -90,7 +99,8 @@ try {
   }
   try {
     await start()
-    await verifyProductionBrowserLogin(origin, credentials)
+    const browserDrafts = await verifyProductionBrowserLogin(browserProxy?.origin ?? origin, credentials,
+      { editor: browserEditor, certificatePin: browserProxy?.certificatePin })
     const login = await fetch(`${origin}/api/users/login`, { signal: AbortSignal.timeout(10_000), method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentials) })
     assert.equal(login.status, 200, 'Owner login over production HTTP')
     const { token } = await login.json()
@@ -121,8 +131,13 @@ try {
     const afterResponse = await request(`/api/pages/${doc.id}?draft=true&depth=0`)
     assert.equal(afterResponse.status, 200)
     assert.deepEqual(await afterResponse.json(), before)
+    for (const browserDraft of browserDrafts) {
+      const response = await request(`/api/pages/${browserDraft.id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), browserDraft, 'Browser-edited draft survives process restart')
+    }
     await verifyMediaAfterRestart?.()
-    console.log(JSON.stringify({ productionHTTP: 'passed', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
+    console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }
 } catch (error) {
   if (error.childClosed === false) infrastructureClosed = false
@@ -130,7 +145,10 @@ try {
 } finally {
   let providerClosed = false
   try { await objectEnvironment?.close(); providerClosed = true } finally {
-    await postgres.shutdown({ childrenClosed: closed && workersClosed() && providerClosed && infrastructureClosed })
+    let browserProxyClosed = false
+    try { await browserProxy?.close(); browserProxyClosed = true } finally {
+      await postgres.shutdown({ childrenClosed: closed && workersClosed() && providerClosed && browserProxyClosed && infrastructureClosed })
+    }
   }
   console.log('[production-http] owned app and cluster closed; isolated root cleaned')
 }

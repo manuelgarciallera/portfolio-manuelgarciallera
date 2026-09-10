@@ -1,14 +1,21 @@
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
+import { verifyProductionBrowserEditor } from './browser-editor.mjs'
 
-export const verifyProductionBrowserLogin = async (origin, credentials) => {
+export const verifyProductionBrowserLogin = async (origin, credentials, { certificatePin, editor = false } = {}) => {
   const url = new URL(origin)
   assert.equal(url.hostname, '127.0.0.1')
+  if (editor) {
+    assert.equal(url.protocol, 'https:')
+    assert.match(certificatePin, /^[A-Za-z0-9+/]{43}=$/)
+  }
   assert(credentials.email.endsWith('@example.invalid'))
-  const browser = await chromium.launch()
+  // Trust only the ephemeral fixture's public key, not arbitrary TLS errors.
+  const browser = await chromium.launch({ args: editor ? [`--ignore-certificate-errors-spki-list=${certificatePin}`] : [] })
+  const drafts = []
   try {
     for (const width of [390, 1280]) {
-      const context = await browser.newContext({ viewport: { width, height: 900 } })
+      const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width === 390 })
       try {
         const page = await context.newPage()
         page.setDefaultTimeout(15_000)
@@ -40,7 +47,10 @@ export const verifyProductionBrowserLogin = async (origin, credentials) => {
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
         assert.deepEqual(errors, [])
         console.log(`[production-browser] PASS ${width}px keyboard login and cookie session`)
+        if (editor) drafts.push(await verifyProductionBrowserEditor({ page, context, origin, width }))
+        assert.deepEqual(errors, [])
       } finally { await context.close() }
     }
   } finally { await browser.close() }
+  return drafts
 }
