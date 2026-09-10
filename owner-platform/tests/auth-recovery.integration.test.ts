@@ -12,7 +12,8 @@ let fixture: MediaHTTPFixture
 const email = 'recovery-owner@example.invalid'
 const password = randomUUID() + randomUUID()
 const inbox: SendEmailOptions[] = []
-beforeEach(() => { inbox.length = 0 })
+let rejectDelivery = false
+beforeEach(() => { inbox.length = 0; rejectDelivery = false })
 beforeAll(async () => {
   const directory = process.env.OWNER_INTEGRATION_DIRECTORY
   if (!directory || !path.isAbsolute(directory)) throw new Error('Explicit QA directory required')
@@ -26,6 +27,7 @@ beforeAll(async () => {
   const nativeFetch = globalThis.fetch
   vi.stubGlobal('fetch', async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
     if (String(input) !== 'https://api.resend.com/emails') return nativeFetch(input, init)
+    if (rejectDelivery) return Response.json({ name: 'provider_error', message: 'sensitive-provider-detail', statusCode: 503 }, { status: 503 })
     inbox.push(JSON.parse(String(init?.body)))
     return Response.json({ id: randomUUID() })
   })
@@ -81,4 +83,29 @@ it('recovers through the emailed single-use token without exposing account exist
   expect((await post('login', { email, password })).status).toBe(401)
   expect((await post('login', { email, password: nextPassword })).status).toBe(200)
   expect((await post('reset-password', { token, password })).status).toBe(403)
+}, 60_000)
+
+it('rolls back a rejected delivery and preserves the previously issued recovery link', async () => {
+  const targetEmail = 'delivery-failure@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  const stored = () => fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const before = await stored()
+  expect(typeof before.resetPasswordToken).toBe('string')
+  rejectDelivery = true
+  const failed = await post('forgot-password', { email: targetEmail })
+  expect(failed.status).toBe(503)
+  const body = await failed.text()
+  expect(body).not.toContain('sensitive-provider-detail')
+  expect(body).not.toContain(targetEmail)
+  const after = await stored()
+  expect(after.resetPasswordToken).toBe(before.resetPasswordToken)
+  expect(after.resetPasswordExpiration).toBe(before.resetPasswordExpiration)
+  expect(inbox).toHaveLength(1)
+  expect((await post('login', { email: targetEmail, password: targetPassword })).status).toBe(200)
+  const replacement = randomUUID() + randomUUID()
+  expect((await post('reset-password', { token: before.resetPasswordToken, password: replacement })).status).toBe(200)
+  expect((await post('login', { email: targetEmail, password: replacement })).status).toBe(200)
 }, 60_000)
