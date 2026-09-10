@@ -7,7 +7,7 @@ import { recordAuditEvent } from '../collections/AuditEvents'
 import { hashPublicationArtifact, type PublicationArtifact } from './artifact'
 import { hashPublicationBundle, type PublicationBundle } from './bundle'
 import { createPublicationExport } from './export'
-import { createPublicationPreflight } from './preflight'
+import { createPublicationPreflight, hashPublicationPreflight, type PublicationPreflight } from './preflight'
 
 type Payload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -24,8 +24,7 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   artifactId: string | number; checkedAt?: string; payload: Payload; req: { user?: unknown }
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
-  const existing = await payload.find({ collection: 'publication-preflights', depth: 0, limit: 1, overrideAccess: false, req, where: { artifact: { equals: artifactId } } })
-  if (existing.totalDocs > 0 && existing.docs[0]) return existing.docs[0]
+  const existing = await payload.find({ collection: 'publication-preflights', depth: 0, limit: 1, sort: '-checkedAt', overrideAccess: false, req, where: { artifact: { equals: artifactId } } })
 
   const artifactDocument = await payload.findByID({ collection: 'publication-artifacts', depth: 0, id: artifactId, overrideAccess: false, req })
   const storedArtifactId = relationId(artifactDocument, 'El artefacto')
@@ -41,6 +40,22 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   let bundleHash: string
   try { bundleHash = hashPublicationBundle(bundle) } catch { throw new APIError('El paquete no supera la verificación de integridad.', 409) }
   if (bundleDocument.bundleHash !== bundleHash || artifact.bundleHash !== bundleHash || bundleDocument.pageCount !== artifact.pageCount) throw new APIError('El paquete no coincide con el artefacto aprobado.', 409)
+
+  // Immutability preserves evidence, not the validity of old validation rules.
+  // Reuse only a report reproducible with today's checks and its original date.
+  const previous = existing.docs[0]
+  if (previous) {
+    try {
+      const previousExport = createPublicationExport({ artifact, bundle, exportedAt: previous.checkedAt as string })
+      const current = createPublicationPreflight(previousExport, previous.checkedAt as string)
+      if (String(relationId(previous.artifact, 'El artefacto')) === String(storedArtifactId) &&
+        hashPublicationPreflight(previous.report as PublicationPreflight) === current.hash &&
+        previous.preflightHash === current.hash && previous.artifactHash === current.artifactHash &&
+        previous.exportHash === current.exportHash && previous.status === current.status &&
+        previous.issueCount === current.issueCount && previous.pageCount === current.pageCount &&
+        previous.schemaVersion === current.schemaVersion) return previous
+    } catch { /* Preserve malformed/stale evidence and append a fresh report below. */ }
+  }
 
   let exported
   let report

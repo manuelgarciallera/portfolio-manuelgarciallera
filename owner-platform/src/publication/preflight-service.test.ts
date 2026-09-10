@@ -34,9 +34,27 @@ describe('owner publication preflight service', () => {
 
   it('returns an existing immutable report without recreating or re-auditing it', async () => {
     const { create, find, payload } = setup()
-    find.mockResolvedValue({ docs: [{ id: 109, status: 'blocked' }], totalDocs: 1 })
-    await expect(createOwnerPublicationPreflight({ artifactId: 100, payload, req: { user: owner } })).resolves.toEqual({ id: 109, status: 'blocked' })
+    const existing = await createOwnerPublicationPreflight({ artifactId: 100, checkedAt: '2026-09-05T08:10:00.000Z', payload, req: { user: owner } })
+    find.mockResolvedValue({ docs: [existing], totalDocs: 1 })
+    create.mockClear()
+    await expect(createOwnerPublicationPreflight({ artifactId: 100, payload, req: { user: owner } })).resolves.toEqual(existing)
     expect(create).not.toHaveBeenCalled()
+  })
+
+  it('replaces a stale ready result with a new blocked report without changing the old record', async () => {
+    const { create, find, findByID, payload } = setup()
+    const badCapsule = createDraftCapsule({ source: capsule.source, state: { ...capsule.state, slug: 'a/b' } })
+    const badBundle = createPublicationBundle({ entries: [{ ...bundle.entries[0], capsule: badCapsule, draftHash: badCapsule.hash }] })
+    const badArtifact = createPublicationArtifact({ bundleHash: badBundle.hash, bundleId: 80, pageCount: 1, reviewHash: artifact.reviewHash, reviewId: 90 })
+    findByID.mockImplementation(async ({ collection }) => collection === 'publication-artifacts'
+      ? { artifact: badArtifact, artifactHash: badArtifact.hash, bundle: 80, bundleHash: badBundle.hash, id: 100, pageCount: 1 }
+      : { bundle: badBundle, bundleHash: badBundle.hash, id: 80, pageCount: 1 })
+    const legacy = Object.freeze({ id: 109, artifact: 100, checkedAt: '2026-09-05T08:10:00.000Z', status: 'ready', issueCount: 0, preflightHash: `sha256:${'c'.repeat(64)}` })
+    find.mockResolvedValue({ docs: [legacy], totalDocs: 1 })
+    const result = await createOwnerPublicationPreflight({ artifactId: 100, checkedAt: '2026-09-10T18:00:00.000Z', payload, req: { user: owner } })
+    expect(result).toMatchObject({ id: 110, status: 'blocked', issueCount: 1, report: { issues: [expect.objectContaining({ code: 'invalid_slug' })] } })
+    expect(legacy.status).toBe('ready')
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ collection: 'publication-preflights' }))
   })
 
   it('fails closed before persistence for anonymous or tampered provenance', async () => {

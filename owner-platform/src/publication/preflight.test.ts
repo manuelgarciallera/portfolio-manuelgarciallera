@@ -14,6 +14,21 @@ const buildExport = (state: Record<string, unknown>) => {
 }
 
 describe('publication preflight', () => {
+  it.each(['a/b', 'mi página', 'https://example.com', 'page#section', 'page?draft=true', '%2Fadmin', 'x'.repeat(121)])('blocks a historical export with an invalid URL identifier: %s', slug => {
+    const exported = buildExport({ slug, layout: [{ blockType: 'hero', heading: 'Portada' }], seo: { title: 'Inicio', description: 'Descripción' } })
+    const before = JSON.stringify(exported)
+    const report = createPublicationPreflight(exported, '2026-09-10T18:00:00.000Z')
+    expect(report.status).toBe('blocked')
+    expect(report.issues).toContainEqual(expect.objectContaining({ code: 'invalid_slug', pageId: '7', severity: 'blocker' }))
+    expect(JSON.stringify(exported)).toBe(before)
+  })
+
+  it.each(['diseño', 'e\u0301tude', 'Project2026', 'version-2.1'])('preserves a valid authored URL identifier: %s', slug => {
+    const exported = buildExport({ slug, layout: [{ blockType: 'hero', heading: 'Portada' }], seo: { title: 'Inicio', description: 'Descripción' } })
+    expect(createPublicationPreflight(exported, '2026-09-10T18:00:00.000Z').status).toBe('ready')
+    expect(exported.pages[0].state.slug).toBe(slug)
+  })
+
   it('marks a complete, supported page as ready with an immutable verifiable report', () => {
     const report = createPublicationPreflight(buildExport({
       layout: [{ blockType: 'hero', heading: 'Una portada' }, { blockType: 'media', asset: 12 }],

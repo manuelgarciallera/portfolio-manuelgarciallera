@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { EDITORIAL_SLUG_ERROR, isEditorialSlug } from '../content/slug'
 
 import { verifyPublicationExport } from './export'
 
@@ -57,6 +58,7 @@ export const createPublicationPreflight = (input: unknown, checkedAt: string): P
   if (!exactIso(checkedAt)) throw new TypeError('La fecha de comprobación no es válida.')
   const issues: PublicationPreflightIssue[] = []
   for (const page of exported.pages) {
+    if (!isEditorialSlug(page.state.slug)) issues.push(issue('invalid_slug', EDITORIAL_SLUG_ERROR, page.pageId, 'blocker'))
     if (page.state.layout.length === 0) issues.push(issue('empty_layout', 'La página no contiene bloques.', page.pageId, 'blocker'))
     else page.state.layout.forEach((block, position) => issues.push(...inspectBlock(block, page.pageId, position)))
     const seo = isRecord(page.state.seo) ? page.state.seo : {}

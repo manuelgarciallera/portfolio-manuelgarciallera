@@ -397,6 +397,11 @@ it('reviews a real publication bundle addressed by a URL id and generates its ar
   expect(preflight.pageCount).toBe(1)
   const storedPreflight = await payload.findByID({ collection: 'publication-preflights', id: preflight.id as number, depth: 0, user: owner, overrideAccess: false })
   expect(storedPreflight.artifact).toBe(artifact.id)
+  const auditsBeforeRepeat = (await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs
+  const repeatedPreflight = await createOwnerPublicationPreflight({ payload: payload as never, req, artifactId: String(artifact.id) })
+  expect(repeatedPreflight.id).toBe(storedPreflight.id)
+  expect(repeatedPreflight.report).toEqual(storedPreflight.report)
+  expect((await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs).toBe(auditsBeforeRepeat)
   expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
 }, 30_000)
 
