@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import type { SendEmailOptions } from 'payload'
 
@@ -7,6 +8,7 @@ vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
 import { resolveOwnerServerURL } from '../src/config/server-url'
 import { createOwnerEmailAdapter } from '../src/config/email'
+import { editorialDatabaseConfig } from './recovery/postgres-runtime.mjs'
 
 let fixture: MediaHTTPFixture
 const email = 'recovery-owner@example.invalid'
@@ -18,11 +20,17 @@ beforeAll(async () => {
   const directory = process.env.OWNER_INTEGRATION_DIRECTORY
   if (!directory || !path.isAbsolute(directory)) throw new Error('Explicit QA directory required')
   const root = path.join(directory, `auth-recovery-${randomUUID()}`)
+  const selected = await editorialDatabaseConfig(process.env, {
+    cache: fileURLToPath(new URL('../node_modules/.cache', import.meta.url)),
+  })
   fixture = await startMediaHTTPFixture({
     root, revisionRoot: path.join(root, 'revisions'), staticDir: path.join(root, 'uploads'),
     credentials: { email, password }, secret: randomUUID() + randomUUID(), seed: true,
-    database: { engine: 'sqlite', filename: path.join(root, 'auth.db') },
+    database: selected.engine === 'postgres'
+      ? { engine: 'postgres', pool: selected.pool }
+      : { engine: 'sqlite', filename: path.join(root, 'auth.db') },
   })
+  expect(fixture.payload.db.name).toBe(process.env.OWNER_INTEGRATION_ENGINE === 'postgres' ? 'postgres' : 'sqlite')
   // Real owner REST adapter; intercept only external delivery, not local REST.
   const nativeFetch = globalThis.fetch
   vi.stubGlobal('fetch', async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
