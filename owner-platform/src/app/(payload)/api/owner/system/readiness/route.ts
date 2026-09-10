@@ -11,8 +11,10 @@ const environment = () => ({ databaseUrl: process.env.DATABASE_URL, nodeEnv: pro
 export const GET = async (request: Request): Promise<Response> => {
   assertCurrentProductionRuntime()
   const payload = await getPayload({ config })
+  const mediaUpload = payload.collections.media?.config.upload
   return handleReadinessRequest(request, {
     authenticate: (headers) => payload.auth({ headers }),
-    load: (user) => Promise.resolve(getOwnerReadiness({ environment: environment(), user })),
+    load: (user) => Promise.resolve(getOwnerReadiness({ environment: { ...environment(), mediaMode: process.env.OWNER_MEDIA_MODE,
+      mediaLocalStorageDisabled: typeof mediaUpload === 'object' && mediaUpload.disableLocalStorage === true }, user })),
   })
 }

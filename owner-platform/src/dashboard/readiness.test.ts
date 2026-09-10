@@ -3,6 +3,21 @@ import { describe, expect, it } from 'vitest'
 import { buildOwnerReadiness } from './readiness'
 
 describe('buildOwnerReadiness', () => {
+  it('reports the active object adapter without claiming durable storage or deployment readiness', () => {
+    const environment = { mediaMode: 'objects', mediaLocalStorageDisabled: true }
+    const result = buildOwnerReadiness(environment)
+    expect(result.runtime.mediaStorage).toEqual({ adapterConfigured: true, durable: false, kind: 'objects' })
+    expect(result.blockers).toContain('durable-media-storage')
+    expect(result).toMatchObject({ productionReady: false, deploymentAllowed: false, publicBridgeEnabled: false })
+  })
+  it.each([
+    { mediaMode: 'objects', mediaLocalStorageDisabled: false },
+    { mediaMode: 'objects' },
+    { mediaMode: 'invalid', mediaLocalStorageDisabled: true },
+    { mediaMode: 'legacy', mediaLocalStorageDisabled: true },
+  ])('does not report a configured backend from conflicting selection: %j', environment => {
+    expect(buildOwnerReadiness(environment).runtime.mediaStorage).toEqual({ adapterConfigured: false, durable: false, kind: 'unknown' })
+  })
   it('keeps account recovery blocked when mail and canonical origin are absent', () => {
     const result = buildOwnerReadiness({})
     expect(result.runtime).toMatchObject({ accountRecovery: { mailConfigured: false, originConfigured: false, deliveryVerified: false } })

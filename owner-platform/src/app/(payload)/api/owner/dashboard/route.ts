@@ -17,6 +17,7 @@ import { getOwnerReleaseSummary } from '@/releases/summary-service'
 export const GET = async (request: Request): Promise<Response> => {
   assertCurrentProductionRuntime()
   const payload = await getPayload({ config })
+  const mediaUpload = payload.collections.media?.config.upload
   return handleDashboardOverviewRequest(request, {
     authenticate: (headers) => payload.auth({ headers }),
     load: async (user) => {
@@ -29,7 +30,8 @@ export const GET = async (request: Request): Promise<Response> => {
         media: () => getOwnerMediaHealth({ payload: payload as never, req }),
         recent: () => getOwnerRecentContent({ payload: payload as never, req }),
         readiness: () => Promise.resolve(getOwnerReadiness({ environment: { databaseUrl: process.env.DATABASE_URL, nodeEnv: process.env.NODE_ENV, payloadSecret: process.env.PAYLOAD_SECRET,
-          emailApiKey: process.env.OWNER_EMAIL_API_KEY, emailFrom: process.env.OWNER_EMAIL_FROM, serverURL: process.env.OWNER_SERVER_URL }, user })),
+          emailApiKey: process.env.OWNER_EMAIL_API_KEY, emailFrom: process.env.OWNER_EMAIL_FROM, serverURL: process.env.OWNER_SERVER_URL,
+          mediaMode: process.env.OWNER_MEDIA_MODE, mediaLocalStorageDisabled: typeof mediaUpload === 'object' && mediaUpload.disableLocalStorage === true }, user })),
         releases: () => getOwnerReleaseSummary({ payload: payload as never, req }),
         user,
         workflow: () => getOwnerWorkflowSummary({ payload: payload as never, req }),
