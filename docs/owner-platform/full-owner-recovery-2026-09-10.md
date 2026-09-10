@@ -3,6 +3,19 @@
 Fecha: 2026-09-10. Codex. Base Git: `c77e74cf435990aae1decb46806a09411892e411`.
 Solo herramientas de prueba; no configuración ni datos de producción.
 
+## Revalidación posterior sobre c117c47
+
+Ejecutado nuevamente el comando completo con `--object-media --full-owner` sobre `c117c47a45ad08ed21058f8fb926afcb4cd75f29`, después de las correcciones de referencia histórica y readiness. Reserva Hub `15bff8a5`. No se añadió un runner duplicado ni se modificó runtime.
+
+- Preflight `e1b9d7`: 45 pruebas / 5 archivos, 8,14 s, correctas.
+- Resultado terminal `d62a6d`, salida 0, PostgreSQL 17.11: 18 archivos de backup, 12 archivos de medios verificados, 3 revisiones de imágenes y 3 versiones de página recuperadas.
+- 12 casos de daño/ausencia rechazados antes de asignar destino. Login, historial, edición independiente, preview congelada, retención por snapshot, ejecución del plan y edición posterior correctos. Copia ligada al inventario y reconciliación: 3 revisiones reconciliadas y 3 archivos retenidos.
+- Origen lógico y recibos de backup intactos. Cero sesiones del origen antes de dump; proceso de seed cerrado y proceso de restauración distinto. Clúster detenido y solo su raíz sintética eliminada, verificado.
+
+Esta es evidencia nueva del recorrido en procesos independientes. No acredita un arranque Next en un proveedor real, reinicio de máquina, correo entregado, backup externo, cifrado/retención operativos ni recuperación ante una caída abrupta. El servicio de objetos de prueba nace vacío en el proceso de restauración y se repuebla desde la copia validada. No hay proveedor activado ni datos reales.
+
+Próxima puerta: arranque HTTP del build productivo con configuración aislada y su circuito editorial; después staging autorizado. Sin push, despliegue ni cambios públicos. Las secciones siguientes conservan la historia del primer ensayo.
+
 ## Recorrido
 
 Comando desde `owner-platform`, con las herramientas PostgreSQL 17.11 locales:
