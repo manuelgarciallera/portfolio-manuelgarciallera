@@ -23,7 +23,7 @@ beforeAll(async () => {
     credentials: { email, password }, secret: randomUUID() + randomUUID(), seed: true,
     database: { engine: 'sqlite', filename: path.join(root, 'auth.db') },
   })
-  // Real owner/official adapter; intercept only external delivery, not local REST.
+  // Real owner REST adapter; intercept only external delivery, not local REST.
   const nativeFetch = globalThis.fetch
   vi.stubGlobal('fetch', async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
     if (String(input) !== 'https://api.resend.com/emails') return nativeFetch(input, init)
