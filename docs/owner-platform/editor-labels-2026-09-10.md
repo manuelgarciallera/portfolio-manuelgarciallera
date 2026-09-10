@@ -24,6 +24,8 @@ Revisión independiente de solo lectura: sin bloqueadores de compatibilidad; adv
 
 ## Hallazgo abierto: control de medios restaurados
 
+Actualización posterior: causa y corrección local verificadas en [restore-module-capability-2026-09-10.md](./restore-module-capability-2026-09-10.md). Se conserva a continuación el resultado original; no implica publicación de la corrección.
+
 Ensayo adicional `restored-media-control.browser.mjs`, con seed nuevo: falla en `a95719` esperando que aparezca «Usar las imágenes actuales de la biblioteca», antes de alcanzar el campo de título cambiado. El servidor se cerró correctamente. No se considera este recorrido verificado ni se atribuye el fallo a caché o a la traducción. Debe comprobarse primero la relación `restoredMediaSnapshot` en la respuesta del borrador y después la condición del formulario. Este test conserva su cambio de selector de título al nuevo nombre accesible, pero el recorrido completo queda rojo.
 
 No ampliar a producción mientras no se explique y cierre este hallazgo. El recorrido de restauración de contenido sí pasó; eso no sustituye la comprobación independiente del cambio de origen de imágenes.

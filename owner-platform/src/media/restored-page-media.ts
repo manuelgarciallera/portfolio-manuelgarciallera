@@ -3,7 +3,19 @@ import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 
 // Server-owned capability, never an HTTP context flag. Only the restore operation
 // can assign this protected relationship; an explicit owner form action can clear it.
-const activeRestores = new WeakMap<object, string | number>()
+// Next can load the route and Payload's cached collection hooks from different
+// module instances. Share only the registry, still keyed by the exact server
+// request object. No request body/context/property can grant this capability.
+const registryKey = Symbol.for('mgl.owner.restored-page-media.v1')
+if (!Object.hasOwn(globalThis, registryKey)) {
+  Object.defineProperty(globalThis, registryKey, {
+    value: new WeakMap<object, string | number>(),
+    enumerable: false, configurable: false, writable: false,
+  })
+}
+const registry: unknown = Reflect.get(globalThis, registryKey)
+if (!(registry instanceof WeakMap)) throw new Error('Invalid restored media capability registry')
+const activeRestores = registry as WeakMap<object, string | number>
 export const withRestoredPageMedia = async <T>(req: object, snapshot: string | number, write: () => Promise<T>): Promise<T> => {
   if (activeRestores.has(req)) throw new Error('Nested media restore is not supported')
   activeRestores.set(req, snapshot)

@@ -1,9 +1,37 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createPreviewManifest } from '../preview/manifest'
 import { Pages } from '../collections/Pages'
 import { bindRestoredPageMedia, resolveRestoredPageMedia, withRestoredPageMedia } from './restored-page-media'
 
 describe('server-owned restored page media', () => {
+  it('shares request capabilities across module instances and rejects nested grants', async () => {
+    vi.resetModules()
+    const other = await import('./restored-page-media')
+    expect(other.bindRestoredPageMedia).not.toBe(bindRestoredPageMedia)
+    const req = { context: { restoredMediaSnapshot: 99 } }
+    const invoke = () => bindRestoredPageMedia({ req, data: { restoredMediaSnapshot: 99 }, originalDoc: {} } as never)
+    await other.withRestoredPageMedia(req, 7, async () => {
+      expect(await invoke()).toMatchObject({ restoredMediaSnapshot: 7 })
+      await expect(withRestoredPageMedia(req, 8, async () => undefined)).rejects.toThrow(/Nested/)
+      expect(await invoke()).toMatchObject({ restoredMediaSnapshot: 7 })
+    })
+    expect(await invoke()).toMatchObject({ restoredMediaSnapshot: null })
+  })
+
+  it('isolates concurrent requests across instances and clears failed grants', async () => {
+    vi.resetModules()
+    const other = await import('./restored-page-media')
+    const first = {}; const second = {}; const stranger = {}
+    const invoke = (req: object) => bindRestoredPageMedia({ req, data: {}, originalDoc: {} } as never)
+    await expect(other.withRestoredPageMedia(first, 7, () => withRestoredPageMedia(second, 8, async () => {
+      expect(await invoke(first)).toMatchObject({ restoredMediaSnapshot: 7 })
+      expect(await invoke(second)).toMatchObject({ restoredMediaSnapshot: 8 })
+      expect(await invoke(stranger)).toMatchObject({ restoredMediaSnapshot: null })
+      throw new Error('rollback')
+    }))).rejects.toThrow('rollback')
+    expect(await invoke(first)).toMatchObject({ restoredMediaSnapshot: null })
+    expect(await invoke(second)).toMatchObject({ restoredMediaSnapshot: null })
+  })
   it('exposes an editable virtual command only for restored pages', () => {
     const command = Pages.fields.find(field => 'name' in field && field.name === 'useCurrentMedia')
     expect(command).toMatchObject({ type: 'checkbox', virtual: true, defaultValue: false, admin: { readOnly: false } })

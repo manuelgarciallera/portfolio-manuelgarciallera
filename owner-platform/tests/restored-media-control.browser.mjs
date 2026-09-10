@@ -21,6 +21,13 @@ try {
       const { snapshot } = await post('/api/owner/preview-snapshots', { pageId: 1 })
       assert.equal((await context.request.patch(`${base}/api/owner/restore-plans/${plan.id}/confirm`, { data: { confirmation: 'CONFIRMAR RESTAURACIÓN', currentSnapshot: snapshot.id } })).status(), 200)
       await post(`/api/owner/restore-plans/${plan.id}/execute`, { confirmation: 'EJECUTAR RESTAURACIÓN' })
+      const readDraft = async () => {
+        const response = await context.request.get(`${base}/api/pages/1?draft=true&depth=0`)
+        assert.equal(response.status(), 200)
+        return response.json()
+      }
+      const before = await readDraft()
+      assert(before.restoredMediaSnapshot, 'Executing restoration must bind its historical media snapshot on the saved draft')
       const page = await context.newPage()
       page.setDefaultTimeout(60000)
       const errors = []
@@ -30,9 +37,6 @@ try {
       const checkbox = page.getByRole('checkbox', { name: 'Usar las imágenes actuales de la biblioteca' })
       await page.getByRole('link', { name: 'Ver borrador guardado' }).waitFor({ timeout: 60000 })
       await checkbox.waitFor({ timeout: 60000 })
-      const readDraft = async () => (await context.request.get(`${base}/api/pages/1?draft=true&depth=0`)).json()
-      const before = await readDraft()
-      assert(before.restoredMediaSnapshot)
       try { await checkbox.check({ timeout: 15000 }) } catch (error) {
         console.log(JSON.stringify(await page.locator('form').evaluateAll(forms => forms.map(form => ({ ready: form.dataset.formReady, inputs: [...form.querySelectorAll('input')].map(input => ({ name: input.name, disabled: input.disabled })) })))))
         console.log(await page.locator('body').innerText())
