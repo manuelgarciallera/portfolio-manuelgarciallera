@@ -355,9 +355,9 @@ describe('editorial collections', () => {
       type: 'select',
       required: true,
       options: [
-        { label: 'Project reel', value: 'project-reel' },
-        { label: 'Research index', value: 'research-index' },
-        { label: 'Contact panel', value: 'contact-panel' },
+        { value: 'project-reel' },
+        { value: 'research-index' },
+        { value: 'contact-panel' },
       ],
     })
   })

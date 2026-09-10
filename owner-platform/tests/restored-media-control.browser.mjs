@@ -40,7 +40,7 @@ try {
         throw error
       }
       const title = `Current library QA ${width}`
-      await page.getByRole('textbox', { name: 'Title *', exact: true }).fill(title)
+      await page.getByRole('textbox', { name: /^Título de la página/ }).fill(title)
       assert.equal((await readDraft()).restoredMediaSnapshot, before.restoredMediaSnapshot)
       await page.screenshot({ path: `node_modules/.cache/restored-media-control-${width}.png`, fullPage: true })
       const saved = page.waitForResponse(response => response.url().includes('/api/pages/1') && response.request().method() === 'PATCH')

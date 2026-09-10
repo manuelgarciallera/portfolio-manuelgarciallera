@@ -88,55 +88,62 @@ export const validatePageBrandPublication: CollectionBeforeValidateHook = async 
 
 const HeroBlock: Block = {
   slug: 'hero',
+  labels: { singular: 'Portada', plural: 'Portadas' },
   fields: [
-    { name: 'eyebrow', type: 'text' },
-    { name: 'heading', type: 'text', required: true },
-    { name: 'body', type: 'richText' },
-    { name: 'image', type: 'upload', relationTo: 'media' },
+    { name: 'eyebrow', label: 'Antetítulo', type: 'text' },
+    { name: 'heading', label: 'Encabezado', type: 'text', required: true },
+    { name: 'body', label: 'Texto', type: 'richText' },
+    { name: 'image', label: 'Imagen', type: 'upload', relationTo: 'media' },
   ],
 }
 
 const RichTextBlock: Block = {
   slug: 'richText',
-  fields: [{ name: 'content', type: 'richText', required: true }],
+  labels: { singular: 'Texto enriquecido', plural: 'Textos enriquecidos' },
+  fields: [{ name: 'content', label: 'Contenido', type: 'richText', required: true }],
 }
 
 const ProjectGridBlock: Block = {
   slug: 'projectGrid',
+  labels: { singular: 'Galería de proyectos', plural: 'Galerías de proyectos' },
   fields: [
-    { name: 'heading', type: 'text' },
-    { name: 'projects', type: 'relationship', relationTo: 'projects', hasMany: true },
+    { name: 'heading', label: 'Encabezado', type: 'text' },
+    { name: 'projects', label: 'Proyectos', type: 'relationship', relationTo: 'projects', hasMany: true },
   ],
 }
 
 const MediaBlock: Block = {
   slug: 'media',
+  labels: { singular: 'Imagen', plural: 'Imágenes' },
   fields: [
-    { name: 'asset', type: 'upload', relationTo: 'media', required: true },
+    { name: 'asset', label: 'Archivo', type: 'upload', relationTo: 'media', required: true },
     {
       name: 'placement',
+      label: 'Encuadre',
       type: 'relationship',
       relationTo: 'media-placements',
       admin: { description: 'Encuadre reutilizable opcional; nunca modifica el original.' },
     },
-    { name: 'caption', type: 'text' },
+    { name: 'caption', label: 'Pie de imagen', type: 'text' },
   ],
 }
 
 const CustomFeatureBlock: Block = {
   slug: 'customFeature',
+  labels: { singular: 'Sección especial', plural: 'Secciones especiales' },
   fields: [
     {
       name: 'featureKey',
+      label: 'Tipo de sección',
       type: 'select',
       required: true,
       options: [
-        { label: 'Project reel', value: 'project-reel' },
-        { label: 'Research index', value: 'research-index' },
-        { label: 'Contact panel', value: 'contact-panel' },
+        { label: 'Carrusel de proyectos', value: 'project-reel' },
+        { label: 'Índice de investigación', value: 'research-index' },
+        { label: 'Panel de contacto', value: 'contact-panel' },
       ],
     },
-    { name: 'heading', type: 'text' },
+    { name: 'heading', label: 'Encabezado', type: 'text' },
   ],
 }
 
@@ -174,10 +181,11 @@ export const Pages: CollectionConfig = {
         description: 'Esta página conserva imágenes de una versión restaurada. Marca esta opción y guarda el borrador para usar las imágenes actuales. No cambia otras páginas ni elimina las capturas anteriores.',
       },
     },
-    { name: 'title', type: 'text', required: true },
-    slugField,
+    { name: 'title', label: 'Título de la página', type: 'text', required: true },
+    { ...slugField, label: 'Identificador de URL (slug)' },
     {
       name: 'brandProfile',
+      label: 'Perfil de marca',
       type: 'relationship',
       relationTo: 'brand-profiles',
       admin: {
@@ -186,46 +194,54 @@ export const Pages: CollectionConfig = {
     },
     {
       name: 'brandOverrides',
+      label: 'Variaciones de marca de esta página',
       type: 'group',
       admin: { description: 'Variaciones controladas; fondo y texto siempre se heredan.' },
       fields: [
         {
           name: 'accent',
+          label: 'Color de acento',
           type: 'text',
           admin: { components: { Field: './components/HexColorField#HexColorField' } },
         },
         {
           name: 'surface',
+          label: 'Color de superficie',
           type: 'text',
           admin: { components: { Field: './components/HexColorField#HexColorField' } },
         },
         {
           name: 'usageWeights',
+          label: 'Proporciones de color',
           type: 'array',
           fields: [
             {
               name: 'role',
+              label: 'Función del color',
               type: 'select',
               required: true,
               options: BRAND_COLOR_ROLES.map((value) => ({ label: value, value })),
             },
-            { name: 'weight', type: 'number', min: 0, max: 100, required: true },
+            { name: 'weight', label: 'Proporción (%)', type: 'number', min: 0, max: 100, required: true },
           ],
         },
         {
           name: 'motion',
+          label: 'Animación',
           type: 'group',
           fields: [
-            { name: 'duration', type: 'number', min: 150, max: 1600 },
-            { name: 'stagger', type: 'number', min: 0, max: 500 },
-            { name: 'travel', type: 'number', min: 0, max: 80 },
+            { name: 'duration', label: 'Duración (ms)', type: 'number', min: 150, max: 1600 },
+            { name: 'stagger', label: 'Intervalo entre elementos (ms)', type: 'number', min: 0, max: 500 },
+            { name: 'travel', label: 'Desplazamiento (px)', type: 'number', min: 0, max: 80 },
             {
               name: 'easing',
+              label: 'Curva de animación',
               type: 'select',
               options: MOTION_EASINGS.map((value) => ({ label: value, value })),
             },
             {
               name: 'reducedMotion',
+              label: 'Preferencia de movimiento reducido',
               type: 'select',
               options: REDUCED_MOTION_BEHAVIORS.map((value) => ({ label: value, value })),
             },
@@ -233,7 +249,7 @@ export const Pages: CollectionConfig = {
         },
       ],
     },
-    { name: 'layout', type: 'blocks', blocks: pageBlocks, required: true },
+    { name: 'layout', label: 'Secciones de la página', type: 'blocks', blocks: pageBlocks, required: true },
     seoField,
   ],
 }
