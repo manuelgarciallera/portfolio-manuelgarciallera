@@ -11,6 +11,7 @@ import { startMediaHTTPFixture } from '../media/http-fixture.ts'
 import { previewRecoveryCollections, captureRecoveryPreview, verifyRecoveryPreview } from './preview-recovery-fixture.mjs'
 import { collectPayloadRevisionReferences } from '../../src/media/legacy-media-inventory-service.ts'
 import { createLocalReq } from 'payload'
+import { verifySnapshotInBrowser } from './snapshot-browser.mjs'
 
 // A provider owned by this child only: no persistence and no parent-held Map.
 // Exiting the seed process destroys the original provider and all its objects.
@@ -199,7 +200,8 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 404)
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
       await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
-      result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true }
+      await verifySnapshotInBrowser(fixture, owner, expected.snapshot, input.credentials)
+      result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true, snapshotBrowser: true }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')
