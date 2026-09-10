@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
 import { createPostgresCluster, preflightTools, runCommand, safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
+import { verifyProductionBrowserLogin } from '../tests/production/browser-login.mjs'
 
 const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')
@@ -73,6 +74,7 @@ try {
   }
   try {
     await start()
+    await verifyProductionBrowserLogin(origin, credentials)
     const login = await fetch(`${origin}/api/users/login`, { signal: AbortSignal.timeout(10_000), method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentials) })
     assert.equal(login.status, 200, 'Owner login over production HTTP')
     const { token } = await login.json()
