@@ -109,3 +109,29 @@ it('rolls back a rejected delivery and preserves the previously issued recovery 
   expect((await post('reset-password', { token: before.resetPasswordToken, password: replacement })).status).toBe(200)
   expect((await post('login', { email: targetEmail, password: replacement })).status).toBe(200)
 }, 60_000)
+
+it('revokes previous sessions on recovery but preserves ordinary concurrent logins and the new session', async () => {
+  const targetEmail = 'session-owner@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  const loginToken = async () => {
+    const response = await post('login', { email: targetEmail, password: targetPassword })
+    expect(response.status).toBe(200)
+    return (await response.json()).token as string
+  }
+  const first = await loginToken()
+  const second = await loginToken()
+  const me = async (token: string) => (await (await fixture.request('/api/users/me', { headers: { Authorization: `JWT ${token}` } }, false)).json()).user
+  expect(await me(first)).toMatchObject({ email: targetEmail })
+  expect(await me(second)).toMatchObject({ email: targetEmail })
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const link = String(inbox.at(-1)?.html).match(/href="([^"]+)"/)?.[1]
+  const token = new URL(link!).pathname.split('/').at(-1)!
+  const response = await post('reset-password', { token, password: randomUUID() + randomUUID() })
+  expect(response.status).toBe(200)
+  const newToken = (await response.json()).token
+  expect(await me(first)).toBeNull()
+  expect(await me(second)).toBeNull()
+  expect(await me(newToken)).toMatchObject({ email: targetEmail })
+}, 60_000)
