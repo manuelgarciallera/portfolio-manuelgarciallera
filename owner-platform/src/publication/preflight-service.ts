@@ -24,7 +24,9 @@ export const createOwnerPublicationPreflight = async ({ artifactId, checkedAt = 
   artifactId: string | number; checkedAt?: string; payload: Payload; req: { user?: unknown }
 }) => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
-  const existing = await payload.find({ collection: 'publication-preflights', depth: 0, limit: 1, sort: '-checkedAt', overrideAccess: false, req, where: { artifact: { equals: artifactId } } })
+  // SQL-generated numeric IDs order appended evidence independently of a
+  // historical checkedAt value (which can tie or be ahead of today's clock).
+  const existing = await payload.find({ collection: 'publication-preflights', depth: 0, limit: 1, sort: '-id', overrideAccess: false, req, where: { artifact: { equals: artifactId } } })
 
   const artifactDocument = await payload.findByID({ collection: 'publication-artifacts', depth: 0, id: artifactId, overrideAccess: false, req })
   const storedArtifactId = relationId(artifactDocument, 'El artefacto')

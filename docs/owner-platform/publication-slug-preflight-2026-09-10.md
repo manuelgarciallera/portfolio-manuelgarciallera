@@ -33,3 +33,15 @@ Pendiente operativo general: staging con almacenamiento real y TLS válido, recu
 Sobre base a10b65e se sustituye el fixture parcial del servicio por uno completo con report, hashes, fecha, relación, autor y metadatos. Representa las reglas anteriores que comprobaban bloques y SEO pero no el segmento URL. Su SHA-256 se construye de forma independiente y el verificador confirma integridad antes de ejecutar el servicio; no es una firma criptográfica de autoría.
 
 GREEN inicial4/4 `5f1de8`. Mutación temporal de retorno ciego del informe guardado: un fallo esperado `8fecf8`, devuelve ready antiguo. Mutación retirada íntegramente, diff del runtime vacío `b0fae0`; GREEN publicación69/18 `d9962a`. Esta evidencia cierra la observación de registro legacy incompleto, no la de fechas futuras/empates ni concurrencia. Solo cambia la prueba y este recibo; no se repite build o full de runtime sin cambios.
+
+## Seguimiento: orden independiente de la fecha del informe
+
+Base95e2826; reservaHubcb5b708e. Prueba con Payload y SQLite reales reproduce duplicación: un informe legacy completo fechado en2050 vuelve a seleccionarse después de crear el informe actualizado. Segunda llamada creaID3 en vez de reutilizarID2 (`1c6195`, RED1; caso de empate ya pasaba).
+
+Selección por `-id`, secuencia numérica autogenerada por los adaptadores SQL actuales. No se altera checkedAt ni se borra evidencia. No extrapolar a un futuro adaptador UUID, IDs importados arbitrariamente o concurrencia: habría que revisar ese contrato. La integración verifica fecha futura y empate, mismo informe en llamadas posteriores, solo dos registros del artefacto, auditoría sin duplicación y legado intacto.
+
+SQLite28/28, tipos/lint0 (`5814d4`); frontera pública21 (`a4c2fa`). Sin esquema nuevo ni cambios de UI. El build anterior corresponde al incremento anterior; esta corrección de consulta se verifica contra los adaptadores, sin presentar aquel build como recién ejecutado.
+
+PostgreSQL17.11 28/28 (`41b625`,20,43s), cierre de proceso/sesiones/clúster y limpieza de raíz verificados (`339b72`). Revisión independiente solo lectura sin bloqueadores; cierra observaciones de informe legacy íntegro y fecha/empates en el esquema actual, no concurrencia.
+
+Regresión completa final1241/163 (`dd5c91`,116,01s), salida0. Sin despliegue ni datos reales.

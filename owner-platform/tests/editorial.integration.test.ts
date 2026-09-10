@@ -23,6 +23,7 @@ import { createOwnerPublicationBundle } from '../src/publication/service'
 import { createOwnerPublicationReview } from '../src/publication/review-service'
 import { createOwnerPublicationArtifact } from '../src/publication/artifact-service'
 import { createOwnerPublicationPreflight } from '../src/publication/preflight-service'
+import { createPublicationExport } from '../src/publication/export'
 import { createOwnerAssistanceContext, createOwnerAssistanceProposal, decideOwnerAssistanceProposal } from '../src/assist/service'
 import type { PreviewManifest } from '../src/preview/manifest'
 import { loadOwnerAssistanceReview } from '../src/assist/review'
@@ -403,6 +404,31 @@ it('reviews a real publication bundle addressed by a URL id and generates its ar
   expect(repeatedPreflight.report).toEqual(storedPreflight.report)
   expect((await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs).toBe(auditsBeforeRepeat)
   expect(await payload.findByID({ collection: 'pages', id: page.id, draft: true, user: owner, overrideAccess: false })).toEqual(before)
+}, 30_000)
+
+it.each(['2050-01-01T00:00:00.000Z', '2026-09-10T18:00:00.000Z'])('reuses the newly evaluated report despite a legacy checkedAt of %s', async legacyDate => {
+  const { req, release } = await createReleaseFixture()
+  const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'Date QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
+  const review = await createOwnerPublicationReview({ payload: payload as never, req, bundleId: String(bundle.id), decision: 'approved', confirmation: 'APROBAR PAQUETE' })
+  const artifact = await createOwnerPublicationArtifact({ payload: payload as never, req, reviewId: String(review.id), confirmation: 'GENERAR ARTEFACTO' })
+  const exported = createPublicationExport({ artifact: artifact.artifact as never, bundle: bundle.bundle as never, exportedAt: legacyDate })
+  // Complete legacy report: an older rule set did not warn about missing SEO.
+  const data = { artifactHash: exported.artifactHash, checkedAt: legacyDate, exportHash: exported.hash,
+    issueCount: 0, issues: [], pageCount: 1, schemaVersion: 1 as const, status: 'ready' as const }
+  const hash = `sha256:${createHash('sha256').update(JSON.stringify(data, Object.keys(data).sort())).digest('hex')}`
+  const legacy = await payload.create({ collection: 'publication-preflights', overrideAccess: true, req,
+    data: { artifact: artifact.id as number, artifactHash: data.artifactHash, checkedAt: legacyDate, createdBy: owner.id,
+      exportHash: exported.hash, issueCount: 0, pageCount: 1, preflightHash: hash, report: { ...data, hash }, schemaVersion: 1, status: 'ready' } })
+  const original = await payload.findByID({ collection: 'publication-preflights', id: legacy.id, depth: 0, req, overrideAccess: false })
+  const command = { payload: payload as never, req, artifactId: String(artifact.id) }
+  const first = await createOwnerPublicationPreflight({ ...command, checkedAt: '2026-09-10T18:00:00.000Z' })
+  expect(first.status).toBe('ready_with_warnings')
+  const auditCount = (await payload.count({ collection: 'audit-events', req, overrideAccess: false })).totalDocs
+  const again = await createOwnerPublicationPreflight({ ...command, checkedAt: '2026-09-10T18:00:01.000Z' })
+  expect(again.id).toBe(first.id)
+  expect((await payload.count({ collection: 'publication-preflights', where: { artifact: { equals: artifact.id } }, req, overrideAccess: false })).totalDocs).toBe(2)
+  expect((await payload.count({ collection: 'audit-events', req, overrideAccess: false })).totalDocs).toBe(auditCount)
+  expect(await payload.findByID({ collection: 'publication-preflights', id: legacy.id, depth: 0, req, overrideAccess: false })).toEqual(original)
 }, 30_000)
 
 it('imports an approved Figma plan into draft media with URL ids and no optional review note', async () => {
