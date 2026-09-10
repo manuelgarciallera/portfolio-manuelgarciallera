@@ -124,7 +124,10 @@ it('does not claim closure when execFile reports an error while the real child r
   let forceClose
   let closeObserved = false
   const secret = 'synthetic-prefix-synthetic-suffix'
-  const error = await runtime.runCommand(process.execPath, ['-e', 'process.stderr.write("synthetic-prefix-"); setInterval(()=>{},1000)'], {
+  // execFile destroys stderr when timeout handling fails. On a slow startup the
+  // subsequent write can raise EPIPE and exit the fixture instead of staying
+  // alive. Ignore that pipe error in this synthetic child, not in runCommand.
+  const error = await runtime.runCommand(process.execPath, ['-e', 'process.stderr.on("error",()=>{}); process.stderr.write("synthetic-prefix-"); setInterval(()=>{},1000)'], {
     timeout: 40,
     closeWaitTimeout: 60,
     secrets: [secret],
