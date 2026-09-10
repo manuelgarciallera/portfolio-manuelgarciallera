@@ -25,6 +25,8 @@ export const Users: CollectionConfig = {
         // Payload has validated the recovery token before this hook. Mutate the
         // user being saved in the same transaction, before adding the new session.
         data.sessions = []
+        data.loginAttempts = 0
+        data.lockUntil = null
       }
       return data
     }],

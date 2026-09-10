@@ -135,3 +135,27 @@ it('revokes previous sessions on recovery but preserves ordinary concurrent logi
   expect(await me(second)).toBeNull()
   expect(await me(newToken)).toMatchObject({ email: targetEmail })
 }, 60_000)
+
+it('unlocks a locked account only after a valid recovery token', async () => {
+  const targetEmail = 'locked-recovery@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  const stored = () => fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  for (let i = 0; i < 5; i++) expect((await post('login', { email: targetEmail, password: 'wrong' })).status).toBe(401)
+  const locked = await stored()
+  expect(Number(locked.loginAttempts)).toBeGreaterThanOrEqual(5)
+  expect(new Date(String(locked.lockUntil)).getTime()).toBeGreaterThan(Date.now())
+  expect((await post('login', { email: targetEmail, password: targetPassword })).status).toBe(401)
+  const nextPassword = randomUUID() + randomUUID()
+  expect((await post('reset-password', { token: 'invalid', password: nextPassword })).status).toBe(403)
+  expect((await stored()).lockUntil).toBe(locked.lockUntil)
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const link = String(inbox.at(-1)?.html).match(/href="([^"]+)"/)?.[1]
+  const token = new URL(link!).pathname.split('/').at(-1)!
+  expect((await post('reset-password', { token, password: nextPassword })).status).toBe(200)
+  const recovered = await stored()
+  expect(recovered.loginAttempts).toBe(0)
+  expect(recovered.lockUntil == null).toBe(true)
+  expect((await post('login', { email: targetEmail, password: nextPassword })).status).toBe(200)
+}, 60_000)
