@@ -8,10 +8,12 @@ import { createMigrationPlan } from './migration-plan'
 import { writeMediaRevision } from './revision-store'
 import { startObjectProviderFixture } from '../../tests/media/object-provider-fixture'
 import { copyMigrationRevisions } from './migration-revision-copy'
+import { createMigrationCopyJournal, readMigrationCopyJournal } from './migration-copy-journal'
 
 let root: string
 let identity: { dev: number; ino: number }
 let provider: Awaited<ReturnType<typeof startObjectProviderFixture>> | undefined
+const journals: Awaited<ReturnType<typeof createMigrationCopyJournal>>[] = []
 const sha = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex')
 beforeEach(async () => {
   root = await mkdtemp(path.join(tmpdir(), 'owner-revision-copy-'))
@@ -19,7 +21,9 @@ beforeEach(async () => {
   provider = await startObjectProviderFixture()
 })
 afterEach(async () => {
-  try { await provider?.close() } finally {
+  try {
+    try { for (const journal of journals.splice(0)) await journal.close() } finally { await provider?.close() }
+  } finally {
     const stats = await lstat(root)
     if (path.dirname(root) !== path.resolve(tmpdir()) || !/^owner-revision-copy-[\w-]+$/.test(path.basename(root)) ||
       stats.isSymbolicLink() || stats.dev !== identity.dev || stats.ino !== identity.ino) throw new Error('Unowned fixture; preserve it.')
@@ -48,8 +52,11 @@ async function fixture(count = 1) {
   const inventory = await inspectLegacyMediaInventory({ root: legacy, references })
   const plan = createMigrationPlan({ sourceInventoryHash: inventory.hash,
     references: references.map(({ kind, documentId, referenceId }) => ({ kind, documentId, referenceId, variants: ['original'] })), evidence })
+  const journal = await createMigrationCopyJournal(root, { planDigest: plan.digest, inventoryHash: inventory.hash,
+    destinationId: 'test-destination', revisions })
+  journals.push(journal)
   return { revision: revisions[0], revisions, bytes, sourceRoot, serializedPlan: JSON.stringify(plan), serializedInventory: JSON.stringify(inventory),
-    expectedInventoryHash: inventory.hash, destination: provider!.storage }
+    expectedInventoryHash: inventory.hash, destination: provider!.storage, journal }
 }
 
 it('copies exact bytes and immutable revision identity without mutating source or granting cutover', async () => {
@@ -82,8 +89,32 @@ it('refuses a second copy without overwriting the previously verified destinatio
   const input = await fixture()
   await copyMigrationRevisions(input)
   const before = [...provider!.objects].map(([key, bytes]) => [key, Buffer.from(bytes)])
-  await expect(copyMigrationRevisions(input)).rejects.toMatchObject({ code: 'copy-failed', attemptedRevisions: [input.revision] })
+  const journal = await createMigrationCopyJournal(root, { ...input.journal, revisions: [...input.journal.revisions] })
+  journals.push(journal)
+  await expect(copyMigrationRevisions({ ...input, journal })).rejects.toMatchObject({ code: 'copy-failed', attemptedRevisions: [input.revision] })
   expect([...provider!.objects]).toEqual(before)
+})
+it('persists intent before provider writes and verification only after destination reread', async () => {
+  const input = await fixture()
+  const destination = { ...provider!.storage, async restore(...args: Parameters<typeof input.destination.restore>) {
+    expect(await readMigrationCopyJournal(root, input.journal.id)).toMatchObject({ uncertain: [input.revision], verified: [] })
+    return provider!.storage.restore(...args)
+  } }
+  await copyMigrationRevisions({ ...input, destination })
+  expect(await readMigrationCopyJournal(root, input.journal.id)).toMatchObject({ uncertain: [], verified: [input.revision] })
+})
+it('does not write objects if the journal is already closed', async () => {
+  const input = await fixture()
+  await input.journal.close()
+  await expect(copyMigrationRevisions(input)).rejects.toMatchObject({ code: 'copy-failed', attemptedRevisions: [] })
+  expect(provider!.objects.size).toBe(0)
+})
+it('rejects a journal bound to a different inventory before destination writes', async () => {
+  const input = await fixture()
+  const journal = await createMigrationCopyJournal(root, { ...input.journal, revisions: [...input.journal.revisions], inventoryHash: '0'.repeat(64) })
+  journals.push(journal)
+  await expect(copyMigrationRevisions({ ...input, journal })).rejects.toMatchObject({ code: 'preflight-failed', attemptedRevisions: [] })
+  expect(provider!.objects.size).toBe(0)
 })
 it('rejects a forged destination identity and records the attempted revision', async () => {
   const input = await fixture()

@@ -28,9 +28,10 @@ retained for reconciliation. The caller must persist the result in its journal.
   legacy filename into authenticated historical evidence or generate the original
   legacy-to-revision mapping. Hash agreement proves consistency, not provenance.
 - Metadata backfill, immutable snapshot resolution and actual cutover remain open.
-- The receipt/error is in memory, not a crash-durable execution journal. A process
-  crash still requires destination inventory and reconciliation; this component
-  alone is not an unattended production migration orchestrator.
+- Follow-up: copy now requires the matching local write-ahead journal described in
+  [journal verification](migration-copy-journal-2026-09-10.md). An interrupted
+  operation still requires destination inventory and reconciliation; this
+  component alone is not an unattended production migration orchestrator.
 - The source must remain quiescent. Revalidation catches changes observed during
   the operation; it does not implement an operating-system freeze or writer lock.
 - Processing is sequential per revision, not a whole-library buffer. However,
