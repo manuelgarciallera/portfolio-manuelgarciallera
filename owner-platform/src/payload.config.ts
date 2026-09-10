@@ -35,6 +35,7 @@ import { createOwnerEmailAdapter } from './config/email'
 import { multipartBodyParser, payloadUploadParsing } from './config/upload-security'
 import { AssistantSettings } from './globals/AssistantSettings'
 import { editorialLabels } from './config/editorial-labels'
+import { configureMediaStorage } from './config/media-storage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -111,4 +112,4 @@ export const createOwnerConfig = (): Config => ({
   },
 })
 
-export default buildConfig(createOwnerConfig())
+export default configureMediaStorage(createOwnerConfig(), process.env).then(buildConfig)

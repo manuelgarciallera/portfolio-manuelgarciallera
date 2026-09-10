@@ -13,6 +13,7 @@ import { Media } from '../../src/collections/Media'
 import { Users } from '../../src/collections/Users'
 import { createRevisionStorageCollection, createTransportRevisionStorageCollection } from '../../src/media/revision-storage-binding'
 import { editorialDatabaseConfig } from '../recovery/postgres-runtime.mjs'
+import { configureMediaStorage } from '../../src/config/media-storage'
 
 const maxRequestBytes = 8 * 1024 * 1024
 const requestTimeoutMs = 15_000
@@ -123,6 +124,7 @@ export type MediaHTTPReopenSettings = {
   database: { engine: 'sqlite'; filename: string } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] }
   collections?: CollectionConfig[]
   fullOwnerConfig?: boolean
+  mediaEnvironment?: Record<string, string | undefined>
   schemaName?: string
   transformOwnerCollection?: (collection: CollectionConfig) => CollectionConfig
   decorateMedia?: (media: CollectionConfig) => CollectionConfig
@@ -202,11 +204,16 @@ export const startMediaHTTPFixture = async (
       cache: fileURLToPath(new URL('../../node_modules/.cache', import.meta.url)),
     })
     const rawMedia = settings?.decorateMedia ? settings.decorateMedia(Media) : Media
-    const bound = transport
+    let ownerConfig = settings?.fullOwnerConfig ? (await import('../../src/payload.config')).createOwnerConfig() : undefined
+    if (settings?.mediaEnvironment) {
+      if (!ownerConfig || transport) throw new Error('Configured storage requires full owner config and no alternate transport.')
+      ownerConfig = await configureMediaStorage(ownerConfig, { ...settings.mediaEnvironment,
+        OWNER_SERVER_URL: origin, OWNER_MEDIA_SCRATCH_DIR: staticDir })
+    }
+    const bound = settings?.mediaEnvironment ? ownerConfig!.collections!.find(collection => collection.slug === 'media')! : transport
       ? await createTransportRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, store: transport, staticDir })
       : await createRevisionStorageCollection(rawMedia, { nativeFetchOrigin: origin, revisionRoot, staticDir })
     const upload = typeof bound.upload === 'object' ? bound.upload : {}
-    const ownerConfig = settings?.fullOwnerConfig ? (await import('../../src/payload.config')).createOwnerConfig() : undefined
     const mediaCollection = { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }
     config = await buildConfig({
       ...ownerConfig,

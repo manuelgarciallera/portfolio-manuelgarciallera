@@ -37,7 +37,7 @@ it.each(['filesystem', 'objects'] as const)('edits and restores a real CMS page 
     secret: randomUUID() + randomUUID(), seed: true,
     database: selected.engine === 'postgres' ? { engine: 'postgres', pool: selected.pool }
       : { engine: 'sqlite', filename: path.join(root, 'full.db') }, fullOwnerConfig: true,
-    schemaName: `full_owner_${transport}_http_fixture` }, provider?.storage)
+    schemaName: `full_owner_${transport}_http_fixture`, mediaEnvironment: provider?.environment })
   } finally {
     if (previousPush === undefined) delete process.env.PAYLOAD_FORCE_DRIZZLE_PUSH
     else process.env.PAYLOAD_FORCE_DRIZZLE_PUSH = previousPush

@@ -37,6 +37,9 @@ export const startObjectProviderFixture = async () => {
     requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED' })
   return {
     objects, failures,
+    environment: { NODE_ENV: 'test', OWNER_MEDIA_MODE: 'objects', OWNER_MEDIA_ENDPOINT: `http://127.0.0.1:${address.port}`,
+      OWNER_MEDIA_REGION: 'auto', OWNER_MEDIA_BUCKET: 'test-bucket', OWNER_MEDIA_PREFIX: 'cms-media',
+      OWNER_MEDIA_ACCESS_KEY_ID: 'synthetic-key', OWNER_MEDIA_SECRET_ACCESS_KEY: 'synthetic-secret' },
     storage: createObjectRevisionStore({ client, bucket: 'test-bucket', prefix: 'cms-media' }),
     async close() {
       client.destroy()
