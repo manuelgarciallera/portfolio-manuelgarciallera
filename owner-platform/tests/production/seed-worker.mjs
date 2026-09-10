@@ -8,7 +8,7 @@ process.once('message', async input => {
     const { buildConfig, getPayload } = await import('payload')
     const { postgresAdapter } = await import('@payloadcms/db-postgres')
     const { createOwnerConfig } = await import('../../src/payload.config.ts')
-    const { migrations } = await import('../../database/baseline/index.ts')
+    const { migrations } = input.objectMedia ? await import('../../database/object-storage/index.ts') : await import('../../database/baseline/index.ts')
     const config = createOwnerConfig()
     payload = await getPayload({ key: randomUUID(), config: await buildConfig({ ...config,
       telemetry: false, typescript: { ...config.typescript, autoGenerate: false },

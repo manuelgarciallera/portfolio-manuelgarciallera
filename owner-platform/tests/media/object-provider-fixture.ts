@@ -1,13 +1,14 @@
 import { createServer } from 'node:http'
+import { Agent, createServer as createSecureServer } from 'node:https'
 import { S3Client } from '@aws-sdk/client-s3'
 import { createObjectRevisionStore } from '../../src/media/object-revision-store'
 
 // Test-only S3 protocol boundary: actual SDK requests, no real account/bucket.
 // In-memory server state does not prove provider durability or authentication.
-export const startObjectProviderFixture = async () => {
+export const startObjectProviderFixture = async (tls?: { key: string; cert: string }) => {
   const objects = new Map<string, Buffer>()
   const failures = { writes: false }
-  const server = createServer(async (req, res) => {
+  const handler: import('node:http').RequestListener = async (req, res) => {
     const url = new URL(req.url!, 'http://127.0.0.1')
     const key = decodeURIComponent(url.pathname.replace(/^\/test-bucket\/?/, ''))
     if (url.searchParams.has('list-type')) {
@@ -25,19 +26,22 @@ export const startObjectProviderFixture = async () => {
       const bytes = objects.get(key)!
       res.setHeader('Content-Length', bytes.length); res.end(bytes)
     } else { res.writeHead(404); res.end() }
-  })
+  }
+  const server = tls ? createSecureServer(tls, handler) : createServer(handler)
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject)
     server.listen(0, '127.0.0.1', () => { server.off('error', reject); resolve() })
   })
   const address = server.address()
   if (!address || typeof address === 'string') throw new Error('Missing provider fixture port')
-  const client = new S3Client({ endpoint: `http://127.0.0.1:${address.port}`, region: 'auto', forcePathStyle: true, maxAttempts: 1,
+  const endpoint = `${tls ? 'https' : 'http'}://127.0.0.1:${address.port}`
+  const client = new S3Client({ endpoint, region: 'auto', forcePathStyle: true, maxAttempts: 1,
+    ...(tls ? { requestHandler: { httpsAgent: new Agent({ ca: tls.cert }) } } : {}),
     credentials: { accessKeyId: 'synthetic-key', secretAccessKey: 'synthetic-secret' },
     requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED' })
   return {
     objects, failures,
-    environment: { NODE_ENV: 'test', OWNER_MEDIA_MODE: 'objects', OWNER_MEDIA_ENDPOINT: `http://127.0.0.1:${address.port}`,
+    environment: { NODE_ENV: 'test', OWNER_MEDIA_MODE: 'objects', OWNER_MEDIA_ENDPOINT: endpoint,
       OWNER_MEDIA_REGION: 'auto', OWNER_MEDIA_BUCKET: 'test-bucket', OWNER_MEDIA_PREFIX: 'cms-media',
       OWNER_MEDIA_ACCESS_KEY_ID: 'synthetic-key', OWNER_MEDIA_SECRET_ACCESS_KEY: 'synthetic-secret' },
     storage: createObjectRevisionStore({ client, bucket: 'test-bucket', prefix: 'cms-media' }),

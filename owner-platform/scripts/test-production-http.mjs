@@ -4,14 +4,20 @@ import { spawn } from 'node:child_process'
 import { readFile, readdir } from 'node:fs/promises'
 import net from 'node:net'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build } from 'esbuild'
 import { createPostgresCluster, preflightTools, runCommand, safeEnvironment } from '../tests/recovery/postgres-runtime.mjs'
 import { runWorker, workersClosed } from '../tests/recovery/worker-runner.mjs'
 import { verifyProductionBrowserLogin } from '../tests/production/browser-login.mjs'
+import { verifyProductionObjectMedia } from '../tests/production/object-media.mjs'
+import { verifyObjectTLS } from '../tests/production/object-tls-preflight.mjs'
 
 const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')
+const objectMedia = process.argv.includes('--object-media')
+const openssl = process.env.OWNER_TEST_OPENSSL || (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl')
+if (objectMedia) await runCommand(openssl, ['version'])
+if (objectMedia) await verifyObjectTLS({ cwd, openssl })
 const { tools } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 const env = safeEnvironment()
 // Prevent Next's dotenv loader from importing any developer/provider values.
@@ -32,13 +38,15 @@ const postgres = await createPostgresCluster({ cache: path.join(cwd, 'node_modul
 let app
 let closed = true
 let closePromise
+let objectEnvironment
+let infrastructureClosed = true
 try {
   const pool = await postgres.initialize()
   const worker = path.join(postgres.root, 'production-seed.mjs')
   await build({ absWorkingDir: cwd, bundle: true, entryPoints: [path.join(cwd, 'tests/production/seed-worker.mjs')],
     outfile: worker, format: 'esm', platform: 'node', packages: 'external' })
   const credentials = { email: `production-${randomUUID()}@example.invalid`, password: randomBytes(32).toString('hex') }
-  await runWorker(worker, { mode: 'seed', postgres: pool, payloadSecret: secret, credentials }, cwd)
+  await runWorker(worker, { mode: 'seed', postgres: pool, payloadSecret: secret, credentials, objectMedia }, cwd)
   assert(workersClosed())
   const connection = new URL(`postgresql://${pool.host}:${pool.port}/${pool.database}`)
   connection.username = pool.user
@@ -50,6 +58,14 @@ try {
     probe.listen(0, '127.0.0.1', () => { const value = probe.address().port; probe.close(error => error ? reject(error) : resolve(value)) })
   })
   const origin = `http://127.0.0.1:${port}`
+  if (objectMedia) {
+    const fixtureModule = path.join(postgres.root, 'object-environment.mjs')
+    await build({ absWorkingDir: cwd, bundle: true, entryPoints: [path.join(cwd, 'tests/production/object-environment.mjs')],
+      outfile: fixtureModule, format: 'esm', platform: 'node', packages: 'external' })
+    const { startProductionObjectEnvironment } = await import(pathToFileURL(fixtureModule).href)
+    objectEnvironment = await startProductionObjectEnvironment({ root: postgres.root, openssl })
+    Object.assign(env, objectEnvironment.environment)
+  }
   const stop = async () => {
     if (closed) return
     if (process.platform === 'win32') await runCommand('taskkill', ['/PID', String(app.pid), '/T', '/F'])
@@ -62,7 +78,7 @@ try {
     closed = false
     closePromise = new Promise(resolve => app.once('close', () => { closed = true; resolve() }))
     app.on('error', () => {})
-    // Drain, do not expose runtime diagnostics that could include private config.
+    // Drain: partial/interleaved runtime diagnostics cannot be safely redacted.
     app.stdout.resume(); app.stderr.resume()
     for (let attempt = 0; attempt < 80; attempt++) {
       assert(!closed, 'Next exited before readiness')
@@ -84,7 +100,10 @@ try {
     assert.equal(anonymous.status, 403)
     const readiness = await request('/api/owner/system/readiness')
     assert.equal(readiness.status, 200)
-    assert.equal((await readiness.json()).readiness.productionReady, false)
+    const readinessState = (await readiness.json()).readiness
+    assert.equal(readinessState.productionReady, false)
+    if (objectMedia) assert.equal(readinessState.runtime.mediaStorage.kind, 'objects')
+    const verifyMediaAfterRestart = objectMedia ? await verifyProductionObjectMedia({ origin, token, environment: objectEnvironment }) : undefined
     const created = await request('/api/pages?draft=true', { method: 'POST', body: JSON.stringify({ title: 'Production HTTP draft', slug: 'production-http-qa', layout: [{ blockType: 'hero', heading: 'Saved over HTTP' }] }) })
     assert.equal(created.status, 201)
     const { doc } = await created.json()
@@ -102,9 +121,16 @@ try {
     const afterResponse = await request(`/api/pages/${doc.id}?draft=true&depth=0`)
     assert.equal(afterResponse.status, 200)
     assert.deepEqual(await afterResponse.json(), before)
+    await verifyMediaAfterRestart?.()
     console.log(JSON.stringify({ productionHTTP: 'passed', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }
+} catch (error) {
+  if (error.childClosed === false) infrastructureClosed = false
+  throw error
 } finally {
-  await postgres.shutdown({ childrenClosed: closed && workersClosed() })
+  let providerClosed = false
+  try { await objectEnvironment?.close(); providerClosed = true } finally {
+    await postgres.shutdown({ childrenClosed: closed && workersClosed() && providerClosed && infrastructureClosed })
+  }
   console.log('[production-http] owned app and cluster closed; isolated root cleaned')
 }
