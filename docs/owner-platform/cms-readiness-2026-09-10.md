@@ -1,5 +1,7 @@
 # CMS: puerta operativa tras cierre del portfolio
 
+Lectura histórica: la implementación avanzó después de esta base. Consultar `build-readiness-recheck-2026-09-10.md` antes de tratar los puntos siguientes como código todavía ausente.
+
 Revisión del 10 de septiembre de 2026 sobre `6770a172995347ff8c8967ffcd98346f03636691`. Codex es el único integrador; Claude revisa sin escrituras simultáneas. No se modifica el diseño público ni se activa infraestructura.
 
 ## Evidencia nueva
