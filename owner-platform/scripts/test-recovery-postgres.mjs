@@ -117,7 +117,8 @@ try {
     Object.assign(result, { mode: 'object-media', mediaFilesVerified: restored.recoveredFiles,
       revisionsRecovered: restored.recoveredRevisions, damageCasesRejectedBeforeAllocation: damageCases + 2,
       login: restored.login, history: restored.history, independentEdit: restored.independentEdit,
-      scope: 'Users/Media fixture; real SDK with fresh synthetic S3 provider per child', backupReceiptsUnchanged: true })
+      frozenPreview: restored.frozenPreview,
+      scope: 'Media and real preview/audit with minimal page/brand fixtures; fresh synthetic S3 provider per child', backupReceiptsUnchanged: true })
   }
 } catch (error) {
   failure = error

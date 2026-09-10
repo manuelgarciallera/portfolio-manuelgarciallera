@@ -7,7 +7,7 @@ import { S3Client } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { createObjectRevisionStore } from '../../src/media/object-revision-store.ts'
 import { startMediaHTTPFixture } from '../media/http-fixture.ts'
-import { PreviewSnapshots } from '../../src/collections/PreviewSnapshots.ts'
+import { previewRecoveryCollections, captureRecoveryPreview, verifyRecoveryPreview } from './preview-recovery-fixture.mjs'
 import { collectPayloadRevisionReferences } from '../../src/media/legacy-media-inventory-service.ts'
 import { createLocalReq } from 'payload'
 
@@ -90,7 +90,7 @@ process.once('message', async (input) => {
     fixture = await startMediaHTTPFixture({ root: input.mediaDirectory,
       revisionRoot: path.join(input.mediaDirectory, 'unused-revisions'), staticDir: path.join(input.mediaDirectory, 'unused-native'),
       credentials: input.credentials, secret: input.payloadSecret, seed: input.mode === 'seed',
-      collections: [PreviewSnapshots],
+      collections: previewRecoveryCollections,
       database: input.postgres ? { engine: 'postgres', pool: input.postgres }
         : { engine: 'sqlite', filename: path.join(input.databaseDirectory, 'owner.db') },
     }, store)
@@ -99,12 +99,15 @@ process.once('message', async (input) => {
     let result
     if (input.mode === 'seed') {
       const first = await upload(fixture, '#ff0000')
+      const snapshot = await captureRecoveryPreview(fixture, owner, first)
       const versions = await fixture.payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
         where: { parent: { equals: first.id } }, limit: 100, depth: 0 })
       assert.equal(versions.docs.length, versions.totalDocs)
       const second = await upload(fixture, '#0000ff', first.id)
+      await verifyRecoveryPreview(fixture, owner, snapshot)
       const references = await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) })
       assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision].sort())
+      assert(references.find(({ revision }) => revision === first.storageRevision).references.some(({ kind }) => kind === 'snapshot'), 'Historical image must be retained by its real frozen preview')
       const revisions = []
       // Export IDs discovered from the database, not the upload receipt list.
       for (const group of references) {
@@ -122,9 +125,10 @@ process.once('message', async (input) => {
       revisions.sort((left, right) => left.id === first.storageRevision ? -1 : right.id === first.storageRevision ? 1 : 0)
       await verifyFiles(fixture, first.id, revisions[0], 404)
       await verifyFiles(fixture, first.id, revisions[1], 200)
-      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, references, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
+      result = { mediaId: first.id, versionId: versions.docs[0].id, revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id) }
     } else {
       const expected = input.expected
+      await verifyRecoveryPreview(fixture, owner, expected.snapshot)
       assert.deepEqual(await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) }), expected.references, 'Recovered reference inventory')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
@@ -146,7 +150,8 @@ process.once('message', async (input) => {
       assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()), await image('#00ff00'), 'Recovered instance serves the independently generated edited image')
       await verifyFiles(fixture, expected.mediaId, expected.revisions[0], 404)
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 404)
-      result = { pid: process.pid, recoveredRevisions: 2, recoveredFiles: 8, login: true, history: true, independentEdit: true }
+      await verifyRecoveryPreview(fixture, owner, expected.snapshot)
+      result = { pid: process.pid, recoveredRevisions: 2, recoveredFiles: 8, login: true, history: true, independentEdit: true, frozenPreview: true }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')
