@@ -21,11 +21,24 @@ their smaller collection set by default.
 
 ## Limits and next owner
 
-This is not a Next browser acceptance test, PostgreSQL result, snapshot capture,
+### Follow-up: captured media after replacement
+
+The full-configuration test additionally creates a real published brand profile,
+captures the page through `createPagePreviewSnapshot`, replaces the image through
+HTTP PATCH, and captures it again. It asserts different storage revisions, the
+first persisted manifest remaining unchanged, and exact original and replacement
+bytes still retrievable through their respective authenticated URLs.
+
+This characterizes existing behavior; no production change was needed. The first
+execution passed at runtime but typecheck rejected a nullable authenticated user.
+An explicit guard was added to the test before constructing the local request.
+It is not a restoration execution or browser test.
+
+This is not a Next browser acceptance test, PostgreSQL result, restoration execution,
 object-provider verification, deployment, or production readiness certificate.
 No real user data, mail, paid services or public assets were changed.
 
 Codex next: exercise this configuration through the actual admin browser flow,
-including snapshot capture and restoration. Claude may review these changes without
+including restoration. Claude may review these changes without
 writing to the shared repository. Storage cutover and PDF/CV publication remain
 separate gates described in media-cv-operational-gap-2026-09-10.md.

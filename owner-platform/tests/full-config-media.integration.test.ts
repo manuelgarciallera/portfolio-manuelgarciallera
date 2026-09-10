@@ -2,8 +2,10 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { afterAll, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
+import { createLocalReq } from 'payload'
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
+import { createPagePreviewSnapshot } from '../src/preview/service'
 
 let fixture: MediaHTTPFixture
 afterAll(async () => { await fixture?.close() })
@@ -35,4 +37,37 @@ it('edits a real CMS page using versioned media with the full owner configuratio
   const image = await fixture.request(media.url)
   expect(image.status).toBe(200)
   expect(Buffer.from(await image.arrayBuffer())).toEqual(bytes)
+
+  const { user } = await fixture.payload.auth({ headers: new Headers({ Cookie: fixture.cookie }) })
+  expect(user?.role).toBe('owner')
+  if (!user) throw new Error('Authenticated owner required')
+  const req = await createLocalReq({ user }, fixture.payload)
+  const brand = await fixture.payload.create({ collection: 'brand-profiles', req, overrideAccess: false, data: {
+    name: 'Synthetic brand', slug: 'synthetic-brand', _status: 'published',
+    colors: [
+      { role: 'background', value: '#000000' }, { role: 'surface', value: '#111111' },
+      { role: 'text', value: '#FFFFFF' }, { role: 'mutedText', value: '#AAAAAA' },
+      { role: 'accent', value: '#FF4B44' }, { role: 'interaction', value: '#00D4E6' },
+      { role: 'success', value: '#21A366' }, { role: 'danger', value: '#FF4B44' },
+    ],
+    usageWeights: [{ role: 'background', weight: 70 }, { role: 'surface', weight: 20 }, { role: 'text', weight: 8 }, { role: 'accent', weight: 2 }],
+    motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
+  } })
+  await fixture.payload.update({ collection: 'pages', id: page.id, draft: true, req, overrideAccess: false, data: { brandProfile: brand.id } })
+  const first = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
+  expect(first.manifest).toHaveProperty('mediaReferences.0.storageRevision', media.storageRevision)
+  const replacementBytes = await sharp({ create: { width: 600, height: 400, channels: 3, background: '#ff5500' } }).png().toBuffer()
+  const replacementBody = new FormData()
+  replacementBody.set('_payload', JSON.stringify({ alt: 'Replacement image' }))
+  replacementBody.set('file', new File([new Uint8Array(replacementBytes)], media.filename, { type: 'image/png' }))
+  const replaced = await fixture.request(`/api/media/${media.id}`, { method: 'PATCH', body: replacementBody })
+  expect(replaced.status).toBe(200)
+  const replacement = (await replaced.json()).doc
+  expect(replacement.storageRevision).not.toBe(media.storageRevision)
+  const second = await createPagePreviewSnapshot({ payload: fixture.payload, req, pageId: page.id })
+  expect(second.manifest).toHaveProperty('mediaReferences.0.storageRevision', replacement.storageRevision)
+  const stored = await fixture.payload.findByID({ collection: 'preview-snapshots', id: first.id, req, overrideAccess: false })
+  expect(stored.manifest).toEqual(first.manifest)
+  expect(Buffer.from(await (await fixture.request(media.url)).arrayBuffer())).toEqual(bytes)
+  expect(Buffer.from(await (await fixture.request(replacement.url)).arrayBuffer())).toEqual(replacementBytes)
 }, 60_000)
