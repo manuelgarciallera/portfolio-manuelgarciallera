@@ -39,10 +39,38 @@ it must not be presented as a backup or operational rollback.
   files changed, so no new build or browser verification claimed for this catalog.
 - Typecheck and lint exit 0 (`0dc4c7`).
 
-## Next gate / owner
+## Populated legacy upgrade follow-up
 
-Codex: test additive application against a populated legacy clone; reconcile
-migration history; inventory/copy physical legacy media and every historical
+Base `3e29685`, reservation `acf979d2`. Extended the legacy branch after its
+baseline, owner, image, draft page and versions already exist. The native runner
+receives the combined catalog and applies only the unrecorded delta as batch 2;
+the original baseline ledger row remains identical. SQL comparisons preserve
+every seeded Media and Media-version field except the newly added nullable
+columns. Those columns remain null: no historical byte identity is fabricated.
+Repeated upgrade leaves the ledger unchanged; API rereads preserve Media, page
+and page versions, and every filename and file buffer in the synthetic upload
+directory is unchanged. Legacy runtime remains active throughout this rehearsal.
+
+RED `e07abb` demonstrates the missing-column failure before invoking the upgrade.
+Focused GREEN `d4bf2e` passes 2/2 with verified cluster cleanup. Initial typecheck
+`afbaf0` found the native PostgreSQL migration signatures narrower than Payload's
+cross-adapter `unknown` interface; explicit PostgreSQL boundary wrappers corrected
+that mismatch. Types/lint then exit 0 (`274e29`). Independent read-only review
+found no blockers. Nested cleanup now closes the provider even if Payload destroy
+throws, and both modes explicitly reread Media metadata after migration repeat.
+Final complete integration on the boundary-wrapper version: `26eb29`, 60/60 in
+10 files, 167.16s, PostgreSQL 17.11 controller (auth-unlock uses SQLite explicitly).
+The same terminal result confirms process/session closure and synthetic root
+cleanup. Public boundary 21 entries and checkpoint remain intact (`57beff`).
+
+This is a controlled populated synthetic schema, not an arbitrary installed
+customer database or a restored production backup. Physical copy and historical
+provenance are still separate, open gates.
+
+## Remaining gate / owner
+
+Codex: reconcile the actual installation's schema and migration history on an
+authorized restored clone; inventory/copy physical legacy media and every historical
 reference; rehearse joint database/media backups and restore before provider
 activation. Only then wire approved migration execution and staging acceptance.
 Claude: review proposals through Hub, without concurrent repository edits.
