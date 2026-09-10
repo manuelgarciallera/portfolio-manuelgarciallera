@@ -47,7 +47,15 @@ export const presentPreviewAsset = (value: unknown, expectedId: string | number)
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('El medio no es válido.')
   const media = value as Record<string, unknown>
   if (String(media.id) !== String(expectedId)) throw new TypeError('El medio no coincide con la selección.')
-  if (typeof media.url !== 'string' || !media.url.startsWith('/api/media/file/') || media.url.startsWith('//')) {
+  // Match the server binding exactly; merely allowing the revision prefix would
+  // let unrelated IDs, revisions or filenames pass the presentation boundary.
+  const revisionURL = typeof media.storageRevision === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(media.storageRevision) &&
+    /^[A-Za-z0-9_-]{1,128}$/.test(String(expectedId)) &&
+    typeof media.filename === 'string' && media.filename.length > 0 &&
+    !['.', '..'].includes(media.filename) && !/[\\/\u0000-\u001f\u007f]/.test(media.filename)
+    ? `/api/media/revision/${encodeURIComponent(String(expectedId))}/${media.storageRevision}/${encodeURIComponent(media.filename)}` : undefined
+  if (typeof media.url !== 'string' || (!media.url.startsWith('/api/media/file/') && (!revisionURL || media.url !== revisionURL))) {
     throw new TypeError('La URL del medio no es válida.')
   }
   const width = media.width == null ? undefined : positiveInteger(media.width)

@@ -55,6 +55,22 @@ describe('buildMediaPlacementPreview', () => {
 })
 
 describe('presentPreviewAsset', () => {
+  const revision = '12345678-1234-4234-8234-123456789012'
+  const versioned = { id: 12, storageRevision: revision, filename: 'portada ñ.png', url: `/api/media/revision/12/${revision}/portada%20%C3%B1.png` }
+  it('accepts a canonical local revision URL bound to the selected media metadata', () => {
+    expect(presentPreviewAsset(versioned, 12).url).toBe(`/api/media/revision/12/${revision}/portada%20%C3%B1.png`)
+  })
+  it.each([
+    { url: `/api/media/revision/13/${revision}/portada%20%C3%B1.png` },
+    { storageRevision: '22345678-1234-4234-8234-123456789012' },
+    { filename: 'another.png' },
+    { url: `${versioned.url}?download=1` },
+    { url: `https://example.com${versioned.url}` },
+    { filename: '..', url: `/api/media/revision/12/${revision}/..` },
+    { storageRevision: undefined },
+  ])('rejects a revision URL not bound to trusted metadata: %j', patch => {
+    expect(() => presentPreviewAsset({ ...versioned, ...patch }, 12)).toThrow()
+  })
   it('accepts only same-origin uploaded-media paths and bounded metadata', () => {
     expect(presentPreviewAsset({ alt: 'Portada del proyecto', height: 1080, id: 12, url: '/api/media/file/hero.webp', width: 1920 }, 12)).toEqual({
       alt: 'Portada del proyecto',

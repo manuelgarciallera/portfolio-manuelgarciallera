@@ -6,6 +6,7 @@ import path from 'node:path'
 import { S3Client } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { createObjectRevisionStore } from '../../src/media/object-revision-store.ts'
+import { presentPreviewAsset } from '../../src/media/placement-preview.ts'
 import { startMediaHTTPFixture } from '../media/http-fixture.ts'
 import { previewRecoveryCollections, captureRecoveryPreview, verifyRecoveryPreview } from './preview-recovery-fixture.mjs'
 import { collectPayloadRevisionReferences } from '../../src/media/legacy-media-inventory-service.ts'
@@ -39,6 +40,11 @@ const logicalMedia = async (fixture, owner, id) => {
   const pick = (doc) => ({ id: doc.id ?? null, revision: doc.storageRevision ?? null, alt: doc.alt ?? null,
     status: doc._status ?? null, width: doc.width ?? null, height: doc.height ?? null })
   const current = await fixture.payload.findByID({ collection: 'media', id, user: owner, overrideAccess: false, depth: 0 })
+  const previewAsset = presentPreviewAsset(current, id)
+  const previewResponse = await fixture.request(previewAsset.url)
+  assert.equal(previewResponse.status, 200, 'The visual preview accepts the real recovered media URL')
+  assert.equal(previewAsset.width, current.width)
+  assert.equal(previewAsset.height, current.height)
   const versions = await fixture.payload.findVersions({ collection: 'media', user: owner, overrideAccess: false,
     where: { parent: { equals: id } }, limit: 100, depth: 0 })
   assert.equal(versions.docs.length, versions.totalDocs, 'Complete synthetic history')
