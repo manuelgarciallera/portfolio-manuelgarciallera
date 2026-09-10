@@ -10,7 +10,11 @@ const browser = await chromium.launch({ headless: true })
 try {
   for (const width of [390, 1280]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width === 390 })
-    const request = context.request
+    // Only auxiliary API calls need an explicit origin. UI requests keep their
+    // native browser headers so navigation still tests real CSRF behavior.
+    const request = Object.fromEntries(['get', 'post', 'patch'].map(method => [method,
+      (url, options = {}) => context.request[method](url, { ...options, headers: { ...options.headers, Origin: base } }),
+    ]))
     const login = await request.post(`${base}/api/users/login`, { data: { email, password } })
     assert.equal(login.status(), 200)
     const post = async (path, data) => {

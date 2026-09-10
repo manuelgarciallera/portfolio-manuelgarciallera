@@ -9,10 +9,11 @@ if (!email?.endsWith('@example.invalid') || !password) throw new Error('Use an i
 const browser = await chromium.launch({ headless: true })
 try {
   for (const width of [320, 390, 768, 1024, 1280, 1680]) for (const theme of ['light', 'dark']) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width <= 768, colorScheme: theme, reducedMotion: theme === 'light' ? 'reduce' : 'no-preference' })
-    const login = await context.request.post(`${base}/api/users/login`, { data: { email, password } })
+    const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width <= 768, colorScheme: theme,
+      reducedMotion: theme === 'light' ? 'reduce' : 'no-preference' })
+    const login = await context.request.post(`${base}/api/users/login`, { headers: { Origin: base }, data: { email, password } })
     assert.equal(login.status(), 200)
-    const created = await context.request.post(`${base}/api/pages?draft=true`, { data: {
+    const created = await context.request.post(`${base}/api/pages?draft=true`, { headers: { Origin: base }, data: {
       title: 'QA camino editorial largo para comprobar navegación y cuenta sin desbordamientos',
       slug: `qa-shell-${randomUUID()}`, layout: [{ blockType: 'hero', heading: 'QA shell' }],
     } })

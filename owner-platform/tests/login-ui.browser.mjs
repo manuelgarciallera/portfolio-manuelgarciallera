@@ -26,17 +26,27 @@ try {
     // Payload's visible error toast is announced by a polite live region.
     await page.locator('[aria-live="polite"]').getByText(/incorrect|inválid|invalid/i).first().waitFor()
     assert.equal(new URL(page.url()).pathname, '/admin/login')
-    const anonymous = await context.request.get(`${base}/api/users/me`)
-    assert.equal(anonymous.status(), 200)
-    assert.equal((await anonymous.json()).user, null, 'Failed login must not authenticate the browser')
+    const anonymous = await page.evaluate(async () => {
+      const response = await fetch('/api/users/me')
+      if (!response.ok) throw new Error('Browser session lookup failed')
+      return response.json()
+    })
+    assert.equal(anonymous.user, null, 'Failed login must not authenticate the browser')
     await passwordField.fill(password)
     const loggedIn = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/users/login')
     await passwordField.press('Enter')
     assert.equal((await loggedIn).status(), 200)
     await page.waitForURL(url => url.pathname === '/admin/collections/pages')
-    const authenticated = await context.request.get(`${base}/api/users/me`)
-    assert.equal(authenticated.status(), 200)
-    assert.equal((await authenticated.json()).user.email, email)
+    // The real browser supplies Sec-Fetch-Site. A bare APIRequestContext does
+    // not, and Payload correctly rejects its cookie when CSRF is configured.
+    const unprovenOrigin = await context.request.get(`${base}/api/users/me`)
+    assert.equal((await unprovenOrigin.json()).user, null, 'A cookie alone must not bypass origin checks')
+    const session = await page.evaluate(async () => {
+      const response = await fetch('/api/users/me')
+      if (!response.ok) throw new Error('Browser session lookup failed')
+      return response.json()
+    })
+    assert.equal(session.user?.email, email, 'Successful login must persist an authenticated session')
     await page.reload({ waitUntil: 'domcontentloaded' })
     await page.getByRole('link', { name: 'Cuenta', exact: true }).waitFor()
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
