@@ -12,6 +12,7 @@ import { previewRecoveryCollections, captureRecoveryPreview, verifyRecoveryPrevi
 import { collectPayloadRevisionReferences } from '../../src/media/legacy-media-inventory-service.ts'
 import { createLocalReq } from 'payload'
 import { verifySnapshotInBrowser } from './snapshot-browser.mjs'
+import { captureFullOwnerPreview, prepareFullOwnerRecovery, readFullOwnerWorkflow, executeRecoveredOwnerWorkflow } from './full-owner-recovery-fixture.mjs'
 
 // A provider owned by this child only: no persistence and no parent-held Map.
 // Exiting the seed process destroys the original provider and all its objects.
@@ -116,6 +117,9 @@ process.once('message', async (input) => {
   let fixture, client
   try {
     assert(['seed', 'restore', 'verify'].includes(input.mode))
+    // The full config validates its secret when imported. The child receives
+    // this per-run synthetic value via IPC; ambient credentials stay cleared.
+    if (input.fullOwner) process.env.PAYLOAD_SECRET = input.payloadSecret
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
     client = new S3Client({ endpoint: `http://127.0.0.1:${server.address().port}`, region: 'auto', forcePathStyle: true, maxAttempts: 1,
       credentials: { accessKeyId: 'synthetic', secretAccessKey: 'synthetic' },
@@ -137,16 +141,21 @@ process.once('message', async (input) => {
     fixture = await startMediaHTTPFixture({ root: input.mediaDirectory,
       revisionRoot: path.join(input.mediaDirectory, 'unused-revisions'), staticDir: path.join(input.mediaDirectory, 'unused-native'),
       credentials: input.credentials, secret: input.payloadSecret, seed: input.mode === 'seed',
-      collections: previewRecoveryCollections,
+      ...(input.fullOwner ? { fullOwnerConfig: true, nativeObjectMigrations: true,
+        mediaEnvironment: { NODE_ENV: 'test', OWNER_MEDIA_MODE: 'objects', OWNER_MEDIA_ENDPOINT: `http://127.0.0.1:${server.address().port}`,
+          OWNER_MEDIA_REGION: 'auto', OWNER_MEDIA_BUCKET: 'test-bucket', OWNER_MEDIA_PREFIX: 'recovery-media',
+          OWNER_MEDIA_ACCESS_KEY_ID: 'synthetic', OWNER_MEDIA_SECRET_ACCESS_KEY: 'synthetic' } }
+        : { collections: previewRecoveryCollections }),
       database: input.postgres ? { engine: 'postgres', pool: input.postgres }
         : { engine: 'sqlite', filename: path.join(input.databaseDirectory, 'owner.db') },
-    }, store)
+    }, input.fullOwner ? undefined : store)
+    if (input.fullOwner) assert(fixture.payload.collections.releases && fixture.payload.collections['restore-plans'], 'Full owner recovery must use the real release and restore collections')
     const owner = (await fixture.payload.auth({ headers: new Headers({ Cookie: fixture.cookie }) })).user
     assert.equal(owner?.role, 'owner', 'Restored owner can log in through real HTTP')
     let result
     if (input.mode === 'seed') {
       const captured = await upload(fixture, '#ffff00')
-      const snapshot = await captureRecoveryPreview(fixture, owner, captured)
+      const snapshot = await (input.fullOwner ? captureFullOwnerPreview : captureRecoveryPreview)(fixture, owner, captured)
       for (const title of ['Intermediate draft before backup', 'Frozen object recovery']) {
         await fixture.payload.update({ collection: 'pages', id: snapshot.pageId, user: owner,
           overrideAccess: false, draft: true, data: { title } })
@@ -164,6 +173,7 @@ process.once('message', async (input) => {
         { parent: { equals: captured.id } }, { id: { in: capturedVersions } },
       ] } })
       await verifyRecoveryPreview(fixture, owner, snapshot)
+      const workflow = input.fullOwner ? await prepareFullOwnerRecovery(fixture, owner, snapshot) : undefined
       const references = await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) })
       assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision, captured.storageRevision].sort())
       assert(references.find(({ revision }) => revision === captured.storageRevision).references.some(({ kind }) => kind === 'snapshot'), 'Historical image must be retained by its real frozen preview')
@@ -190,7 +200,8 @@ process.once('message', async (input) => {
       await verifySnapshotOnly(fixture, store, first.id, revisions[2], snapshot)
       result = { mediaId: first.id, versionId: versions.docs.find(({ version }) => version.storageRevision === first.storageRevision).id,
         revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id),
-        editorial: await logicalEditorial(fixture, owner, snapshot) }
+        editorial: await logicalEditorial(fixture, owner, snapshot),
+        ...(workflow ? { workflow, workflowReceipt: await readFullOwnerWorkflow(fixture, owner, snapshot, workflow) } : {}) }
     } else {
       const expected = input.expected
       assert.deepEqual(await logicalEditorial(fixture, owner, expected.snapshot), expected.editorial,
@@ -201,9 +212,11 @@ process.once('message', async (input) => {
       await verifyFiles(fixture, expected.mediaId, expected.revisions[1], 200)
       await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')
+      if (input.fullOwner) assert.deepEqual(await readFullOwnerWorkflow(fixture, owner, expected.snapshot, expected.workflow), expected.workflowReceipt, 'Releases, restore plans, draft snapshots, audits and migrations survive unchanged')
       if (input.mode === 'verify') {
         result = { sourceLogicalStateUnchanged: true }
       } else {
+      const workflowResult = input.fullOwner ? await executeRecoveredOwnerWorkflow(fixture, owner, expected.snapshot, expected.workflow) : {}
       const restored = await fixture.request(`/api/media/versions/${expected.versionId}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
       })
@@ -222,7 +235,7 @@ process.once('message', async (input) => {
       await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       await verifySnapshotInBrowser(fixture, owner, expected.snapshot, input.credentials)
       result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true, snapshotBrowser: true,
-        pageVersionsRestored: expected.editorial.versions.length, editorialStateUnchanged: true }
+        pageVersionsRestored: expected.editorial.versions.length, editorialStateUnchanged: true, ...workflowResult }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')

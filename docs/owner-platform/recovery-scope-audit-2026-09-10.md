@@ -2,6 +2,10 @@
 
 Fecha: 2026-09-10. Codex. Base: `a3edc822808558d63f52bf5ed41a8259f714d9be`.
 
+Actualización posterior: el [ensayo con configuración owner completa](./full-owner-recovery-2026-09-10.md)
+ya ha pasado en un modo separado. Este documento conserva el alcance del ensayo
+reducido; no extiende sus resultados a las funcionalidades que no ejercita.
+
 ## Hallazgo y mejora
 
 `tests/recovery/object-media-worker.mjs` usa `startMediaHTTPFixture` con

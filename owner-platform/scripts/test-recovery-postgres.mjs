@@ -13,6 +13,8 @@ const ownerRoot = fileURLToPath(new URL('../', import.meta.url))
 const cache = path.join(ownerRoot, 'node_modules', '.cache')
 const versionedMedia = process.argv.includes('--versioned-media')
 const objectMedia = process.argv.includes('--object-media')
+const fullOwner = process.argv.includes('--full-owner')
+if (fullOwner && !objectMedia) throw new Error('Full owner recovery requires object media mode.')
 if (versionedMedia && objectMedia) throw new Error('Choose one media recovery mode.')
 // Resolve and execute every required tool before creating a cluster or any test data.
 const { tools, versions } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
@@ -40,7 +42,7 @@ try {
   const restoreDirectory = path.join(root, 'restored')
   const credentials = { email: `recovery-${randomUUID()}@example.invalid`, password: randomBytes(32).toString('hex') }
   const payloadSecret = randomBytes(32).toString('hex')
-  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: postgres.options(database), credentials, payloadSecret, mediaDirectory, expected })
+  const input = (mode, database, mediaDirectory, expected) => ({ mode, postgres: postgres.options(database), credentials, payloadSecret, mediaDirectory, expected, fullOwner })
   const applicationCommit = (await runCommand('git', ['rev-parse', 'HEAD'], { cwd: ownerRoot })).stdout.trim()
   const seeded = await runWorker(workerPath, input('seed', 'owner_source', path.join(sourceDirectory, 'media')), ownerRoot)
   assert(workersClosed(), 'Seed process must close before pg_dump and media copy.')
@@ -122,6 +124,9 @@ try {
       snapshotOnlyRetention: restored.snapshotOnlyRetention,
       scope: 'Media and real preview/audit with minimal page/brand fixtures; fresh synthetic S3 provider per child', backupReceiptsUnchanged: true })
   }
+  if (fullOwner) Object.assign(result, { mode: 'full-owner-object-media',
+    scope: 'Complete owner configuration installed from native migrations; synthetic page, brand, media, preview, draft snapshot, release and restore workflow',
+    planExecuted: restored.planExecuted, pageEditedAfterRecovery: restored.pageEditedAfterRecovery })
 } catch (error) {
   failure = error
 } finally {

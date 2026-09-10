@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { Socket } from 'node:net'
 import { fileURLToPath } from 'node:url'
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { postgresAdapter, type MigrateUpArgs, type MigrateDownArgs } from '@payloadcms/db-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { buildConfig, getPayload, handleEndpoints, type CollectionConfig, type Payload, type SanitizedConfig } from 'payload'
 import sharp from 'sharp'
@@ -124,6 +124,7 @@ export type MediaHTTPReopenSettings = {
   database: { engine: 'sqlite'; filename: string } | { engine: 'postgres'; pool: Parameters<typeof postgresAdapter>[0]['pool'] }
   collections?: CollectionConfig[]
   fullOwnerConfig?: boolean
+  nativeObjectMigrations?: boolean
   mediaEnvironment?: Record<string, string | undefined>
   schemaName?: string
   transformOwnerCollection?: (collection: CollectionConfig) => CollectionConfig
@@ -136,6 +137,9 @@ export const startMediaHTTPFixture = async (
 ): Promise<MediaHTTPFixture> => {
   const root = settings ? settings.root : process.env.OWNER_INTEGRATION_DIRECTORY
   if (!root || !path.isAbsolute(root)) throw new Error('OWNER_INTEGRATION_DIRECTORY must be an explicit absolute fixture root.')
+  if (settings?.nativeObjectMigrations && (!settings.fullOwnerConfig || settings.database.engine !== 'postgres' || !settings.mediaEnvironment || settings.schemaName)) {
+    throw new Error('Native object migrations require the full isolated PostgreSQL owner schema and configured object storage.')
+  }
   if (settings?.schemaName && !/^[a-z][a-z0-9_]{0,62}$/.test(settings.schemaName)) throw new Error('Invalid fixture schema name.')
   if (settings && (!path.isAbsolute(settings.revisionRoot) || !path.isAbsolute(settings.staticDir)
     || !settings.secret || !settings.credentials.email.endsWith('@example.invalid') || !settings.credentials.password
@@ -217,18 +221,28 @@ export const startMediaHTTPFixture = async (
     const mediaCollection = { ...bound, upload: { ...upload, skipSafeFetch: [allowedNativeOrigin] } }
     config = await buildConfig({
       ...ownerConfig,
+      typescript: { ...ownerConfig?.typescript, autoGenerate: false },
       collections: ownerConfig
         ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : settings?.transformOwnerCollection?.(collection) ?? collection), ...(settings?.collections ?? [])]
         : [Users, mediaCollection, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
-        ? postgresAdapter({ pool: database.pool, push: settings?.seed ?? true, disableCreateDatabase: true,
-          schemaName: settings?.schemaName ?? (settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture') })
+        ? postgresAdapter({ pool: database.pool, push: settings?.nativeObjectMigrations ? false : settings?.seed ?? true, disableCreateDatabase: true,
+          ...(settings?.nativeObjectMigrations
+            ? { migrationDir: path.resolve('database/object-storage') }
+            : { schemaName: settings?.schemaName ?? (settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture') }) })
         : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
       secret: settings?.secret ?? randomUUID() + randomUUID(),
       sharp,
     })
     payload = await getPayload({ config, key })
+    if (settings?.nativeObjectMigrations) {
+      const { migrations } = await import('../../database/object-storage')
+      await payload.db.migrate({ migrations: migrations.map(migration => ({ name: migration.name,
+        up: (args: unknown) => migration.up(args as MigrateUpArgs),
+        down: (args: unknown) => migration.down(args as MigrateDownArgs),
+      })) })
+    }
     const email = settings?.credentials.email ?? 'versioned-http-owner@example.invalid'
     const password = settings?.credentials.password ?? randomUUID() + randomUUID()
     if (!settings || settings.seed) await payload.create({ collection: 'users', overrideAccess: true, data: { email, password, role: 'owner' } })

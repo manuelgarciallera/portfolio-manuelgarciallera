@@ -16,9 +16,10 @@ export const previewRecoveryCollections = [PreviewSnapshots, AuditEvents,
   ] },
 ]
 
-export const captureRecoveryPreview = async (fixture, owner, media) => {
+export const captureRecoveryPreview = async (fixture, owner, media, seedFields = {}) => {
   const payload = fixture.payload
   const brand = await payload.create({ collection: 'brand-profiles', user: owner, overrideAccess: false, data: {
+    ...seedFields.brand,
     colors: [{ role: 'background', value: '#000000' }, { role: 'surface', value: '#111111' },
       { role: 'text', value: '#FFFFFF' }, { role: 'mutedText', value: '#AAAAAA' },
       { role: 'accent', value: '#FF4B44' }, { role: 'interaction', value: '#00D4E6' },
@@ -27,7 +28,7 @@ export const captureRecoveryPreview = async (fixture, owner, media) => {
     motion: { duration: 600, stagger: 80, travel: 24, easing: 'ease-out', reducedMotion: 'reduce' },
   } })
   const page = await payload.create({ collection: 'pages', user: owner, overrideAccess: false, draft: true,
-    data: { title: 'Frozen object recovery', brandProfile: brand.id, layout: [{ blockType: 'hero', image: media.id }] } })
+    data: { title: 'Frozen object recovery', brandProfile: brand.id, layout: [{ blockType: 'hero', image: media.id }], ...seedFields.page } })
   const snapshot = await createPagePreviewSnapshot({ payload, req: await createLocalReq({ user: owner }, payload), pageId: page.id })
   assert.equal(snapshot.manifest.mediaReferences[0].storageRevision, media.storageRevision)
   assert.equal(snapshot.manifest.mediaReferences[0].storage, 'versioned')
