@@ -119,6 +119,29 @@ const createReleaseFixture = async () => {
   return { page, req, release }
 }
 
+it('rejects malformed page slugs without changing the saved draft or its history', async () => {
+  const slug = `slug-qa-${randomUUID()}`
+  const data = { title: 'URL validation', slug, layout: [{ blockType: 'hero' as const, heading: 'Unchanged' }] }
+  const page = await payload.create({ collection: 'pages', user: owner, overrideAccess: false, draft: true, data })
+  const options = { collection: 'pages' as const, user: owner, overrideAccess: false, depth: 0, draft: true }
+  const before = await payload.findByID({ ...options, id: page.id })
+  const history = () => payload.findVersions({ collection: 'pages', user: owner, overrideAccess: false,
+    where: { parent: { equals: page.id } }, pagination: false })
+  const beforeVersions = await history()
+  for (const invalid of ['mi página', '/otra/ruta', 'page?draft=true', 'page#section']) {
+    await expect(payload.update({ ...options, id: page.id, data: { slug: invalid } })).rejects.toMatchObject({
+      data: { errors: expect.arrayContaining([expect.objectContaining({ path: 'slug' })]) },
+    })
+  }
+  expect(await payload.findByID({ ...options, id: page.id })).toEqual(before)
+  expect(await history()).toEqual(beforeVersions)
+  await expect(payload.create({ ...options, data: { ...data, slug: 'https://example.invalid/page' } })).rejects.toMatchObject({
+    data: { errors: expect.arrayContaining([expect.objectContaining({ path: 'slug' })]) },
+  })
+  const changed = await payload.update({ ...options, id: page.id, data: { slug: `${slug}-válido` } })
+  expect(changed.slug).toBe(`${slug}-válido`)
+})
+
 it('registers a real immutable release from a matched snapshot pair', async () => {
   const { release } = await createReleaseFixture()
   expect(release.name).toBe('Integration release')

@@ -2,6 +2,7 @@ import type { CollectionConfig, UIField } from 'payload'
 
 import { ownerOnly } from '../access/owner'
 import { ownerOrPublished, ownerReadVersions } from '../access/published'
+import { validateSlug } from './slug'
 
 export const EDITORIAL_VERSION_LIMIT = 25
 
@@ -34,8 +35,11 @@ export const editorialVersions: NonNullable<CollectionConfig['versions']> = {
 
 export const slugField = {
   name: 'slug',
+  label: 'Identificador de URL',
   type: 'text',
   required: true,
   unique: true,
   index: true,
+  validate: validateSlug,
+  admin: { description: 'Ejemplo: sobre-mi. Solo el identificador, no la dirección completa. No se corrige ni renombra automáticamente.' },
 } as const
