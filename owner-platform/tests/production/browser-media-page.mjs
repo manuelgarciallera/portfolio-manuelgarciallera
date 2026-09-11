@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { verifyBrowserPageTrash } from './browser-page-trash.mjs'
 
 export const verifyBrowserMediaPage = async ({ page, origin, width, media, placement }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -65,5 +66,5 @@ export const verifyBrowserMediaPage = async ({ page, origin, width, media, place
     assert.equal(await preview.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   } finally { await preview.close() }
   console.log(`[media-page] PASS ${width}px native media block, saved relationships and mobile crop preview`)
-  return stored
+  return verifyBrowserPageTrash({ page, origin, before: stored })
 }
