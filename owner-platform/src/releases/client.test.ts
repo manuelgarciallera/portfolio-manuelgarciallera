@@ -12,6 +12,13 @@ const quality = [{
 }] as const
 
 describe('release registration client', () => {
+  it('explains a confirmed duplicate without displaying arbitrary server errors', async () => {
+    const input = { changeSummary: 'x', confirmation: 'REGISTRAR VERSIÓN', draftSnapshot: 13, gitCommit: 'a'.repeat(40), name: 'x', previewSnapshot: 12, quality: [...quality] }
+    await expect(registerOwnerRelease(input, async () => Response.json({ code: 'release_already_registered', error: 'PRIVATE DETAIL' }, { status: 409 })))
+      .rejects.toThrow('Este commit ya tiene una versión registrada. Consulta el historial de versiones.')
+    await expect(registerOwnerRelease(input, async () => Response.json({ error: 'PRIVATE DETAIL' }, { status: 409 })))
+      .rejects.toThrow('No se pudo registrar la versión.')
+  })
   it('returns only matching visual and restorable snapshot pairs', async () => {
     const request = vi.fn(async (url: string) => new Response(JSON.stringify({ docs: url.includes('preview-snapshots') ? [
       { createdAt: '2026-09-05T05:00:00.000Z', id: 12, sourceDocumentId: '7', sourceVersionId: 'current:one' },

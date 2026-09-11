@@ -1,4 +1,5 @@
 import { APIError } from 'payload'
+import { ReleaseAlreadyRegistered } from './conflict'
 
 import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
@@ -7,7 +8,19 @@ import { hashDraftCapsule, type DraftCapsule } from '../recovery/capsule'
 
 type ReleasePayload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
+  find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>
   findByID(args: Record<string, unknown>): Promise<Record<string, unknown>>
+}
+
+// The database adapter and the compiled route can load distinct Payload class
+// instances. Inspect only this narrow validation envelope; a permission-aware
+// database lookup below must still confirm the conflicting committed record.
+const validatesReleaseCommit = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') return false
+  const value = error as { status?: unknown; data?: { collection?: unknown; errors?: unknown } }
+  return value.status === 400 && value.data?.collection === 'releases'
+    && Array.isArray(value.data.errors)
+    && value.data.errors.some(item => item && typeof item === 'object' && item.path === 'gitCommit')
 }
 
 const record = (value: unknown, label: string): Record<string, unknown> => {
@@ -81,6 +94,18 @@ export const createOwnerRelease = async ({
     data: { ...input, createdBy: req.user.id, draftSnapshot: draftSnapshotId, previewSnapshot: snapshotId },
     overrideAccess: true,
     req,
+  }).catch(async (error: unknown) => {
+    // Native create has rolled back before rejecting. The unique index remains
+    // the arbiter for simultaneous requests; only a confirmed commit conflicts.
+    if (validatesReleaseCommit(error)) {
+      let existing
+      try {
+        existing = await payload.find({ collection: 'releases', depth: 0, limit: 1,
+          overrideAccess: false, req, where: { gitCommit: { equals: input.gitCommit } } })
+      } catch { throw error }
+      if (existing.docs.length) throw new ReleaseAlreadyRegistered()
+    }
+    throw error
   })
   await recordAuditEvent({
     input: {

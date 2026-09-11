@@ -1,4 +1,5 @@
 import { APIError } from 'payload'
+import { ReleaseAlreadyRegistered } from './conflict'
 
 import { isOwner } from '../access/owner'
 
@@ -78,6 +79,7 @@ export const handleReleaseRequest = async (
     const release = await dependencies.create(input, authentication.user)
     return Response.json({ release }, { status: 201 })
   } catch (error) {
+    if (error instanceof ReleaseAlreadyRegistered) return Response.json({ code: 'release_already_registered', error: error.message }, { status: 409 })
     if (error instanceof RequestTooLarge) return Response.json({ error: 'Request too large.' }, { status: 413 })
     if (error instanceof SyntaxError || error instanceof TypeError) {
       return Response.json({ error: 'Invalid release request.' }, { status: 400 })

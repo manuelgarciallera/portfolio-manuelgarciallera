@@ -74,6 +74,14 @@ export const registerOwnerRelease = async (
     headers: { 'content-type': 'application/json' },
     method: 'POST',
   })
+  if (response.status === 409) {
+    let conflict: unknown
+    try { conflict = await response.json() } catch { return releaseFailure() }
+    if (isRecord(conflict) && conflict.code === 'release_already_registered') {
+      throw new Error('Este commit ya tiene una versión registrada. Consulta el historial de versiones.')
+    }
+    return releaseFailure()
+  }
   if (!response.ok) return releaseFailure()
   let result: unknown
   try { result = await response.json() as unknown } catch { return releaseFailure() }

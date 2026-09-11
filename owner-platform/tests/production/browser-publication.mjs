@@ -26,13 +26,19 @@ export const verifyBrowserPublication = async ({ page, origin, document, width }
   // Fixture scores are deliberately marked synthetic: not real quality metrics.
   const preview = await create('/api/owner/preview-snapshots', { pageId: document.id }, 'snapshot')
   const draft = await create('/api/owner/draft-snapshots', { pageId: document.id }, 'snapshot')
-  const release = await create('/api/owner/releases', {
+  const releaseInput = {
     confirmation: 'REGISTRAR VERSIÓN', name: `Synthetic workflow ${width}`,
     changeSummary: 'QA fixture only. Scores are synthetic, not measured quality.',
     gitCommit: (width === 390 ? 'a' : 'b').repeat(40), previewSnapshot: preview.id, draftSnapshot: draft.id,
     quality: [{ viewport: width === 390 ? 'mobile' : 'desktop', performance: 80, usability: 80,
       accessibility: 80, source: 'manual', measuredAt: new Date().toISOString() }],
-  }, 'release')
+  }
+  const release = await create('/api/owner/releases', releaseInput, 'release')
+  const beforeRelease = await (await request.get(`${origin}/api/releases/${release.id}?depth=0`)).json()
+  const duplicate = await request.post(`${origin}/api/owner/releases`, { data: releaseInput })
+  assert.equal(duplicate.status(), 409, 'Duplicate release must return a conflict, not an internal error')
+  assert.equal((await duplicate.json()).code, 'release_already_registered')
+  assert.deepEqual(await (await request.get(`${origin}/api/releases/${release.id}?depth=0`)).json(), beforeRelease)
   const diagnostics = []
   const localEditorResponses = []
   const externalRequests = []

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { handleReleaseRequest, parseReleaseRequest } from './request'
+import { ReleaseAlreadyRegistered } from './conflict'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
 const valid = {
@@ -21,6 +22,13 @@ const valid = {
 const requestValid = { confirmation: 'REGISTRAR VERSIÓN', ...valid }
 
 describe('release registration request', () => {
+  it('returns a specific safe conflict code for an already registered version', async () => {
+    const response = await handleReleaseRequest(new Request('https://owner.test/api', { method: 'POST', body: JSON.stringify(requestValid) }), {
+      authenticate: async () => ({ user: owner }), create: async () => { throw new ReleaseAlreadyRegistered() },
+    })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toEqual({ code: 'release_already_registered', error: 'Este commit ya tiene una versión registrada. Consulta el historial de versiones.' })
+  })
   it('accepts only immutable release evidence fields', () => {
     expect(parseReleaseRequest(requestValid)).toEqual(valid)
     expect(() => parseReleaseRequest({ ...requestValid, confirmation: 'publicar' })).toThrow(/confirmación/i)

@@ -124,6 +124,46 @@ const createReleaseFixture = async () => {
   return { page, req, release }
 }
 
+it('rejects a duplicate release without changing the original or adding a success audit', async () => {
+  const { release } = await createReleaseFixture()
+  const before = await payload.findByID({ collection: 'releases', id: release.id as number, depth: 0, user: owner, overrideAccess: false })
+  const input = Object.fromEntries(['name', 'changeSummary', 'gitCommit', 'previewSnapshot', 'draftSnapshot', 'quality'].map(key => [key, before[key as keyof typeof before]]))
+  const audits = () => payload.find({ collection: 'audit-events', depth: 0, overrideAccess: false, user: owner,
+    where: { and: [{ action: { equals: 'release.registered' } }, { subjectId: { equals: String(release.id) } }] } })
+  const auditCount = (await audits()).totalDocs
+  let failure: unknown
+  try {
+    await createOwnerRelease({ input, payload: payload as never, req: await createLocalReq({ user: owner }, payload) })
+  } catch (error) { failure = error }
+  expect(failure).toMatchObject({ status: 409 })
+  expect(await payload.findByID({ collection: 'releases', id: release.id as number, depth: 0, user: owner, overrideAccess: false })).toEqual(before)
+  expect((await payload.find({ collection: 'releases', where: { gitCommit: { equals: before.gitCommit } }, user: owner, overrideAccess: false })).totalDocs).toBe(1)
+  expect((await audits()).totalDocs).toBe(auditCount)
+})
+
+it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('registers only one audited winner for concurrent identical commits', async () => {
+  const { release } = await createReleaseFixture()
+  const before = await payload.findByID({ collection: 'releases', id: release.id as number, depth: 0, user: owner, overrideAccess: false })
+  const input = Object.fromEntries(['name', 'changeSummary', 'gitCommit', 'previewSnapshot', 'draftSnapshot', 'quality'].map(key => [key, before[key as keyof typeof before]]))
+  input.gitCommit = randomUUID().replaceAll('-', '').padEnd(40, 'b')
+  // New submissions do not reuse persisted array-row primary keys.
+  input.quality = before.quality.map(row => {
+    const measurement = { ...row }
+    delete measurement.id
+    return measurement
+  })
+  const reqs = await Promise.all([createLocalReq({ user: owner }, payload), createLocalReq({ user: owner }, payload)])
+  const results = await Promise.allSettled(reqs.map(req => createOwnerRelease({ input, payload: payload as never, req })))
+  expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1)
+  const loser = results.find(result => result.status === 'rejected') as PromiseRejectedResult
+  expect(loser.reason).toMatchObject({ status: 409 })
+  const versions = await payload.find({ collection: 'releases', where: { gitCommit: { equals: input.gitCommit } }, user: owner, overrideAccess: false })
+  expect(versions.totalDocs).toBe(1)
+  const audits = await payload.find({ collection: 'audit-events', user: owner, overrideAccess: false,
+    where: { and: [{ action: { equals: 'release.registered' } }, { subjectId: { equals: String(versions.docs[0].id) } }] } })
+  expect(audits.totalDocs).toBe(1)
+})
+
 it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('resolves simultaneous opposing publication decisions with one audited winner and a conflict', async () => {
   const { req, release } = await createReleaseFixture()
   const bundle = await createOwnerPublicationBundle({ payload: payload as never, req, name: 'Concurrent QA', releaseIds: [release.id as number], confirmation: 'PREPARAR PUBLICACIÓN' })
