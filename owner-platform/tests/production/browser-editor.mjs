@@ -4,6 +4,7 @@ import { verifySecondPage } from './browser-second-page.mjs'
 import { verifyBrowserMediaPlacement } from './browser-media-placement.mjs'
 import { verifyBrowserPublication } from './browser-publication.mjs'
 import { verifyBrowserArticle } from './browser-article.mjs'
+import { verifyUnsavedPage } from './browser-unsaved.mjs'
 
 export const verifyProductionBrowserEditor = async ({ page, context, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -137,6 +138,7 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   assert.equal(stored.brandProfile ?? null, null)
   assert.deepEqual(stored.layout.map(block => block.heading), ['Second draft block', 'Edited first block'])
   const second = await verifySecondPage({ page, context, origin, width, firstPage: stored })
+  await verifyUnsavedPage({ page, origin, width, document: stored })
   const mediaPage = await verifyBrowserMediaPlacement({ page, origin, width })
   await verifyBrowserPublication({ page, origin, document: second, width })
   await verifyBrowserArticle({ page, context, origin, width, mediaPage })
