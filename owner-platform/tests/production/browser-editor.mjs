@@ -135,7 +135,7 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   assert.equal(stored.brandProfile ?? null, null)
   assert.deepEqual(stored.layout.map(block => block.heading), ['Second draft block', 'Edited first block'])
   const second = await verifySecondPage({ page, context, origin, width, firstPage: stored })
-  await verifyBrowserMediaPlacement({ page, origin, width })
+  const mediaPage = await verifyBrowserMediaPlacement({ page, origin, width })
   console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
-  return [stored, second]
+  return [stored, second, mediaPage]
 }

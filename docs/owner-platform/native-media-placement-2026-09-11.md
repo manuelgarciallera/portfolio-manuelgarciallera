@@ -108,3 +108,33 @@ This is a new production build/browser run, not a new full unit/integration
 sweep. Base checkout remains `8bd695e` with explicit overlays through `4e6cd80`
 plus this test. Placement restart and embedding in a page are still the next
 gate, not proven by the page/brand restart assertions. No public deployment.
+
+## Native page embedding and placement restart (follow-up on 96326e2)
+
+Reservation `e48b876c-9f40-4194-a2cb-51664cfe11a7`. New helper
+`tests/production/browser-media-page.mjs` creates a third page per viewport
+through the native form: Imagen block, original selected from the asset drawer,
+placement selected from the relationship options, caption and draft save.
+After reload it checks the exact stored asset/placement IDs and draft content.
+It opens the real preview, selects Móvil and verifies the image decodes, shows
+the expected focal position and 4x zoom, displays its caption and does not
+overflow horizontally. No content is created through an API fixture in this path.
+
+The production HTTP runner now compares six browser-authored pages, their two
+brands and two referenced placement documents before/after an actual app PID
+restart. The placement expectations include desktop focalX and mobile zoom,
+focalY and frame; document equality then guards the complete saved recipe.
+
+Fresh production build/browser run `5e68a1` / `b03413`, exit 0: both 390 and
+1280 px pass, as do existing login, private media upload/replacement/restart
+and owned fixture cleanup. Focused ESLint `257d22`, syntax and diffcheck
+`c7d92d` pass. Only test/harness files changed; no new unit or full database
+integration sweep is claimed. Provenance is the isolated `8bd695e` checkout
+with documented source overlays and this test delta, not a clean new release.
+
+Limits: Chromium emulation, no physical-device or deployed-provider test.
+This checks mobile crop rendering at both browser widths, not every preview
+breakpoint. The native nested placement selector is located within its field;
+its accessible name is not asserted here. The next usability gate is that
+selector's label/focus behavior (the brand selector was fixed separately).
+No public bridge, push, deployment, new dependency or schema change.

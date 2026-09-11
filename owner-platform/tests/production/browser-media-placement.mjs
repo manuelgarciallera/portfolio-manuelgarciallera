@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import sharp from 'sharp'
+import { verifyBrowserMediaPage } from './browser-media-page.mjs'
 
 export const verifyBrowserMediaPlacement = async ({ page, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -122,4 +123,5 @@ export const verifyBrowserMediaPlacement = async ({ page, origin, width }) => {
   assert.deepEqual(await originalDigest(), originalBytes, 'Crop editing preserves actual original bytes, including legacy storage')
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   console.log(`[media-placement] PASS ${width}px native upload and placement creation, crop save/reload, independent mobile recipe and original preserved`)
+  return verifyBrowserMediaPage({ page, origin, width, media, placement })
 }

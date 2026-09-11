@@ -108,8 +108,8 @@ try {
     assert.equal(typeof token, 'string')
     const request = (route, options = {}) => fetch(origin + route, { ...options, signal: AbortSignal.timeout(10_000), headers: { Authorization: `JWT ${token}`, 'Content-Type': 'application/json', ...options.headers } })
     if (browserEditor) {
-      assert.equal(browserDrafts.length, 4, 'Two independently authored pages per viewport')
-      assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 4)
+      assert.equal(browserDrafts.length, 6, 'Three independently authored pages per viewport')
+      assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 6)
     }
     const brandIds = [...new Set(browserDrafts.map(draft => draft.brandProfile).filter(id => id != null))]
     if (browserEditor) assert.equal(brandIds.length, 2, 'One distinct second-page brand per viewport')
@@ -117,6 +117,19 @@ try {
       const response = await request(`/api/brand-profiles/${id}?draft=true&depth=0`)
       assert.equal(response.status, 200)
       return response.json()
+    }))
+    const placementIds = [...new Set(browserDrafts.flatMap(draft => draft.layout
+      .filter(block => block.blockType === 'media').map(block => block.placement)))]
+    if (browserEditor) assert.equal(placementIds.length, 2, 'One natively authored placement per viewport')
+    const placementsBefore = await Promise.all(placementIds.map(async id => {
+      const response = await request(`/api/media-placements/${id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      const doc = await response.json()
+      assert.equal(doc.placement.focalX, 1)
+      assert.equal(doc.placement.overrides.mobile.zoom, 4)
+      assert.equal(doc.placement.overrides.mobile.focalY, 0)
+      assert.equal(doc.placement.overrides.mobile.frame, '1:1')
+      return doc
     }))
     const anonymous = await fetch(`${origin}/api/owner/system/readiness`, { signal: AbortSignal.timeout(10_000) })
     assert.equal(anonymous.status, 403)
@@ -153,7 +166,12 @@ try {
       assert.equal(response.status, 200)
       assert.deepEqual(await response.json(), brand, 'Related brand survives process restart')
     }
-    if (browserEditor) console.log('[production-http] four browser drafts and two related brands preserved after app restart')
+    for (const placement of placementsBefore) {
+      const response = await request(`/api/media-placements/${placement.id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), placement, 'Native placement and its recipe survive process restart')
+    }
+    if (browserEditor) console.log('[production-http] six browser drafts, two related brands and two placements preserved after app restart')
     await verifyMediaAfterRestart?.()
     console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }
