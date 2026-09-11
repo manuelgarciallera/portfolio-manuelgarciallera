@@ -37,3 +37,43 @@ fixture, including actual JSON rendering and absence of external requests.
 The new test helpers remain uncommitted work in progress until the regression
 is resolved. Syntax/lint `f92c42` pass, but this is not a green acceptance gate.
 The prior green checkpoint remains `ce85688`, with local incremental backup.
+
+## Follow-up: local asset preparation and private loader instance
+
+2026-09-11, base `c7b17f7`. Still **RED**; runtime work is uncommitted.
+
+- Added a local asset preparation test, initially missing module (`d23551`),
+  then passing byte comparisons for the installed loader, editor entrypoint,
+  license and every installed worker asset (`f8a66a`). This narrow test does
+  not prove browser initialization. Existing Monaco 0.56.0 and React adapter
+  4.7.0 are pinned as direct owner dependencies; no new public dependency.
+- Local preparation runs before owner dev/build and the isolated production
+  runner. Installed/pinned version mismatch fails rather than shipping an
+  incompatible URL. Generated assets are ignored, not committed binaries.
+- Provider attempt using the loader package failed the browser gate
+  (`ec6c30`). Importing its public React adapter loader did not fix it:
+  `fe8755` still requested CDN 0.55.1 and timed out awaiting the real editor.
+  Both owned test environments closed and cleaned normally.
+- Separate build failure (`ed06cb`) identified Monaco package exports hiding
+  package.json. The preparation reads installed metadata via filesystem;
+  client version comes from our own pinned manifest, with equality checked
+  by preparation. No node_modules patch.
+- Independent read-only review identified a test gap. The publication helper
+  now waits for the native Monaco view; the isolated wrapper additionally
+  requires local loader and JSON worker responses and a populated JSON model.
+  These stronger checks are currently red, not waived.
+- Root cause of the ineffective provider: installed Payload UI's exported
+  client build has a lazy CodeEditor chunk importing a prebundled chunk with
+  its **own inlined loader/state-local instance**. Configuring the separate
+  npm loader does not change that instance. Build chunks confirmed two loader
+  copies (`d8bc38`, `c52781`); this is not a missing copied worker.
+
+Next: evaluate the supported field component extension to initialize local
+Monaco on demand before mounting Payload's native JSONField. Preserve all
+field props, permissions, error behavior and editor functionality; do not
+eager-load Monaco for every admin screen. The ineffective provider must not
+be committed as a working fix. Gravatar remains separately unresolved.
+
+Primary reference for the public loader configuration API:
+https://github.com/suren-atoyan/monaco-react#loader-config . Installed Payload
+bundled code, not that API alone, determines actual integration behavior.
