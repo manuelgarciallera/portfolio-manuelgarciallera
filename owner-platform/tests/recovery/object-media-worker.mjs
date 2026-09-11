@@ -14,6 +14,7 @@ import { createLocalReq } from 'payload'
 import { verifySnapshotInBrowser } from './snapshot-browser.mjs'
 import { captureFullOwnerPreview, prepareFullOwnerRecovery, readFullOwnerWorkflow, executeRecoveredOwnerWorkflow } from './full-owner-recovery-fixture.mjs'
 import { captureRecoveryMigrationCandidate, restoreRecoveryMigration } from './migration-copy-recovery-fixture.mjs'
+import { seedRecoveryArticle, verifyRecoveryArticle } from './article-recovery-fixture.mjs'
 
 // A provider owned by this child only: no persistence and no parent-held Map.
 // Exiting the seed process destroys the original provider and all its objects.
@@ -177,6 +178,7 @@ process.once('message', async (input) => {
       ] } })
       await verifyRecoveryPreview(fixture, owner, snapshot)
       const workflow = input.fullOwner ? await prepareFullOwnerRecovery(fixture, owner, snapshot) : undefined
+      const article = input.fullOwner ? await seedRecoveryArticle(fixture, owner, second.id) : undefined
       const references = await collectPayloadRevisionReferences({ payload: fixture.payload, req: await createLocalReq({ user: owner }, fixture.payload) })
       assert.deepEqual(references.map(({ revision }) => revision).sort(), [first.storageRevision, second.storageRevision, captured.storageRevision].sort())
       assert(references.find(({ revision }) => revision === captured.storageRevision).references.some(({ kind }) => kind === 'snapshot'), 'Historical image must be retained by its real frozen preview')
@@ -204,10 +206,11 @@ process.once('message', async (input) => {
       const migrationCandidate = input.fullOwner ? await captureRecoveryMigrationCandidate(fixture, owner, input.mediaDirectory) : undefined
       result = { mediaId: first.id, versionId: versions.docs.find(({ version }) => version.storageRevision === first.storageRevision).id,
         revisions, references, snapshot, pid: process.pid, logical: await logicalMedia(fixture, owner, first.id),
-        editorial: await logicalEditorial(fixture, owner, snapshot), migrationCandidate,
+        editorial: await logicalEditorial(fixture, owner, snapshot), migrationCandidate, article,
         ...(workflow ? { workflow, workflowReceipt: await readFullOwnerWorkflow(fixture, owner, snapshot, workflow) } : {}) }
     } else {
       const expected = input.expected
+      const articleResult = input.fullOwner ? await verifyRecoveryArticle(fixture, owner, expected.article, input.mode === 'restore') : {}
       assert.deepEqual(await logicalEditorial(fixture, owner, expected.snapshot), expected.editorial,
         'Recovered draft, full page history and brand must match their pre-backup receipts')
       await verifyRecoveryPreview(fixture, owner, expected.snapshot)
@@ -218,7 +221,7 @@ process.once('message', async (input) => {
       assert.deepEqual(await logicalMedia(fixture, owner, expected.mediaId), expected.logical, 'Current media and complete version receipts survive unchanged')
       if (input.fullOwner) assert.deepEqual(await readFullOwnerWorkflow(fixture, owner, expected.snapshot, expected.workflow), expected.workflowReceipt, 'Releases, restore plans, draft snapshots, audits and migrations survive unchanged')
       if (input.mode === 'verify') {
-        result = { sourceLogicalStateUnchanged: true, ...migrationResult }
+        result = { sourceLogicalStateUnchanged: true, ...migrationResult, ...articleResult }
       } else {
       const workflowResult = input.fullOwner ? await executeRecoveredOwnerWorkflow(fixture, owner, expected.snapshot, expected.workflow) : {}
       const restored = await fixture.request(`/api/media/versions/${expected.versionId}`, {
@@ -239,7 +242,7 @@ process.once('message', async (input) => {
       await verifySnapshotOnly(fixture, store, expected.mediaId, expected.revisions[2], expected.snapshot)
       await verifySnapshotInBrowser(fixture, owner, expected.snapshot, input.credentials)
       result = { pid: process.pid, recoveredRevisions: 3, recoveredFiles: 12, login: true, history: true, independentEdit: true, frozenPreview: true, snapshotOnlyRetention: true, snapshotBrowser: true,
-        pageVersionsRestored: expected.editorial.versions.length, editorialStateUnchanged: true, ...workflowResult, ...migrationResult }
+        pageVersionsRestored: expected.editorial.versions.length, editorialStateUnchanged: true, ...workflowResult, ...migrationResult, ...articleResult }
       }
     }
     assert.deepEqual(await readdir(fixture.staticDir), [], 'No native filesystem media fallback')

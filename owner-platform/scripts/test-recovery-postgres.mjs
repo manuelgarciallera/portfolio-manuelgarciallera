@@ -132,6 +132,8 @@ try {
   if (fullOwner) Object.assign(result, { mode: 'full-owner-object-media',
     scope: 'Complete owner configuration installed from native migrations; synthetic page, brand, media, preview, draft snapshot, release and restore workflow',
     planExecuted: restored.planExecuted, pageEditedAfterRecovery: restored.pageEditedAfterRecovery,
+    articleRecovered: restored.articleRecovered, articleVersionsRestored: restored.articleVersionsRestored,
+    articleEditedAfterRecovery: restored.articleEditedAfterRecovery,
     migrationCopyVerified: restored.migrationCopyVerified, retainedFiles: restored.retainedFiles,
     reconciledRevisions: restored.reconciledRevisions })
 } catch (error) {
