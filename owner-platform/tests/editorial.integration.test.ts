@@ -36,6 +36,7 @@ import { snapshotFiles } from './recovery/backup-manifest.mjs'
 let payload: Payload
 let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
 let rejectRestoreAudit = false
+let rejectReleaseAudit = false
 let corruptRestoredPin: number | null | undefined
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
@@ -59,6 +60,7 @@ beforeAll(async () => {
       collections: config.collections.map((collection) => collection.slug === 'media' ? { ...collection, upload: { ...collection.upload, disableLocalStorage: false, staticDir: mediaDirectory } } : collection.slug === 'audit-events' ? {
         ...collection, hooks: { ...collection.hooks, beforeChange: [({ data }) => {
           if (rejectRestoreAudit && data.action === 'restore.executed') throw new Error('QA restore audit unavailable')
+          if (rejectReleaseAudit && data.action === 'release.registered') throw new Error('QA release audit unavailable')
           if (rejectFigmaAudit && data.action === 'figma.import.executed') throw new Error('QA Figma audit unavailable')
           if (rejectedAssistanceAudit && data.action === rejectedAssistanceAudit) throw new Error('QA assistance audit unavailable')
           if (rejectPreflightAudit && data.action === 'publication.preflight.created') throw new Error('QA preflight audit unavailable')
@@ -123,6 +125,25 @@ const createReleaseFixture = async () => {
   } }).catch((error) => { throw new Error(JSON.stringify(error.data ?? error.message)) })
   return { page, req, release }
 }
+
+it('rolls back a release when its audit fails and permits retrying the same commit', async () => {
+  const { release } = await createReleaseFixture()
+  const source = await payload.findByID({ collection: 'releases', id: release.id as number, depth: 0, user: owner, overrideAccess: false })
+  const input = Object.fromEntries(['name', 'changeSummary', 'previewSnapshot', 'draftSnapshot'].map(key => [key, source[key as keyof typeof source]]))
+  input.gitCommit = randomUUID().replaceAll('-', '').padEnd(40, 'c')
+  input.quality = source.quality.map(row => { const measurement = { ...row }; delete measurement.id; return measurement })
+  rejectReleaseAudit = true
+  try {
+    await expect(createOwnerRelease({ input, payload: payload as never, req: await createLocalReq({ user: owner }, payload) })).rejects.toThrow('QA release audit unavailable')
+  } finally { rejectReleaseAudit = false }
+  const versions = () => payload.find({ collection: 'releases', where: { gitCommit: { equals: input.gitCommit } }, user: owner, overrideAccess: false })
+  expect((await versions()).totalDocs).toBe(0)
+  const retried = await createOwnerRelease({ input, payload: payload as never, req: await createLocalReq({ user: owner }, payload) })
+  expect((await versions()).totalDocs).toBe(1)
+  const audits = await payload.find({ collection: 'audit-events', user: owner, overrideAccess: false,
+    where: { and: [{ action: { equals: 'release.registered' } }, { subjectId: { equals: String(retried.id) } }] } })
+  expect(audits.totalDocs).toBe(1)
+})
 
 it('rejects a duplicate release without changing the original or adding a success audit', async () => {
   const { release } = await createReleaseFixture()

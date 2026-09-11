@@ -1,5 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
-import { ValidationError } from 'payload'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+vi.mock('payload', async importOriginal => ({
+  ...await importOriginal<typeof import('payload')>(),
+  initTransaction: vi.fn(), commitTransaction: vi.fn(), killTransaction: vi.fn(),
+}))
+import { commitTransaction, initTransaction, killTransaction, ValidationError } from 'payload'
 
 import { createPreviewManifest } from '../preview/manifest'
 import { createDraftCapsule } from '../recovery/capsule'
@@ -26,6 +30,22 @@ const capsule = createDraftCapsule({
 })
 
 describe('createOwnerRelease', () => {
+  beforeEach(() => {
+    vi.mocked(initTransaction).mockReset().mockResolvedValue(true)
+    vi.mocked(commitTransaction).mockReset().mockResolvedValue(undefined)
+    vi.mocked(killTransaction).mockReset().mockResolvedValue(undefined)
+  })
+  it('does not write when an exclusive transaction cannot be acquired', async () => {
+    vi.mocked(initTransaction).mockResolvedValue(false)
+    const payload = { create: vi.fn(), find: vi.fn(),
+      findByID: vi.fn(async ({ collection }) => collection === 'preview-snapshots'
+        ? { manifest, manifestHash: manifest.hash } : { capsule, capsuleHash: capsule.hash }),
+    }
+    await expect(createOwnerRelease({ input: { previewSnapshot: 12, draftSnapshot: 13 }, payload, req: { user: owner } })).rejects.toMatchObject({ status: 503 })
+    expect(payload.create).not.toHaveBeenCalled()
+    expect(commitTransaction).not.toHaveBeenCalled()
+    expect(killTransaction).not.toHaveBeenCalled()
+  })
   it.each([
     { status: 500, data: { collection: 'releases', errors: [{ path: 'gitCommit' }] } },
     { status: 400, data: { collection: 'pages', errors: [{ path: 'gitCommit' }] } },

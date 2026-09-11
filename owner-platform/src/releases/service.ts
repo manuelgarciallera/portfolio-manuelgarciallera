@@ -5,6 +5,7 @@ import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { hashPreviewManifest, type PreviewManifest } from '../preview/manifest'
 import { hashDraftCapsule, type DraftCapsule } from '../recovery/capsule'
+import { withPublicationTransaction } from '../publication/transaction'
 
 type ReleasePayload = {
   create(args: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -89,11 +90,26 @@ export const createOwnerRelease = async ({
   ) {
     throw new APIError('Los snapshots visual y restorable no pertenecen a la misma revisión.', 409)
   }
-  const release = await payload.create({
-    collection: 'releases',
-    data: { ...input, createdBy: req.user.id, draftSnapshot: draftSnapshotId, previewSnapshot: snapshotId },
-    overrideAccess: true,
-    req,
+  const owner = req.user
+  return withPublicationTransaction(req, async () => {
+    const release = await payload.create({
+      collection: 'releases',
+      data: { ...input, createdBy: owner.id, draftSnapshot: draftSnapshotId, previewSnapshot: snapshotId },
+      overrideAccess: true,
+      req,
+    })
+    await recordAuditEvent({
+      input: {
+        action: 'release.registered',
+        metadata: { capsuleHash, gitCommit: input.gitCommit, snapshotHash: verifiedHash },
+        outcome: 'success',
+        subject: { collection: 'releases', id: relationId(release, 'La versión') },
+      },
+      payload: payload as never,
+      req,
+      user: owner,
+    })
+    return release
   }).catch(async (error: unknown) => {
     // Native create has rolled back before rejecting. The unique index remains
     // the arbiter for simultaneous requests; only a confirmed commit conflicts.
@@ -107,16 +123,4 @@ export const createOwnerRelease = async ({
     }
     throw error
   })
-  await recordAuditEvent({
-    input: {
-      action: 'release.registered',
-      metadata: { capsuleHash, gitCommit: input.gitCommit, snapshotHash: verifiedHash },
-      outcome: 'success',
-      subject: { collection: 'releases', id: relationId(release, 'La versión') },
-    },
-    payload: payload as never,
-    req,
-    user: req.user,
-  })
-  return release
 }

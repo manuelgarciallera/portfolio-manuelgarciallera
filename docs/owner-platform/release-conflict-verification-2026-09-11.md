@@ -43,3 +43,20 @@ correo, sin envío real. PostgreSQL36/36 sobre el arreglo final pasa (`368f0b`),
 con cierre de sesiones y limpieza. Frontera pública21 entradas pasa (`7c78ef`).
 Checkpoint pelado0f0adf686b2752e23c25d224f8c60815b10fd451 intacto (`ff40ae`).
 Commit y copia exclusivamente locales; destino privado externo sigue pendiente.
+
+## Seguimiento: alta y auditoría indivisibles
+
+Sobre ee276d1, la prueba de fallo de auditoría reprodujo una versión huérfana:
+se esperaba0 registros y quedaba1 (`0e620c`). El servicio ahora usa la transacción
+exclusiva ya existente para crear versión y evento juntos; no confirma ni revierte
+una transacción ajena. La conversión de duplicados se evalúa después del rollback.
+
+PostgreSQL37/37 GREEN `e0261c`: el fallo no deja versión y el mismo SHA se puede
+reintentar con una sola auditoría. Se conservan las pruebas de duplicado y
+concurrencia. Unitarias focales17 `ca26cd`; lint/tipos salida0 `38d2c2`.
+Revisión independiente de solo lectura sin bloqueadores. Ensayo HTTP final
+`abf5f0` salida0:390/1280, flujo editorial completo de preparación (no despliegue),
+medios privados y reinicio, limpieza verificada. Unitarias completas1301/170 y
+assets `544137`,68s; frontera pública21 `806a66`. Inventario de procesos Docker
+sin app ni PostgreSQL (`1e1016`). Sin cambios en src/public/dependencias raíz y
+checkpoint intacto (`304328`). Guarda local, no push ni despliegue.
