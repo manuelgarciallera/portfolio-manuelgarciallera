@@ -1,5 +1,11 @@
 # Editor real en ensayo productivo aislado
 
+Registro histórico del bloqueo TLS en Windows. La alternativa Docker autorizada
+se verificó posteriormente: creación y edición nativas a 390/1280 px, dos marcas,
+persistencia tras reinicio y medios privados. Consultar
+[verificación actual](recovery-http-verification-2026-09-11.md). No se ha desactivado
+el antivirus ni se afirma que el bloqueo del entorno Windows haya desaparecido.
+
 Base3751a33. ReservaHub97989125-1a27-4ef7-8f25-3daf863deebe. Solo cambia la infraestructura de pruebas, no el CMS ni el portfolio.
 
 ## Cobertura buscada

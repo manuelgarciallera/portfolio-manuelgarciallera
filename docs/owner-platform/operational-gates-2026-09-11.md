@@ -1,5 +1,14 @@
 # CMS owner: puertas operativas actuales
 
+Actualización sobre `8bd695e`: la evidencia de recuperación y editor se amplió
+con un ensayo desde checkout limpio; véase
+[recuperación HTTP y procedencia](recovery-http-verification-2026-09-11.md).
+Incluye recuperación concurrente de un solo uso, límites compartidos en
+PostgreSQL, restauración de datos/medios/contadores y dos páginas con marcas
+distintas creadas desde la interfaz a 390/1280 px. El alojamiento real, correo
+de staging, aislamiento de clientes y publicación siguen sin acreditarse.
+Las cifras y la base que siguen son el registro histórico, no el HEAD actual.
+
 Revisión sobre 8fb36e1. La fase anterior es progreso verificado: editor HTTPS,
 medios y creación nativa por formulario han pasado en un contenedor aislado.
 No se considera cumplido el objetivo general del CMS productivo.

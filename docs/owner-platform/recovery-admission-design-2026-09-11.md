@@ -1,6 +1,11 @@
 # Shared recovery admission: isolated first milestone
 
-Status: candidate, not connected to the password-recovery endpoint. Proposal sent
+Historical milestone: the candidate described below was connected to the REST
+endpoint in `8bd695e`. See [HTTP verification](recovery-http-verification-2026-09-11.md)
+for current local behavior and remaining deployment gates. The original evidence
+below is retained; it is not a claim that integration is still pending.
+
+Original status: candidate, not connected to the password-recovery endpoint. Proposal sent
 to Claude as `1b6f1cbf-3733-4c12-8031-4cb9cb7fad85`; no acceptance assumed.
 
 ## Scope and decisions

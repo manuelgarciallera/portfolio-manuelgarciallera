@@ -70,8 +70,34 @@ Its recovery receipt's `applicationCommit` is that checkout base, **not** the SH
 of this newer uncommitted integration. SHA-256 comparisons (`e415e7`, `d7afe0`)
 matched host and container for all eight relevant runtime/fixture files before
 closing this gate. Do not use the old printed SHA as evidence of a clean build of
-a newer commit. A fresh-checkout release rehearsal remains appropriate before
-production.
+a newer commit. The fresh-checkout rehearsal below supersedes that provenance
+limitation for its explicitly listed checks, not for unlisted tests.
+
+## Fresh-checkout rehearsal after commit
+
+Exact source: `8bd695ee2a75e9bf32c8171f0f9fb1f8d9c4f930`, cloned from the verified
+local `.audit/recovery-8bd695e.bundle` into a new isolated directory. Bundle SHA-256:
+`DFE527428591187754A48900CF0749FB4052A471772953E4FD9203FE343EF38D`.
+Git status was empty before testing (`f0c7e9`) and after the build/browser run
+(`2e38de`). Installed dependencies were copied from the previous test workspace;
+package manifests/lockfiles have no delta between those commits. This proves
+clean source checkout execution, not a fresh dependency download.
+
+- Full PostgreSQL/object recovery (`d1684a`, exit 0) reports that exact
+  `applicationCommit`; 45 recovery unit tests also pass. Native dump/restore,
+  18 backup files, 12 media files, three revisions/page versions, admission
+  counters, migration ledger, recovered login, workflow and subsequent edit
+  pass. Twelve damaged-backup cases are rejected before allocation. Cleanup
+  confirms shutdown and removal of only the synthetic run root.
+- Production build and browser (`e92781`, exit 0): native create/edit/reorder/
+  save/reload/preview at 390 and 1280 px; a second page with a distinct brand
+  does not modify the first. Four drafts and two brands survive process restart.
+  Object upload/replacement/private bytes and anonymous denial pass. Owned app
+  and database processes close successfully. `deployment:false` remains explicit.
+- Full integration rerun on the same checkout (`44b4ea`): 88 tests / 12 files
+  pass, 139.81 seconds. The PostgreSQL runner includes fixtures deliberately
+  pinned to SQLite; this is the complete integration gate, not a claim that
+  every individual test uses PostgreSQL. Git integrity check `eec336` exits 0.
 
 Actual provider delivery, real hosted database/object durability, trusted edge
 traffic limits, timing enumeration mitigation and deployment review remain open.

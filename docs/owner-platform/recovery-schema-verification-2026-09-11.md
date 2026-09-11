@@ -1,5 +1,9 @@
 # Recovery admission schema: verification record
 
+Historical schema milestone. The next gate below was completed locally in
+`8bd695e`; see [HTTP verification](recovery-http-verification-2026-09-11.md).
+Production deployment and real-provider validation remain separate and open.
+
 Base `14a1eb6`. Proposal sent to Claude: `05b95477-5d62-4023-8ed8-ebd25913affe`.
 This is the schema gate following the standalone admission mechanism; not HTTP
 activation, production deployment or completion of the whole CMS.
