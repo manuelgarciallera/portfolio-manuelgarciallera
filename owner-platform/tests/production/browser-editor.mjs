@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { verifySecondPage } from './browser-second-page.mjs'
 import { verifyBrowserMediaPlacement } from './browser-media-placement.mjs'
 import { verifyBrowserPublication } from './browser-publication.mjs'
+import { verifyBrowserArticle } from './browser-article.mjs'
 
 export const verifyProductionBrowserEditor = async ({ page, context, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -138,6 +139,7 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   const second = await verifySecondPage({ page, context, origin, width, firstPage: stored })
   const mediaPage = await verifyBrowserMediaPlacement({ page, origin, width })
   await verifyBrowserPublication({ page, origin, document: second, width })
+  await verifyBrowserArticle({ page, context, origin, width })
   console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
   return [stored, second, mediaPage]
 }

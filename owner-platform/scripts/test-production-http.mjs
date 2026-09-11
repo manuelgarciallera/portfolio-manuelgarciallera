@@ -114,6 +114,15 @@ try {
       assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 6)
     }
     const brandIds = [...new Set(browserDrafts.map(draft => draft.brandProfile).filter(id => id != null))]
+    let articlesBefore = []
+    if (browserEditor) {
+      const response = await request('/api/articles?draft=true&depth=0&limit=10')
+      assert.equal(response.status, 200)
+      const result = await response.json()
+      assert.equal(result.totalDocs, 2, 'One natively authored article per viewport')
+      articlesBefore = result.docs
+      assert(articlesBefore.every(article => article._status === 'draft'))
+    }
     if (browserEditor) assert.equal(brandIds.length, 2, 'One distinct second-page brand per viewport')
     const brandsBefore = await Promise.all(brandIds.map(async id => {
       const response = await request(`/api/brand-profiles/${id}?draft=true&depth=0`)
@@ -168,6 +177,12 @@ try {
       assert.equal(response.status, 200)
       assert.deepEqual(await response.json(), brand, 'Related brand survives process restart')
     }
+    for (const article of articlesBefore) {
+      const response = await request(`/api/articles/${article.id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), article, 'Native article survives process restart')
+    }
+    if (browserEditor) console.log('[production-http] two native article drafts preserved after app restart')
     for (const placement of placementsBefore) {
       const response = await request(`/api/media-placements/${placement.id}?draft=true&depth=0`)
       assert.equal(response.status, 200)
