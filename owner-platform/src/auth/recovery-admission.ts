@@ -22,6 +22,13 @@ export const recoveryAdmissionDDL = (schemaName: string): string => {
 
 type Options = { pool: PostgresAdapter['pool']; secret: string; schemaName: string }
 
+export const normalizeRecoveryEmail = (email: unknown): string => {
+  if (typeof email !== 'string') throw new Error('Invalid recovery email')
+  const normalized = email.trim().toLowerCase()
+  if (normalized.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new Error('Invalid recovery email')
+  return normalized
+}
+
 // Caller must configure bounded pool acquisition. This transaction is separate
 // from token creation: a provider failure must not roll back spent mail budget.
 export const createRecoveryAdmissionStore = ({ pool, secret, schemaName }: Options): { admit(email: string): Promise<boolean> } => {
@@ -32,8 +39,7 @@ export const createRecoveryAdmissionStore = ({ pool, secret, schemaName }: Optio
 
   return {
     async admit(email) {
-      const normalized = email.trim().toLowerCase()
-      if (normalized.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new Error('Invalid recovery email')
+      const normalized = normalizeRecoveryEmail(email)
       const key = 'r:' + createHmac('sha256', secret).update('owner-recovery-admission-v1\0').update(normalized).digest('hex')
       let client: Awaited<ReturnType<typeof connect>> | undefined
       let broken = false

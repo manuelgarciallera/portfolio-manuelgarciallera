@@ -1,12 +1,20 @@
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { describe, expect, it, vi } from 'vitest'
-import { createRecoveryAdmissionStore, recoveryAdmissionDDL } from './recovery-admission'
+import { createRecoveryAdmissionStore, normalizeRecoveryEmail, recoveryAdmissionDDL } from './recovery-admission'
 
 const secret = 'synthetic-secret-at-least-thirty-two-characters'
 const schemaName = 'admission_unit_fixture'
 const asPool = (value: unknown) => value as PostgresAdapter['pool']
 
 describe('recovery admission defensive boundary', () => {
+  it.each([undefined, null, 42, [], { email: 'owner@example.invalid' }])('rejects non-text recovery input %j', email => {
+    expect(() => normalizeRecoveryEmail(email)).toThrow('Invalid recovery email')
+  })
+
+  it('canonicalizes the same address for admission and the native operation', () => {
+    expect(normalizeRecoveryEmail(' OWNER@EXAMPLE.INVALID ')).toBe('owner@example.invalid')
+  })
+
   it.each(['public; DROP SCHEMA public', '', 'a.b', 'MixedCase', 'a'.repeat(64)])('rejects unsafe schema %s before SQL', schemaName => {
     expect(() => recoveryAdmissionDDL(schemaName)).toThrow('Invalid recovery admission schema')
     expect(() => createRecoveryAdmissionStore({ pool: asPool({}), secret, schemaName })).toThrow('Invalid recovery admission schema')

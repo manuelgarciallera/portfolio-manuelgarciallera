@@ -14,6 +14,7 @@ import { Users } from '../../src/collections/Users'
 import { createRevisionStorageCollection, createTransportRevisionStorageCollection } from '../../src/media/revision-storage-binding'
 import { editorialDatabaseConfig } from '../recovery/postgres-runtime.mjs'
 import { configureMediaStorage } from '../../src/config/media-storage'
+import { recoveryPostgresAdapter } from '../../src/auth/recovery-postgres'
 
 const maxRequestBytes = 8 * 1024 * 1024
 const requestTimeoutMs = 15_000
@@ -226,9 +227,9 @@ export const startMediaHTTPFixture = async (
         ? [...(ownerConfig.collections ?? []).map(collection => collection.slug === 'media' ? mediaCollection : settings?.transformOwnerCollection?.(collection) ?? collection), ...(settings?.collections ?? [])]
         : [Users, mediaCollection, ...(settings?.collections ?? [])],
       db: database.engine === 'postgres'
-        ? postgresAdapter({ pool: database.pool, push: settings?.nativeObjectMigrations ? false : settings?.seed ?? true, disableCreateDatabase: true,
+        ? recoveryPostgresAdapter({ pool: database.pool, push: settings?.nativeObjectMigrations ? false : settings?.seed ?? true, disableCreateDatabase: true,
           ...(settings?.nativeObjectMigrations
-            ? { migrationDir: path.resolve('database/object-storage') }
+            ? { migrationDir: path.resolve('database/recovery-admission') }
             : { schemaName: settings?.schemaName ?? (settings?.fullOwnerConfig ? 'full_owner_media_http_fixture' : transport ? 'object_media_http_fixture' : 'versioned_media_http_fixture') }) })
         : sqliteAdapter({ client: { url: `file:${(settings?.database.engine === 'sqlite' ? settings.database.filename : path.join(root, `${prefix}versioned-media-http.db`)).replaceAll('\\', '/')}` }, transactionOptions: {}, ...(settings ? { push: settings.seed } : {}) }),
       graphQL: { disable: true },
@@ -237,7 +238,7 @@ export const startMediaHTTPFixture = async (
     })
     payload = await getPayload({ config, key })
     if (settings?.nativeObjectMigrations) {
-      const { migrations } = await import('../../database/object-storage')
+      const { migrations } = await import('../../database/recovery-admission')
       await payload.db.migrate({ migrations: migrations.map(migration => ({ name: migration.name,
         up: (args: unknown) => migration.up(args as MigrateUpArgs),
         down: (args: unknown) => migration.down(args as MigrateDownArgs),

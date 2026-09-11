@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import type { SendEmailOptions } from 'payload'
 import { createLocalReq } from 'payload'
 import { lockRecoveryToken } from '../src/auth/recovery-lock'
+import type { PostgresAdapter } from '@payloadcms/db-postgres'
 
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
@@ -17,7 +18,18 @@ const email = 'recovery-owner@example.invalid'
 const password = randomUUID() + randomUUID()
 const inbox: SendEmailOptions[] = []
 let rejectDelivery = false
-beforeEach(() => { inbox.length = 0; rejectDelivery = false })
+let deliveryAttempts = 0
+const admissionTable = '"versioned_media_http_fixture"."owner_recovery_admissions"'
+const admissionPool = () => (fixture.payload.db as unknown as PostgresAdapter).pool
+beforeEach(async () => {
+  inbox.length = 0; rejectDelivery = false; deliveryAttempts = 0
+  if (fixture.payload.db.name === 'postgres') await admissionPool().query(`TRUNCATE TABLE ${admissionTable}`)
+})
+// Only synthetic persisted timestamps are aged; the real database clock remains
+// authoritative. This lets native supersession/outage tests request a later link.
+const expireCooldown = async () => {
+  if (fixture.payload.db.name === 'postgres') await admissionPool().query(`UPDATE ${admissionTable} SET last_admitted_at = clock_timestamp() - interval '61 seconds' WHERE key LIKE 'r:%'`)
+}
 beforeAll(async () => {
   const directory = process.env.OWNER_INTEGRATION_DIRECTORY
   if (!directory || !path.isAbsolute(directory)) throw new Error('Explicit QA directory required')
@@ -37,6 +49,7 @@ beforeAll(async () => {
   const nativeFetch = globalThis.fetch
   vi.stubGlobal('fetch', async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
     if (String(input) !== 'https://api.resend.com/emails') return nativeFetch(input, init)
+    deliveryAttempts++
     if (rejectDelivery) return Response.json({ name: 'provider_error', message: 'sensitive-provider-detail', statusCode: 503 }, { status: 503 })
     inbox.push(JSON.parse(String(init?.body)))
     return Response.json({ id: randomUUID() })
@@ -56,6 +69,7 @@ it('rejects superseded and expired recovery links without changing the password'
     return new URL(href!).pathname.split('/').at(-1)!
   }
   const older = await requestToken()
+  await expireCooldown()
   const newer = await requestToken()
   expect(older).not.toBe(newer)
   const replacement = randomUUID() + randomUUID()
@@ -106,6 +120,7 @@ it('rolls back a rejected delivery and preserves the previously issued recovery 
   expect(typeof before.resetPasswordToken).toBe('string')
   rejectDelivery = true
   await expect(fixture.payload.forgotPassword({ collection: 'users', data: { email: targetEmail } })).rejects.toThrow('Owner email delivery failed')
+  await expireCooldown()
   const failed = await post('forgot-password', { email: targetEmail })
   const unknown = await post('forgot-password', { email: 'absent-during-outage@example.invalid' })
   expect(failed.status).toBe(200)
@@ -270,3 +285,84 @@ it('rolls back password and session changes when recovery fails after persistenc
   expect((await post('reset-password', { token: before.resetPasswordToken, password: nextPassword })).status).toBe(200)
   expect((await post('login', { email: targetEmail, password: nextPassword })).status).toBe(200)
 }, 60_000)
+
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('limits repeated HTTP recovery without replacing the existing link or exposing account existence', async () => {
+  const targetEmail = 'limited-http@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  const first = await post('forgot-password', { email: targetEmail })
+  expect(first.status).toBe(200)
+  const before = await fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  const limited = await post('forgot-password', { email: targetEmail })
+  const unknown = await post('forgot-password', { email: 'limited-unknown@example.invalid' })
+  expect(limited.status).toBe(200)
+  expect(unknown.status).toBe(200)
+  const receipt = await first.text()
+  expect(await limited.text()).toBe(receipt)
+  expect(await unknown.text()).toBe(receipt)
+  expect(limited.headers.get('cache-control')).toBe('no-store')
+  expect(inbox).toHaveLength(1)
+  const after = await fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  for (const key of ['hash', 'salt', 'resetPasswordToken', 'resetPasswordExpiration', 'sessions', 'loginAttempts', 'lockUntil'] as const) {
+    expect(after[key]).toEqual(before[key])
+  }
+  expect((await post('login', { email: targetEmail, password: targetPassword })).status).toBe(200)
+  expect((await post('reset-password', { token: before.resetPasswordToken, password: randomUUID() + randomUUID() })).status).toBe(200)
+}, 60_000)
+
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('does not refund HTTP admission after a provider failure and preserves the previous token', async () => {
+  const targetEmail = 'outage-budget@example.invalid'
+  const targetPassword = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: targetPassword, role: 'owner' } })
+  // Trusted local API creates an older link without consuming this HTTP budget.
+  await fixture.payload.forgotPassword({ collection: 'users', data: { email: targetEmail } })
+  const before = await fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  expect(deliveryAttempts).toBe(1)
+  rejectDelivery = true
+  const failed = await post('forgot-password', { email: targetEmail })
+  expect(failed.status).toBe(200)
+  expect(deliveryAttempts).toBe(2)
+  const limited = await post('forgot-password', { email: targetEmail })
+  expect(limited.status).toBe(200)
+  expect(await limited.text()).toBe(await failed.text())
+  expect(deliveryAttempts).toBe(2)
+  const row = (await admissionPool().query(`SELECT attempts FROM ${admissionTable} WHERE key LIKE 'r:%'`)).rows
+  expect(row).toEqual([{ attempts: 1 }])
+  const after = await fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  expect(after.resetPasswordToken).toBe(before.resetPasswordToken)
+  expect(after.resetPasswordExpiration).toBe(before.resetPasswordExpiration)
+  expect((await post('reset-password', { token: before.resetPasswordToken, password: randomUUID() + randomUUID() })).status).toBe(200)
+}, 60_000)
+
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('fails closed over HTTP when admission storage is missing without revealing an account', async () => {
+  await admissionPool().query(`ALTER TABLE ${admissionTable} RENAME TO admission_unavailable_fixture`)
+  try {
+    const known = await post('forgot-password', { email })
+    const unknown = await post('forgot-password', { email: 'unknown-db-outage@example.invalid' })
+    expect(known.status).toBe(503)
+    expect(unknown.status).toBe(503)
+    expect(await known.text()).toBe(await unknown.text())
+    expect(known.headers.get('cache-control')).toBe('no-store')
+    expect(deliveryAttempts).toBe(0)
+  } finally {
+    await admissionPool().query('ALTER TABLE "versioned_media_http_fixture"."admission_unavailable_fixture" RENAME TO owner_recovery_admissions')
+  }
+  expect((await post('forgot-password', { email })).status).toBe(200)
+  expect(deliveryAttempts).toBe(1)
+})
+
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('shares normalized recipient budget and ignores spoofed forwarding headers', async () => {
+  const targetEmail = 'canonical-recovery@example.invalid'
+  await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: randomUUID() + randomUUID(), role: 'owner' } })
+  expect((await post('forgot-password', { email: '  CANONICAL-RECOVERY@EXAMPLE.INVALID ' })).status).toBe(200)
+  const result = await fixture.request('/api/users/forgot-password', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '192.0.2.12', 'X-Real-IP': '192.0.2.13' },
+    body: JSON.stringify({ email: targetEmail }),
+  }, false)
+  expect(result.status).toBe(200)
+  expect(deliveryAttempts).toBe(1)
+  expect(inbox[0].to).toBe(targetEmail)
+})

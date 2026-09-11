@@ -1,4 +1,4 @@
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { recoveryPostgresAdapter } from './auth/recovery-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { es } from '@payloadcms/translations/languages/es'
@@ -56,7 +56,7 @@ export const createLocalDatabaseAdapter = (url: string) => sqliteAdapter({ clien
 
 const db =
   runtime.database.kind === 'postgres'
-    ? postgresAdapter({ pool: { connectionString: runtime.database.url } })
+    ? recoveryPostgresAdapter({ pool: { connectionString: runtime.database.url } })
     : createLocalDatabaseAdapter(runtime.database.url)
 
 const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>

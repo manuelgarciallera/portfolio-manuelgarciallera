@@ -8,8 +8,12 @@ import { confirmOwnerRestorePlan } from '../../src/restore/service.ts'
 import { executeOwnerRestorePlan } from '../../src/restore/execute.ts'
 import { createPagePreviewSnapshot } from '../../src/preview/service.ts'
 import { loadPageVisualPreview } from '../../src/preview/visual-service.ts'
+import { createRecoveryAdmissionStore } from '../../src/auth/recovery-admission.ts'
 
 export const captureFullOwnerPreview = async (fixture, owner, media) => {
+  const admission = createRecoveryAdmissionStore({ pool: fixture.payload.db.pool,
+    secret: fixture.payload.config.secret, schemaName: 'public' })
+  assert.equal(await admission.admit('backup-budget@example.invalid'), true, 'Seed a real persisted admission budget before backup')
   const snapshot = await captureRecoveryPreview(fixture, owner, media, {
     brand: { name: 'Recovery brand', slug: 'recovery-brand', _status: 'published' },
     page: { slug: 'recovery-page', layout: [{ blockType: 'hero', heading: 'Recovered editorial design', image: media.id }] },
@@ -41,9 +45,15 @@ export const readFullOwnerWorkflow = async (fixture, owner, snapshot, workflow) 
   }
   // The native ledger is infrastructure-only, not an owner-editable collection.
   const ledger = await fixture.payload.find({ collection: 'payload-migrations', depth: 0, sort: 'id', limit: 100 })
-  assert.equal(ledger.totalDocs, 2, 'Both native migrations survive recovery without replay')
+  assert.equal(ledger.totalDocs, 3, 'All three native migrations survive recovery without replay')
+  assert.deepEqual(ledger.docs.map(row => row.name).sort(), [
+    '20260910_123524_owner_baseline', '20260910_133129_object_storage', '20260911_062311_recovery_admission',
+  ])
   assert.equal(ledger.docs.length, ledger.totalDocs)
   records.ledger = ledger.docs
+  records.admissionBudget = (await fixture.payload.db.pool.query('SELECT * FROM public.owner_recovery_admissions ORDER BY key')).rows
+  assert.equal(records.admissionBudget.length, 2, 'Global and recipient admission state survive physical backup')
+  assert(records.admissionBudget.every(row => row.attempts === 1))
   const audits = await fixture.payload.find({ ...common, collection: 'audit-events', sort: 'id', limit: 100 })
   assert.equal(audits.docs.length, audits.totalDocs)
   records.audits = audits.docs

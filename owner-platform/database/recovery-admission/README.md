@@ -1,4 +1,4 @@
-# Recovery admission schema — candidate, not activated
+# Recovery admission schema — local integration, not deployed
 
 This catalog reuses `database/object-storage`, including the immutable baseline,
 then adds `20260911_062311_recovery_admission`. The generated UP creates only
@@ -29,11 +29,18 @@ this catalog to another search path and assume equivalent results.
 
 ## Activation and recovery boundary
 
-Neither the adapter nor the catalog is wired to application startup yet. The
-forgot-password endpoint is unchanged and does not yet consume this budget.
-Next gate: explicit adapter/catalog selection, HTTP acceptance, provider outage
-and existing-token preservation tests, production-build regression and full
-backup/restore rehearsal with the third migration and persisted counters.
+The owner configuration now selects the adapter, and the REST forgot-password
+handler consumes the budget before issuing a token or calling the provider.
+Native migration execution remains an explicit operator step; no automatic
+production migration or provider activation was added. The isolated production
+and full recovery fixtures select this catalog. Existing installations must
+rehearse the upgrade before selecting the new runtime: a missing table causes a
+generic 503, not unlimited sending or implicit table creation.
+
+HTTP, provider-outage, existing-token preservation, production-build/browser and
+full physical backup/restore evidence is in the root document
+`docs/owner-platform/recovery-http-verification-2026-09-11.md`. It does not prove
+real-provider delivery, hosted availability or complete DDoS protection.
 
 Do not execute the generated DOWN as an operational rollback: dropping this table
 discards abuse budgets. Use a coordinated compatible backup and restore plan.
