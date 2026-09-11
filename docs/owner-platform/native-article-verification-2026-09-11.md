@@ -42,3 +42,20 @@ PostgreSQL16 y Chromium. Archivo base8bd695e con overlays explícitos, no checko
 limpio del HEAD final. Datos sintéticos. No móvil físico/Safari ni evaluación
 con usuarios; no cubre lienzo modular de artículos, galerías, portada, SEO ni
 publicación del blog. Esas puertas se mantienen abiertas. Sin push/despliegue.
+
+## Seguimiento: cuerpo clásico y cita modular
+
+Basea25904f. Ampliación nativa: añadir Article Quote, guardar/recargar, comprobar
+cuerpo clásico conservado y preview con cita sin duplicar cuerpo; eliminar
+bloque desde menú y repetir guardado/recarga/preview clásico. El reinicio final
+verifica el estado clásico recuperado, no el estado modular intermedio.
+
+Primer ensayo a054ce: guardado no se habilitó tras una acción de bloques; no
+había diagnóstico suficiente para atribuirlo al producto o al arnés. Se añadió
+diagnóstico de fase/campos/errores solo ante fallo. Sin cambiar acciones, la
+repetición70e5aa/5ae6a3 pasa390/1280 y reinicio, cierre/limpieza salida0. No se da
+la intermitencia por corregida. Revisión independiente sin hallazgos del delta;
+lint14ba80 pasa. Segunda repetición de confirmación ef396c también pasa ambos
+viewports, documentos y objetos tras reinicio. Runtime intacto. Dos pasadas
+consecutivas no explican por sí solas el primer timeout; se conserva diagnóstico
+y no se declara resuelta su causa. No se amplían timeouts para ocultarlo.
