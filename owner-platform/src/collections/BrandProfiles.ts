@@ -149,8 +149,8 @@ export const BrandProfiles: CollectionConfig = {
       name: 'typography',
       type: 'group',
       fields: [
-        { name: 'primaryFamily', type: 'text', label: 'Familia de títulos', admin: { description: 'Una familia instalada en el dispositivo, por ejemplo Georgia, o genérica como serif. No descarga fuentes; si no está disponible se usa la fuente del sistema.' } },
-        { name: 'secondaryFamily', type: 'text', label: 'Familia del cuerpo', admin: { description: 'Una familia, por ejemplo Arial o sans-serif. Sin CSS, listas ni URL. Vacío conserva la fuente del sistema.' } },
+        { name: 'primaryFamily', type: 'text', label: 'Familia de títulos', admin: { components: { Field: './components/TypographyFamilyField#TypographyFamilyField' }, description: 'Una familia instalada en el dispositivo, por ejemplo Georgia, o genérica como serif. No descarga fuentes; si no está disponible se usa la fuente del sistema.' } },
+        { name: 'secondaryFamily', type: 'text', label: 'Familia del cuerpo', admin: { components: { Field: './components/TypographyFamilyField#TypographyFamilyField' }, description: 'Una familia, por ejemplo Arial o sans-serif. Sin CSS, listas ni URL. Vacío conserva la fuente del sistema.' } },
         { name: 'fontAssets', type: 'upload', relationTo: 'media', hasMany: true },
       ],
     },

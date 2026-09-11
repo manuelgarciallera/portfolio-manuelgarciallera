@@ -6,6 +6,59 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   // A native draft must save without a brand and retain the entered content.
   // No API writes, real brand, uploaded asset or public page prepare this test.
   const suffix = randomUUID()
+  await page.goto(`${origin}/admin/collections/brand-profiles/create`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await page.locator('#field-name').fill(`Typography QA ${suffix}`)
+  await page.locator('#field-slug').fill(`typography-qa-${suffix}`)
+  const familyInput = page.getByRole('textbox', { name: 'Familia de títulos', exact: true })
+  const familySelect = page.getByRole('combobox', { name: 'Elegir estilo · Familia de títulos', exact: true })
+  await familyInput.fill('Custom Family')
+  assert.equal(await familySelect.inputValue(), 'Custom Family', 'Existing/custom families must remain selectable without overwriting them')
+  await familySelect.selectOption('Georgia')
+  assert.equal(await familyInput.inputValue(), 'Georgia', 'Selecting a family must update the real Payload field')
+  const sample = page.getByRole('img', { name: 'Muestra de Familia de títulos: Georgia', exact: true })
+  assert.match(await sample.evaluate(element => getComputedStyle(element).fontFamily), /Georgia/)
+  await page.getByRole('combobox', { name: 'Elegir estilo · Familia del cuerpo', exact: true }).selectOption('monospace')
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Typography controls fit mobile and desktop')
+  let releaseBrandSave
+  let markBrandSavePending
+  const brandSaveGate = new Promise(resolve => { releaseBrandSave = resolve })
+  const brandSavePending = new Promise(resolve => { markBrandSavePending = resolve })
+  const holdBrandSave = async route => {
+    if (route.request().method() !== 'POST') return route.continue()
+    markBrandSavePending()
+    await brandSaveGate
+    await route.continue()
+  }
+  await page.route(`${origin}/api/brand-profiles*`, holdBrandSave)
+  const brandSaving = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/brand-profiles')
+    .then(response => ({ response }), error => ({ error }))
+  let pendingTimeout
+  let brandResponse
+  try {
+    await page.locator('#action-save-draft').press('Enter')
+    await Promise.race([brandSavePending, new Promise((_, reject) => { pendingTimeout = setTimeout(() => reject(new Error('Brand save was not requested')), 10_000) })])
+    assert.equal(await familySelect.isDisabled(), true, 'Freeze selection while the actual form save is pending')
+    releaseBrandSave()
+    const result = await brandSaving
+    if ('error' in result) throw result.error
+    brandResponse = result.response
+  } finally {
+    releaseBrandSave()
+    clearTimeout(pendingTimeout)
+    await page.unroute(`${origin}/api/brand-profiles*`, holdBrandSave)
+  }
+  assert.equal(brandResponse.status(), 201)
+  const { doc: brand } = await brandResponse.json()
+  await page.waitForURL(url => url.pathname === `/admin/collections/brand-profiles/${brand.id}`)
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  assert.equal(await familyInput.inputValue(), 'Georgia', 'Selected heading family persists after reload')
+  assert.equal(await page.getByRole('textbox', { name: 'Familia del cuerpo', exact: true }).inputValue(), 'monospace')
+  if (process.env.OWNER_TYPOGRAPHY_SCREENSHOTS === '1') {
+    await sample.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: `/tmp/owner-typography-${width}.png` })
+  }
   const initialTitle = `Editor QA ${suffix}`
   const initialSlug = `editor-qa-${suffix}`
   await page.goto(`${origin}/admin/collections/pages/create`, { waitUntil: 'domcontentloaded' })

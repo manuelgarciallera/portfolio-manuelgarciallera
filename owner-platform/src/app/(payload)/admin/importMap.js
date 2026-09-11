@@ -26,6 +26,7 @@ import { HexColorField as HexColorField_cdf0d4826f4989b67240662e47afca94 } from 
 import { MediaPlacementEditor as MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf } from '../../../components/MediaPlacementEditor'
 import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf } from '../../../components/BrandPalettePreview'
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
+import { TypographyFamilyField as TypographyFamilyField_25591eebce41126712e51231bc8daaf2 } from '../../../components/TypographyFamilyField'
 import { BrandMotionPreview as BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709 } from '../../../components/BrandMotionPreview'
 import { AssistanceProposalControls as AssistanceProposalControls_85f9fa31b16f772dfc886f873e921adf } from '../../../components/AssistanceProposalControls'
 import { RestorePlanControls as RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0 } from '../../../components/RestorePlanControls'
@@ -74,6 +75,7 @@ export const importMap = {
   "./components/MediaPlacementEditor#MediaPlacementEditor": MediaPlacementEditor_e73c1eed5e06d2b277e0b1ac8f7357bf,
   "./components/BrandPalettePreview#BrandPalettePreview": BrandPalettePreview_b6430c4226bc6b885468a080a97fbfaf,
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,
+  "./components/TypographyFamilyField#TypographyFamilyField": TypographyFamilyField_25591eebce41126712e51231bc8daaf2,
   "./components/BrandMotionPreview#BrandMotionPreview": BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709,
   "./components/AssistanceProposalControls#AssistanceProposalControls": AssistanceProposalControls_85f9fa31b16f772dfc886f873e921adf,
   "./components/RestorePlanControls#RestorePlanControls": RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0,

@@ -1,0 +1,7 @@
+.field { min-width: 0; margin-bottom: 1.5rem; color: var(--theme-text); }
+.field label { display: block; margin-bottom: .5rem; }
+.field select { width: 100%; min-height: 44px; padding: .65rem; font: inherit; color: var(--theme-text); background: var(--theme-input-bg, transparent); border: 1px solid var(--theme-elevation-400, #888); border-radius: 4px; }
+.field select:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.help { font-size: .875rem; line-height: 1.5; }
+.sample { padding: 1rem; border: 1px solid var(--theme-elevation-400, #888); font-size: 1.6rem; line-height: 1.35; overflow-wrap: anywhere; }
+.sample span { font-size: 1rem; }
