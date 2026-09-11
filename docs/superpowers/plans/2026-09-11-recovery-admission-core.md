@@ -66,7 +66,7 @@ recoveryAdmissionDDL(schemaName: string): string
   pool observing the same state, missing table failure, and connection release.
 - [x] Run owner typecheck, lint and `git diff --check`. Obtain read-only review
   of the implementation and tests; address material findings and rerun checks.
-- [ ] Record actual commands/results and the not-activated limitation in the
+- [x] Record actual commands/results and the not-activated limitation in the
   design document and Hub. Commit only the five new files using explicit paths:
   ```powershell
   git add -- owner-platform/src/auth/recovery-admission.ts owner-platform/src/auth/recovery-admission.test.ts owner-platform/tests/recovery-admission.integration.test.ts docs/owner-platform/recovery-admission-design-2026-09-11.md docs/superpowers/plans/2026-09-11-recovery-admission-core.md
@@ -79,3 +79,6 @@ in this commit.
 
 Execution: inline with a single repository writer, and a read-only independent
 review. Test receipts and exact remaining activation boundary are in the spec.
+Core committed as `14a1eb6`. The next schema gate is recorded separately in
+`docs/owner-platform/recovery-schema-verification-2026-09-11.md`; it does not
+silently mark HTTP activation complete.
