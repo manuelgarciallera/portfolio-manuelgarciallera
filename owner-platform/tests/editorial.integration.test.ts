@@ -682,7 +682,7 @@ it('refuses a confirmed restore after a newer draft edit without overwriting it'
 it.each(['articles', 'projects'] as const)('saves %s composed only of blocks without requiring hidden legacy text', async (collection) => {
   let heroImage: number | undefined
   if (collection === 'projects') {
-    const bytes = await readFile(new URL('../../public/art/hero-refractive-orb-fallback-v2.webp', import.meta.url))
+    const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).webp().toBuffer()
     const media = await payload.create({ collection: 'media', overrideAccess: false, user: owner, data: { alt: 'Modular project' }, file: {
       data: bytes, name: `modular-${randomUUID()}.webp`, mimetype: 'image/webp', size: bytes.length,
     } })
@@ -772,7 +772,7 @@ it('keeps unpublished article edits and version history out of anonymous reads',
 }, 30_000)
 
 it('previews project metrics and quotes in their saved draft order', async () => {
-  const bytes = await readFile(new URL('../../public/art/hero-refractive-orb-fallback-v2.webp', import.meta.url))
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).webp().toBuffer()
   const media = await payload.create({ collection: 'media', overrideAccess: false, user: owner, data: { alt: 'Integration image' }, file: {
     data: bytes, name: `integration-${randomUUID()}.webp`, mimetype: 'image/webp', size: bytes.length,
   } })
