@@ -10,9 +10,9 @@ export const verifyBrowserArticle = async ({ page, context, origin, width }) => 
   const body = `${initialBody} Esta revisión se ha editado después del primer guardado.`
   await page.goto(`${origin}/admin/collections/articles/create`, { waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
-  await page.locator('#field-title').fill(title)
+  await page.getByRole('textbox', { name: /^Título del artículo/ }).fill(title)
   await page.locator('#field-slug').fill(slug)
-  await page.locator('#field-excerpt').fill(excerpt)
+  await page.getByRole('textbox', { name: /^Resumen/ }).fill(excerpt)
   const content = page.locator('[data-field-path="content"] [contenteditable="true"]')
   await content.fill(initialBody)
   const saving = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/articles')
@@ -59,9 +59,9 @@ export const verifyBrowserArticle = async ({ page, context, origin, width }) => 
   for (const modular of [true, false]) {
     if (modular) {
       await page.locator('.blocks-field__drawer-toggler').press('Enter')
-      await page.getByRole('button', { name: 'Article Quote', exact: true }).click()
-      await page.getByRole('textbox', { name: /^Quote/ }).fill(quote)
-      await page.getByRole('textbox', { name: /^Attribution/ }).fill('Autor sintético')
+      await page.getByRole('button', { name: 'Cita', exact: true }).click()
+      await page.getByRole('textbox', { name: /^Texto de la cita/ }).fill(quote)
+      await page.getByRole('textbox', { name: /^Autoría o fuente/ }).fill('Autor sintético')
     } else {
       await page.locator('.blocks-field .array-actions__button').press('Enter')
       await page.locator('.array-actions__remove').press('Enter')
@@ -70,7 +70,7 @@ export const verifyBrowserArticle = async ({ page, context, origin, width }) => 
       await page.waitForFunction(() => document.querySelector('#action-save-draft')?.disabled === false)
     } catch (error) {
       console.log('[article-block-diagnostic]', JSON.stringify({ modular,
-        quoteFields: await page.getByRole('textbox', { name: /^Quote/ }).evaluateAll(elements => elements.map(element => element.value)),
+        quoteFields: await page.getByRole('textbox', { name: /^Texto de la cita/ }).evaluateAll(elements => elements.map(element => element.value)),
         buttons: await page.locator('.array-actions__remove').count(),
         errors: await page.locator('.field-error').allTextContents(),
       }))

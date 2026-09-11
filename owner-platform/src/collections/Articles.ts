@@ -6,57 +6,63 @@ import { validateModularBody } from './modular-body'
 
 const ArticleTextBlock: Block = {
   slug: 'articleText',
+  labels: { singular: 'Texto', plural: 'Textos' },
   fields: [
-    { name: 'heading', type: 'text' },
-    { name: 'content', type: 'richText', required: true },
+    { name: 'heading', label: 'Encabezado', type: 'text' },
+    { name: 'content', label: 'Contenido', type: 'richText', required: true },
   ],
 }
 
 const ArticleMediaBlock: Block = {
   slug: 'articleMedia',
+  labels: { singular: 'Imagen', plural: 'Imágenes' },
   fields: [
-    { name: 'asset', type: 'upload', relationTo: 'media', required: true },
-    { name: 'placement', type: 'relationship', relationTo: 'media-placements' },
-    { name: 'alt', type: 'text', required: true },
-    { name: 'caption', type: 'text' },
+    { name: 'asset', label: 'Archivo', type: 'upload', relationTo: 'media', required: true },
+    { name: 'placement', label: 'Encuadre', type: 'relationship', relationTo: 'media-placements' },
+    { name: 'alt', label: 'Texto alternativo', type: 'text', required: true },
+    { name: 'caption', label: 'Pie de imagen', type: 'text' },
   ],
 }
 
 const ArticleGalleryBlock: Block = {
   slug: 'articleGallery',
+  labels: { singular: 'Galería', plural: 'Galerías' },
   fields: [{
-    name: 'items', type: 'array', required: true, minRows: 2, maxRows: 12,
+    name: 'items', label: 'Imágenes', type: 'array', required: true, minRows: 2, maxRows: 12,
     fields: [
-      { name: 'asset', type: 'upload', relationTo: 'media', required: true },
-      { name: 'placement', type: 'relationship', relationTo: 'media-placements' },
-      { name: 'alt', type: 'text', required: true },
-      { name: 'caption', type: 'text' },
+      { name: 'asset', label: 'Archivo', type: 'upload', relationTo: 'media', required: true },
+      { name: 'placement', label: 'Encuadre', type: 'relationship', relationTo: 'media-placements' },
+      { name: 'alt', label: 'Texto alternativo', type: 'text', required: true },
+      { name: 'caption', label: 'Pie de imagen', type: 'text' },
     ],
   }],
 }
 
 const ArticleQuoteBlock: Block = {
   slug: 'articleQuote',
+  labels: { singular: 'Cita', plural: 'Citas' },
   fields: [
-    { name: 'quote', type: 'textarea', required: true, maxLength: 600 },
-    { name: 'attribution', type: 'text', maxLength: 120 },
+    { name: 'quote', label: 'Texto de la cita', type: 'textarea', required: true, maxLength: 600 },
+    { name: 'attribution', label: 'Autoría o fuente', type: 'text', maxLength: 120 },
   ],
 }
 
 const ArticleCalloutBlock: Block = {
   slug: 'articleCallout',
+  labels: { singular: 'Aviso destacado', plural: 'Avisos destacados' },
   fields: [
-    { name: 'tone', type: 'select', required: true, options: ['neutral', 'information', 'note'] },
-    { name: 'heading', type: 'text', maxLength: 120 },
-    { name: 'content', type: 'richText', required: true },
+    { name: 'tone', label: 'Tipo de aviso', type: 'select', required: true, options: ['neutral', 'information', 'note'] },
+    { name: 'heading', label: 'Encabezado', type: 'text', maxLength: 120 },
+    { name: 'content', label: 'Contenido', type: 'richText', required: true },
   ],
 }
 
 const RelatedProjectsBlock: Block = {
   slug: 'relatedProjects',
+  labels: { singular: 'Proyectos relacionados', plural: 'Grupos de proyectos relacionados' },
   fields: [
-    { name: 'heading', type: 'text', maxLength: 120 },
-    { name: 'projects', type: 'relationship', relationTo: 'projects', hasMany: true, required: true, maxRows: 6 },
+    { name: 'heading', label: 'Encabezado', type: 'text', maxLength: 120 },
+    { name: 'projects', label: 'Proyectos', type: 'relationship', relationTo: 'projects', hasMany: true, required: true, maxRows: 6 },
   ],
 }
 
@@ -81,23 +87,24 @@ export const Articles: CollectionConfig = {
   versions: editorialVersions,
   fields: [
     editorialPreviewField,
-    { name: 'title', type: 'text', required: true },
+    { name: 'title', label: 'Título del artículo', type: 'text', required: true },
     slugField,
-    { name: 'excerpt', type: 'textarea', required: true },
-    { name: 'coverImage', type: 'upload', relationTo: 'media' },
+    { name: 'excerpt', label: 'Resumen', type: 'textarea', required: true },
+    { name: 'coverImage', label: 'Imagen de portada', type: 'upload', relationTo: 'media' },
     {
-      name: 'content', type: 'richText', required: false,
+      name: 'content', label: 'Contenido clásico', type: 'richText', required: false,
       validate: validateModularBody('articleLayout'),
       admin: { description: 'Contenido clásico: obligatorio solo si no añades bloques al lienzo modular. Los bloques tienen prioridad en la vista editorial; este texto se conserva.' },
     },
     {
       name: 'articleLayout',
+      label: 'Bloques del artículo',
       type: 'blocks',
       blocks: articleBlocks,
       required: false,
       admin: { description: 'Lienzo modular opcional. El contenido anterior permanece intacto durante la migración.' },
     },
-    { name: 'publishedAt', type: 'date' },
+    { name: 'publishedAt', label: 'Fecha de publicación', type: 'date' },
     seoField,
   ],
 }
