@@ -76,3 +76,35 @@ overlays, not a clean checkout of the eventual new commit. Next gate is native
 placement creation and page embedding, then extending restart verification to
 those authored placements. No new provider or large UI change is needed for
 that local test work.
+
+## Native creation gate (follow-up on 4e6cd80)
+
+Reservation `bbfed730-4ec8-44d4-a591-05975a42944b`. The browser test now
+opens the native placement creation form, names the placement, selects the
+uploaded asset in the native drawer using the keyboard, saves and checks the
+returned name and asset ID. No application code, schema or dependency changed.
+
+Two harness assumptions were investigated before changing the test:
+
+- `65ba9d` timed out locating the asset by its alt text as a button. The
+  diagnostic accessibility snapshot in `3d0d8d` shows the actual table selects
+  through its filename button; alt is a separate cell. Selection now locates
+  that asset row and its filename button, not an arbitrary first result.
+- `a068e6` / `fad274` saw no POST after immediately pressing Save. The native
+  Upload Input awaits `populateDocs` before updating the field and closing its
+  focus-trapping drawer. The test now waits for that drawer to close and the
+  selected asset image to appear before saving. No sleeps, forced clicks,
+  direct form-state mutation or API fixture creation were added.
+
+Those failed runs closed their owned app and cluster and removed their synthetic
+test roots. They are harness failures, not proof of an application defect fixed.
+Final run `22682b` / `34eb95`, exit 0, verifies native upload **and placement
+creation** at 390 and 1280 px, followed by crop save/reload, independent mobile
+override, five-control save blocking and original byte integrity. Existing
+four-page/two-brand and private-object restart checks also pass; owned app and
+cluster cleanup is confirmed. Script syntax and focused ESLint `d5a2c0` pass.
+
+This is a new production build/browser run, not a new full unit/integration
+sweep. Base checkout remains `8bd695e` with explicit overlays through `4e6cd80`
+plus this test. Placement restart and embedding in a page are still the next
+gate, not proven by the page/brand restart assertions. No public deployment.

@@ -32,19 +32,28 @@ export const verifyBrowserMediaPlacement = async ({ page, origin, width }) => {
   }, originalURL.href)
   const originalBytes = await originalDigest()
   assert(originalBytes.bytes > 0)
-  // The placement is fixture setup; its editing and saving below use the actual
-  // form. Do not claim native placement creation or page embedding from this.
-  const placement = await page.evaluate(async mediaId => {
-    const response = await fetch('/api/media-placements?draft=true', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10_000),
-      body: JSON.stringify({ name: 'Synthetic native crop editing', placement: {
-        asset: mediaId, focalX: 0.5, focalY: 0.5, zoom: 1, fit: 'cover', frame: '16:9', overrides: {},
-      } }),
-    })
-    if (response.status !== 201) throw new Error(`Placement fixture failed ${response.status}`)
-    return (await response.json()).doc
-  }, media.id)
-  await page.goto(`${origin}/admin/collections/media-placements/${placement.id}`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`${origin}/admin/collections/media-placements/create`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  const placementName = `Native placement QA ${suffix}`
+  await page.locator('#field-name').fill(placementName)
+  await page.locator('#field-placement__asset .upload__listToggler').click()
+  // The native table selects via the filename button; alt is a separate cell.
+  await page.locator('.list-drawer').getByRole('row').filter({ hasText: media.alt })
+    .getByRole('button', { name: media.filename }).press('Enter')
+  // Selection awaits document population before updating the field and closing
+  // the focus-trapping drawer. Key dispatch alone does not finish that work.
+  await page.locator('.list-drawer').waitFor({ state: 'hidden' })
+  await page.locator('#field-placement__asset').getByRole('img', { name: media.alt, exact: true }).waitFor()
+  const creation = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/media-placements')
+    .then(response => ({ response }), error => ({ error }))
+  await page.locator('#action-save-draft').press('Enter')
+  const created = await creation
+  if ('error' in created) throw created.error
+  assert.equal(created.response.status(), 201, 'Create placement through native form and asset picker')
+  const placement = (await created.response.json()).doc
+  assert.equal(placement.name, placementName)
+  assert.equal(typeof placement.placement.asset === 'object' ? placement.placement.asset.id : placement.placement.asset, media.id)
+  await page.waitForURL(url => url.pathname === `/admin/collections/media-placements/${placement.id}`)
   await page.locator('form[data-form-ready="true"]').first().waitFor()
   const editor = page.getByRole('region', { name: 'Encuadre reversible' })
   const image = editor.getByRole('img', { name: media.alt, exact: true })
@@ -112,5 +121,5 @@ export const verifyBrowserMediaPlacement = async ({ page, origin, width }) => {
   assert.equal(unchanged.storageRevision, media.storageRevision, 'A placement edit must not replace original media')
   assert.deepEqual(await originalDigest(), originalBytes, 'Crop editing preserves actual original bytes, including legacy storage')
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
-  console.log(`[media-placement] PASS ${width}px native upload, crop save/reload, independent mobile recipe and original preserved`)
+  console.log(`[media-placement] PASS ${width}px native upload and placement creation, crop save/reload, independent mobile recipe and original preserved`)
 }
