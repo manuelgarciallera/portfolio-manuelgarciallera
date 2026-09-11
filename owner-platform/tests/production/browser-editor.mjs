@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { verifySecondPage } from './browser-second-page.mjs'
+import { verifyBrowserMediaPlacement } from './browser-media-placement.mjs'
 
 export const verifyProductionBrowserEditor = async ({ page, context, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -134,6 +135,7 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   assert.equal(stored.brandProfile ?? null, null)
   assert.deepEqual(stored.layout.map(block => block.heading), ['Second draft block', 'Edited first block'])
   const second = await verifySecondPage({ page, context, origin, width, firstPage: stored })
+  await verifyBrowserMediaPlacement({ page, origin, width })
   console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
   return [stored, second]
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useForm, useFormFields } from '@payloadcms/ui'
+import { useForm, useFormFields, useFormInitializing, useFormProcessing } from '@payloadcms/ui'
+import type { UIFieldClientProps } from 'payload'
 import { useEffect, useId, useMemo, useState, type CSSProperties } from 'react'
 
 import { buildMediaPlacementPreview, presentPreviewAsset, type PlacementBreakpoint, type PreviewAsset } from '@/media/placement-preview'
@@ -9,9 +10,12 @@ import styles from './MediaPlacementEditor.module.css'
 
 const breakpointLabels: Record<PlacementBreakpoint, string> = { desktop: 'Desktop', tablet: 'Tablet', mobile: 'Mobile' }
 
-export const MediaPlacementEditor = () => {
+export const MediaPlacementEditor = ({ readOnly = false }: Pick<UIFieldClientProps, 'readOnly'>) => {
   const controlId = useId()
   const { setModified } = useForm()
+  const processing = useFormProcessing()
+  const initializing = useFormInitializing()
+  const disabled = readOnly || processing || initializing
   const [formFields, dispatchFields] = useFormFields((context) => context)
   const [breakpoint, setBreakpoint] = useState<PlacementBreakpoint>('desktop')
   const [asset, setAsset] = useState<PreviewAsset | null>(null)
@@ -37,6 +41,7 @@ export const MediaPlacementEditor = () => {
 
   const path = (name: string) => breakpoint === 'desktop' ? `placement.${name}` : `placement.overrides.${breakpoint}.${name}`
   const update = (name: string, value: string | number) => {
+    if (disabled) return
     dispatchFields({ path: path(name), type: 'UPDATE', value })
     setModified(true)
   }
@@ -70,11 +75,11 @@ export const MediaPlacementEditor = () => {
           {currentAsset && preview && <span className={styles.focus} style={{ left: `${preview.focalX}%`, top: `${preview.focalY}%` }} aria-hidden="true" />}
         </div>
         <div className={styles.controls}>
-          <label htmlFor={`${controlId}-x`}>Punto focal horizontal <output htmlFor={`${controlId}-x`}>{Math.round(preview?.focalX ?? 50)}%</output><input id={`${controlId}-x`} min="0" max="100" step="1" type="range" value={preview?.focalX ?? 50} onChange={(event) => update('focalX', Number(event.target.value) / 100)} /></label>
-          <label htmlFor={`${controlId}-y`}>Punto focal vertical <output htmlFor={`${controlId}-y`}>{Math.round(preview?.focalY ?? 50)}%</output><input id={`${controlId}-y`} min="0" max="100" step="1" type="range" value={preview?.focalY ?? 50} onChange={(event) => update('focalY', Number(event.target.value) / 100)} /></label>
-          <label htmlFor={`${controlId}-zoom`}>Zoom <output htmlFor={`${controlId}-zoom`}>{(preview?.zoom ?? 1).toFixed(2)}×</output><input id={`${controlId}-zoom`} min="1" max="4" step="0.05" type="range" value={preview?.zoom ?? 1} onChange={(event) => update('zoom', Number(event.target.value))} /></label>
-          <label>Ajuste<select value={preview?.fit ?? 'cover'} onChange={(event) => update('fit', event.target.value)}>{MEDIA_FITS.map((value) => <option key={value} value={value}>{value === 'cover' ? 'Cubrir' : 'Contener'}</option>)}</select></label>
-          <label>Proporción<select value={preview?.frame ?? 'auto'} onChange={(event) => update('frame', event.target.value)}>{MEDIA_FRAMES.map((value) => <option key={value} value={value}>{value === 'auto' ? 'Original' : value}</option>)}</select></label>
+          <label htmlFor={`${controlId}-x`}>Punto focal horizontal <output htmlFor={`${controlId}-x`}>{Math.round(preview?.focalX ?? 50)}%</output><input disabled={disabled} id={`${controlId}-x`} min="0" max="100" step="1" type="range" value={preview?.focalX ?? 50} onChange={(event) => update('focalX', Number(event.target.value) / 100)} /></label>
+          <label htmlFor={`${controlId}-y`}>Punto focal vertical <output htmlFor={`${controlId}-y`}>{Math.round(preview?.focalY ?? 50)}%</output><input disabled={disabled} id={`${controlId}-y`} min="0" max="100" step="1" type="range" value={preview?.focalY ?? 50} onChange={(event) => update('focalY', Number(event.target.value) / 100)} /></label>
+          <label htmlFor={`${controlId}-zoom`}>Zoom <output htmlFor={`${controlId}-zoom`}>{(preview?.zoom ?? 1).toFixed(2)}×</output><input disabled={disabled} id={`${controlId}-zoom`} min="1" max="4" step="0.05" type="range" value={preview?.zoom ?? 1} onChange={(event) => update('zoom', Number(event.target.value))} /></label>
+          <label>Ajuste<select disabled={disabled} value={preview?.fit ?? 'cover'} onChange={(event) => update('fit', event.target.value)}>{MEDIA_FITS.map((value) => <option key={value} value={value}>{value === 'cover' ? 'Cubrir' : 'Contener'}</option>)}</select></label>
+          <label>Proporción<select disabled={disabled} value={preview?.frame ?? 'auto'} onChange={(event) => update('frame', event.target.value)}>{MEDIA_FRAMES.map((value) => <option key={value} value={value}>{value === 'auto' ? 'Original' : value}</option>)}</select></label>
         </div>
       </div>
     </section>
