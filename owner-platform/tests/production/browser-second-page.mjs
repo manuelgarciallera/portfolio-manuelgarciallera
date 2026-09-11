@@ -87,4 +87,5 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   assert.equal(reread.second.brandProfile, brand.id)
   assert.deepEqual(reread.second.layout.map(block => block.blockType), ['hero', 'richText'])
   console.log(`[second-page] PASS ${width}px native page creation, distinct brand preview and first document unchanged`)
+  return reread.second
 }

@@ -39,6 +39,20 @@ del CMS antes de trabajo visual grande. Git privado aún pendiente de autorizaci
 
 ## Continuidad
 
+### Ampliación: persistencia completa de las dos páginas por viewport
+
+Sobre b1b6138, el resultado del navegador ahora entrega ambas páginas al ensayo
+de reinicio. Se exige cardinalidad de cuatro IDs distintos y dos perfiles; cada
+documento completo y cada perfil se compara contra su snapshot anterior después
+de detener Next y arrancarlo con PID distinto. El modo sin editor conserva su
+recorrido HTTP previo con listas de documentos del navegador vacías.
+
+Ensayo56642: salida91dbd7 exit0, con cuatro borradores y dos marcas conservados,
+recorridos de editor390/1280, medios y limpieza final correctos. ESLint7cd86a0,
+diffcheck0. Revisión independiente solo lectura sin hallazgos. Esta evidencia
+supera la limitación anterior sobre la segunda página, pero no equivale a reinicio
+de PostgreSQL ni restauración desde copia. No cambia runtime o diseño público.
+
 Automatización existente actualizada hasta13:32UTC del11/09, cada30min, sin
 despliegues, push público ni sondeos duplicados; su ejecución depende del host.
 Hub32013d0d comunica diagnóstico y reserva, no aceptación inferida.

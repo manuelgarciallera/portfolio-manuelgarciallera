@@ -107,6 +107,17 @@ try {
     const { token } = await login.json()
     assert.equal(typeof token, 'string')
     const request = (route, options = {}) => fetch(origin + route, { ...options, signal: AbortSignal.timeout(10_000), headers: { Authorization: `JWT ${token}`, 'Content-Type': 'application/json', ...options.headers } })
+    if (browserEditor) {
+      assert.equal(browserDrafts.length, 4, 'Two independently authored pages per viewport')
+      assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 4)
+    }
+    const brandIds = [...new Set(browserDrafts.map(draft => draft.brandProfile).filter(id => id != null))]
+    if (browserEditor) assert.equal(brandIds.length, 2, 'One distinct second-page brand per viewport')
+    const brandsBefore = await Promise.all(brandIds.map(async id => {
+      const response = await request(`/api/brand-profiles/${id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      return response.json()
+    }))
     const anonymous = await fetch(`${origin}/api/owner/system/readiness`, { signal: AbortSignal.timeout(10_000) })
     assert.equal(anonymous.status, 403)
     const readiness = await request('/api/owner/system/readiness')
@@ -137,6 +148,12 @@ try {
       assert.equal(response.status, 200)
       assert.deepEqual(await response.json(), browserDraft, 'Browser-edited draft survives process restart')
     }
+    for (const brand of brandsBefore) {
+      const response = await request(`/api/brand-profiles/${brand.id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), brand, 'Related brand survives process restart')
+    }
+    if (browserEditor) console.log('[production-http] four browser drafts and two related brands preserved after app restart')
     await verifyMediaAfterRestart?.()
     console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }

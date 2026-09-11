@@ -47,7 +47,7 @@ export const verifyProductionBrowserLogin = async (origin, credentials, { certif
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
         assert.deepEqual(errors, [])
         console.log(`[production-browser] PASS ${width}px keyboard login and cookie session`)
-        if (editor) drafts.push(await verifyProductionBrowserEditor({ page, context, origin, width }))
+        if (editor) drafts.push(...await verifyProductionBrowserEditor({ page, context, origin, width }))
         assert.deepEqual(errors, [])
       } finally { await context.close() }
     }
