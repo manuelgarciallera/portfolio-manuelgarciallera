@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { verifyPublicationFlow } from '../publication-flow.browser.mjs'
 import { verifyLocalEditorRecovery } from './browser-editor-recovery.mjs'
 import { verifyBrowserRestore } from './browser-restore.mjs'
+import { verifyBrowserRelease } from './browser-release.mjs'
 
 export const verifyBrowserPublication = async ({ page, origin, document, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -19,22 +20,8 @@ export const verifyBrowserPublication = async ({ page, origin, document, width }
     return { status: () => result.status, text: async () => result.text, json: async () => JSON.parse(result.text) }
   }
   const request = { get: url => send(url, 'GET'), post: (url, { data }) => send(url, 'POST', data) }
-  const create = async (path, data, key) => {
-    const response = await request.post(origin + path, { data })
-    assert.equal(response.status(), 201, `Synthetic ${key} preparation`)
-    return (await response.json())[key]
-  }
-  // Fixture scores are deliberately marked synthetic: not real quality metrics.
-  const preview = await create('/api/owner/preview-snapshots', { pageId: document.id }, 'snapshot')
-  const draft = await create('/api/owner/draft-snapshots', { pageId: document.id }, 'snapshot')
-  const releaseInput = {
-    confirmation: 'REGISTRAR VERSIÓN', name: `Synthetic workflow ${width}`,
-    changeSummary: 'QA fixture only. Scores are synthetic, not measured quality.',
-    gitCommit: (width === 390 ? 'a' : 'b').repeat(40), previewSnapshot: preview.id, draftSnapshot: draft.id,
-    quality: [{ viewport: width === 390 ? 'mobile' : 'desktop', performance: 80, usability: 80,
-      accessibility: 80, source: 'manual', measuredAt: new Date().toISOString() }],
-  }
-  const release = await create('/api/owner/releases', releaseInput, 'release')
+  // Authorship now uses the actual forms; scores remain explicitly synthetic.
+  const { release, releaseInput } = await verifyBrowserRelease({ page, origin, document, width })
   const beforeRelease = await (await request.get(`${origin}/api/releases/${release.id}?depth=0`)).json()
   const duplicate = await request.post(`${origin}/api/owner/releases`, { data: releaseInput })
   assert.equal(duplicate.status(), 409, 'Duplicate release must return a conflict, not an internal error')
