@@ -55,3 +55,28 @@ No deployment, external provider, human usability study or physical-phone test.
 The Docker checkout retained base Git HEAD `8bd695e` with this change's explicit
 source/import-map/test overlays; the browser receipt is not a clean-checkout
 receipt of a new commit. The previous clean recovery rehearsal remains separate.
+
+## Nested media placement label (follow-up on c5a7fd0)
+
+Reservation `2ebb3a76-70c9-46e9-91de-ec39f635dc00`. The native Imagen block
+had the same label mismatch for its Encuadre relationship. RED `1fd198`
+reaches the actual page/media form but cannot find the combobox named Encuadre.
+The preceding scoped-selector test passed without establishing accessibility.
+
+Pages.ts now registers the existing RelationshipLabelBinding in that field's
+beforeInput slot. The same import-map entry already exists; no new component,
+dependency, schema, migration or visual style is needed. The browser gate checks
+named lookup and label-click focus on creation and again after saving/reloading.
+
+Fresh build/browser `018eae` / `278780` / `74ffe8`, exit 0, passes at 390/1280
+including page/media creation, mobile crop preview, six pages/two brands/two
+placements after app restart, private object checks and owned fixture cleanup.
+Independent read-only review found no actionable issue in the narrow delta;
+it did not run tests or constitute Claude's acceptance. Full sequential owner
+unit run `7cead9` passes 1,286 tests / 169 files (101.17s). Public guard run
+`4718d3` passes 14 tests and the 21-entry public dependency boundary. No full
+PostgreSQL integration sweep or public bundle rebuild is claimed for this
+client-label configuration change.
+
+This does not establish accessibility of every other native relationship/select
+or every repeated-block/reordering scenario. No public deployment or new layout.

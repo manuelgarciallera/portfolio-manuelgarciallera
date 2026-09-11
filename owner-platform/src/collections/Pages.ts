@@ -122,7 +122,10 @@ const MediaBlock: Block = {
       label: 'Encuadre',
       type: 'relationship',
       relationTo: 'media-placements',
-      admin: { description: 'Encuadre reutilizable opcional; nunca modifica el original.' },
+      admin: {
+        components: { beforeInput: ['./components/RelationshipLabelBinding#RelationshipLabelBinding'] },
+        description: 'Encuadre reutilizable opcional; nunca modifica el original.',
+      },
     },
     { name: 'caption', label: 'Pie de imagen', type: 'text' },
   ],

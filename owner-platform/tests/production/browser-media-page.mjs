@@ -16,9 +16,10 @@ export const verifyBrowserMediaPage = async ({ page, origin, width, media, place
     .getByRole('button', { name: media.filename }).press('Enter')
   await page.locator('.list-drawer').waitFor({ state: 'hidden' })
   await asset.getByRole('img', { name: media.alt, exact: true }).waitFor()
-  // Scope the native relationship input to its field; accessible naming of
-  // all nested native selectors is a separate audit, not claimed by this test.
-  const crop = page.locator('#field-layout__0__placement').getByRole('combobox')
+  const crop = page.getByRole('combobox', { name: 'Encuadre', exact: true })
+  await crop.waitFor()
+  await page.locator('#field-layout__0__placement label').click()
+  assert.equal(await crop.evaluate(element => document.activeElement === element), true, 'Placement label focuses its native input')
   await crop.fill(placement.name)
   await page.getByRole('option', { name: placement.name, exact: true }).click()
   await page.getByRole('textbox', { name: /^Pie de imagen/ }).fill(caption)
@@ -32,6 +33,9 @@ export const verifyBrowserMediaPage = async ({ page, origin, width, media, place
   await page.waitForURL(url => url.pathname === `/admin/collections/pages/${doc.id}`)
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await crop.waitFor()
+  await page.locator('#field-layout__0__placement label').click()
+  assert.equal(await crop.evaluate(element => document.activeElement === element), true, 'Placement label remains associated after reload')
   assert.equal(await page.getByRole('textbox', { name: /^Pie de imagen/ }).inputValue(), caption)
   const stored = await page.evaluate(async id => {
     const response = await fetch(`/api/pages/${id}?draft=true&depth=0`, { signal: AbortSignal.timeout(10_000) })
