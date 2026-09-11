@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict'
+
+export const verifyBrowserRestore = async ({ page, origin, document, release, width }) => {
+  assert.equal(new URL(origin).hostname, '127.0.0.1')
+  const read = () => page.evaluate(async id => {
+    const response = await fetch(`/api/pages/${id}?draft=true&depth=0`, { signal: AbortSignal.timeout(10_000) })
+    if (!response.ok) throw new Error('Cannot read restoration target')
+    return response.json()
+  }, document.id)
+  await page.goto(`${origin}/admin/collections/pages/${document.id}`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await page.getByRole('textbox', { name: /^Título de la página/ }).fill(`Cambio posterior ${width}`)
+  await page.getByRole('textbox', { name: /^Encabezado/ }).first().fill('Bloque posterior a la versión')
+  await page.waitForFunction(() => document.querySelector('#action-save-draft')?.disabled === false)
+  const saving = page.waitForResponse(response => response.request().method() === 'PATCH' && new URL(response.url()).pathname === `/api/pages/${document.id}`)
+    .then(response => ({ response }), error => ({ error }))
+  await page.locator('#action-save-draft').press('Enter')
+  const saved = await saving
+  if ('error' in saved) throw saved.error
+  assert.equal(saved.response.status(), 200)
+  await page.waitForFunction(() => document.querySelector('#action-save-draft')?.disabled === true)
+  const edited = await read()
+  assert.equal(edited.title, `Cambio posterior ${width}`)
+  assert.equal(edited.layout[0].heading, 'Bloque posterior a la versión')
+  await page.goto(`${origin}/admin`, { waitUntil: 'domcontentloaded' })
+  const version = page.locator('li').filter({ has: page.getByRole('link', { name: new RegExp(release.name) }) })
+  await version.getByText('Restaurar esta versión', { exact: true }).click()
+  await version.getByRole('textbox', { name: `Confirmación para restaurar ${release.name}`, exact: true }).fill('PREPARAR RESTAURACIÓN')
+  await version.getByRole('button', { name: 'Preparar plan', exact: true }).press('Enter')
+  await version.getByRole('link', { name: 'Revisar plan preparado', exact: true }).waitFor()
+  assert.deepEqual(await read(), edited, 'Preparing a plan must not change the page')
+  await version.getByRole('link', { name: 'Revisar plan preparado', exact: true }).click()
+  await page.waitForURL(url => /^\/admin\/collections\/restore-plans\/[\w-]+$/.test(url.pathname))
+  const planId = new URL(page.url()).pathname.split('/').at(-1)
+  await page.getByRole('textbox', { name: 'Escribe CONFIRMAR RESTAURACIÓN', exact: true }).fill('CONFIRMAR RESTAURACIÓN')
+  await page.getByRole('button', { name: 'Comprobar y confirmar', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Escribe EJECUTAR RESTAURACIÓN', exact: true }).waitFor()
+  assert.deepEqual(await read(), edited, 'Confirming a plan must not change the page')
+  await page.getByRole('textbox', { name: 'Escribe EJECUTAR RESTAURACIÓN', exact: true }).fill('EJECUTAR RESTAURACIÓN')
+  await page.getByRole('button', { name: 'Restaurar como borrador', exact: true }).click()
+  await page.getByText('Restauración ejecutada', { exact: true }).waitFor()
+  const restored = await read()
+  assert.equal(restored._status, 'draft')
+  assert.equal(restored.title, document.title)
+  assert.equal(restored.slug, document.slug)
+  assert.equal(restored.brandProfile, document.brandProfile)
+  assert.deepEqual(restored.layout, document.layout)
+  assert(['string', 'number'].includes(typeof restored.restoredMediaSnapshot), 'Historical media binding is a persisted relationship ID')
+  const plan = await page.evaluate(async id => {
+    const response = await fetch(`/api/restore-plans/${id}?depth=0`, { signal: AbortSignal.timeout(10_000) })
+    if (!response.ok) throw new Error('Cannot reread restoration evidence')
+    return response.json()
+  }, planId)
+  assert.equal(plan.status, 'executed')
+  assert.equal(restored.restoredMediaSnapshot, plan.targetSnapshot, 'Restored media binding points to the selected historical snapshot')
+  assert(plan.resultDraftSnapshot && plan.resultPreviewSnapshot, 'Executed restoration has persisted result evidence')
+  await page.goto(`${origin}/admin/collections/pages/${document.id}`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  assert.equal(await page.getByRole('textbox', { name: /^Título de la página/ }).inputValue(), document.title)
+  assert.equal(await page.getByRole('textbox', { name: /^Encabezado/ }).first().inputValue(), document.layout[0].heading)
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  const opening = page.context().waitForEvent('page').then(preview => ({ preview }), error => ({ error }))
+  await page.getByRole('link', { name: /Ver borrador guardado/ }).click()
+  const opened = await opening
+  if ('error' in opened) throw opened.error
+  try {
+    await opened.preview.waitForURL(`${origin}/admin/content-preview/pages/${document.id}`)
+    await opened.preview.getByRole('heading', { name: document.layout[0].heading, exact: true }).waitFor()
+    assert.equal(await opened.preview.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  } finally { await opened.preview.close() }
+  console.log(`[restore-browser] PASS ${width}px prepare, confirm and restore historical draft through UI`)
+  return restored
+}

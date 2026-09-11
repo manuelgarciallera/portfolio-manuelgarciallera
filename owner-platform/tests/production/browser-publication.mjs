@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { verifyPublicationFlow } from '../publication-flow.browser.mjs'
 import { verifyLocalEditorRecovery } from './browser-editor-recovery.mjs'
+import { verifyBrowserRestore } from './browser-restore.mjs'
 
 export const verifyBrowserPublication = async ({ page, origin, document, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -77,4 +78,5 @@ export const verifyBrowserPublication = async ({ page, origin, document, width }
     page.off('request', externalRequest)
   }
   console.log(`[publication-browser] PASS ${width}px review, artifact and preflight UI; no page publication`)
+  return verifyBrowserRestore({ page, origin, document, release, width })
 }

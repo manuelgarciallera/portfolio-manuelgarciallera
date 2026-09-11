@@ -140,8 +140,8 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   const second = await verifySecondPage({ page, context, origin, width, firstPage: stored })
   await verifyUnsavedPage({ page, origin, width, document: stored })
   const mediaPage = await verifyBrowserMediaPlacement({ page, origin, width })
-  await verifyBrowserPublication({ page, origin, document: second, width })
+  const restoredSecond = await verifyBrowserPublication({ page, origin, document: second, width })
   await verifyBrowserArticle({ page, context, origin, width, mediaPage })
   console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
-  return [stored, second, mediaPage]
+  return [stored, restoredSecond, mediaPage]
 }
