@@ -59,3 +59,13 @@ lint14ba80 pasa. Segunda repetición de confirmación ef396c también pasa ambos
 viewports, documentos y objetos tras reinicio. Runtime intacto. Dos pasadas
 consecutivas no explican por sí solas el primer timeout; se conserva diagnóstico
 y no se declara resuelta su causa. No se amplían timeouts para ocultarlo.
+
+## Seguimiento: privacidad por HTTP sin sesión
+
+Base5e9d3f8. Después de verificar los dos borradores como owner, se consulta
+con fetch sin JWT/cookies: listado con/sin draft=true vacío, detalle404 y cuerpo
+de rechazo sin título/resumen, historial403. Prueba específica del HTTP compilado,
+complementaria a acceso unitario/integración. No cubre GraphQL ni análisis
+exhaustivo de filtraciones. Revisión independiente read-only sin hallazgos.
+Lint724366/diffcheck pasan. Ensayo completo10f183 pasa privacidad, recorridos
+editoriales390/1280 y conservación tras reinicio; sin cambio de permisos runtime.

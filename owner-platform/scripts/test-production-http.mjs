@@ -122,6 +122,24 @@ try {
       assert.equal(result.totalDocs, 2, 'One natively authored article per viewport')
       articlesBefore = result.docs
       assert(articlesBefore.every(article => article._status === 'draft'))
+      for (const query of ['', '?draft=true']) {
+        // Raw fetch has no owner JWT or browser cookies.
+        const listing = await fetch(`${origin}/api/articles${query}`, { signal: AbortSignal.timeout(10_000) })
+        assert.equal(listing.status, 200)
+        const listed = await listing.json()
+        assert.equal(listed.totalDocs, 0, 'Anonymous listing must not disclose native drafts')
+        assert.deepEqual(listed.docs, [])
+        for (const article of articlesBefore) {
+          const detail = await fetch(`${origin}/api/articles/${article.id}${query}`, { signal: AbortSignal.timeout(10_000) })
+          assert.equal(detail.status, 404, 'Anonymous draft lookup remains hidden, even with draft=true')
+          const error = await detail.text()
+          assert(!error.includes(article.title) && !error.includes(article.excerpt), 'Denial must not leak draft text')
+        }
+      }
+      const history = await fetch(`${origin}/api/articles/versions`, { signal: AbortSignal.timeout(10_000) })
+      assert.equal(history.status, 403, 'Anonymous visitors cannot enumerate article history')
+      await history.arrayBuffer()
+      console.log('[production-http] anonymous article drafts and version history remain private')
     }
     if (browserEditor) assert.equal(brandIds.length, 2, 'One distinct second-page brand per viewport')
     const brandsBefore = await Promise.all(brandIds.map(async id => {
