@@ -25,10 +25,11 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   await page.locator('form[data-form-ready="true"]').first().waitFor()
   await page.getByRole('textbox', { name: /^Título de la página/ }).fill('Estudio Claro · Servicios')
   await page.getByRole('textbox', { name: /^Identificador de URL/ }).fill(`estudio-claro-${suffix}`)
-  // Payload's installed RelationshipInput puts the visible label on its wrapper,
-  // not the internal react-select input. Scope explicitly; this does not prove
-  // that the control has a correct accessible name (tracked separately).
-  const brandControl = page.locator('#field-brandProfile').getByRole('combobox')
+  const brandControl = page.getByRole('combobox', { name: 'Perfil de marca', exact: true })
+  await brandControl.waitFor({ timeout: 5000 })
+  await page.locator('#field-brandProfile label').click()
+  assert.equal(await brandControl.evaluate(element => document.activeElement === element), true,
+    'The visible brand label must focus its native selector')
   await brandControl.fill(brandName)
   await page.getByRole('option', { name: brandName, exact: true }).click()
   await page.locator('.blocks-field__drawer-toggler').press('Enter')
@@ -60,6 +61,12 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   const { doc } = creation
   assert.notEqual(doc.id, firstPage.id)
   await page.waitForURL(url => url.pathname === `/admin/collections/pages/${doc.id}`)
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await brandControl.waitFor({ timeout: 5000 })
+  await page.locator('#field-brandProfile label').click()
+  assert.equal(await brandControl.evaluate(element => document.activeElement === element), true,
+    'The saved brand selector must remain labelled after reload')
   const popup = context.waitForEvent('page').then(preview => ({ preview }), error => ({ error }))
   await page.getByRole('link', { name: /Ver borrador guardado/ }).press('Enter')
   const popupResult = await popup

@@ -189,6 +189,7 @@ export const Pages: CollectionConfig = {
       type: 'relationship',
       relationTo: 'brand-profiles',
       admin: {
+        components: { beforeInput: ['./components/RelationshipLabelBinding#RelationshipLabelBinding'] },
         description: 'Obligatorio al publicar. Los borradores pueden guardarse sin asignarlo.',
       },
     },
