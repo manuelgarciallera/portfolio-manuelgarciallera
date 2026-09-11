@@ -50,3 +50,21 @@ cuenta, datos y medios depende todavía del destino autorizado.
 
 Investigación y propuesta de actualización/ecosistema separadas en
 ecosystem-ui-and-updates-2026-09-11.md. Sin push ni despliegue.
+
+## Seguimiento: formato del texto enriquecido
+
+Basea6d5a2c. browser-second-page.mjs amplía el recorrido existente: seleccionar
+texto y aplicar negrita/cursiva mediante teclado real, comprobar estilos computados,
+guardar y recargar, verificar strong/em en preview sobre el contenido esperado.
+El runner compara después el documento completo tras reiniciar la aplicación.
+
+El primer ensayo6a785f falló por un selector de prueba incorrecto: Lexical combina
+strong con clase de cursiva, no strong/em anidados (fuente instalada
+Lexical.dev.mjs,getElementInnerTag/setTextThemeClassNames). Se corrigió la prueba,
+no el editor. No se atribuye RED/GREEN de producto a esta ampliación.
+
+Final30ac4c salida0,390/1280, borradores/marcas/medios y reinicio conservados;
+app/clúster/raíz sintética cerrados. Lint focalc64be1 y diffcheck pasan. Revisión
+independiente solo lectura sin hallazgos. No cambio runtime, dependencia ni UI;
+unitarias1301 del incremento anterior no se presentan como repetidas aquí.
+No acredita toolbar táctil, enlaces/listas/tablas, Safari, uso físico ni publicación.

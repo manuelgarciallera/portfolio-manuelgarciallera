@@ -42,6 +42,18 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   // currently mounted editor can write into the hero body instead.
   const content = page.locator('[data-field-path="layout.1.content"] [contenteditable="true"]')
   await content.fill('Diseño de identidad, comunicación y experiencias digitales. Contenido ficticio para probar el editor; no es una oferta comercial.')
+  await content.press('ControlOrMeta+a')
+  await content.press('ControlOrMeta+b')
+  await content.press('ControlOrMeta+i')
+  // Lexical uses one strong element plus the italic theme class, not nested tags.
+  const assertEditorFormatting = async () => {
+    const formatted = content.locator('strong')
+    await formatted.waitFor()
+    const style = await formatted.evaluate(element => ({ weight: getComputedStyle(element).fontWeight, style: getComputedStyle(element).fontStyle }))
+    assert(Number(style.weight) >= 600, 'Bold text is visibly heavier in the editor')
+    assert.equal(style.style, 'italic', 'Italic text is visible in the editor')
+  }
+  await assertEditorFormatting()
   const saving = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/pages')
     .then(response => ({ response }), error => ({ error }))
   await page.locator('#action-save-draft').press('Enter')
@@ -63,6 +75,7 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   await page.waitForURL(url => url.pathname === `/admin/collections/pages/${doc.id}`)
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await assertEditorFormatting()
   await brandControl.waitFor({ timeout: 5000 })
   await page.locator('#field-brandProfile label').click()
   assert.equal(await brandControl.evaluate(element => document.activeElement === element), true,
@@ -78,6 +91,9 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
     await heading.waitFor()
     assert.equal(await heading.evaluate(element => getComputedStyle(element).fontFamily), 'serif')
     await preview.getByText(/Diseño de identidad, comunicación y experiencias digitales/).waitFor()
+    const formatted = preview.locator('article [data-block-type="richText"] strong em, article [data-block-type="richText"] em strong')
+    await formatted.waitFor()
+    assert.match(await formatted.textContent(), /Diseño de identidad/)
     assert.equal(await preview.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
     assert.equal(await preview.locator('article').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(255, 249, 237)')
     if (process.env.OWNER_SECOND_PAGE_SCREENSHOTS === '1') await preview.screenshot({ path: `/tmp/owner-second-page-${width}.png`, fullPage: true })
