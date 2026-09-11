@@ -18,7 +18,10 @@ const ArticleMediaBlock: Block = {
   labels: { singular: 'Imagen', plural: 'Imágenes' },
   fields: [
     { name: 'asset', label: 'Archivo', type: 'upload', relationTo: 'media', required: true },
-    { name: 'placement', label: 'Encuadre', type: 'relationship', relationTo: 'media-placements' },
+    {
+      name: 'placement', label: 'Encuadre', type: 'relationship', relationTo: 'media-placements',
+      admin: { components: { beforeInput: ['./components/RelationshipLabelBinding#RelationshipLabelBinding'] } },
+    },
     { name: 'alt', label: 'Texto alternativo', type: 'text', required: true },
     { name: 'caption', label: 'Pie de imagen', type: 'text' },
   ],

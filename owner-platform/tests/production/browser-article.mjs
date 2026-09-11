@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
+import { verifyArticleMedia } from './browser-article-media.mjs'
 
-export const verifyBrowserArticle = async ({ page, context, origin, width }) => {
+export const verifyBrowserArticle = async ({ page, context, origin, width, mediaPage }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
   const title = `Artículo de prueba ${width}`
   const slug = `articulo-qa-${randomUUID()}`
@@ -64,7 +65,18 @@ export const verifyBrowserArticle = async ({ page, context, origin, width }) => 
       await page.getByRole('textbox', { name: /^Autoría o fuente/ }).fill('Autor sintético')
     } else {
       await page.locator('.blocks-field .array-actions__button').press('Enter')
-      await page.locator('.array-actions__remove').press('Enter')
+      // Popup keeps inactive buttons mounted and asynchronously focuses its
+      // first action after keyboard opening. Wait for that native focus, then
+      // navigate as a keyboard user instead of pressing a possibly hidden node.
+      await page.waitForFunction(() => {
+        const popup = document.querySelector('.popup__content:has(.array-actions__remove)')
+        return popup && popup.querySelector('button') === document.activeElement
+      })
+      await page.keyboard.press('ArrowUp')
+      assert.equal(await page.locator('.popup__content .array-actions__remove')
+        .evaluate(element => element === document.activeElement), true, 'Native menu wraps focus to Remove')
+      await page.keyboard.press('Enter')
+      await page.getByRole('textbox', { name: /^Texto de la cita/ }).waitFor({ state: 'hidden' })
     }
     try {
       await page.waitForFunction(() => document.querySelector('#action-save-draft')?.disabled === false)
@@ -99,5 +111,6 @@ export const verifyBrowserArticle = async ({ page, context, origin, width }) => 
     } finally { await next.preview.close() }
   }
   console.log(`[article-blocks] PASS ${width}px native quote round-trip preserves classic content`)
+  await verifyArticleMedia({ page, origin, width, articleId: doc.id, body, mediaPage })
   console.log(`[article-editor] PASS ${width}px native draft creation, edit, reload and preview`)
 }
