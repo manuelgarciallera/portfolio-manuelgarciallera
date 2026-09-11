@@ -1,7 +1,7 @@
 # Publication UI: external runtime dependency found
 
 Base `ce85688`; reservation `04b563af-3fa6-4423-817a-0b15055d2a14`.
-Status: **RED, not resolved**. No deployment or public runtime change.
+Initial status: **RED**. See the verified follow-up below. No deployment or public runtime change.
 
 The new production helper reuses publication-flow.browser.mjs against the
 isolated PostgreSQL/object runner. Snapshots, release and bundle are explicit
@@ -77,3 +77,62 @@ be committed as a working fix. Gravatar remains separately unresolved.
 Primary reference for the public loader configuration API:
 https://github.com/suren-atoyan/monaco-react#loader-config . Installed Payload
 bundled code, not that API alone, determines actual integration behavior.
+
+## Verified local native field implementation
+
+The ineffective provider was removed. `LocalJSONField` initializes local Monaco
+on demand, then mounts the **exported native Payload JSONField**, forwarding
+all its props. The collection mapper preserves explicit custom components,
+access controls and field options; the nine current JSON fields are top-level
+read-only evidence fields. No JSON schema/data migration or public page change.
+
+The external loader also had a verified error-path defect: its makeCancelable
+implementation leaves a derived promise rejection unhandled. Negative browser
+test `00ca25` proved this even though its alert/reload appeared to work. The
+small `local-monaco.ts` bootstrap now uses local AMD loader callbacks, a shared
+promise and bounded timeout, without that wrapper. No global error suppression.
+Failure shows an alert and explicit full reload; unmount does not cancel other
+fields' initialization. No editor loading on every admin screen.
+
+`admin.avatar: 'default'` removes the Gravatar calls. The preceding test
+`4875a7` specifically failed on seven third-party avatar requests. Asset tests
+also caught the missing ThirdPartyNotices file (`e15ae0`), now copied alongside
+LICENSE and all worker assets. npm changes pin the already-installed Monaco
+0.56.0 directly; the attempted direct React adapter/loader dependencies were
+removed. No dependency added to the public portfolio.
+
+Final isolated run `3863f4 / 1151c9 / 9d5227`, cleanup and exit 0 `c070e4`:
+
+- 390 and 1280 px, actual native JSON render and populated JSON model;
+- loader and JSON worker fetched locally; no external HTTP requests during
+  the publication review workflow;
+- native editors remain read-only;
+- unavailable loader asset produces recovery UI, reload restores native editor,
+  and no unhandled page error is produced;
+- review, artifact and preflight panels complete; source page unchanged;
+- existing native create/reorder/media/crop/trash/restore flows still pass;
+- six drafts, two brands and two placements preserved after process restart;
+- private object upload/replacement/bytes and restart pass; owned services close.
+
+Environment remains Docker overlay on `/work/recovery-8bd695e`, disconnected
+externally, PostgreSQL16 and synthetic object service. Not a clean fresh clone,
+real provider, physical mobile, deployment or proof that the whole CMS is ready.
+Public boundary passed 21 entries and its 14 guard tests (`6978e3`). Asset byte
+test `0566d5` passes. `npm test` exits 0 (`499ddd`): asset-copy test plus
+1,288 unit tests in 170 files, 98.55 seconds. Two existing fixture email-adapter
+warnings occurred; no real delivery is asserted by this test.
+Final owner typecheck and full lint both exit 0 (`6303a4 / 06fbeb`); diff check
+and closed app/PG process inventory confirmed (`9cef62`). Independent read-only
+review of the final bootstrap found no important issue; its browser conditions
+were subsequently proved by the run above. No claim of Claude acceptance.
+
+Asset cost: installed `min/vs` contains 151 files / 24,416,296 bytes on disk
+(`8cba5f`), copied only into ignored owner public assets, not all downloaded at
+once. This is not a measured transfer-size or public-bundle increase. Monaco
+README deprecates AMD; compatibility is pinned and must pass this browser gate
+on upgrades. Do not automatically update the version or promise indefinite AMD.
+
+Additional finding, not hidden by the test fixture correction: release gitCommit
+is unique. Reusing the synthetic SHA for the second viewport yielded HTTP500
+(`d0bfc0`). Fixtures now use distinct synthetic SHAs; owner duplicate-release
+error handling needs a separate regression/fix. No claim of overall completion.

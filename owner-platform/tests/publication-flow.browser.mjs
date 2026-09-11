@@ -14,6 +14,9 @@ export const verifyPublicationFlow = async ({ page, request, pageId, releaseId, 
     { phrase: 'VALIDAR ARTEFACTO', button: 'Validar preparación', path: /\/publication-artifacts\/[^/]+\/preflights$/, link: 'Ver informe inmutable' },
   ]) {
     await page.locator('form[data-form-ready="true"]').first().waitFor({ timeout: 30_000 })
+    if (step.phrase !== 'GENERAR ARTEFACTO') {
+      await page.locator('.monaco-editor .view-lines').first().waitFor({ state: 'visible', timeout: 30_000 })
+    }
     const input = page.getByRole('textbox', { name: `Escribe ${step.phrase}`, exact: true })
     await input.waitFor({ timeout: 30_000 })
     assert.equal(await page.locator('form form').count(), 0)

@@ -1,6 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { prepareEditorAssets } from './prepare-editor-assets.mjs'
+
+await prepareEditorAssets()
 
 mkdirSync(new URL('../.data/', import.meta.url), { recursive: true })
 

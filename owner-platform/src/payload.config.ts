@@ -36,6 +36,7 @@ import { multipartBodyParser, payloadUploadParsing } from './config/upload-secur
 import { AssistantSettings } from './globals/AssistantSettings'
 import { editorialLabels } from './config/editorial-labels'
 import { configureMediaStorage } from './config/media-storage'
+import { localJSONFields } from './config/local-json-fields'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -60,7 +61,7 @@ const db =
     : createLocalDatabaseAdapter(runtime.database.url)
 
 const groupCollections = (group: string, collections: CollectionConfig[]): CollectionConfig[] =>
-  collections.map((collection) => ({ ...collection, labels: editorialLabels(collection.slug) ?? collection.labels, admin: { ...collection.admin, group } }))
+  collections.map((collection) => ({ ...collection, fields: localJSONFields(collection.fields), labels: editorialLabels(collection.slug) ?? collection.labels, admin: { ...collection.admin, group } }))
 
 // Fresh raw configuration lets isolated acceptance fixtures replace infrastructure
 // without mutating an already sanitized app config or the default runtime.
@@ -71,6 +72,7 @@ export const createOwnerConfig = (): Config => ({
   // not content localization: it adds no locale fields or schema migration.
   i18n: { fallbackLanguage: 'es', supportedLanguages: { es } },
   admin: {
+    avatar: 'default',
     components: {
       afterNav: ['./components/OwnerNavigationAccessibility#OwnerNavigationAccessibility'],
       views: {

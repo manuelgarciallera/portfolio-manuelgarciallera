@@ -13,6 +13,7 @@ import { startBrowserProxy } from '../tests/production/browser-proxy.mjs'
 import { verifyBrowserTLS } from '../tests/production/browser-tls-preflight.mjs'
 import { verifyProductionObjectMedia } from '../tests/production/object-media.mjs'
 import { verifyObjectTLS } from '../tests/production/object-tls-preflight.mjs'
+import { prepareEditorAssets } from './prepare-editor-assets.mjs'
 
 const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')
@@ -38,6 +39,7 @@ Object.assign(env, { NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1', PAYLO
   OWNER_SERVER_URL: 'https://owner.example.invalid', OWNER_EMAIL_API_KEY: 're_synthetic_qa_only',
   OWNER_EMAIL_FROM: 'owner@example.invalid' })
 console.log('[production-http] build with synthetic configuration')
+await prepareEditorAssets()
 await runCommand(process.execPath, [next, 'build'], { cwd, env, timeout: 600_000, secrets: [secret] })
 const postgres = await createPostgresCluster({ cache: path.join(cwd, 'node_modules/.cache'), kind: 'recovery', tools })
 let app

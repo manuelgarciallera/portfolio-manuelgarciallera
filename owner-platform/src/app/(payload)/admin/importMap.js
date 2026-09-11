@@ -29,6 +29,7 @@ import { BrandPalettePreview as BrandPalettePreview_b6430c4226bc6b885468a080a97f
 import { BrandContrastPreview as BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6 } from '../../../components/BrandContrastPreview'
 import { TypographyFamilyField as TypographyFamilyField_25591eebce41126712e51231bc8daaf2 } from '../../../components/TypographyFamilyField'
 import { BrandMotionPreview as BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709 } from '../../../components/BrandMotionPreview'
+import { LocalJSONField as LocalJSONField_bc8a8aa3d1cb6351a4fa64b9419a82d9 } from '../../../components/LocalJSONField'
 import { AssistanceProposalControls as AssistanceProposalControls_85f9fa31b16f772dfc886f873e921adf } from '../../../components/AssistanceProposalControls'
 import { RestorePlanControls as RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0 } from '../../../components/RestorePlanControls'
 import { PublicationBundleControls as PublicationBundleControls_a1559df9f50ea83254bc137a42e15312 } from '../../../components/PublicationBundleControls'
@@ -79,6 +80,7 @@ export const importMap = {
   "./components/BrandContrastPreview#BrandContrastPreview": BrandContrastPreview_44a0f80b649210a5ce46c0f8835222a6,
   "./components/TypographyFamilyField#TypographyFamilyField": TypographyFamilyField_25591eebce41126712e51231bc8daaf2,
   "./components/BrandMotionPreview#BrandMotionPreview": BrandMotionPreview_c8d67e451f0d18058f3f96339bcb3709,
+  "./components/LocalJSONField#LocalJSONField": LocalJSONField_bc8a8aa3d1cb6351a4fa64b9419a82d9,
   "./components/AssistanceProposalControls#AssistanceProposalControls": AssistanceProposalControls_85f9fa31b16f772dfc886f873e921adf,
   "./components/RestorePlanControls#RestorePlanControls": RestorePlanControls_687cc1a903aa00d748898b220dd7b5c0,
   "./components/PublicationBundleControls#PublicationBundleControls": PublicationBundleControls_a1559df9f50ea83254bc137a42e15312,

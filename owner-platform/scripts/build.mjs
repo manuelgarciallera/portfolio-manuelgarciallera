@@ -1,6 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { prepareEditorAssets } from './prepare-editor-assets.mjs'
+
+await prepareEditorAssets()
 
 rmSync(new URL('../.next/dev/', import.meta.url), { force: true, recursive: true })
 
