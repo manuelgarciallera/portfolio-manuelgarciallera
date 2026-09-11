@@ -2,6 +2,7 @@ import type { CollectionConfig, PayloadRequest } from 'payload'
 
 import { isOwner, ownerOnly } from '../access/owner'
 import { ownerForgotPassword } from '../auth/forgot-password'
+import { lockRecoveryToken } from '../auth/recovery-lock'
 
 // Server-owned operation marker: never trust a body/context flag for recovery.
 const recoveryRequests = new WeakSet<PayloadRequest>()
@@ -18,8 +19,11 @@ export const Users: CollectionConfig = {
     maxLoginAttempts: 5,
   },
   hooks: {
-    beforeOperation: [({ operation, req }) => {
-      if (operation === 'resetPassword') recoveryRequests.add(req)
+    beforeOperation: [async ({ operation, req, args }) => {
+      if (operation === 'resetPassword') {
+        await lockRecoveryToken(req, args.data.token)
+        recoveryRequests.add(req)
+      }
       else recoveryRequests.delete(req)
     }],
     beforeValidate: [({ data, req }) => {

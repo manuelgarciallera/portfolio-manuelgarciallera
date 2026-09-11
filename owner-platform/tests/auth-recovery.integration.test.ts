@@ -127,6 +127,24 @@ it('does not disguise malformed recovery requests as accepted delivery requests'
   expect((await post('forgot-password', { email: { injected: true } })).status).toBe(400)
 })
 
+// Production requires PostgreSQL. SQLite retains the native local-only path.
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('accepts a recovery token only once when two PostgreSQL resets arrive concurrently', async () => {
+  const targetEmail = 'concurrent-reset@example.invalid'
+  const originalPassword = randomUUID() + randomUUID()
+  await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: originalPassword, role: 'owner' } })
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const link = String(inbox.at(-1)?.html).match(/href="([^"]+)"/)?.[1]
+  const token = new URL(link!).pathname.split('/').at(-1)!
+  const passwords = [randomUUID() + randomUUID(), randomUUID() + randomUUID()]
+  const responses = await Promise.all(passwords.map(password => post('reset-password', { token, password })))
+  expect(responses.map(response => response.status).sort()).toEqual([200, 403])
+  const winner = responses.findIndex(response => response.status === 200)
+  expect((await post('login', { email: targetEmail, password: passwords[winner] })).status).toBe(200)
+  expect((await post('login', { email: targetEmail, password: passwords[1 - winner] })).status).toBe(401)
+  expect((await post('reset-password', { token, password: originalPassword })).status).toBe(403)
+}, 60_000)
+
 it('revokes previous sessions on recovery but preserves ordinary concurrent logins and the new session', async () => {
   const targetEmail = 'session-owner@example.invalid'
   const targetPassword = randomUUID() + randomUUID()
