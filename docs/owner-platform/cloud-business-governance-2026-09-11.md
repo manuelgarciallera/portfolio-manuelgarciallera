@@ -42,6 +42,19 @@ El árbol contiene documentos compartidos y adjuntos sin revisar; no subirlos
 en bloque. El push requiere separar respaldo y despliegue, ya que la tarea
 vigente excluye publicar. No se afirma respaldo remoto de esos83 cambios.
 
+Actualización sobre HEAD `27824c8`: GitHub devuelve `isPrivate: false` para
+`manuelgarciallera/portfolio-manuelgarciallera`. No enviar automáticamente el
+trabajo pendiente del CMS a ese destino público. Se propone un repositorio
+privado de respaldo sin conexión a Vercel; creación pendiente de autorización.
+Esto no cambia la visibilidad ni el despliegue del repositorio existente.
+
+Se conserva una copia local Git bundle de HEAD y checkpoint bajo `.audit/`,
+restaurada en un repositorio bare y comprobada con `git fsck --full` sin errores.
+No es respaldo externo ni incluye cambios sin commit, bases o medios.
+La prueba de una segunda página sigue abierta; no acredita todavía un producto
+multicliente ni un segundo sitio publicado. Comunicación Hub de esta revisión:
+`6a4d3156-7a5d-4a97-804d-0ce788dfa149`, enviado, no aceptación inferida.
+
 ## Preparación profesional antes del primer cliente
 
 Mantener inventario de autoría y licencias de código, fuentes, imágenes y trabajo
