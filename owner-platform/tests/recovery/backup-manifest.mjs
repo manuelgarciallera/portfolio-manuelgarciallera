@@ -112,7 +112,12 @@ export const restoreVerifiedBackup = async ({ backupDirectory, restoreDirectory 
   await assertAbsent(restoreDirectory, 'Restore directory')
   const manifest = await verifyPhysicalBackup(backupDirectory)
   await mkdir(restoreDirectory)
-  await cp(path.join(backupDirectory, DATA_DIRECTORY), restoreDirectory, { recursive: true, errorOnExist: true, force: false })
+  const source = path.join(backupDirectory, DATA_DIRECTORY)
+  // Keep exclusive ownership of the destination. Copy into fresh children:
+  // Node 24 rejects errorOnExist copies onto the directory we just created.
+  for (const entry of await readdir(source)) {
+    await cp(path.join(source, entry), path.join(restoreDirectory, entry), { recursive: true, errorOnExist: true, force: false })
+  }
   const restored = await snapshotFiles(restoreDirectory)
   if (JSON.stringify(restored) !== JSON.stringify(manifest.files)) throw new Error('Restored files do not match the verified backup.')
   return manifest
