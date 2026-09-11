@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { readFile, readdir } from 'node:fs/promises'
+import { mkdir, readFile, readdir } from 'node:fs/promises'
 import net from 'node:net'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -20,6 +20,7 @@ const objectMedia = process.argv.includes('--object-media')
 const browserEditor = process.argv.includes('--browser-editor')
 const openssl = process.env.OWNER_TEST_OPENSSL || (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl')
 if (objectMedia || browserEditor) await runCommand(openssl, ['version'])
+if (objectMedia || browserEditor) await mkdir(path.join(cwd, 'node_modules/.cache'), { recursive: true })
 if (browserEditor) await verifyBrowserTLS({ cwd, openssl })
 if (objectMedia) await verifyObjectTLS({ cwd, openssl })
 const { tools } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
