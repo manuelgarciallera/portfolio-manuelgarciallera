@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { S3Client } from '@aws-sdk/client-s3'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createObjectRevisionStore } from './object-revision-store'
 import { createTransportRevisionStorageCollection } from './revision-storage-binding'
@@ -251,14 +251,33 @@ describe('object revision transport with real S3 HTTP requests', () => {
     expect(await recoveryStore().read(revision)).toEqual(files())
   })
 
-  it('bounds restoration through the final verification body, not just the PUT responses', async () => {
+  it('keeps the operation abort signal active during final verification, after all PUT responses', async () => {
     const revision = await store().write(files())
     const manifest = JSON.parse(objects.get(`owner-media/${revision}/manifest.json`)!.toString())
     holdKey = `recovered-media/${revision}/files/0`
-    const started = performance.now()
-    await expect(recoveryStore(200).restore(revision, manifest, files())).rejects.toMatchObject({ revision })
-    expect(performance.now() - started).toBeLessThan(2000)
-    expect(objects.has(`recovered-media/${revision}/manifest.json`)).toBe(true)
+    // Control only the deadline trigger. Real HTTP/SDK writes and the retained
+    // response must reach the verification phase before we expire the signal.
+    // A separate read test below exercises the real wall-clock deadline.
+    const deadline = new AbortController()
+    const clock = vi.spyOn(AbortSignal, 'timeout').mockReturnValueOnce(deadline.signal)
+    let settled = false
+    const result = recoveryStore(200).restore(revision, manifest, files()).then(
+      (value) => { settled = true; return { value, error: null } },
+      (error: unknown) => { settled = true; return { value: null, error } },
+    )
+    try {
+      await vi.waitFor(() => {
+        expect(requests.some(({ method, key }) => method === 'GET' && key === holdKey)).toBe(true)
+      }, { timeout: 3000 })
+      expect(objects.has(`recovered-media/${revision}/manifest.json`)).toBe(true)
+      expect(settled).toBe(false)
+      deadline.abort(new Error('Synthetic deadline during verification'))
+      expect(await result).toMatchObject({ value: null, error: { revision } })
+      expect(requests.some(({ method }) => method === 'DELETE')).toBe(false)
+    } finally {
+      deadline.abort()
+      clock.mockRestore()
+    }
     holdKey = ''
     expect(await recoveryStore().read(revision)).toEqual(files())
   })
