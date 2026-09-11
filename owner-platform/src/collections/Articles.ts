@@ -92,7 +92,10 @@ export const Articles: CollectionConfig = {
     editorialPreviewField,
     { name: 'title', label: 'Título del artículo', type: 'text', required: true },
     slugField,
-    { name: 'excerpt', label: 'Resumen', type: 'textarea', required: true },
+    {
+      name: 'excerpt', label: 'Resumen', type: 'textarea', required: true,
+      admin: { components: { beforeInput: ['./components/FieldErrorBinding#FieldErrorBinding'] } },
+    },
     { name: 'coverImage', label: 'Imagen de portada', type: 'upload', relationTo: 'media' },
     {
       name: 'content', label: 'Contenido clásico', type: 'richText', required: false,

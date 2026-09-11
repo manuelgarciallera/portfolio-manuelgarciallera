@@ -1,3 +1,20 @@
+/* Required-field errors must remain visible on touch screens. Payload's
+   generic Tooltip hides at its mobile breakpoint; errors are form content,
+   not hover hints. Keep them in flow so longer messages cannot cover inputs. */
+.template-default .field-type .field-error.tooltip {
+  display: block;
+  position: relative;
+  inset: auto;
+  transform: none;
+  max-width: 100%;
+  white-space: normal;
+  margin-block-end: 0.5rem;
+}
+
+.template-default .field-type .field-error.tooltip::after {
+  display: none;
+}
+
 /* Payload's breadcrumb flex item otherwise pushes the account off narrow
    screens. Keep the path locally scrollable, including keyboard-focused links,
    rather than hiding document overflow or changing the desktop shell. */
