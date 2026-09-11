@@ -68,3 +68,40 @@ app/clúster/raíz sintética cerrados. Lint focalc64be1 y diffcheck pasan. Revi
 independiente solo lectura sin hallazgos. No cambio runtime, dependencia ni UI;
 unitarias1301 del incremento anterior no se presentan como repetidas aquí.
 No acredita toolbar táctil, enlaces/listas/tablas, Safari, uso físico ni publicación.
+
+## Seguimiento: nombres y estados de la barra nativa
+
+Base f26f753. Payload 3.88 dibuja diez botones de formato sin nombre accesible
+(aria-label/title/text vacíos en el navegador, diagnóstico a887df). La prueba
+por rol y nombre falló antes del cambio (bcea4b/8a1ac8).
+OwnerRichTextAccessibility aporta nombres españoles, title y estados
+aria-pressed/aria-disabled dentro del shell privado. Conserva comandos y
+selección nativos, respeta atributos aportados por upstream y retira solo los
+atributos propios al desmontarse. No observa los atributos que escribe.
+Es una compatibilidad acotada: retirarla cuando la versión upstream supere la
+regresión. No hay dependencia nueva ni modificación de node_modules.
+
+La prueba a390 pulsa Negrita/Cursiva por nombre, comprueba activado/desactivado
+y vuelve a activar; a1280 mantiene atajos de teclado. Ambas verifican formato
+tras guardar/recargar y en preview. Selección mediante teclado y clic de ratón
+en viewport emulado: no se acredita interacción táctil completa ni móvil físico.
+Build/HTTP/PostgreSQL aislados con objetos privados y reinicio pasan en el
+ensayo final 5e5668, cierre/limpieza b81ea0 salida0. La revisión independiente
+solo lectura no encontró bloqueadores y pidió la comprobación de aria-pressed,
+incorporada antes de esa repetición final. ImportMap regenerado con secreto
+sintético efímero; la guarda de secreto no se desactivó.
+
+La primera suite completa posterior falló: 1300 pasan, una prueba de timeout
+de object-revision-store falla porque el manifiesto aún no existía al abortar
+(a67d7d). El archivo aislado pasa33/33 (fb3ca0, salida0 9bb929). No se cambió
+almacenamiento ni se elevó el límite para esconder el fallo. La hipótesis es
+sensibilidad del test a la carga:200ms cubren LIST, tres PUT y lectura final;
+no basta para garantizar que llegue al cuerpo retenido bajo concurrencia.
+Esta hipótesis y la estabilización del test requieren seguimiento separado.
+La frontera pública pasa21 entradas (a127a2). Sin push ni despliegue.
+
+Repetición completa sin cambios de código ni configuración:1301/170 pasan,
+72,53s, salida0 (9faf89), además de la comprobación de assets locales. Lint y
+typecheck completos pasan (5fa193). Esto prueba una repetición verde, no elimina
+la intermitencia anterior; queda registrada para estabilización. El checkpoint
+sigue en0f0adf686b2752e23c25d224f8c60815b10fd451.

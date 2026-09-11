@@ -74,7 +74,7 @@ export const createOwnerConfig = (): Config => ({
   admin: {
     avatar: 'default',
     components: {
-      afterNav: ['./components/OwnerNavigationAccessibility#OwnerNavigationAccessibility'],
+      afterNav: ['./components/OwnerNavigationAccessibility#OwnerNavigationAccessibility', './components/OwnerRichTextAccessibility#OwnerRichTextAccessibility'],
       views: {
         pagePreview: { Component: './components/PagePreviewView#PagePreviewView', path: '/page-preview/:id', exact: true },
         contentPreview: { Component: './components/PagePreviewView#PagePreviewView', path: '/content-preview/:collection/:id', exact: true },

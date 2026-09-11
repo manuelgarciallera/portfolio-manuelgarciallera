@@ -43,8 +43,20 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   const content = page.locator('[data-field-path="layout.1.content"] [contenteditable="true"]')
   await content.fill('Diseño de identidad, comunicación y experiencias digitales. Contenido ficticio para probar el editor; no es una oferta comercial.')
   await content.press('ControlOrMeta+a')
-  await content.press('ControlOrMeta+b')
-  await content.press('ControlOrMeta+i')
+  if (width === 390) {
+    for (const name of ['Negrita', 'Cursiva']) {
+      const button = page.getByRole('button', { name, exact: true })
+      await button.click({ timeout: 5000 })
+      await page.getByRole('button', { name, exact: true, pressed: true }).waitFor()
+      await button.click()
+      await page.getByRole('button', { name, exact: true, pressed: false }).waitFor()
+      await button.click()
+      await page.getByRole('button', { name, exact: true, pressed: true }).waitFor()
+    }
+  } else {
+    await content.press('ControlOrMeta+b')
+    await content.press('ControlOrMeta+i')
+  }
   // Lexical uses one strong element plus the italic theme class, not nested tags.
   const assertEditorFormatting = async () => {
     const formatted = content.locator('strong')
