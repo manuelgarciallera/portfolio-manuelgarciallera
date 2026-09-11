@@ -3,20 +3,41 @@ import { randomUUID } from 'node:crypto'
 
 export const verifyProductionBrowserEditor = async ({ page, context, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
-  // Seed only a draft via the browser's real cookie session; all edits below
-  // use the actual form. No real brand, uploaded asset or public page is used.
-  const created = await page.evaluate(async (suffix) => {
-    const response = await fetch('/api/pages?draft=true', {
-      signal: AbortSignal.timeout(10_000),
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: `Editor QA ${suffix}`, slug: `editor-qa-${suffix}`, layout: [
-        { blockType: 'hero', heading: 'First draft block' }, { blockType: 'hero', heading: 'Second draft block' },
-      ] }),
-    })
-    return { status: response.status, data: await response.json() }
-  }, randomUUID())
-  assert.equal(created.status, 201, 'Create isolated draft through cookie session')
-  const id = created.data.doc.id
+  // A native draft must save without a brand and retain the entered content.
+  // No API writes, real brand, uploaded asset or public page prepare this test.
+  const suffix = randomUUID()
+  const initialTitle = `Editor QA ${suffix}`
+  const initialSlug = `editor-qa-${suffix}`
+  await page.goto(`${origin}/admin/collections/pages/create`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  await page.getByRole('textbox', { name: /^Título de la página/ }).fill(initialTitle)
+  await page.getByRole('textbox', { name: /^Identificador de URL \(slug\)/ }).fill(initialSlug)
+  for (const [index, heading] of ['First draft block', 'Second draft block'].entries()) {
+    await page.locator('.blocks-field__drawer-toggler').press('Enter')
+    await page.getByRole('button', { name: 'Portada', exact: true }).click()
+    await page.getByRole('textbox', { name: /^Encabezado/ }).nth(index).fill(heading)
+  }
+  const creating = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/pages')
+  await page.locator('#action-save-draft').press('Enter')
+  const created = await creating
+  assert.equal(created.status(), 201, 'Create draft without a brand through the actual Payload form')
+  const { doc } = await created.json()
+  const id = doc.id
+  assert(id !== undefined && id !== null, 'Native creation returns a document ID')
+  await page.waitForURL(url => url.pathname === `/admin/collections/pages/${id}`)
+  const initial = await page.evaluate(async id => {
+    const response = await fetch(`/api/pages/${id}?draft=true&depth=0`, { signal: AbortSignal.timeout(10_000) })
+    if (!response.ok) throw new Error('Cannot reread natively created draft')
+    return response.json()
+  }, id)
+  assert.equal(initial._status, 'draft')
+  assert.equal(initial.title, initialTitle)
+  assert.equal(initial.slug, initialSlug)
+  assert.equal(initial.brandProfile ?? null, null)
+  assert.deepEqual(initial.layout.map(block => ({ blockType: block.blockType, heading: block.heading })), [
+    { blockType: 'hero', heading: 'First draft block' },
+    { blockType: 'hero', heading: 'Second draft block' },
+  ])
   const expectedTitle = `Edited in browser ${width}`
   await page.goto(`${origin}/admin/collections/pages/${id}`, { waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
@@ -55,7 +76,9 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   }, id)
   assert.equal(stored._status, 'draft')
   assert.equal(stored.title, expectedTitle)
+  assert.equal(stored.slug, initialSlug)
+  assert.equal(stored.brandProfile ?? null, null)
   assert.deepEqual(stored.layout.map(block => block.heading), ['Second draft block', 'Edited first block'])
-  console.log(`[production-editor] PASS ${width}px edit, keyboard reorder, save, reload and preview`)
+  console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
   return stored
 }

@@ -21,7 +21,30 @@ No reemplazar el panel actual por un lienzo nuevo durante su ausencia. No public
 - IA opcional que proponga ordenar o editar bloques conocidos. Vista previa, diferencias, permisos y confirmación antes de aplicar; no código arbitrario ni publicación implícita.
 - Integración futura CMS/CRM/e-commerce por módulos y contratos; no acceso transversal automático a todos los datos.
 
-## Estado demostrable frente a aspiración
+## Requisitos visuales concretados por Manuel · 11 de septiembre
+
+Son requisitos para el siguiente diseño revisable, no capacidades verificadas
+por las pruebas del editor actual:
+
+- Inspector contextual: mostrar qué caja se selecciona y qué cambia cada control.
+- Tipografía seleccionable con muestras reales; colores visibles junto al valor,
+  selector gráfico y combinaciones de paleta previsualizables.
+- Bordes por lado o conjuntos, grosor/color/estilo; radios conjuntos o por esquina;
+  fondos sólidos y degradados con dirección y posiciones visibles.
+- Composición guiada por filas y columnas, proporciones predefinidas y destino de
+  inserción resaltado. Mostrar/ocultar guías y pasar a vista previa sin controles.
+  No sustituirlo por posicionamiento libre absoluto.
+- Efectos predefinidos seleccionables sobre texto o imagen y temas precargados que
+  agrupen colores, tipografías y efectos. Herencia de tema con ajustes explícitos
+  por bloque; posibilidad de volver al tema y deshacer.
+- Mantener equivalentes por teclado/botones, controles adaptados a móvil y respeto
+  a movimiento reducido. Hover no puede ser necesario para acceder al contenido.
+
+Primer alcance de diseño: una sección completa con inspector y previsualización,
+revisada con Manuel antes de extender o reemplazar la interfaz. Las decisiones
+visuales y las licencias/carga de fuentes deben quedar comprobadas, no inferidas.
+
+## Estado del editor existente
 
 El CMS actual usa formularios y bloques de Payload, perfiles de marca, recetas de encuadre, previsualización y evidencia de versiones. No es aún un lienzo libre tipo Figma ni un producto equivalente a Avada. Las capturas locales del 10/09 a las17:44–17:46 muestran contenido sintético de QA; no son un nuevo ensayo del build final ni una cuenta de cliente.
 
@@ -51,5 +74,10 @@ El e-commerce adaptativo por ventas o atención es otra hipótesis, no una funci
 Validar controles y recorridos existentes, corregir fallos demostrados y preparar una demostración local comprensible. Mantener limitaciones de almacenamiento productivo, publicación y proveedores visibles. El resultado comercial se evaluará con uso real y soporte, no por número de funcionalidades o pruebas automáticas.
 
 ## Verificación de controles de esta sesión
+
+Actualización 11/09: las puertas HTTPS de editor y medios ya pasan en Docker
+aislado, según `docker-editor-verification-2026-09-11.md`. La creación nativa
+por formulario se amplía en `native-page-creation-verification-2026-09-11.md`.
+Esto no sustituye staging real ni la revisión del nuevo diseño con Manuel.
 
 `node tests/dashboard.browser.mjs` y `node tests/document-controls.browser.mjs`: salida0 (`ae2dad`). Dashboard320/390/768/1280 en claro/oscuro: búsqueda, navegación, teclado y controles táctiles. Acciones editoriales1280/390: confirmaciones, revisión de propuestas y estados de error. Son componentes reales montados en fixtures con API sintética y sustituciones de contexto, no recorrido completo contra Payload ni validación de usuarios reales. No se cambió la interfaz ni se desplegó. Se mostró una captura real histórica del editor a768px, no una captura recién tomada ni una demo interactiva.
