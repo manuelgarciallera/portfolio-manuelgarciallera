@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef } from 'react'
 
-// Compatibility for the native textarea's error UI. Keep Payload validation
+// Compatibility for native text/textarea error UI. Keep Payload validation
 // and rendering; associate its actual message without replacing user input.
 export const FieldErrorBinding = () => {
   const anchor = useRef<HTMLSpanElement>(null)
@@ -15,7 +15,7 @@ export const FieldErrorBinding = () => {
       clear()
       const restores: Array<() => void> = []
       clear = () => restores.forEach(restore => restore())
-      const input = field.querySelector('textarea')
+      const input = field.querySelector('textarea, input[type="text"]')
       const error = field.querySelector('.field-error')
       if (!input || !error?.textContent?.trim()) return
       const apply = (element: Element, name: string, value: string) => {

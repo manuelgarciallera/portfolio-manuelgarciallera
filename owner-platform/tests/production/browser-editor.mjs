@@ -68,13 +68,25 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   const initialSlug = `editor-qa-${suffix}`
   await page.goto(`${origin}/admin/collections/pages/create`, { waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
-  await page.getByRole('textbox', { name: /^Título de la página/ }).fill(initialTitle)
+  const requiredTitle = page.getByRole('textbox', { name: /^Título de la página/ })
   await page.getByRole('textbox', { name: /^Identificador de URL \(slug\)/ }).fill(initialSlug)
   for (const [index, heading] of ['First draft block', 'Second draft block'].entries()) {
     await page.locator('.blocks-field__drawer-toggler').press('Enter')
     await page.getByRole('button', { name: 'Portada', exact: true }).click()
     await page.getByRole('textbox', { name: /^Encabezado/ }).nth(index).fill(heading)
   }
+  await page.locator('#action-save-draft').press('Enter')
+  const titleError = page.locator('.field-type').filter({ has: requiredTitle }).locator('.field-error')
+  await titleError.waitFor({ state: 'visible' })
+  assert.equal(await requiredTitle.getAttribute('aria-invalid'), 'true', 'Missing page title is accessible as invalid')
+  const titleErrorId = await titleError.getAttribute('id')
+  assert(titleErrorId && (await requiredTitle.getAttribute('aria-describedby') ?? '').split(/\s+/).includes(titleErrorId), 'Page title references its actual error')
+  assert.deepEqual(await page.getByRole('textbox', { name: /^Encabezado/ }).evaluateAll(elements => elements.map(element => element.value)), ['First draft block', 'Second draft block'])
+  await requiredTitle.fill(initialTitle)
+  await titleError.waitFor({ state: 'hidden' })
+  assert.notEqual(await requiredTitle.getAttribute('aria-invalid'), 'true')
+  assert(!(await requiredTitle.getAttribute('aria-describedby') ?? '').split(/\s+/).includes(titleErrorId))
+  await page.waitForFunction(() => document.querySelector('#action-save-draft')?.disabled === false)
   const creating = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/pages')
   await page.locator('#action-save-draft').press('Enter')
   const created = await creating

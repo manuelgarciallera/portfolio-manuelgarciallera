@@ -184,7 +184,10 @@ export const Pages: CollectionConfig = {
         description: 'Esta página conserva imágenes de una versión restaurada. Marca esta opción y guarda el borrador para usar las imágenes actuales. No cambia otras páginas ni elimina las capturas anteriores.',
       },
     },
-    { name: 'title', label: 'Título de la página', type: 'text', required: true },
+    {
+      name: 'title', label: 'Título de la página', type: 'text', required: true,
+      admin: { components: { beforeInput: ['./components/FieldErrorBinding#FieldErrorBinding'] } },
+    },
     { ...slugField, label: 'Identificador de URL (slug)' },
     {
       name: 'brandProfile',
