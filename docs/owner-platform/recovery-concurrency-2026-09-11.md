@@ -45,3 +45,16 @@ de límites de abuso; este arreglo no convierte el CMS en producto publicado.
 
 Hubea3f3cac es propuesta L2 enviada a Claude, no aceptación inferida. Solo Codex
 integra. Cuentas y entrega de correo sintéticas; sin pruebas contra producción.
+
+## Verificación determinista posterior sobre eb15e0c
+
+Se mantiene el bloqueo en una transacción real creada mediante el adaptador y
+se solicita el reset por HTTP en otra transacción. Se comprueba403 con hash,
+salt, token, caducidad y sesiones intactos. Dos casos independientes: commit y
+rollback liberan el bloqueo y el mismo token permite después reset200 y login.
+No se fuerza coincidencia mediante retardos ni se depende de Promise.all.
+
+25935/9353c3:10 pruebas de recuperación PostgreSQL pasan; cluster y conexiones
+cerrados y raíz sintética limpiada. Tipos/lint98323 a717c80, diffcheck0. Solo se
+amplían pruebas; la suite general/build anterior corresponde al mismo runtime
+eb15e0c, no se presenta como repetida en esta ampliación.

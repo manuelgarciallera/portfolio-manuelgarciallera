@@ -3,6 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import type { SendEmailOptions } from 'payload'
+import { createLocalReq } from 'payload'
+import { lockRecoveryToken } from '../src/auth/recovery-lock'
 
 vi.mock('server-only', () => ({}))
 import { startMediaHTTPFixture, type MediaHTTPFixture } from './media/http-fixture'
@@ -143,6 +145,37 @@ it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('accepts a recover
   expect((await post('login', { email: targetEmail, password: passwords[winner] })).status).toBe(200)
   expect((await post('login', { email: targetEmail, password: passwords[1 - winner] })).status).toBe(401)
   expect((await post('reset-password', { token, password: originalPassword })).status).toBe(403)
+}, 60_000)
+
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres').each(['commit', 'rollback'] as const)('rejects a separately locked token until its transaction releases by %s', async release => {
+  const targetEmail = `held-token-${release}@example.invalid`
+  const password = randomUUID() + randomUUID()
+  const user = await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password, role: 'owner' } })
+  expect((await post('forgot-password', { email: targetEmail })).status).toBe(200)
+  const stored = () => fixture.payload.findByID({ collection: 'users', id: user.id, overrideAccess: true, showHiddenFields: true })
+  const before = await stored()
+  const req = await createLocalReq({}, fixture.payload)
+  const transactionID = await fixture.payload.db.beginTransaction()
+  expect(transactionID).toBeTruthy()
+  req.transactionID = transactionID!
+  let released = false
+  try {
+    await lockRecoveryToken(req, before.resetPasswordToken)
+    const nextPassword = randomUUID() + randomUUID()
+    expect((await post('reset-password', { token: before.resetPasswordToken, password: nextPassword })).status).toBe(403)
+    const rejected = await stored()
+    for (const key of ['hash', 'salt', 'resetPasswordToken', 'resetPasswordExpiration', 'sessions'] as const) {
+      expect(rejected[key]).toEqual(before[key])
+    }
+    if (release === 'commit') await fixture.payload.db.commitTransaction(transactionID!)
+    else await fixture.payload.db.rollbackTransaction(transactionID!)
+    released = true
+    expect((await post('reset-password', { token: before.resetPasswordToken, password: nextPassword })).status).toBe(200)
+    expect((await post('login', { email: targetEmail, password: nextPassword })).status).toBe(200)
+  } finally {
+    if (!released) await fixture.payload.db.rollbackTransaction(transactionID!)
+  }
 }, 60_000)
 
 it('revokes previous sessions on recovery but preserves ordinary concurrent logins and the new session', async () => {
