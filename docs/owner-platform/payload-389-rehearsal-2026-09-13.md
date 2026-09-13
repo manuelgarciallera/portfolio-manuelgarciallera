@@ -62,3 +62,34 @@ Remaining before integration: inspect complete transitive delta, full editorial
 and media integration, PostgreSQL-specific authentication/admission, physical
 recovery, production build and authorized visual/editor regression. Candidate
 success is not deployed or active-CMS success. Docker DNS remains unmodified.
+
+## Editorial/media recheck and unresolved worker exit
+
+The first combined Windows candidate run ended with exit 1 (`ec6704`):
+21 passed, two skipped out of 43 discovered tests; two of three files passed,
+and Vitest reported `Worker exited unexpectedly`. That run is not a pass.
+Its truncated terminal output does not identify a definitive native or runtime
+cause. Expected synthetic object-storage errors must not be confused with the
+unhandled worker termination.
+
+Without changing code, dependencies, timeouts or configuration:
+
+- Isolated editorial suite with verbose reporting: 35 passed, two PostgreSQL-only
+  cases skipped, exit 0 in 19.74 seconds (`c8f429`).
+- Repeated the original three suites with verbose reporting: all three files
+  passed, 41 tests passed, two PostgreSQL-only cases skipped, exit 0 in 46.06
+  seconds (`52f758`). Includes full-config filesystem/object restoration and
+  authenticated HTTP media failure/rollback paths using synthetic storage.
+
+This establishes a successful recheck, not a diagnosed or fixed intermittent
+worker failure. Retain that finding for the remaining build/PostgreSQL/recovery
+gates. No browser was opened and the active CMS remains on Payload 3.88.0.
+
+The candidate full audit (`c6dcb1`) reports two moderate development entries:
+Vitest and @vitest/mocker 4.1.10, GHSA-82fw-gwwq-j7x9. The reviewed
+[upstream advisory](https://github.com/advisories/GHSA-82fw-gwwq-j7x9)
+lists 4.1.11 as patched. It concerns redirect mock file access through development
+server interfaces, with reachability/authentication preconditions; it does not
+by itself demonstrate exposure of this CMS production deployment. A separate
+isolated runner update is the next dependency experiment, not a presumed cure
+for the unexplained worker exit. No Vitest update has been applied yet.
