@@ -6,6 +6,7 @@ import { isOwner } from '../access/owner'
 import { recordAuditEvent } from '../collections/AuditEvents'
 import { createPagePreviewSnapshot } from '../preview/service'
 import { createPageDraftSnapshot } from '../recovery/service'
+import { createDraftCapsule } from '../recovery/capsule'
 import { executeRestorePlanData } from './plan'
 import { verifiedDraftSnapshot, verifiedSnapshot, type RestorePayload } from './service'
 
@@ -108,13 +109,28 @@ export const executeOwnerRestorePlan = async ({
       throw new APIError('No se conservó la referencia histórica de las imágenes; la restauración se ha cancelado.', 409)
     }
     const resultDraft = await dependencies.createDraft({ pageId, payload, req })
+    const resultCapsule = record(resultDraft.capsule, 'La cápsula resultante')
+    // Compare canonical editorial state using the target provenance: timestamps
+    // change on restore, but text, blocks, branding and SEO must not silently drift.
+    const editorialHash = (state: unknown) => {
+      const canonical = createDraftCapsule({ source: target.capsule.source, state })
+      // Payload regenerates block row IDs when restoring removed rows. Ignore
+      // only those top-level row identities, never IDs inside actual content.
+      return createDraftCapsule({ source: canonical.source, state: {
+        ...canonical.state,
+        layout: canonical.state.layout.map(block => block && typeof block === 'object' && !Array.isArray(block)
+          ? Object.fromEntries(Object.entries(block).filter(([key]) => key !== 'id')) : block),
+      } }).hash
+    }
+    if (editorialHash(resultCapsule.state) !== editorialHash(target.capsule.state)) {
+      throw new APIError('El contenido no coincide con la versión objetivo; la restauración se ha cancelado.', 409)
+    }
     const resultPreview = await dependencies.createPreview({ pageId, payload, req })
     const targetPreview = await verifiedSnapshot(payload, req, targetSnapshotId)
     const resultManifest = record(resultPreview.manifest, 'El manifiesto resultante')
     if (!isDeepStrictEqual(resultManifest.mediaReferences, targetPreview.manifest.mediaReferences)) {
       throw new APIError('Las imágenes no coinciden con la versión objetivo; la restauración se ha cancelado sin publicar cambios.', 409)
     }
-    const resultCapsule = record(resultDraft.capsule, 'La cápsula resultante')
     const source = record(resultCapsule.source, 'La procedencia resultante')
     const data = executeRestorePlanData(
       { status: plan.status },

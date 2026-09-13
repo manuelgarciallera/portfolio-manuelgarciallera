@@ -83,7 +83,7 @@ describe('executeOwnerRestorePlan', () => {
       begin: async () => { events.push('begin'); return true },
       commit: async () => { events.push('commit') },
       rollback: async () => { events.push('rollback') },
-      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:new' } } } },
+      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { state: targetCapsule.state, source: { versionId: 'current:new' } } } },
       createPreview: async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } },
     }
     const execution = executeOwnerRestorePlan({ confirmation: 'EJECUTAR RESTAURACIÓN',
@@ -104,7 +104,7 @@ describe('executeOwnerRestorePlan', () => {
       begin: async () => { events.push('begin'); return true },
       commit: async () => { events.push('commit') },
       rollback: async () => { events.push('rollback') },
-      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:new' } } } },
+      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { state: targetCapsule.state, source: { versionId: 'current:new' } } } },
       createPreview: async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } },
     }
     await expect(executeOwnerRestorePlan({ confirmation: 'EJECUTAR RESTAURACIÓN',
@@ -119,7 +119,7 @@ describe('executeOwnerRestorePlan', () => {
       begin: vi.fn(async () => { events.push('begin'); return true }),
       commit: vi.fn(async () => { events.push('commit') }),
       rollback: vi.fn(async () => { events.push('rollback') }),
-      createDraft: vi.fn(async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:2026-09-04T23:15:00.000Z' } } } }),
+      createDraft: vi.fn(async () => { events.push('snapshot:draft'); return { id: 71, capsule: { state: targetCapsule.state, source: { versionId: 'current:2026-09-04T23:15:00.000Z' } } } }),
       createPreview: vi.fn(async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } }),
     }
     const result = await executeOwnerRestorePlan({
@@ -178,7 +178,7 @@ describe('executeOwnerRestorePlan', () => {
         begin: async () => { events.push('begin'); return true },
         commit: async () => { events.push('commit') },
         rollback,
-        createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:new' } } } },
+        createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { state: targetCapsule.state, source: { versionId: 'current:new' } } } },
         createPreview: async () => { throw new Error('snapshot failed with secret') },
       },
       payload,

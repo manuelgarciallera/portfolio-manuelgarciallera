@@ -38,6 +38,7 @@ let owner: NonNullable<Awaited<ReturnType<Payload['auth']>>['user']>
 let rejectRestoreAudit = false
 let rejectReleaseAudit = false
 let corruptRestoredPin: number | null | undefined
+let corruptRestoredTitle = false
 let rejectFigmaAudit = false
 let rejectedAssistanceAudit: string | undefined
 let rejectPreflightAudit = false
@@ -72,6 +73,7 @@ beforeAll(async () => {
           ...(collection.hooks.beforeChange ?? []),
           // Fault injection belongs only to this isolated fixture.
           ({ data }) => corruptRestoredPin === undefined ? data : { ...data, restoredMediaSnapshot: corruptRestoredPin },
+          ({ data }) => corruptRestoredTitle ? { ...data, title: 'Unexpected restore mutation' } : data,
         ] },
       } : collection),
       // Never connect to the developer's configured database or reuse their credentials.
@@ -694,7 +696,7 @@ it('restores the captured page as a draft while preserving the published revisio
   await expect(executeOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number, confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toThrow(/confirmado/i)
 }, 30_000)
 
-it.each(['missing', 'wrong'] as const)('rolls back a %s historical binding even on a page without images, then permits a clean retry', async mode => {
+it.each(['missing', 'wrong', 'content'] as const)('rolls back a %s restoration defect even on a page without images, then permits a clean retry', async mode => {
   const { page, req, release } = await createReleaseFixture()
   await payload.update({ collection: 'pages', id: page.id, user: owner, overrideAccess: false,
     data: { _status: 'published', title: 'Published to preserve' } })
@@ -712,11 +714,12 @@ it.each(['missing', 'wrong'] as const)('rolls back a %s historical binding even 
     depth: 0, limit: 1000, where: { parent: { equals: page.id } } })).docs
     .map(({ id, version }) => ({ id, version })).sort((a, b) => String(a.id).localeCompare(String(b.id)))
   const before = { draft: await read(true), published: await read(false), counts: await counts(), versions: await versions() }
-  corruptRestoredPin = mode === 'missing' ? null : current.id
+  corruptRestoredPin = mode === 'missing' ? null : mode === 'wrong' ? current.id : undefined
+  corruptRestoredTitle = mode === 'content'
   try {
     await expect(executeOwnerRestorePlan({ payload: payload as never, req, planId: plan.id as number,
       confirmation: 'EJECUTAR RESTAURACIÓN' })).rejects.toMatchObject({ status: 409 })
-  } finally { corruptRestoredPin = undefined }
+  } finally { corruptRestoredPin = undefined; corruptRestoredTitle = false }
   expect({ draft: await read(true), published: await read(false), counts: await counts(), versions: await versions() }).toEqual(before)
   const unchanged = await payload.findByID({ collection: 'restore-plans', id: plan.id as number, user: owner, overrideAccess: false })
   expect(unchanged.status).toBe('confirmed')
