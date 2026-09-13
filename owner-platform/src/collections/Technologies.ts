@@ -11,7 +11,9 @@ export const validateOfficialTechnologyUrl: TextFieldValidation = (value) => {
   if (value === undefined || value === null || value === '') return true
   try {
     const url = new URL(String(value))
-    return url.protocol === 'https:' || 'La URL oficial debe usar HTTPS.'
+    if (url.protocol !== 'https:') return 'La URL oficial debe usar HTTPS.'
+    if (url.username || url.password) return 'La URL oficial no puede contener credenciales.'
+    return true
   } catch {
     return 'La URL oficial debe usar HTTPS.'
   }

@@ -158,6 +158,19 @@ describe('editorial collections', () => {
     })
   })
 
+  it.each([
+    'https://user:synthetic-password@react.dev/',
+    'https://user@react.dev/',
+    'https://:synthetic-password@react.dev/',
+    'https://user%40example.invalid:synthetic-password@react.dev/',
+  ])('rejects credentials in a technology official URL: %s', (url) => {
+    expect(validateOfficialTechnologyUrl(url, {} as never)).not.toBe(true)
+  })
+
+  it.each([undefined, null, '', 'https://react.dev/learn#installation', 'https://react.dev/?q=user%40example.invalid'])('preserves optional and credential-free technology links: %s', (url) => {
+    expect(validateOfficialTechnologyUrl(url, {} as never)).toBe(true)
+  })
+
   it('adds a migration-safe brand relationship and controlled page overrides', () => {
     expect(fieldNamed(Pages, 'brandProfile')).toMatchObject({
       type: 'relationship',
