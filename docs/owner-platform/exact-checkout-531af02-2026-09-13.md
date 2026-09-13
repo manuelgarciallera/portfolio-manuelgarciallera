@@ -38,6 +38,11 @@ remains. No deployment approval.
   explicitly conditional on win32, not disabled to obtain a passing run.
   Typecheck and complete lint pass1b908a. This does not fix or retest the
   intermittent native Windows SQLite process failure.
+- Component browser checks pass22 document-action cases (2902d9/fe15ff) and
+  eight dashboard width/theme combinations (fe15ff), exit0. Widths320/390/768/1280
+  for dashboard,390/1280 for document actions. These fixtures mock transport and
+  Payload context: they check keyboard behavior, action confirmation, loading,
+  touch targets and overflow, not live backend permissions or every CMS screen.
 
 No production changes, real credentials, new provider or public code edits.
 Next: installation and intermittent Windows native-crash limitations remain

@@ -117,6 +117,18 @@ try {
       assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 6)
     }
     const brandIds = [...new Set(browserDrafts.map(draft => draft.brandProfile).filter(id => id != null))]
+    let projectsBefore = []
+    if (browserEditor) {
+      const response = await request('/api/projects?draft=true&depth=0&limit=10')
+      assert.equal(response.status, 200)
+      const result = await response.json()
+      assert.equal(result.totalDocs, 2, 'One browser-edited project fixture per viewport')
+      projectsBefore = result.docs
+      assert(projectsBefore.every(project => project._status === 'draft'))
+      const anonymousProjects = await fetch(`${origin}/api/projects?draft=true`, { signal: AbortSignal.timeout(10_000) })
+      assert.equal(anonymousProjects.status, 200)
+      assert.equal((await anonymousProjects.json()).totalDocs, 0, 'Project drafts remain private')
+    }
     let articlesBefore = []
     if (browserEditor) {
       const response = await request('/api/articles?draft=true&depth=0&limit=10')
@@ -203,6 +215,12 @@ try {
       assert.equal(response.status, 200)
       assert.deepEqual(await response.json(), article, 'Native article survives process restart')
     }
+    for (const project of projectsBefore) {
+      const response = await request(`/api/projects/${project.id}?draft=true&depth=0`)
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), project, 'Browser-edited project survives process restart')
+    }
+    if (browserEditor) console.log('[production-http] two browser-edited project fixtures preserved after app restart')
     if (browserEditor) console.log('[production-http] two native article drafts preserved after app restart')
     for (const placement of placementsBefore) {
       const response = await request(`/api/media-placements/${placement.id}?draft=true&depth=0`)

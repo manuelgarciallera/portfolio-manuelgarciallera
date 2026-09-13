@@ -5,6 +5,7 @@ import { verifyBrowserMediaPlacement } from './browser-media-placement.mjs'
 import { verifyBrowserPublication } from './browser-publication.mjs'
 import { verifyBrowserArticle } from './browser-article.mjs'
 import { verifyUnsavedPage } from './browser-unsaved.mjs'
+import { verifyBrowserProject } from './browser-project.mjs'
 
 export const verifyProductionBrowserEditor = async ({ page, context, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
@@ -155,6 +156,7 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
   const mediaPage = await verifyBrowserMediaPlacement({ page, origin, width })
   const restoredSecond = await verifyBrowserPublication({ page, origin, document: second, width })
   await verifyBrowserArticle({ page, context, origin, width, mediaPage })
+  await verifyBrowserProject({ page, context, origin, width, mediaPage })
   console.log(`[production-editor] PASS ${width}px native create, edit, keyboard reorder, save, reload and preview`)
   return [stored, restoredSecond, mediaPage]
 }
