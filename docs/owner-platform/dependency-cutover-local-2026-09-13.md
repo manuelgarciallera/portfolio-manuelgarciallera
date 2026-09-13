@@ -112,3 +112,26 @@ save case, but did not finish its project save and subsequent cases. Full-config
 filesystem/object tests and media/recovery/unlock suites had passed. The differing
 completed-test counts across runs mean this is not yet attributed to a specific
 assertion. Next diagnostic is the editorial file alone; no retry-as-success claim.
+
+## Native exit diagnostic
+
+Editorial alone also failed (7836c1),24 pass/2 skipped before unexpected exit.
+An untracked local preload that logs only fork exit code/signal produced two
+passing focal runs (738de7,1b448d:35 pass/2 skipped). These are instrumentation
+observations, not a fix. Without the preload the next run failed after15 passes
+(3ccd3c). An independent Windows Process handle captured its actual exit code
+-1073741819, i.e.0xC0000005 (9d7f5d). This indicates an access violation, not a
+test assertion: https://learn.microsoft.com/en-us/shows/inside/c0000005.
+
+Bundled Node24.19.0 without instrumentation also fails after24 passes (2ea8e4).
+The lock comparison shows libsql0.4.7, @libsql/client0.14.0 and sharp0.35.4 unchanged
+from the committed pre-upgrade lock (988d42); that does not identify the faulty
+component. No dump, secrets or certificate contents collected. No native module
+has been upgraded or blamed without evidence.
+
+Created an isolated baseline at .audit/owner-baseline-388-20260913/owner-platform
+from committed HEAD51dab67 using git archive (ea4ef1): same committed sources,
+Payload3.88/Vitest4.1.10 manifests, no developer env files. Strict npm ci is next;
+compare the identical editorial test there before attributing this to the upgrade.
+The working application, its dependencies and user data remain untouched by this
+baseline. All prior failing runs remain part of the evidence.
