@@ -199,3 +199,28 @@ reconciled revisions verified. Runner confirms exact cluster shutdown and cleanu
 The emitted applicationCommit0b0c308 identifies the container's earlier Git base,
 not the overlay: use the541-file comparison above for tested-source provenance.
 This is a synthetic local recovery drill, not an external production backup.
+
+## Native lifecycle probes: no root-cause claim
+
+Read the installed Payload/Drizzle begin/commit/rollback/destroy implementations
+and libsql client transaction lifecycle. Drizzle destroy clears schema state;
+it does not itself close the SQLite client. Thus the explicit client.close in
+the suite is not shown to be a duplicate close. Earlier failures occur before
+afterAll, so changing teardown alone would not explain those observations.
+
+A standalone diagnostic outside application source executed1000 real libsql
+transactions with explicit GC checkpoints and exact row-count assertions:
+666 committed,334 rolled back (e1eec9). Transaction assertions pass, but the
+command exits1 because cleanup hits EBUSY (be24d3). This is not a passing whole
+test or a fix. No access violation was observed. The synthetic directory
+`owner-libsql-lifetime-Y1gLU0` under the user's Windows Temp remains retained:
+a subsequent exact-path cleanup request was rejected by tool policy and was
+not retried through another mechanism. It contains only generated test data.
+
+An untracked diagnostic debugger validates the worker command and its explicit
+editorial-test parent before attaching, captures only access-violation module
+name/offset (no memory dumps), and detaches without killing the worker. The
+attached run passes35/2 skipped,30.50s (34bc42); debugger exits0 with no captured
+access violation (a00917). Debugger attachment can affect timing. This is another
+non-reproduction, not grounds to close the native issue. The diagnostic scripts
+remain outside application code; no dependency, runtime or assertion changed.
