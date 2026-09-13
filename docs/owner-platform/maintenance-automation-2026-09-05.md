@@ -23,6 +23,18 @@ usaba CommonJS. Se convierte a `.mjs` sin excepciones de lint; su prueba de
 confianza vuelve a pasar con 247 certificados y digest idéntico (505ea3).
 La compilación posterior termina con 23 páginas (101e2a). La cadena completa
 sobre el commit corregido queda pendiente de repetición; no se afirma CI verde.
+Commit `230278e`: repetición completa de `npm run check`, sesión local 56720,
+finalizada con salida 0 (5bfa74). Pasan 23 pruebas de scripts, 1.346 unitarias,
+70 integraciones (24 PostgreSQL omitidas), los dos ensayos físicos con sus 47
+auxiliares, lint completo, tipos y build de 23 páginas. Las recuperaciones
+informan el SHA 230278e, conservan origen/respaldo y cierran antes de continuar.
+No hubo reinicio de la ejecución. El fatal/errores de los casos negativos no
+se confunden con fallos de la suite.
+
+Bundle local `.audit/owner-night-230278e.bundle` verificado (2db1f9): contiene
+HEAD 230278e y requiere 11f75eb. No es copia externa ni respaldo de datos.
+La prueba usa dependencias ya instaladas en Windows; no acredita `npm ci`
+limpio en Ubuntu, CI remota, PostgreSQL alojado ni servicios de producción.
 
 ## Carencia encontrada
 
