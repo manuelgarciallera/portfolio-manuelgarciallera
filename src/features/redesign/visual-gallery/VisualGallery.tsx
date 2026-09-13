@@ -18,15 +18,15 @@ export function VisualGallery() {
       <h2 id="art-gallery-title">Diseño que se siente.</h2>
       <div className="rd-art-gallery__navigation">
         <p id="art-gallery-help">Explora de lado a lado. Entra en cada proyecto.</p>
-        <RailControls trackId="art-gallery-track" />
       </div>
     </header>
     <div id="art-gallery-track" className="rd-art-gallery__track" role="region" aria-label="Galería de proyectos" aria-describedby="art-gallery-help" tabIndex={0}>
       {works.map((work) => <Link className="rd-art-gallery__item" href={`/casos/${work.slug}`} key={work.slug} aria-label={`Ver caso: ${work.name}`} prefetch={false}>
-        <Image src={work.image} alt="" fill loading="lazy" sizes="(max-width: 760px) 84vw, (max-width: 1200px) 46vw, 34vw" style={{ objectPosition: work.position }} />
+        <Image src={work.image} alt="" fill loading="lazy" sizes="(max-width: 760px) 84vw, (max-width: 1023px) 46vw, 28vw" style={{ objectPosition: work.position }} />
         <span className="rd-art-gallery__word" aria-hidden="true">{work.word}</span>
         <span className="rd-art-gallery__name">{work.name}<span aria-hidden="true">↗</span></span>
       </Link>)}
     </div>
+    <div className="rd-art-gallery__footer"><RailControls trackId="art-gallery-track" /></div>
   </section>
 }

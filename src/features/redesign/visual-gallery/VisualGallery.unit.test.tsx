@@ -9,6 +9,7 @@ describe('visual project gallery', () => {
     expect(html).toContain('aria-label="Ver proyectos siguientes"')
     expect(html.match(/aria-controls="art-gallery-track"/g)).toHaveLength(2)
     expect(html).toContain('id="art-gallery-track"')
+    expect(html.indexOf('aria-label="Ver proyectos siguientes"')).toBeGreaterThan(html.lastIndexOf('/casos/nude-project'))
   })
   it('offers five named case links with NudeProject last, not presentation screenshots', () => {
     const html = renderToStaticMarkup(<VisualGallery />)
