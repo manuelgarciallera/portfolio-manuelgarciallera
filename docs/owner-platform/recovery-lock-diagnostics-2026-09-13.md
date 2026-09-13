@@ -32,3 +32,28 @@ No changes to the public web, runtime secrets, dependencies, browser permissions
 or deployment. The isolated 3.89 candidate does not yet contain this later source
 change; any eventual integration must verify the combined source, not reuse
 the old candidate's counts as if they covered this patch.
+
+## Later combined candidate verification
+
+The preceding candidate exclusion describes the initial delivery. The Linux
+candidate now includes this source and its two tests in isolated commit
+`0b0c308f71ae3e387e4f7a67617e51f3b898e5d4`; active dependencies remain unchanged.
+
+The earlier process handle 34448 was missing on resumption. A process inventory
+confirmed only container init/sleep, so no result is inferred from that lost
+output. A fresh run of both auth integration suites on this exact candidate
+passed 16 tests / two files in 22.81 seconds (`707e00`, exit 0), including verified
+session closure, PostgreSQL 16.15 shutdown and synthetic-root cleanup.
+`npm run build` on the same candidate passed compilation, TypeScript and
+23-page generation (`220f28`, exit 0). These checks do not exercise browser UI.
+
+The full 92-test PostgreSQL and physical recovery runs recorded in the peer
+review remain evidence for parent `3be89ec`, not fresh full-suite runs on this
+diagnostic patch. No dependency cutover or independent implementation approval
+is implied.
+
+Complete local Git bundle `.audit/payload389-candidate-0b0c308.bundle` verified
+successfully (`1162a4`). SHA-256:
+`00F88F4B3B228ADF1F30D883DD5121709A5E0F1E4ADF786D7B976518E5E93230`.
+This is a local code recovery copy, not an external backup of real database/media.
+Browser authorization and independent candidate review remain outstanding.
