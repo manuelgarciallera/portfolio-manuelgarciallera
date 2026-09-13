@@ -11,7 +11,7 @@
     "generate:types": "payload generate:types",
     "lint": "eslint .",
     "start": "next start",
-    "test": "node --test tests/local-editor-assets.test.mjs && vitest run",
+    "test": "node --test tests/local-editor-assets.test.mjs tests/build-preserves-dev.test.mjs && vitest run",
     "test:integration": "node scripts/test-integration.mjs",
     "test:integration:postgres": "node scripts/test-integration-postgres.mjs",
     "test:recovery": "node scripts/test-recovery.mjs",

@@ -1,11 +1,10 @@
 import { spawnSync } from 'node:child_process'
-import { rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { prepareEditorAssets } from './prepare-editor-assets.mjs'
 
 await prepareEditorAssets()
 
-rmSync(new URL('../.next/dev/', import.meta.url), { force: true, recursive: true })
+// Next maintains separate dev/build output. Preserve any active dev lock/cache.
 
 const nextBin = new URL('../node_modules/next/dist/bin/next', import.meta.url)
 const result = spawnSync(process.execPath, [fileURLToPath(nextBin), 'build'], {
