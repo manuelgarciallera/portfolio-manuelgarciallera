@@ -37,3 +37,18 @@ temporal, restaurándola después, sin desactivar validación TLS ni cambiar arc
 Esto no sustituye la comprobación visual pendiente. No push ni despliegue en esta
 comprobación. El conector de Vercel devuelve 404 al consultar el proyecto localmente
 enlazado; no se acredita configuración actual de publicación automática.
+
+## Rectificación con fotografía de Manuel
+
+La foto posterior muestra los metadatos de CasePage, no la tarjeta CaseCard.
+La corrección de tarjeta no cubría este defecto. En redesign.css la regla
+max-width900, posterior a la móvil, imponía dos columnas también en teléfono.
+Se desplaza la regla móvil después de la de tablet y se acota el stack de
+metadatos a ancho completo, filas y nombres sin partir. Año ocupa su propia fila.
+
+Test de cascada PostCSS: reproduce tres fallos (320/390/767: dos columnas),
+mientras 820 y 1440 pasan (40a4e9). Tras cambio, 232 unitarias pasan (a4a42f);
+el tipo del recorrido AST necesitó incluir Document, corregido y verificado
+con tsc y cinco casos focales (1e90be). No es un motor de layout ni prueba visual;
+comprueba el orden efectivo de declaraciones de igual especificidad del selector.
+Pendientes build actualizado, contraste visual y publicación.

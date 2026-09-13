@@ -501,7 +501,6 @@
    archivo se importa antes y pierde el empate contra `.rd-meta-grid` de aqui.
    Es el mismo problema de cascada anotado mas arriba.) */
 @media (max-width: 767px) {
-  .rd-meta-grid { grid-template-columns: 1fr; gap: var(--space-1, 1rem); }
   .rd-tech-stack,
   .rd-tech-stack--compact {
     flex-wrap: wrap;
@@ -2016,4 +2015,17 @@
   /* Sin hover, el area activa de estos enlaces tiene que valer por si sola. */
   .rd-identity__ids { gap: 0.2rem 1.6rem; }
   .rd-identity__ids a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+}
+
+/* After the tablet rule: metadata must not reserve half the phone for Año. */
+@media (max-width: 767px) {
+  .rd-meta-grid { grid-template-columns: 1fr; gap: var(--space-1, 1rem); }
+  .rd-meta-grid .rd-tech-stack {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+    gap: 1rem 1.15rem;
+  }
+  .rd-meta-grid .rd-tech-stack__item { white-space: nowrap; }
 }
