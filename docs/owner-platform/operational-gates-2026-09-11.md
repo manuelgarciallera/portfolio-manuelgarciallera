@@ -1,5 +1,37 @@
 # CMS owner: puertas operativas actuales
 
+## Punto de control · 13 de septiembre, base 59fa03c
+
+Esta sección prevalece sobre las cifras históricas de abajo, sin convertir
+verificaciones locales en autorización de producción:
+
+- Windows: el comando habitual `npm run build` termina correctamente; conserva
+  confianza TLS y workers. `npm test`: 23 pruebas de scripts y 1.346 unitarias.
+  Véase [el cierre del fallo CA](windows-system-ca-equivalence-2026-09-13.md).
+- Integración Windows sobre `59fa03c`: `npm run test:integration` termina con
+  salida 0 (35724 / 178cfe), 70 pruebas correctas y 24 omitidas, en 140,97 s.
+  Las omisiones corresponden a puertas PostgreSQL; no se cuentan como aprobadas.
+  El runner usa una raíz temporal sintética y finaliza después de su limpieza.
+  Los rechazos HTTP y fallos de proveedor inducidos forman parte de los casos
+  negativos. Ningún correo real ni cuenta productiva se utiliza.
+- PostgreSQL, editor y recuperación física: el ensayo de checkout exacto
+  `93b5610` pasó 94 integraciones, edición a 390/1280 y restauración con daños
+  rechazados. No es una ejecución del HEAD posterior. Véase
+  [el recibo de ese checkout](exact-checkout-content-2026-09-13.md).
+- Readiness: respuestas privadas no almacenables verificadas por HTTP,
+  manteniendo las puertas de producción cerradas. Véase
+  [la prueba HTTP](readiness-cache-policy-2026-09-13.md).
+- Dependencias: audit sin avisos, pero se conserva la restricción de desbloqueo
+  owner; no se infiere un parche upstream del silencio de audit. Véase
+  [la revisión de seguridad](dependency-security-recheck-2026-09-13.md).
+
+Siguen abiertos: entorno alojado y correo real, copia externa/restauración en
+destino, publicación/reversión autorizadas, comprensión de la interfaz por
+Manuel y el incidente intermitente histórico de papelera (no reproducido, no
+declarado corregido). No habilitar multi-tenant, modelos ni puente público.
+La recuperación sin proveedor de correo utilizable requiere diseño y autoridad
+antes de añadir una vía operativa nueva.
+
 Actualización sobre `8bd695e`: la evidencia de recuperación y editor se amplió
 con un ensayo desde checkout limpio; véase
 [recuperación HTTP y procedencia](recovery-http-verification-2026-09-11.md).
