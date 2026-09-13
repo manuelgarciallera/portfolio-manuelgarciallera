@@ -135,3 +135,11 @@ Payload3.88/Vitest4.1.10 manifests, no developer env files. Strict npm ci is nex
 compare the identical editorial test there before attributing this to the upgrade.
 The working application, its dependencies and user data remain untouched by this
 baseline. All prior failing runs remain part of the evidence.
+
+Baseline strict npm ci passes (70d39d),733 packages; the old lock reports10
+moderate advisories, so this isolated control is not a recommended rollback or
+production dependency set. Baseline editorial run without diagnostic preload
+passes35/2 skipped,exit0,31.97s (791e0d). One pass is not enough to establish
+causality. Next comparison must separate Payload3.88→3.89 from Vitest4.1.10→4.1.11
+and account for the different isolated path/install. Do not infer a specific
+upstream regression yet or accept the active upgrade because another tree passes.
