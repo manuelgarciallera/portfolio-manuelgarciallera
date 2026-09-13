@@ -53,9 +53,17 @@ conserva SHA-256 6d137a173cb560f26029e77fef1a1691c783c34fc567c6836b7c5c729f2d93f
 No se copió node_modules. Los avisos de obsolescencia no se trataron como
 autorización para actualizar versiones durante el ensayo.
 
-`npm run check` iniciado en ese checkout Windows nuevo, sesión 52629.
-Codex debe seguir ese handle hasta salida y distinguir esta prueba de la puerta
-Linux, aún impedida por DNS. No repetir la instalación ni la cadena por demora.
+`npm run check` del checkout Windows nuevo, sesión 52629, finaliza con salida 0
+(6bd787): 23 pruebas de scripts, 1.346 unitarias, integración SQLite, recuperación
+completa y versionada, lint, tipos y primer build de 23 páginas. Las dos
+recuperaciones identifican el SHA 230278e y preservan origen/respaldo (94cc91,
+4c3568). La integración de este comando omite los casos exclusivos PostgreSQL;
+no los valida por pasar en Windows. El build frío compiló en 30,1 s y su fase
+TypeScript tardó 21,7 s, sin límite de rendimiento deducido de un único ensayo.
+
+Esto acredita instalación desde lockfile y comprobación completa local en
+Windows, sin reutilizar dependencias. La puerta Linux sigue impedida por DNS,
+y ni esta copia de QA ni el resultado equivalen a staging o backup externo.
 
 ## Carencia encontrada
 
