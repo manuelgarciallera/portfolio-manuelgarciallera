@@ -120,3 +120,24 @@ Active package/lock have no Git diff; checkpoint still resolves to
 and nothing was deployed. Integration results above used Vitest 4.1.10; they do
 not yet certify the new runner. Next: repeat integration with 4.1.11 and complete
 PostgreSQL and physical recovery gates before considering active integration.
+
+## Full default integration with patched runner
+
+`npm run test:integration` on the same Windows candidate with Vitest 4.1.11:
+eight files passed, four skipped; 69 tests passed and 23 PostgreSQL-only cases
+skipped out of 92 discovered tests. Terminal exit 0, 106.31 seconds (`39dec9`).
+This closes the default SQLite integration recheck, not the PostgreSQL gate.
+Synthetic failures in the output exercise rejection/rollback and do not indicate
+real mail or storage-provider operations. No worker termination occurred in this
+run; the earlier unexplained termination remains recorded rather than erased.
+
+Docker read-only preflight (`1dbf27`) confirms the QA container is running with
+only init/sleep, but lookup of registry.npmjs.org still returns EAI_AGAIN. Existing
+Linux npm content cache is present (230 MB). No Windows PostgreSQL executable was
+found on PATH or in the conventional Program Files/PostgreSQL location; that is
+not a whole-machine inventory. Next safe route: prepare a candidate-specific
+package cache through the working host registry connection, transfer only public
+package artifacts and candidate manifests to the isolated Linux checkout, then
+attempt an integrity-checked offline install and PostgreSQL/recovery tests.
+Do not transfer Windows native node_modules into Linux or alter DNS/TLS to make
+the gate appear green. This preparation is not yet performed.
