@@ -240,3 +240,13 @@ attached run passes35/2 skipped,30.50s (34bc42); debugger exits0 with no capture
 access violation (a00917). Debugger attachment can affect timing. This is another
 non-reproduction, not grounds to close the native issue. The diagnostic scripts
 remain outside application code; no dependency, runtime or assertion changed.
+
+Follow-up on6966ced (runtime531af02): the complete Windows integration runner
+with the existing fork-exit observer passed69/24 PostgreSQL-specific skips,
+8 files passed/4 skipped,132.04s,exit0 (e36847). Observed workers ended with
+SIGTERM; no access-violation exit was captured in this run. Windows Application
+event1000 filtered to node.exe for this day returned no entries (68d9b1).
+Neither absence of an event nor this instrumented pass closes the intermittent
+native failure. NODE_OPTIONS was extended only for this child process; no
+global setting, dependency, runtime or retry policy was changed. Further
+repetitions without a new diagnostic hypothesis are not evidence of a fix.
