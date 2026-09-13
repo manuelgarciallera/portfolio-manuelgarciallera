@@ -93,3 +93,30 @@ server interfaces, with reachability/authentication preconditions; it does not
 by itself demonstrate exposure of this CMS production deployment. A separate
 isolated runner update is the next dependency experiment, not a presumed cure
 for the unexplained worker exit. No Vitest update has been applied yet.
+
+## Runner patch and production compilation (subsequent experiment)
+
+Preserved the candidate's prior lock as
+`.audit/payload389-source/owner-platform/package-lock.payload389-vitest4110.json`.
+Only in this isolated candidate, installed `vitest@4.1.11` with exact version and
+`--ignore-scripts`. Eight Vitest-family packages changed from 4.1.10 to 4.1.11;
+the version comparison found no other changed package versions. Install exit 0,
+audit reported zero vulnerabilities (`4d7079`). New candidate lock SHA-256:
+`83DCA3EE1297BD8AA59C172B8DE66346AE50B4A328A3DF85559D555DB167B1B5`.
+
+- Full `npm test`: three Node script tests and 1,303 unit tests / 170 files pass,
+  exit 0, 64.18 seconds (`5c62dc`).
+- Initial `npm run build`: exit 1 (`f4272d`),
+  `ERR_WORKER_INVALID_EXEC_ARGV`, explicitly rejecting ambient
+  `--use-system-ca` in NODE_OPTIONS.
+- Repeated the same build with only that option removed in the command's
+  PowerShell scope, restoring the original NODE_OPTIONS in `finally`:
+  compile, TypeScript, and 23-page generation completed, exit 0 (`9deebb`).
+  No certificate/antivirus settings or TLS verification disabled. This is a
+  successful environment-scoped build, not a permanent fix to ambient tooling.
+
+Active package/lock have no Git diff; checkpoint still resolves to
+`0f0adf686b2752e23c25d224f8c60815b10fd451`. No runtime server or browser was opened,
+and nothing was deployed. Integration results above used Vitest 4.1.10; they do
+not yet certify the new runner. Next: repeat integration with 4.1.11 and complete
+PostgreSQL and physical recovery gates before considering active integration.
