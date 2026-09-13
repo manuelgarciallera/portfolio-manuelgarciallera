@@ -104,6 +104,27 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
   await assertEditorFormatting()
+  // Saving an existing document must not destroy the editor's undo history.
+  const baselineText = await content.textContent()
+  await content.click()
+  await content.press('ControlOrMeta+End')
+  await page.keyboard.insertText(' Prueba de historial.')
+  const saveExisting = async () => {
+    const result = page.waitForResponse(response => response.request().method() === 'PATCH' && new URL(response.url()).pathname === `/api/pages/${doc.id}`)
+    await page.locator('#action-save-draft').press('Enter')
+    const response = await result
+    assert.equal(response.status(), 200, 'Save the existing page through the native action')
+    await page.locator('form[data-form-ready="true"]').first().waitFor()
+  }
+  await saveExisting()
+  await content.click()
+  await content.press('ControlOrMeta+z')
+  assert.equal(await content.textContent(), baselineText, 'Undo after saving restores the preceding text')
+  await saveExisting()
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  assert.equal(await content.textContent(), baselineText, 'The undone content can be saved and reloaded')
+  await assertEditorFormatting()
   await brandControl.waitFor({ timeout: 5000 })
   await page.locator('#field-brandProfile label').click()
   assert.equal(await brandControl.evaluate(element => document.activeElement === element), true,

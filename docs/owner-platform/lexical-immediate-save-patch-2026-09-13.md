@@ -51,6 +51,18 @@ unmodified and may show the pre-patch scheduling code during debugging.
   Large-document responsiveness remains unmeasured.
 - Separate intermittent Windows native SQLite crash is NOT fixed by this patch.
 
+## Additional native history check (2026-09-13)
+
+The browser test now edits an existing saved page, saves the appended text,
+uses native Undo, saves again and reloads. It asserts the preceding text and
+bold/italic formatting survive. Run92331 completed with exit0 (a13b08) at
+390/1280, including the existing media, draft privacy and process-restart
+checks. This history step uses normal idle scheduling; the controlled-idle
+immediate-creation check remains separate. No runtime changes were needed.
+This is additional behavior coverage, not a newly reproduced Undo defect or
+proof of large-document performance. The Linux harness still uses a documented
+source overlay, not a clean checkout of the eventual test commit.
+
 ## Upgrade and removal
 
 For a Payload update, expect the version/hash guard to fail. Inspect the new
