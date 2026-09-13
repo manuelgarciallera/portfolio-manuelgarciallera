@@ -1,4 +1,5 @@
 import { recoveryPostgresAdapter } from './auth/recovery-postgres'
+import { withVerifiedTransactions } from './database/verified-transactions'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { es } from '@payloadcms/translations/languages/es'
@@ -53,7 +54,7 @@ const runtime = resolveRuntimeConfig({
 
 // SQLite disables transactions unless explicitly configured. Recovery relies on
 // real rollback, so local development must exercise the same atomic contract.
-export const createLocalDatabaseAdapter = (url: string) => sqliteAdapter({ client: { url }, transactionOptions: {} })
+export const createLocalDatabaseAdapter = (url: string) => withVerifiedTransactions(sqliteAdapter({ client: { url }, transactionOptions: {} }))
 
 const db =
   runtime.database.kind === 'postgres'

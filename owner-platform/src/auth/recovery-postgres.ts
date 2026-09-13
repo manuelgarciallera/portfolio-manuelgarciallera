@@ -1,6 +1,7 @@
 import { postgresAdapter, sql, type PostgresAdapterArgs } from '@payloadcms/db-postgres'
 import { check, index, integer, pgSchema, pgTable, text, timestamp, type PgTableFn } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { recoveryAdmissionDDL } from './recovery-admission'
+import { withVerifiedTransactions } from '../database/verified-transactions'
 
 // Candidate adapter until migration and HTTP acceptance gates are complete.
 // Internal SQL table only: no Payload collection or owner-editable REST resource.
@@ -11,7 +12,7 @@ export const recoveryPostgresAdapter = (args: PostgresAdapterArgs) => {
     throw new Error('Recovery connection timeout must be between 1 and 10000 milliseconds')
   }
   const createTable: PgTableFn<string | undefined> = args.schemaName ? pgSchema(args.schemaName).table : pgTable
-  return postgresAdapter({
+  const adapter = postgresAdapter({
     ...args,
     pool: { ...args.pool, connectionTimeoutMillis },
     afterSchemaInit: [...(args.afterSchemaInit ?? []), ({ schema }) => {
@@ -30,4 +31,5 @@ export const recoveryPostgresAdapter = (args: PostgresAdapterArgs) => {
       return { ...schema, tables: { ...schema.tables, owner_recovery_admissions: table } }
     }],
   })
+  return args.transactionOptions === false ? adapter : withVerifiedTransactions(adapter)
 }

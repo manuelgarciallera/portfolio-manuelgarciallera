@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { recoveryPostgresAdapter } from '../src/auth/recovery-postgres'
 import { createLocalReq, getPayload, type Payload } from 'payload'
 import sharp from 'sharp'
 import { afterAll, beforeAll, expect, it, vi } from 'vitest'
@@ -77,7 +77,7 @@ beforeAll(async () => {
       // Never connect to the developer's configured database or reuse their credentials.
       // Both adapters receive only metadata validated for this isolated run.
       db: database.engine === 'postgres'
-        ? { ...postgresAdapter({ pool: database.pool, push: true, disableCreateDatabase: true }), allowIDOnCreate: false, name: 'postgres' }
+        ? { ...recoveryPostgresAdapter({ pool: database.pool, push: true, disableCreateDatabase: true }), allowIDOnCreate: false, name: 'postgres' }
         : { ...createLocalDatabaseAdapter(database.url!), allowIDOnCreate: false, name: 'sqlite' },
       secret: randomUUID() + randomUUID(),
     },
@@ -143,6 +143,33 @@ it('rolls back a release when its audit fails and permits retrying the same comm
   const audits = await payload.find({ collection: 'audit-events', user: owner, overrideAccess: false,
     where: { and: [{ action: { equals: 'release.registered' } }, { subjectId: { equals: String(retried.id) } }] } })
   expect(audits.totalDocs).toBe(1)
+})
+
+it.skipIf(process.env.OWNER_INTEGRATION_ENGINE !== 'postgres')('rejects a release when PostgreSQL refuses its deferred commit instead of returning a nonexistent success', async () => {
+  const { release } = await createReleaseFixture()
+  const source = await payload.findByID({ collection: 'releases', id: release.id as number, depth: 0, user: owner, overrideAccess: false })
+  const input = Object.fromEntries(['name', 'changeSummary', 'previewSnapshot', 'draftSnapshot'].map(key => [key, source[key as keyof typeof source]]))
+  input.gitCommit = randomUUID().replaceAll('-', '').padEnd(40, 'd')
+  input.quality = source.quality.map(row => { const measurement = { ...row }; delete measurement.id; return measurement })
+  const pool = (payload.db as unknown as { pool: { query(sql: string): Promise<unknown> } }).pool
+  const auditsBefore = (await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs
+  // Only this disposable PostgreSQL fixture: inserts succeed, COMMIT fails.
+  await pool.query(`CREATE FUNCTION qa_reject_deferred_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'QA deferred commit rejected'; END $$`)
+  try {
+    await pool.query('CREATE CONSTRAINT TRIGGER qa_deferred_audit AFTER INSERT ON audit_events DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION qa_reject_deferred_audit()')
+    let result: unknown
+    let failure: unknown
+    try {
+      result = await createOwnerRelease({ input, payload: payload as never, req: await createLocalReq({ user: owner }, payload) })
+    } catch (error) { failure = error }
+    expect((await payload.find({ collection: 'releases', where: { gitCommit: { equals: input.gitCommit } }, user: owner, overrideAccess: false })).totalDocs).toBe(0)
+    expect((await payload.count({ collection: 'audit-events', user: owner, overrideAccess: false })).totalDocs).toBe(auditsBefore)
+    expect(result, 'A rolled-back release must not be reported as successfully created').toBeUndefined()
+    expect(failure).toBeDefined()
+  } finally {
+    await pool.query('DROP TRIGGER IF EXISTS qa_deferred_audit ON audit_events')
+    await pool.query('DROP FUNCTION qa_reject_deferred_audit()')
+  }
 })
 
 it('rejects a duplicate release without changing the original or adding a success audit', async () => {
