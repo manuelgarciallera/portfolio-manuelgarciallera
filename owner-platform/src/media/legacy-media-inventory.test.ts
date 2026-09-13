@@ -52,7 +52,13 @@ describe('legacy media inventory', () => {
 
   afterEach(async () => {
     if (!sandbox) return
-    const files = createdFiles.reverse()
+    // Capture this fixture before awaiting IO: a timed-out hook must never
+    // observe the next test's root or directory list.
+    const fixtureSandbox = sandbox
+    const fixtureRoot = root
+    const files = [...createdFiles].reverse()
+    const directories = [...createdDirectories].reverse()
+    sandbox = ''
     for (let start = 0; start < files.length; start += 128) {
       await Promise.all(files.slice(start, start + 128).map(async (path) => {
         await unlink(path).catch((error: NodeJS.ErrnoException) => {
@@ -60,13 +66,15 @@ describe('legacy media inventory', () => {
         })
       }))
     }
-    for (const path of createdDirectories.reverse()) await rmdir(path)
-    await rmdir(root).catch((error: NodeJS.ErrnoException) => {
+    for (const path of directories) await rmdir(path)
+    await rmdir(fixtureRoot).catch((error: NodeJS.ErrnoException) => {
       if (error.code !== 'ENOENT') throw error
     })
-    await rmdir(sandbox)
-    sandbox = ''
-  })
+    await rmdir(fixtureSandbox)
+    // Creating 10,001 real files already has a 30s budget. Removing them on
+    // Windows under whole-suite IO load needs the same budget, not the default
+    // 10s hook limit. Runtime assertions and all global timeouts stay unchanged.
+  }, 30_000)
 
   it('hashes present historical bytes without claiming that they verify history', async () => {
     await createFile('same.png', 'abc')
