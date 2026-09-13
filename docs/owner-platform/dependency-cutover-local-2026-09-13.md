@@ -163,3 +163,39 @@ editorial run without instrumentation also passes35/2 skipped (6bff32).
 This confirms intermittency, not a fix. No production source was changed during
 these controls. A fresh complete active integration run follows; previous native
 failures remain unresolved even if an individual repetition passes.
+
+## Current-tree integration revalidation
+
+The complete active Windows SQLite run finished exit0 (455d9d):69 passed,
+23 PostgreSQL-only skipped,8 passed files/4 skipped,126.96s. This is a passing
+execution, not a resolution of the previously measured native access violation.
+No retry setting or instrumentation was used, and no native-failure fix exists.
+
+With the isolated container idle, copied current src/tests/scripts to its
+existing candidate directory. SHA-256 comparison of541 files, including both
+package manifests and the integration configuration, found no differences
+(b940a6). Its Git HEAD is still the earlier candidate: this is a verified source
+overlay, not a clean checkout of9e06fc2. No developer environment files copied.
+
+The full PostgreSQL runner on that source passes92/92 across12 files,121.41s,
+exit0 (a4a858). PostgreSQL16.15, loopback SCRAM, synthetic credentials only;
+runner confirms the child and database sessions closed and the exact cluster
+was stopped/removed. Some suites explicitly select SQLite; this does not claim
+that every assertion used PostgreSQL. Both complete engine runs are retained.
+
+Root protection tests pass22/22 and the public dependency boundary passes21
+entries (c7ae8c). Checkpoint still resolves to0f0adf686b2752e23c25d224f8c60815b10fd451.
+Hub delivery d261330b-ed4c-47f1-a0e1-ca69b0788508 records these results; delivery
+is not independent review or acceptance. Dependency manifests remain uncommitted
+while the native issue is unresolved. No deployment or public source changes.
+
+Full physical recovery on the same verified source overlay passes (ea7fc7),
+after47 helper tests (919cb3). Native pg_dump/pg_restore recovered18 backup files,
+12 media files and3 revisions;12 corruption/missing-file cases were rejected
+before target allocation. Login, history, frozen preview and independent editing
+of restored pages/articles pass;3 page versions and2 article versions recovered.
+Source logical state and backup receipts remain unchanged,3 retained files and3
+reconciled revisions verified. Runner confirms exact cluster shutdown and cleanup.
+The emitted applicationCommit0b0c308 identifies the container's earlier Git base,
+not the overlay: use the541-file comparison above for tested-source provenance.
+This is a synthetic local recovery drill, not an external production backup.
