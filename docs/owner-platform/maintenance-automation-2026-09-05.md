@@ -140,6 +140,34 @@ sintética. No son datos alojados ni correo real. El ajuste de concurrencia de
 unitarias no cambia esta configuración de integración. Siguiente puerta:
 editor completo con estas dependencias, antes de cualquier afirmación de UX.
 
+### Editor nativo tras instalación Linux nueva
+
+`npm run test:production:editor`, sesión 18416, termina con salida 0 (f178db).
+Servidor compilado con configuración sintética; Chromium a 390/1280, PostgreSQL
+local y proveedor de objetos de prueba. Misma base 230278e con el único overlay
+vitest.config.ts de 2be8ed5, no un despliegue ni checkout del HEAD documental.
+
+El recorrido usa los formularios nativos: acceso por teclado y cookies,
+selección/persistencia tipográfica, creación de dos composiciones con marcas
+distintas, guardado y reordenación, aviso de cambios sin guardar, medios,
+encuadre móvil independiente, papelera y restauración. También prepara revisión,
+artefacto y preflight sin publicar, restaura un borrador histórico y crea/edita
+artículos y proyectos con bloques y relaciones. Los controles de errores de
+JavaScript permanecen activos. No representa todos los bloques posibles ni una
+prueba de usuarios reales. El sondeo intensivo de papelera no se ejecutó; su
+incidencia histórica no se declara resuelta por esta ejecución favorable.
+
+Después de reiniciar la aplicación: seis páginas, dos marcas, dos encuadres,
+dos artículos y dos proyectos conservados; borradores e historial siguen
+privados frente a acceso anónimo. App y clúster cerrados, raíz sintética retirada
+por el runner; ps posterior sin procesos QA (55c773).
+
+Capturas actuales de validación de artículo a 390/1280 copiadas a
+`.audit/editor-clean-linux-230278e/form-error-{390,1280}.png` e inspeccionadas:
+campo obligatorio y mensaje visibles, formulario ajustado al ancho. La captura
+evalúa ese estado concreto, no toda la interfaz. La revisión de comprensión y
+diseño con Manuel y las puertas de staging/correo/copias externas siguen abiertas.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
