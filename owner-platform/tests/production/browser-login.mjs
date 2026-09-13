@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 import { verifyProductionBrowserEditor } from './browser-editor.mjs'
+import { verifyBrowserTrashProbe } from './browser-trash-probe.mjs'
 
-export const verifyProductionBrowserLogin = async (origin, credentials, { certificatePin, editor = false, compact = false } = {}) => {
+export const verifyProductionBrowserLogin = async (origin, credentials, { certificatePin, editor = false, trashProbe = false, compact = false } = {}) => {
   const url = new URL(origin)
   assert.equal(url.hostname, '127.0.0.1')
-  if (editor) {
+  if (editor || trashProbe) {
     assert.equal(url.protocol, 'https:')
     assert.match(certificatePin, /^[A-Za-z0-9+/]{43}=$/)
   }
   assert(credentials.email.endsWith('@example.invalid'))
   // Trust only the ephemeral fixture's public key, not arbitrary TLS errors.
-  const browser = await chromium.launch({ args: editor ? [`--ignore-certificate-errors-spki-list=${certificatePin}`] : [] })
+  const browser = await chromium.launch({ args: editor || trashProbe ? [`--ignore-certificate-errors-spki-list=${certificatePin}`] : [] })
   const drafts = []
   try {
     for (const width of compact ? [320, 768] : [390, 1280]) {
@@ -48,6 +49,7 @@ export const verifyProductionBrowserLogin = async (origin, credentials, { certif
         assert.deepEqual(errors, [])
         console.log(`[production-browser] PASS ${width}px keyboard login and cookie session`)
         if (editor) drafts.push(...await verifyProductionBrowserEditor({ page, context, origin, width }))
+        if (trashProbe) await verifyBrowserTrashProbe({ page, origin, width })
         assert.deepEqual(errors, [])
       } finally { await context.close() }
     }

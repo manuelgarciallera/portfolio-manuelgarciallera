@@ -22,10 +22,13 @@ const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')
 const objectMedia = process.argv.includes('--object-media')
 const browserEditor = process.argv.includes('--browser-editor')
+const trashProbe = process.argv.includes('--browser-trash-probe')
+assert(!(browserEditor && trashProbe), 'Run the focused trash probe separately from the full editor suite')
+const browserTLS = browserEditor || trashProbe
 const openssl = process.env.OWNER_TEST_OPENSSL || (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl')
-if (objectMedia || browserEditor) await runCommand(openssl, ['version'])
-if (objectMedia || browserEditor) await mkdir(path.join(cwd, 'node_modules/.cache'), { recursive: true })
-if (browserEditor) await verifyBrowserTLS({ cwd, openssl })
+if (objectMedia || browserTLS) await runCommand(openssl, ['version'])
+if (objectMedia || browserTLS) await mkdir(path.join(cwd, 'node_modules/.cache'), { recursive: true })
+if (browserTLS) await verifyBrowserTLS({ cwd, openssl })
 if (objectMedia) await verifyObjectTLS({ cwd, openssl })
 const { tools } = await preflightTools(process.env.OWNER_POSTGRES_BIN)
 const env = safeEnvironment()
@@ -77,7 +80,7 @@ try {
     objectEnvironment = await startProductionObjectEnvironment({ root: postgres.root, openssl })
     Object.assign(env, objectEnvironment.environment)
   }
-  if (browserEditor) {
+  if (browserTLS) {
     browserProxy = await startBrowserProxy({ root: postgres.root, openssl, targetOrigin: origin })
     env.OWNER_SERVER_URL = browserProxy.origin
   }
@@ -106,7 +109,7 @@ try {
   try {
     await start()
     const browserDrafts = await verifyProductionBrowserLogin(browserProxy?.origin ?? origin, credentials,
-      { editor: browserEditor, certificatePin: browserProxy?.certificatePin, compact: process.argv.includes('--compact-viewports') })
+      { editor: browserEditor, trashProbe, certificatePin: browserProxy?.certificatePin, compact: process.argv.includes('--compact-viewports') })
     const login = await fetch(`${origin}/api/users/login`, { signal: AbortSignal.timeout(10_000), method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentials) })
     assert.equal(login.status, 200, 'Owner login over production HTTP')
     const { token } = await login.json()
@@ -263,7 +266,7 @@ try {
     }
     if (browserEditor) console.log('[production-http] six browser drafts, two related brands and two placements preserved after app restart')
     await verifyMediaAfterRestart?.()
-    console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
+    console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', trashProbe: trashProbe ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }
 } catch (error) {
   if (error.childClosed === false) infrastructureClosed = false
