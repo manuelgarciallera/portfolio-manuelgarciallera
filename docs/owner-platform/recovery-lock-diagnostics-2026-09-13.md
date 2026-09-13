@@ -57,3 +57,23 @@ successfully (`1162a4`). SHA-256:
 `00F88F4B3B228ADF1F30D883DD5121709A5E0F1E4ADF786D7B976518E5E93230`.
 This is a local code recovery copy, not an external backup of real database/media.
 Browser authorization and independent candidate review remain outstanding.
+
+## Full integration and physical recovery on the combined SHA
+
+Subsequent fresh verification closes the parent-only limitation above for these
+two gates, without changing the candidate SHA:
+
+- `node scripts/test-integration-postgres.mjs`: 92 tests / 12 files pass in
+  109.97 seconds, exit 0 (`299a9d`). Runner confirms closed processes/sessions,
+  stopped PostgreSQL 16.15 and removal of only the synthetic run root.
+- `node scripts/test-recovery-postgres.mjs --object-media --full-owner`:
+  47 helper tests pass, then native dump/restore into a fresh database succeeds,
+  exit 0 (`ee78f5`). Report binds applicationCommit to full `0b0c308` SHA above.
+  Verified 18 backup files, 12 media files, three revisions, 12 rejected damage
+  cases, login, history, frozen preview, editing after recovery, page/article
+  versions and migration reconciliation. Original logical state and backup
+  receipts remain unchanged; exact cluster shutdown and cleanup are verified.
+
+These are synthetic backend fixtures, not browser acceptance, live provider
+delivery, production backup recovery or client multi-tenant certification.
+No runtime edit, active dependency upgrade, deployment or public change here.
