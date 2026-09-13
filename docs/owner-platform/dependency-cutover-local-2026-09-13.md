@@ -23,3 +23,10 @@ Prior isolated candidate results do not turn this active failure green. Next:
 inspect cleanup/concurrency in legacy-media-inventory.test.ts without removing
 the real file-limit test or silently increasing global timeouts. Preserve
 ownerOnly unlock and all recovery policies. No upstream-fix claim from audit-zero.
+
+Follow-up diagnostic: host reports 12 logical CPUs and Vitest config has no
+explicit worker bound. Ran the unchanged full suite with `--maxWorkers=2`
+(session 89528). It produced no terminal test summary before manual interruption
+(dd5b09, exit1). This is inconclusive, not a passing gate and not evidence that
+limiting workers fixes the cleanup timeout. No test, timeout or configuration
+was changed. Dependency manifests remain uncommitted.
