@@ -214,10 +214,14 @@ try {
     }))
     const anonymous = await fetch(`${origin}/api/owner/system/readiness`, { signal: AbortSignal.timeout(10_000) })
     assert.equal(anonymous.status, 403)
+    assert.equal(anonymous.headers.get('cache-control'), 'private, no-store', 'Readiness denial must not be cached')
     const readiness = await request('/api/owner/system/readiness')
     assert.equal(readiness.status, 200)
+    assert.equal(readiness.headers.get('cache-control'), 'private, no-store', 'Private runtime readiness must not be cached')
     const readinessState = (await readiness.json()).readiness
     assert.equal(readinessState.productionReady, false)
+    assert.equal(readinessState.deploymentAllowed, false)
+    assert.equal(readinessState.publicBridgeEnabled, false)
     if (objectMedia) assert.equal(readinessState.runtime.mediaStorage.kind, 'objects')
     const verifyMediaAfterRestart = objectMedia ? await verifyProductionObjectMedia({ origin, token, environment: objectEnvironment }) : undefined
     const created = await request('/api/pages?draft=true', { method: 'POST', body: JSON.stringify({ title: 'Production HTTP draft', slug: 'production-http-qa', layout: [{ blockType: 'hero', heading: 'Saved over HTTP' }] }) })
