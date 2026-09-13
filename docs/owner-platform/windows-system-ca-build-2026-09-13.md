@@ -1,6 +1,6 @@
 # Windows build: system CA worker incompatibility
 
-Base `fb5e428`, Windows Node24.13.0, Next16.3.4. This is a diagnosed build-tool incompatibility and a verified one-shot workaround, not a fix to Node/Next or a permanent build configuration change.
+Base `fb5e428`, Windows Node24.13.0, Next16.3.4. This is a diagnosed build-tool incompatibility and a one-shot workaround candidate, not a fix to Node/Next or a permanent build configuration change. Compilation passed but process termination is still pending; do not call the whole command successful.
 
 ## Reproduction
 
@@ -8,7 +8,7 @@ Ordinary owner build fails before compilation with `ERR_WORKER_INVALID_EXEC_ARGV
 
 Installed source confirms `next/dist/build/turbopack-build/index.js` creates a thread worker, and `next/dist/lib/worker.js` explicitly supplies execArgv. `next/dist/build/index.js` honors `NEXT_TURBOPACK_USE_WORKER=0` to run the same Turbopack implementation in the main process. This switch is internal, not presented as a documented stable public API.
 
-## Verified temporary invocation
+## Temporary invocation under observation
 
 From owner-platform, without changing machine-wide environment:
 
@@ -19,3 +19,5 @@ node -e "const result=require('node:child_process').spawnSync(process.execPath,[
 Session86741 compiles in10.2s, passes TypeScript, generates23/23 static pages and route output (`30081a`, `b0f5da`). NODE_OPTIONS, system trust, antivirus and certificate verification remain unchanged. Same bundler, no webpack substitution or upstream patch. This does not prove byte-identical build output or fix unrelated Windows native SQLite intermittency.
 
 Use only as an explicit local workaround for this pinned combination. Do not silently add it to deployment or global settings. Revalidate after Node/Next updates; remove the workaround when the ordinary build succeeds under the same trust configuration. No runtime source, dependencies, accounts, database, public design or deployment changed in this investigation.
+
+At `b542a7` the same session86741 remains live. Process inventory `bced71` confirms owned chain62236→67464→58988 and worker children; older unrelated processes are untouched. No exit code is available yet. Continue observing this handle, do not start a duplicate build or infer completion from route output. This qualification supersedes any wording suggesting a finished workaround.
