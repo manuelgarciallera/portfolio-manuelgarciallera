@@ -311,6 +311,36 @@ it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('limits repeated H
   expect((await post('reset-password', { token: before.resetPasswordToken, password: randomUUID() + randomUUID() })).status).toBe(200)
 }, 60_000)
 
+it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('keeps valid recovery links usable under global exhaustion without opening a REST bypass', async () => {
+  const targetEmail = 'global-exhaustion@example.invalid'
+  const initialPassword = randomUUID() + randomUUID()
+  await fixture.payload.create({ collection: 'users', overrideAccess: true,
+    data: { email: targetEmail, password: initialPassword, role: 'owner' } })
+  await fixture.payload.forgotPassword({ collection: 'users', data: { email: targetEmail } })
+  const oldToken = new URL(String(inbox[0].html).match(/href="([^"]+)"/)![1]).pathname.split('/').at(-1)!
+  // Only the synthetic fixture's budget is saturated; no production account or clock.
+  await admissionPool().query(`INSERT INTO ${admissionTable}
+    (key, attempts, window_started_at, last_admitted_at, expires_at)
+    VALUES ('global', 30, clock_timestamp(), clock_timestamp(), clock_timestamp() + interval '1 hour')`)
+  const known = await post('forgot-password', { email: targetEmail })
+  const unknown = await post('forgot-password', { email: 'exhaustion-unknown@example.invalid' })
+  expect(known.status).toBe(200)
+  expect(unknown.status).toBe(200)
+  expect(await known.text()).toBe(await unknown.text())
+  expect(deliveryAttempts).toBe(1)
+  expect((await post('login', { email: targetEmail, password: initialPassword })).status).toBe(200)
+  expect((await post('reset-password', { token: oldToken, password: randomUUID() + randomUUID() })).status).toBe(200)
+  // Trusted server API is not exposed as a new endpoint. This characterizes a
+  // possible operator mechanism, not a shipped or authenticated operator tool.
+  await fixture.payload.forgotPassword({ collection: 'users', data: { email: targetEmail } })
+  expect(deliveryAttempts).toBe(2)
+  const newToken = new URL(String(inbox[1].html).match(/href="([^"]+)"/)![1]).pathname.split('/').at(-1)!
+  const finalPassword = randomUUID() + randomUUID()
+  expect((await post('reset-password', { token: newToken, password: finalPassword })).status).toBe(200)
+  expect((await post('login', { email: targetEmail, password: finalPassword })).status).toBe(200)
+  expect((await admissionPool().query(`SELECT attempts FROM ${admissionTable} WHERE key = 'global'`)).rows).toEqual([{ attempts: 30 }])
+}, 60_000)
+
 it.runIf(process.env.OWNER_INTEGRATION_ENGINE === 'postgres')('does not refund HTTP admission after a provider failure and preserves the previous token', async () => {
   const targetEmail = 'outage-budget@example.invalid'
   const targetPassword = randomUUID() + randomUUID()
