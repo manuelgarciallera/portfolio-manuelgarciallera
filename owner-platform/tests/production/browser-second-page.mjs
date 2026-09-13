@@ -55,6 +55,16 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
     }
   } else {
     await content.press('ControlOrMeta+b')
+    if (process.env.OWNER_DIAGNOSE_IDLE_SAVE === '1') {
+      // Diagnostic-only: exercise the allowed timeout path instead of an early
+      // idle callback. Never used by the CMS or to delay saving until tests pass.
+      await page.evaluate(() => {
+        window.requestIdleCallback = (callback, options) => window.setTimeout(() => {
+          callback({ didTimeout: true, timeRemaining: () => 0 })
+        }, options?.timeout ?? 500)
+        window.cancelIdleCallback = handle => window.clearTimeout(handle)
+      })
+    }
     await content.press('ControlOrMeta+i')
   }
   // Lexical uses one strong element plus the italic theme class, not nested tags.

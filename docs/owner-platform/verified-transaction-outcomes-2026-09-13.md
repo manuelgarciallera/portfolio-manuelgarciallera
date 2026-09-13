@@ -98,3 +98,19 @@ using those diagnostics. Do not conceal it with arbitrary sleeps.
 This execution used the candidate dependency worktree and Linux source overlays,
 not a clean checkout of83c899c. Dependency cutover remains pending. Hub result
 df554fc1 records both runs and replaces the earlier in-progress report.
+
+### Controlled reproduction of stale rich-text submission
+
+Opt-in `OWNER_DIAGNOSE_IDLE_SAVE=1` exercises the500ms timeout path of idle
+callbacks only in the synthetic desktop browser page, just before italic is
+applied. It does not patch installed dependencies or runtime source. Run40200
+fails reproducibly at the post-save/reload assertion (f79565, exit1): before
+save, bold/italic are visible; the API response contains text `format:1` (bold
+only), and the reloaded DOM has only `LexicalEditorTheme__textBold`.
+This establishes saved-state loss under the deferred-update condition, not just
+an italic CSS loading issue. The390px flow passes; owned app/cluster close and
+the isolated root is cleaned. Syntax and focused lint pass (c063bf).
+
+Next implementation must synchronize pending editor state with form submission
+without arbitrary waits, weakening assertions, changing visuals or disabling
+editing. The diagnostic is a failing reproduction, NOT a fixed regression.
