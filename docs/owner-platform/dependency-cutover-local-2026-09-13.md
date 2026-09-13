@@ -143,3 +143,23 @@ passes35/2 skipped,exit0,31.97s (791e0d). One pass is not enough to establish
 causality. Next comparison must separate Payload3.88→3.89 from Vitest4.1.10→4.1.11
 and account for the different isolated path/install. Do not infer a specific
 upstream regression yet or accept the active upgrade because another tree passes.
+
+## Dependency controls narrow, but do not resolve, the native failure
+
+In the isolated copy, Payload3.88 + Vitest4.1.11 passes35/2 skipped (e5e1e5).
+The Vitest install also updates its Vite/Rolldown transitives (2b800a); this is not
+a claim that only one physical package changed. Payload packages remained3.88.
+
+Attempting the Payload upgrade incrementally with strict peers is rejected
+(4534d1). No force/legacy-peer switch used. Applied the active candidate lock to
+the isolated copy and ran npm ci strictly:729 installed,zero reported advisories
+(5d3dc1). Parsed manifests and lock match the active candidate exactly (e80d38).
+This Payload3.89/Vitest4.1.11 isolated run also passes35/2 skipped (a546f5).
+
+Read-only comparison of538 src/tests/scripts files reports no differences.
+Native libsql and Rolldown binary hashes match (a74b54); Sharp comparison used
+an absent path, so it supplies no evidence about that binary. The next active
+editorial run without instrumentation also passes35/2 skipped (6bff32).
+This confirms intermittency, not a fix. No production source was changed during
+these controls. A fresh complete active integration run follows; previous native
+failures remain unresolved even if an individual repetition passes.
