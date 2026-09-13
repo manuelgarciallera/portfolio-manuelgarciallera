@@ -29,3 +29,11 @@ At 390 and 1280 px it creates and soft-deletes one synthetic draft by API, opens
 ## Still open
 
 The original intermittent failure is not reproduced or fixed by this run. The focused setup uses API soft deletion and a simple hero block, unlike the full journey's native deletion following media editing/preview. Next discriminate that transition/context with the same diagnostics before changing runtime or upstream code. Retain full journey coverage in browser-page-trash.mjs. No deployment, provider configuration, credentials, dependency, or public bundle change.
+
+## Follow-up: native deletion transition
+
+The probe now additionally executes six complete native soft-delete/restore cycles per viewport, reusing the unchanged browser-page-trash.mjs journey. Creation remains a synthetic API fixture; this does not claim native creation coverage. Each cycle checks the same content, draft-only status, and restored document route before the next deletion.
+
+Session 41541: twelve native cycles passed (`428d11`, `5c843b`, `cb46d1`) plus all 24 first-click/cancel probes and final restorations (`ab2486`). Terminal report `075b0d` confirms HTTP privacy/restart checks and owned-process cleanup. Scoped syntax/lint and diffcheck passed (`5f9264`). No sleeps, second-click retries, relaxed assertions or runtime modifications added.
+
+The original timeout remains unclassified. Neither fresh navigation alone nor repeated native deletion of a simple page reproduced it. Preserve the failure diagnostics in the full media journey; do not repeat full suites indefinitely or mark the incident fixed. Next priority is the existing operational account-recovery gate, documented in recovery-global-exhaustion-2026-09-13.md. No provider activation or credential change is authorized by this diagnostic.

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
+import { verifyBrowserPageTrash } from './browser-page-trash.mjs'
 
 // Diagnostic, not a substitute for the full native create/delete/restore journey.
 // All writes target one fresh synthetic draft in the runner's ephemeral database.
 export const verifyBrowserTrashProbe = async ({ page, origin, width }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
-  const slug = `trash-probe-${width}-${randomUUID()}`
+  const slug = `native-media-${width}-trash-probe-${randomUUID()}`
   const before = await page.evaluate(async slug => {
     const response = await fetch('/api/pages', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -14,14 +15,22 @@ export const verifyBrowserTrashProbe = async ({ page, origin, width }) => {
     })
     if (response.status !== 201) throw new Error(`Synthetic trash draft creation failed: ${response.status} ${JSON.stringify((await response.json()).errors)}`)
     const { doc } = await response.json()
-    const trash = await fetch(`/api/pages/${doc.id}`, {
+    return doc
+  }, slug)
+  await page.goto(`${origin}/admin/collections/pages/${before.id}`, { waitUntil: 'domcontentloaded' })
+  await page.locator('form[data-form-ready="true"]').first().waitFor()
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await verifyBrowserPageTrash({ page, origin, before })
+    console.log('[trash-probe native-cycle]', JSON.stringify({ width, attempt, restored: true }))
+  }
+  await page.evaluate(async id => {
+    const trash = await fetch(`/api/pages/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deletedAt: new Date().toISOString() }),
       signal: AbortSignal.timeout(10_000),
     })
     if (!trash.ok || !(await trash.json()).doc.deletedAt) throw new Error('Synthetic soft deletion failed')
-    return doc
-  }, slug)
+  }, before.id)
   for (let attempt = 0; attempt < 12; attempt++) {
     await page.goto(`${origin}/admin/collections/pages/trash/${before.id}`, { waitUntil: 'domcontentloaded' })
     const trigger = page.getByRole('button', { name: 'Restaurar', exact: true })
