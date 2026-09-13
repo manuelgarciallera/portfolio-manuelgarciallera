@@ -106,7 +106,6 @@
 
 @media (max-width: 767px) {
   .rd-meta-grid { grid-template-columns: 1fr; gap: var(--space-1, 1rem); }
-  .rd-meta-grid .rd-tech-stack { max-width: 100%; overflow-x: auto; }
 }
 
 /* El gesto horizontal lo gestiona useSwipe; el navegador conserva el scroll vertical. */
