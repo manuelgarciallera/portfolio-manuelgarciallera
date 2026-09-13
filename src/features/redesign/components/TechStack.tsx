@@ -10,15 +10,16 @@ import {
   siMysql,
   siNextdotjs,
   siNodedotjs,
-  siOpenaigym,
   siReact,
   siTailwindcss,
   siTypescript,
   siZod,
   type SimpleIcon,
 } from 'simple-icons'
+import { supplementalTechIcons } from './supplementalTechIcons'
 
-const ICONS: Record<string, SimpleIcon> = {
+const ICONS: Record<string, Pick<SimpleIcon, 'path' | 'hex'>> = {
+  ...supplementalTechIcons,
   Angular: siAngular,
   Bootstrap: siBootstrap,
   Claude: siClaude,
@@ -29,7 +30,6 @@ const ICONS: Record<string, SimpleIcon> = {
   MySQL: siMysql,
   'Next.js': siNextdotjs,
   'Node.js': siNodedotjs,
-  'OpenAI/Codex': siOpenaigym,
   React: siReact,
   'Tailwind CSS': siTailwindcss,
   TypeScript: siTypescript,

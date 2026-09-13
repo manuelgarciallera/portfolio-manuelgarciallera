@@ -2,8 +2,27 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { TechStack } from './TechStack'
+import { CASES } from '../content/cases'
+import { siOpenaigym } from 'simple-icons'
 
 describe('TechStack', () => {
+  it('renders an icon for every named product in the project stacks', () => {
+    const products = [...new Set(CASES.flatMap((study) => study.stack))]
+      .filter((name) => !['3D', 'Tiempo real'].includes(name))
+    for (const name of products) {
+      const markup = renderToStaticMarkup(<TechStack technologies={[name]} compact />)
+      expect(markup, name).toContain('<svg')
+      expect(markup, name).toContain('aria-hidden="true"')
+      expect(markup, name).toContain(name)
+    }
+  })
+
+  it('uses the OpenAI brand rather than the unrelated Gym product', () => {
+    const markup = renderToStaticMarkup(<TechStack technologies={['OpenAI/Codex']} />)
+    expect(markup).toContain('<svg')
+    expect(markup).not.toContain(siOpenaigym.path)
+  })
+
   it('lets keyboard users enter the horizontally scrollable technology list', () => {
     const markup = renderToStaticMarkup(<TechStack technologies={['Figma', 'React']} compact />)
 
