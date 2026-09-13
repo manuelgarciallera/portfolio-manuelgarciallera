@@ -30,3 +30,24 @@ The test used the earlier Linux overlay, not a clean checkout of the eventual
 commit. It does not establish a clean dependency install, physical-phone
 compatibility, production readiness or resolution of the intermittent Windows
 native crash. No deployment or public content changes were made.
+
+## Follow-up: native project creation and preview (passed)
+
+After commit 0b9f2d2, the helper replaces API creation with the native create
+form, existing media picker and quote-block drawer. It also opens the saved
+draft preview and expects the edited title, summary and quote with no viewport
+overflow. This targets broken form submission, lost media selection and missing
+project preview content; no application implementation has been changed.
+
+Syntax and focused lint passed 3a53b3; diffcheck passed 1f2483.
+The isolated production run 8132 completed with exit 0 (03d26a).
+Native project creation, media selection, editing and saved preview passed at
+390 px (e26908) and 1280 px (03d26a). Both full project documents survived the
+application restart; the anonymous list still excluded drafts. Existing page,
+article, media, restoration and preflight acceptance also passed. The owned
+application and cluster closed and their synthetic root was cleaned.
+
+This supersedes the API-creation limitation for this quote-block scenario only.
+All project block types, preview image rendering and project history privacy
+remain separate coverage gaps; no application defect was found in this run.
+No physical-device or clean-install claim is made. No public code was changed.
