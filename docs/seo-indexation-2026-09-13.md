@@ -22,3 +22,30 @@ check exit 0 (a634b6). These do not prove rendered production metadata.
 Next: verify the public-only build and deployed metadata before submitting the
 sitemap and inspecting/requesting crawl of home, about and research. Do not
 deploy the owner CMS along with the portfolio. No doctoral credential added.
+
+## Public build attempt
+
+Dedicated output .owner-verification-builds/seo-ae673c7 was absent before launch;
+the existing local preview was preserved. Build exited 1 before compilation
+(9b8ea5): ERR_WORKER_INVALID_EXEC_ARGV, NODE_OPTIONS --use-system-ca rejected
+when initiating a worker. Host node is v24.13.0; its top-level allowed flags
+include this option (4af035), so this is a worker/environment compatibility
+failure, not a demonstrated source or metadata failure. No certificate bypass,
+antivirus change or deployment was attempted. Resolve compatible worker trust
+configuration before repeating the build; retain the diagnostic output.
+
+Resolved for this build: Node's documented NODE_USE_SYSTEM_CA=1 enables the
+same trust store without placing --use-system-ca in the worker's NODE_OPTIONS.
+A bounded child-process probe (bdb55c) started a worker and compared default CA
+hashes; both matched the original parent trust hash. No global environment or
+certificate changes. An initial probe attempted to sort a frozen certificate
+array and failed (b72715); corrected to toSorted, without changing trust.
+Reference: https://nodejs.org/api/cli.html#node_use_system_ca1
+
+Build 14039 completed exit 0 (c21d3f), compiled and passed TypeScript, 29 static
+pages generated in .owner-verification-builds/seo-ae673c7-system-ca.
+Generated HTML checks (cebce9) confirm the approved title/description, Adobe CC
+SVG in NudeProject, and sitemap with no unverified lastmod. Next's two temporary
+tsconfig include additions were removed with a scoped patch after verification.
+No deployment, indexing request, or owner CMS exposure. Public release gates
+beyond this build still need verification before publication.
