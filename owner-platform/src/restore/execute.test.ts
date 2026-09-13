@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createPreviewManifest } from '../preview/manifest'
 import { createDraftCapsule } from '../recovery/capsule'
+import { bindRestoredPageMedia } from '../media/restored-page-media'
 import { executeOwnerRestorePlan } from './execute'
 
 const owner = { id: 1, collection: 'users', role: 'owner' }
@@ -52,6 +53,50 @@ const makePayload = (events: string[], persistedPin: unknown = 13) => {
 }
 
 describe('executeOwnerRestorePlan', () => {
+  it.each([false, true])('checks the actual hook binding before committing (cloned request: %s)', async (cloneRequest) => {
+    const events: string[] = []
+    const payload = makePayload(events)
+    const req = { payload, user: owner }
+    let storedPin: unknown = null
+    const read = payload.findByID.getMockImplementation()!
+    const update = payload.update.getMockImplementation()!
+    payload.findByID.mockImplementation(async (args) => {
+      const result = await read(args)
+      return args.collection === 'pages'
+        ? { id: 7, updatedAt: '2026-09-04T23:10:00.000Z', restoredMediaSnapshot: storedPin }
+        : result
+    })
+    payload.update.mockImplementation(async (args) => {
+      if (args.collection === 'pages') {
+        // Exercise the real capability hook, while the database boundary remains
+        // a double. A shallow clone preserves user/payload but not authority.
+        const bound = await bindRestoredPageMedia({
+          req: cloneRequest ? { ...req } : req,
+          data: args.data,
+          originalDoc: { restoredMediaSnapshot: null },
+        } as never)
+        storedPin = bound.restoredMediaSnapshot
+      }
+      return update(args) // Deliberately reports pin 13 even if binding was lost.
+    })
+    const dependencies = {
+      begin: async () => { events.push('begin'); return true },
+      commit: async () => { events.push('commit') },
+      rollback: async () => { events.push('rollback') },
+      createDraft: async () => { events.push('snapshot:draft'); return { id: 71, capsule: { source: { versionId: 'current:new' } } } },
+      createPreview: async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } },
+    }
+    const execution = executeOwnerRestorePlan({ confirmation: 'EJECUTAR RESTAURACIÓN',
+      dependencies, payload, planId: 50, req })
+    if (cloneRequest) {
+      await expect(execution).rejects.toMatchObject({ status: 409 })
+      expect(events).toEqual(['begin', 'update:pages', 'rollback'])
+    } else {
+      await expect(execution).resolves.toMatchObject({ status: 'executed' })
+      expect(events.at(-1)).toBe('commit')
+      expect(events).not.toContain('rollback')
+    }
+  })
   it.each([null, 12, {}, { id: 13 }, ['13']].map(pin => ({ pin })))('rolls back when the persisted pin is invalid ($pin), even if update reports the right pin', async ({ pin: persistedPin }) => {
     const events: string[] = []
     const payload = makePayload(events, persistedPin)
