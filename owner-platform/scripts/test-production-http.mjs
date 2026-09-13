@@ -116,8 +116,8 @@ try {
     assert.equal(typeof token, 'string')
     const request = (route, options = {}) => fetch(origin + route, { ...options, signal: AbortSignal.timeout(10_000), headers: { Authorization: `JWT ${token}`, 'Content-Type': 'application/json', ...options.headers } })
     if (browserEditor) {
-      assert.equal(browserDrafts.length, 6, 'Three independently authored pages per viewport')
-      assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 6)
+      assert.equal(browserDrafts.length, 8, 'Four independently authored pages per viewport')
+      assert.equal(new Set(browserDrafts.map(draft => draft.id)).size, 8)
     }
     const brandIds = [...new Set(browserDrafts.map(draft => draft.brandProfile).filter(id => id != null))]
     let projectsBefore = []
@@ -268,7 +268,7 @@ try {
       assert.equal(response.status, 200)
       assert.deepEqual(await response.json(), placement, 'Native placement and its recipe survive process restart')
     }
-    if (browserEditor) console.log('[production-http] six browser drafts, two related brands and two placements preserved after app restart')
+    if (browserEditor) console.log('[production-http] eight browser drafts, two related brands and two placements preserved after app restart')
     await verifyMediaAfterRestart?.()
     console.log(JSON.stringify({ productionHTTP: 'passed', browserEditor: browserEditor ? 'passed' : 'not-run', trashProbe: trashProbe ? 'passed' : 'not-run', login: true, anonymousDenied: true, draftPreservedAcrossProcessRestart: true, deployment: false }))
   } finally { await stop() }

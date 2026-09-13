@@ -79,4 +79,5 @@ export const verifyBrowserProject = async ({ page, context, origin, width, media
     assert.equal(await opened.preview.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   } finally { await opened.preview.close() }
   console.log(`[project-editor] PASS ${width}px native block-only creation, media selection, edit and preview`)
+  return stored
 }
