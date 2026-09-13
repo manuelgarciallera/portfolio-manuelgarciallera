@@ -1126,7 +1126,7 @@
 .rd-preview-control-icon { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .rd-preview-controls button:focus-visible, .rd-preview-tabs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .rd-preview-tabs { position: absolute; left: 0; top: calc(1.8rem - 3px); right: clamp(1rem, 3vw, 3rem); display: flex; gap: 0.35rem; justify-content: flex-end; }
-.rd-preview-tabs button { min-height: 1.9rem; padding: 0 0.72rem; border-radius: 999px; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.62; transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 300ms ease, opacity 180ms ease, transform 300ms var(--ease-out); }
+.rd-preview-tabs button { flex: 0 0 auto; white-space: nowrap; line-height: 1.25; min-height: 1.9rem; padding: 0 0.72rem; border-radius: 999px; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.62; transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 300ms ease, opacity 180ms ease, transform 300ms var(--ease-out); }
 .rd-preview-tabs button:hover { border-color: rgb(255 255 255 / .82); background: rgb(255 255 255 / .12); box-shadow: 0 .6rem 1.8rem rgb(0 0 0 / .2); opacity: 1; transform: translateY(-2px); }
 .rd-preview-tabs button[data-active="true"] { border-color: currentColor; background: #fff; color: #003594; opacity: 1; transform: translateY(0); }
 .rd-preview-tabs::-webkit-scrollbar { display: none; }

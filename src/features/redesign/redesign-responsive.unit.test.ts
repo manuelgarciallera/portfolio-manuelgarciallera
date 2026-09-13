@@ -4,6 +4,17 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('case-study responsive safeguards', () => {
+  it('keeps preview pill labels on one line without flex compression', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
+    const rule = css.match(/\.rd-preview-tabs button\s*\{([^}]+)\}/g)
+      ?.find(block => block.includes('border-radius: 999px'))
+
+    expect(rule).toBeDefined()
+    expect(rule).toMatch(/flex:\s*0 0 auto/)
+    expect(rule).toMatch(/white-space:\s*nowrap/)
+    expect(rule).toMatch(/line-height:\s*1\.25/)
+  })
+
   it('allows comparison columns and carousel tabs to shrink on mobile', () => {
     const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
 
