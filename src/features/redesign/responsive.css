@@ -1,10 +1,7 @@
 /* Correcciones transversales: ninguna pieza cinética debe crear scroll horizontal. */
 .rd-root { overflow-x: clip; }
-/* La landing mantiene su recorrido largo, pero el navegador compone cada capítulo al acercarse. */
-.rd-root > main > .rd-section:not(.rd-hero) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 52rem;
-}
+/* Keep section geometry real: estimated offscreen heights move hash targets
+   during smooth navigation and can strand the Contact link above its form. */
 .rd-skip-link {
   position: fixed; left: 1rem; top: 1rem; z-index: 100;
   padding: 0.7rem 0.9rem; color: var(--bg); background: var(--ink);
