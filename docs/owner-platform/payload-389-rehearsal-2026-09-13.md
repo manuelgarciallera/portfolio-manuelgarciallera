@@ -32,3 +32,33 @@ unit, integration, physical recovery and build gates in isolation. Browser
 acceptance still needs the previously requested authorization. The advisory
 interpretation from `payload-389-security-review-2026-09-13.md` remains in force:
 an audit suggestion is not evidence of a security fix.
+
+## Windows candidate resolved and tested
+
+Aligning the six direct package versions while retaining the old lock still
+failed ERESOLVE (`0f6554`). Preserved that lock as
+`.audit/owner-payload389-windows/package-lock.baseline-388.json` and resolved a
+fresh candidate lock with peer validation intact (`a39d0e`, exit 0). No --force
+or --legacy-peer-deps. The candidate changes 89 version/path entries, including
+transitive updates and hoisting; it is not a six-line-only dependency change.
+
+Extracted the same source archive into `.audit/payload389-source` and copied only
+the candidate manifests into its owner-platform. `npm ci --ignore-scripts`
+installed 728 packages successfully (`0f070e`). Candidate lock SHA-256:
+`0B66DA1FA222DA140507D2257D280F5291DF8804A3352600BF61248BDBF0D948`.
+The active repository package/lock remain unchanged.
+
+- Package listing confirms Payload and inspected direct adapters at 3.89.0.
+- Strict typecheck: exit 0 (`36e49e`).
+- `npm test`: three Node script tests and 1,303 tests in 170 Vitest files pass,
+  exit 0, 76.08 seconds (`0104be`).
+- Auth/unlock HTTP suites on SQLite: eight passed, eight PostgreSQL-only cases
+  skipped, exit 0 (`76b0c7`). Synthetic provider only; no real mail or browser.
+- Candidate `npm audit --omit=dev --json`: zero reported production entries,
+  exit 0 (`5ce218`); initial full audit still reported two moderate dev entries.
+  This does not override the unresolved upstream advisory interpretation.
+
+Remaining before integration: inspect complete transitive delta, full editorial
+and media integration, PostgreSQL-specific authentication/admission, physical
+recovery, production build and authorized visual/editor regression. Candidate
+success is not deployed or active-CMS success. Docker DNS remains unmodified.
