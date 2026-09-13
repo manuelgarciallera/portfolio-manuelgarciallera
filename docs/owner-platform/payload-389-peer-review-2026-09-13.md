@@ -1,0 +1,40 @@
+# Candidate dependency review: passing tests did not prove a valid peer tree
+
+The complete lockfile comparison includes transitive version changes AND hoist
+moves. Examples: Payload's AJV 8 is moved below payload while AJV 6 becomes the
+root lint dependency; this is not a Payload validator downgrade. Likewise semver,
+resolve, json-schema-traverse, fsevents and convert-source-map move between
+consumers. Actual update groups include Payload 3.89, Smithy core 3.34.1,
+Lexical's react-error-boundary patch, happy-dom 20.14.5, Vite 8.3.0/Rolldown 1.2.8,
+TypeScript ESLint 8.70 and Vitest 4.1.11. This inventory is not a line-by-line
+upstream security or license audit.
+
+## Concrete finding
+
+`npm ls --all` in Linux and `npm ls yaml --all --json` in Windows both report
+ELSPROBLEMS: Vite 8.3.0 resolves yaml 1.10.3 but its optional peer requires
+`^2.4.2`. The existing yaml was hoisted for cosmiconfig 7.1.0. Prior successful
+install, tests and audit-zero do not prove peer-tree validity. Linux lint did
+pass separately; a chained shell exit must not hide the preceding npm ls failure.
+
+## Isolated correction and evidence
+
+Preserved Windows candidate lock as `package-lock.pre-yaml-peer.json`. Added
+exact `yaml@2.9.1` as a development dependency only in the isolated candidate,
+using npm install with `--strict-peer-deps --ignore-scripts`. Version was checked
+against npm registry metadata, not guessed. Install and audit pass.
+
+New dependency placement: Vite uses yaml 2.9.1, cosmiconfig retains nested yaml
+1.10.3 (`efa892`). Other package versions remain unchanged in this correction.
+Complete npm ls JSON reports status 0 and no problems (`b30a86`); that diagnostic
+used only literal command arguments and emitted a Node shell deprecation warning.
+Full npm test: three Node script tests and 1,303 units / 170 files pass,
+exit 0, 58.05 seconds (`a02556`).
+
+New Windows candidate lock SHA-256:
+`8382EFB6B4E0CD2411403CF30765BEA476758EA4C28EA25F7160FE4EDA55BF9A`.
+Active owner manifests remain untouched. Linux candidate ead7e79 and its recovery
+result still identify the previous lock: do not claim the new peer correction
+has Linux integration or physical recovery verification yet. Next: transfer
+the single new public tarball and candidate manifests, install offline, check
+the complete peer tree and rerun the relevant candidate gates. No deployment.
