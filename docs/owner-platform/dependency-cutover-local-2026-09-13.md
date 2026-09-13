@@ -105,3 +105,10 @@ exit. The skipped cases are PostgreSQL-specific; this does not explain away
 the missing test/worker error. A fresh verbose run is needed to identify the
 unfinished file. No production or test code has been changed to bypass it.
 Do not confuse the green build with completion of all integration gates.
+
+Verbose repeat also exits1 (7dd9a9):65 passed/23 skipped, same unexpected-worker
+error. It reached editorial.integration.test.ts through the article block-only
+save case, but did not finish its project save and subsequent cases. Full-config
+filesystem/object tests and media/recovery/unlock suites had passed. The differing
+completed-test counts across runs mean this is not yet attributed to a specific
+assertion. Next diagnostic is the editorial file alone; no retry-as-success claim.
