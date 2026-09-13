@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { prepareEditorAssets } from './prepare-editor-assets.mjs'
+import { prepareLexicalField } from './lexical-field-patch.mjs'
 
+await prepareLexicalField()
 await prepareEditorAssets()
 
 // Next maintains separate dev/build output. Preserve any active dev lock/cache.

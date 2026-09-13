@@ -14,6 +14,9 @@ import { verifyBrowserTLS } from '../tests/production/browser-tls-preflight.mjs'
 import { verifyProductionObjectMedia } from '../tests/production/object-media.mjs'
 import { verifyObjectTLS } from '../tests/production/object-tls-preflight.mjs'
 import { prepareEditorAssets } from './prepare-editor-assets.mjs'
+import { prepareLexicalField } from './lexical-field-patch.mjs'
+
+await prepareLexicalField()
 
 const cwd = fileURLToPath(new URL('../', import.meta.url))
 const next = path.join(cwd, 'node_modules/next/dist/bin/next')

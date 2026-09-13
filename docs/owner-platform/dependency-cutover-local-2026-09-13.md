@@ -1,5 +1,21 @@
 # Local dependency cutover: verification incomplete
 
+## Current integration checkpoint
+
+The candidate is now being committed as a recoverable local integration, not a
+stable-release declaration. Current lock SHA256 is
+6D137A173CB560F26029E77FEF1A1691C783C34FC567C6836B7C5C729F2D93FC
+(postinstall metadata added). Fresh strict npm ci with lifecycle enabled passes
+ee76a4; both Lexical patched artifact hashes match448d1b. Full unit suite1313/171
+plus8 script checks passes920f8a/77e838; types/lint passaa5875; native browser
+390/1280 with immediate save and restart passesb3aacd. See the dedicated
+lexical-immediate-save-patch-2026-09-13.md for maintenance and scope.
+
+The previously observed Windows access violation remains unresolved. Committing
+the exact tested dependency set makes the work recoverable; it does not erase
+that failure, authorize deployment, or prove the entire CMS complete. Historical
+gate results below retain their original dates/order and are not fresh runs.
+
 Base 0cb8d8d. User authorizes Codex technical direction; candidate browser gates
 now passed. Applied only the exact tested candidate package.json/package-lock
 to active owner source using patches. Lock SHA256 remains

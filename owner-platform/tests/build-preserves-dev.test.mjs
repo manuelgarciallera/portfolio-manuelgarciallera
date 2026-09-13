@@ -9,10 +9,14 @@ for (const exitCode of [0, 7]) {
   test(`build preserves development output when compiler exits ${exitCode}`, async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'owner-build-preserves-dev-'))
     try {
-      for (const directory of ['scripts', '.next/dev/cache', 'node_modules/next/dist/bin']) {
+      for (const directory of ['scripts', '.next/dev/cache', 'node_modules/next/dist/bin', 'node_modules/@payloadcms/richtext-lexical/dist/field', 'node_modules/@payloadcms/richtext-lexical/dist/exports/client']) {
         await mkdir(path.join(root, directory), { recursive: true })
       }
       await copyFile(new URL('../scripts/build.mjs', import.meta.url), path.join(root, 'scripts/build.mjs'))
+      await copyFile(new URL('../scripts/lexical-field-patch.mjs', import.meta.url), path.join(root, 'scripts/lexical-field-patch.mjs'))
+      for (const file of ['package.json', 'dist/field/Field.js', 'dist/exports/client/Field-J6MIUIWP.js']) {
+        await copyFile(new URL(`../node_modules/@payloadcms/richtext-lexical/${file}`, import.meta.url), path.join(root, 'node_modules/@payloadcms/richtext-lexical', file))
+      }
       await writeFile(path.join(root, '.next/dev/lock'), 'synthetic development lock')
       await writeFile(path.join(root, '.next/dev/cache/marker'), 'synthetic cached build')
       await writeFile(path.join(root, 'scripts/prepare-editor-assets.mjs'), `

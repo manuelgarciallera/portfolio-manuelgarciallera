@@ -114,3 +114,99 @@ the isolated root is cleaned. Syntax and focused lint pass (c063bf).
 Next implementation must synchronize pending editor state with form submission
 without arbitrary waits, weakening assertions, changing visuals or disabling
 editing. The diagnostic is a failing reproduction, NOT a fixed regression.
+
+### Candidate implementation, not accepted yet
+
+An owner-only ImmediateFieldSync feature was added through Payload's public
+feature API, retaining native OnChange selection/history guards and read-only
+checks. First browser attempt27506 still failed (4e5973): the checked-in import
+map lacked its client registration. Added that mapping; attempt84181 is running
+with the same controlled idle condition. Do not infer success from compilation.
+Type/lint101447 and configuration19/19 (965a2f) passed; focused lint including
+the map passes e2d574. Full unit run32394 is also in progress.
+
+Independent review raised an important candidate risk: the immediate writer
+does not update the native Field's private prevValueRef. A save before idle may
+therefore remount the editor and lose selection/undo history. Native Safari
+fallback scheduling also merits checking for older writes. These are open
+review findings, not resolved by the existing content-only save assertion.
+Do not commit this candidate as a completed fix until investigated.
+
+The second-listener candidate completed the controlled390/1280 browser run
+(966979; final cleanup705853 exit0), and1313/171 units passed a5dbeb. Nevertheless
+the review's native bookkeeping/undo risk remains valid. Removed only the two
+new candidate files and their config/import-map registrations, returning runtime
+to the prior implementation. No unrelated edits or user files were reverted.
+
+A version/hash-scoped native-field transformation is now characterized: execute
+the installed handler with a deferred scheduler, then inspect the immediately
+submitted value AND native prevValueRef. RED00d74e shows undefined immediate
+value; GREEN82fd7f confirms both advance together with no queued stale writer.
+This is a pure transformation only: no installed dependency has been patched yet.
+Next: idempotence/drift protections, build/install integration, then the same
+browser regression without the discarded client feature. Proposal cd375556.
+
+The native patch now accepts exactly original SHA256
+085b5a2cb46cd3f9a525560e54c018b5c03cfa941945f857d51e27825d4b851d
+or patched7a98335fc974881f12f99e73ea03a593fe5085c9b14cbd601a59e55c7c0e180e,
+only for3.89.0. Idempotence/drift RED7b455e then GREEN889bc6. Build/dev and
+synthetic production runner call the preparer before compilation; install/test
+entrypoint integration and broader review remain pending. No postinstall hook
+yet. Four script tests including actual build wrapper pass d874ee.
+
+Linux browser run93520 started with this patch and original config/import map
+(no additional listener), OWNER_DIAGNOSE_IDLE_SAVE=1. It is still in progress.
+Installed Linux Field.js is deliberately patched by the preparer; source license
+is retained. Host dependency is still original. Do not identify a patched
+node_modules tree solely by its lockfile; include this transformation in recovery
+and clean-install verification. Not committed as a completed fix yet.
+
+Run93520 failed after save/reload1280 (0ff5ce), despite source Field.js having
+the patched hash. Package export inspection2755a2 and source maps c44727 show
+that the browser loads precompiled `dist/exports/client/Field-J6MIUIWP.js`,
+not the unbundled Field.js. That artifact still had its deferred callback.
+This is an integration omission, not evidence that immediate native sync fails.
+Added an executable characterization of that distributed handler: RED5017ad
+immediate value undefined, GREENaae93a after transforming that exact artifact.
+Original browser artifact SHA24f1a5c28b76ed50343c3a5e83ae7a597099944ec3e584bcde6694de25e3bd5d.
+Pending: installer must process BOTH artifacts, validate both before writes,
+recognize the patched browser hash, then repeat browser. It still only writes
+the unbundled file at this point; do not claim browser integration complete.
+
+CLI installer test RED566de4/GREEN0ea6ae verifies real isolated file write,
+repeat invocation and rejection without overwriting a changed file. Postinstall
+and test commands are wired in candidate package.json; lockfile install-script
+metadata and clean-install verification remain pending. No host patch applied.
+
+Both distributions are now validated before either is written. Bundled patched
+SHA56af80bad8f158c3502510d8d3c2dd30dfe172be0fc2fefc47f506a55a096f7a
+is recognized for repeat runs. Installer RED9c1593 proves earlier implementation
+would write the source even with an invalid browser artifact; GREENa2d423 proves
+it refuses without changing the source. Six script tests pass, focused lint and
+diff check675c13 pass. Lock root hasInstallScript metadata now matches postinstall.
+
+New controlled browser run31924 is live with both artifacts;390 page creation
+and unsaved navigation passed99b80b. Independent reviewer has been asked to
+review the replacement, not the discarded client feature. Clean-install and
+remaining runtime gates are still required before dependency cutover/commit.
+
+Controlled native browser run31924 completed (b3aacd exit0):390/1280 flows,
+immediate formatting save/reload, page/article/media operations, historical
+restoration and preservation after restart pass. Owned processes and isolated
+root cleaned. This uses the native two-file patch, not the discarded listener.
+Independent review reports no Critical/Important findings in the replacement.
+Its minor fixture issue is addressed: original installed artifacts copied with
+license into non-runtime fixtures and original hashes asserted;6 tests pass
+8fd50e even if node_modules is subsequently patched. This ensures original to
+patched behavior remains exercised after postinstall.
+
+Fresh npm ci --strict-peer-deps is running in the new isolated
+`.audit/owner-lexical-clean-install-20260913` with candidate manifest, lock and
+patch script only (session82666). No application data or secrets copied. Full
+host npm test is also being repeated with the native patch, not listener.
+
+Final local follow-up: clean lifecycle-enabled npm ci passes ee76a4,729 packages;
+both resulting hashes match448d1b. Full units1313/171 plus8 script checks pass
+920f8a/77e838; types/lintaa5875. Preparing recoverable integration commit with
+candidate dependencies and patch together, not a stable-release certification.
+Separate native Windows intermittency and remaining CMS requirements stay open.
