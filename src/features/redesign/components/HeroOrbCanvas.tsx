@@ -5,24 +5,12 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { AdditiveBlending, CanvasTexture, Color, FrontSide, Group, MathUtils, SRGBColorSpace } from 'three'
 
-// El nombre vive dentro de la escena, detras del orbe. Su tamano estaba fijado en
-// unidades de mundo, asi que en un lienzo estrecho (movil) el rotulo era mas ancho
-// que el plano visible y se cortaba por los dos lados: se leia «Man ... llera».
-// Se mide el plano a la profundidad del texto y el avance de la fuente real del
-// titular: una linea en escritorio y tres lineas explicitas en movil.
-//
-// La composicion cambia con la forma del lienzo, y no por capricho. En apaisado el
-// orbe se posa sobre el centro del nombre: ese es el efecto, y el criterio de
-// aceptacion lo describe como «al mover el raton, el orbe pasa por encima del
-// nombre y las letras se deforman a traves de el». En un lienzo vertical no hay
-// raton que lo mueva, el orbe ocupa una fraccion mucho mayor del ancho y lo unico
-// que consigue es tapar el nombre. Alli el orbe sube y el rotulo baja: la curva
-// inferior roza la parte alta de la primera linea —queda refraccion— pero el
-// nombre se lee entero.
+// Composición única: esfera clara arriba y nombre completo debajo en todos los
+// dispositivos. El apellido compuesto nunca se divide: los saltos son explícitos.
 const WORDMARK_Z = -0.82
-const WORDMARK_MAX_SIZE = 0.46
+const WORDMARK_MAX_SIZE = 0.44
 
-// El corte entre las dos composiciones NO puede salir de la relacion de aspecto del
+// El corte de calidad de render NO puede salir de la relacion de aspecto del
 // lienzo. En escritorio `.rd-hero-art` declara `aspect-ratio: 1.15`; en movil el
 // lienzo mide 320x352, 390x352 o 430x352 segun el telefono, o sea entre 0.91 y 1.22.
 // A 430 el movil es casi tan apaisado como el escritorio y esa medida los confundia.
@@ -59,12 +47,12 @@ export const COMPACT_GEOMETRY = {
 } as const
 
 const COMPACT_WORDMARK_TEXT = 'Manuel\nGarcía-Llera\nAñón'
-const WIDE_WORDMARK_TEXT = 'Manuel García-Llera Añón'
+const WIDE_WORDMARK_TEXT = 'Manuel\nGarcía-Llera\nAñón'
 
 interface HeroOrbCanvasProps {
   isDark: boolean
   reduceMotion: boolean
-  // El hero apilado de movil: el orbe deja de posarse sobre el nombre.
+  // Solo adapta el presupuesto de render; la composición es compartida.
   isCompact: boolean
   onReady?: () => void
 }
@@ -133,10 +121,10 @@ function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps,
           resolution={isCompact ? 256 : 384}
           thickness={0.55}
           ior={1.28}
-          transmission={isCompact ? 0.72 : 1}
+          transmission={0.72}
           color="#f4f1ec"
           emissive="#e8e4df"
-          emissiveIntensity={isCompact ? 0.25 : 0}
+          emissiveIntensity={0.25}
           anisotropicBlur={0.12}
           attenuationColor="#ffffff"
           attenuationDistance={8}
@@ -188,7 +176,8 @@ function useWordmarkPlane() {
   )
 }
 
-// Avance tipografico medido sobre el render real de produccion a 1440, no estimado:
+// Contexto histórico del diagnóstico anterior (composición de una línea):
+// avance tipografico medido sobre el render real de produccion a 1440:
 // lienzo 571x497, plano 4.605 x 4.008, y de ahi el ancho en pixeles de cada linea.
 //
 //   «Manuel Garcia-»       6.91 em
@@ -204,13 +193,13 @@ function useWordmarkPlane() {
 // dejaba el rotulo un 5.1% mas ancho que el plano util, troika lo partia, y lo
 // partia por el guion: «Manuel Garcia-» / «Llera». El peor corte posible de este
 // nombre, en la primera pantalla del sitio.
-const WIDE_WORDMARK_ADVANCE = 12.68
+const WIDE_WORDMARK_ADVANCE = 6.9
 const COMPACT_WORDMARK_ADVANCE = 6.9
 
 function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'isCompact'>) {
   const plane = useWordmarkPlane()
-  // Rasterise with the browser's actual heading font. No external font request;
-  // the resulting plane still sits behind the glass and is refracted by it.
+  // Rasterise with the browser's actual heading font. No external font request.
+  // The plane is below the orb; explicit line breaks keep García-Llera intact.
   const wordmark = useMemo(() => {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')
@@ -239,13 +228,12 @@ function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' |
   const maxWidth = plane.width * 0.9
   const cap = isCompact ? COMPACT_GEOMETRY.wordmarkMaxSize : WORDMARK_MAX_SIZE
   const advance = isCompact ? COMPACT_WORDMARK_ADVANCE : WIDE_WORDMARK_ADVANCE
-  // El tope solo entra cuando el plano da de sobra: si maxWidth/9.8 supera 0.46 es
-  // que maxWidth > 4.51, y el nombre entero a 0.46 ocupa 4.36. Cabe.
+  // Medición real de la textura para que todas las líneas quepan sin envolverlas.
   const fontSize = Math.min(cap, maxWidth / Math.max(advance, wordmark.width))
 
   return (
     <mesh
-      position={[0, isCompact ? COMPACT_GEOMETRY.wordmarkY : -0.04, WORDMARK_Z]}
+      position={[0, COMPACT_GEOMETRY.wordmarkY, WORDMARK_Z]}
     >
       <planeGeometry args={[wordmark.width * fontSize, wordmark.height * fontSize]} />
       <meshBasicMaterial map={wordmark.texture} transparent depthWrite={false} toneMapped={false} />
@@ -257,8 +245,8 @@ function HeroWordmark({ isDark, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' |
 function ResponsiveOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   return (
     <group
-      scale={isCompact ? COMPACT_GEOMETRY.orbScale : 1}
-      position={[0, isCompact ? COMPACT_GEOMETRY.orbY : 0, 0]}
+      scale={COMPACT_GEOMETRY.orbScale}
+      position={[0, COMPACT_GEOMETRY.orbY, 0]}
     >
       <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} />
     </group>

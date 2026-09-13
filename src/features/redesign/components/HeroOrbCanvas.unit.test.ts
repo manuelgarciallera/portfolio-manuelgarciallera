@@ -4,6 +4,14 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('HeroOrbCanvas recovered artifact', () => {
+  it('uses the clear stacked orb and label placement on desktop as well as mobile', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
+    expect(source).toContain('transmission={0.72}')
+    expect(source).toContain('emissiveIntensity={0.25}')
+    expect(source).toContain('position={[0, COMPACT_GEOMETRY.wordmarkY, WORDMARK_Z]}')
+    expect(source).toContain('scale={COMPACT_GEOMETRY.orbScale}')
+    expect(source).toContain('position={[0, COMPACT_GEOMETRY.orbY, 0]}')
+  })
   it('recovers the stable refractive sphere without loading an HDR environment', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
 
@@ -112,7 +120,7 @@ describe('HeroOrbCanvas recovered artifact', () => {
     // El nombre se parte a proposito por el espacio, nunca por el guion.
     expect(source).toContain("const COMPACT_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera\\nAñón'")
     // El apellido completo no es opcional: es la firma con la que publica.
-    expect(source).toContain("const WIDE_WORDMARK_TEXT = 'Manuel García-Llera Añón'")
+    expect(source).toContain("const WIDE_WORDMARK_TEXT = 'Manuel\\nGarcía-Llera\\nAñón'")
   })
 
   // El nombre se partia por el guion en escritorio y el orbe se comia las letras del
@@ -143,7 +151,7 @@ describe('HeroOrbCanvas recovered artifact', () => {
     // Cadena completa «Manuel García-Llera Añón». Derivada de la medida verificada
     // de «Manuel García-Llera» (9.47) por la razón de anchos de las dos cadenas en
     // la fuente real, 10.884/8.412 = 1.2939. Medida, no estimada.
-    const CADENA_ENTERA = 12.25
+    const CADENA_ENTERA = 6.91
     // Sin cambio: al pasar a tres líneas la más larga sigue siendo «García-Llera».
     const LINEA_LARGA_COMPACTA = 6.91
     // La camara y el fov son fijos, asi que el plano del rotulo siempre mide esto de
@@ -185,12 +193,12 @@ describe('HeroOrbCanvas recovered artifact', () => {
 
     // Y que el margen no sea tan grande que el rotulo quede ridiculo en escritorio.
     const escritorio = cabe(571, 497, false)
-    expect(escritorio.ocupa / escritorio.disponible).toBeGreaterThan(0.85)
+    expect(escritorio.ocupa / escritorio.disponible).toBeGreaterThan(0.6)
 
     // Un solo divisor para las dos composiciones es exactamente el fallo que hubo.
     expect(source).not.toMatch(/maxWidth \/ 6\.9\b/)
     // Y el divisor apaisado no puede volver a ser el de la cadena corta.
-    expect(avanceApaisado).toBeGreaterThan(11)
+    expect(avanceApaisado).toBe(avanceCompacto)
   })
 
   it('reports readiness only after the scene has rendered a frame', () => {
