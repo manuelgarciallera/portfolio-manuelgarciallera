@@ -29,7 +29,7 @@ export const MediaPlacementEditor = ({ readOnly = false }: Pick<UIFieldClientPro
       try {
         const response = await fetch(`/api/media/${encodeURIComponent(String(preview.assetId))}?depth=0`, { credentials: 'same-origin', signal: controller.signal })
         if (!response.ok) throw new Error('Media unavailable')
-        setAsset(presentPreviewAsset(await response.json(), preview.assetId))
+        setAsset(presentPreviewAsset(await response.json(), preview.assetId, window.location.origin))
         setAssetErrorId(null)
       } catch (reason) {
         if (!(reason instanceof DOMException && reason.name === 'AbortError')) setAssetErrorId(String(preview.assetId))

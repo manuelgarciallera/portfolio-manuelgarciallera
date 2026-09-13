@@ -58,7 +58,14 @@ export const verifyBrowserMediaPlacement = async ({ page, origin, width }) => {
   await page.locator('form[data-form-ready="true"]').first().waitFor()
   const editor = page.getByRole('region', { name: 'Encuadre reversible' })
   const image = editor.getByRole('img', { name: media.alt, exact: true })
-  await image.waitFor()
+  try { await image.waitFor() } catch (error) {
+    console.error('[media-placement] preview diagnostic', await editor.innerText())
+    console.error('[media-placement] selected asset diagnostic', await page.evaluate(async id => {
+      const response = await fetch(`/api/media/${id}?depth=0`)
+      return { status: response.status, body: await response.text() }
+    }, media.id))
+    throw error
+  }
   await image.evaluate(element => element.decode())
   const horizontal = editor.getByRole('slider', { name: /Punto focal horizontal/ })
   await horizontal.press('End')

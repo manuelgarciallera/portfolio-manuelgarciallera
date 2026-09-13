@@ -43,10 +43,18 @@ export const buildMediaPlacementPreview = (
 const positiveInteger = (value: unknown): number | undefined =>
   Number.isInteger(value) && Number(value) > 0 && Number(value) <= 20_000 ? Number(value) : undefined
 
-export const presentPreviewAsset = (value: unknown, expectedId: string | number): PreviewAsset => {
+export const presentPreviewAsset = (value: unknown, expectedId: string | number, trustedOrigin?: string): PreviewAsset => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('El medio no es válido.')
   const media = value as Record<string, unknown>
   if (String(media.id) !== String(expectedId)) throw new TypeError('El medio no coincide con la selección.')
+  let url = media.url
+  // Native Payload uploads may include serverURL. Never infer trust from media
+  // data: callers supply the browser origin or the validated owner config.
+  if (typeof url === 'string' && /^https?:\/\//.test(url) && trustedOrigin) {
+    const parsed = new URL(url)
+    if (parsed.origin !== trustedOrigin || parsed.username || parsed.password) throw new TypeError('La URL del medio no es válida.')
+    url = parsed.pathname + parsed.search + parsed.hash
+  }
   // Match the server binding exactly; merely allowing the revision prefix would
   // let unrelated IDs, revisions or filenames pass the presentation boundary.
   const revisionURL = typeof media.storageRevision === 'string' &&
@@ -55,7 +63,7 @@ export const presentPreviewAsset = (value: unknown, expectedId: string | number)
     typeof media.filename === 'string' && media.filename.length > 0 &&
     !['.', '..'].includes(media.filename) && !/[\\/\u0000-\u001f\u007f]/.test(media.filename)
     ? `/api/media/revision/${encodeURIComponent(String(expectedId))}/${media.storageRevision}/${encodeURIComponent(media.filename)}` : undefined
-  if (typeof media.url !== 'string' || (!media.url.startsWith('/api/media/file/') && (!revisionURL || media.url !== revisionURL))) {
+  if (typeof url !== 'string' || (!url.startsWith('/api/media/file/') && (!revisionURL || url !== revisionURL))) {
     throw new TypeError('La URL del medio no es válida.')
   }
   const width = media.width == null ? undefined : positiveInteger(media.width)
@@ -65,7 +73,7 @@ export const presentPreviewAsset = (value: unknown, expectedId: string | number)
     alt: typeof media.alt === 'string' ? media.alt.trim().slice(0, 300) : '',
     ...(height ? { height } : {}),
     id: expectedId,
-    url: media.url,
+    url,
     ...(width ? { width } : {}),
   }
 }

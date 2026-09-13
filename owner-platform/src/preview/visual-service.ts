@@ -26,7 +26,7 @@ const idOf = (value: unknown): string | undefined => {
   return (typeof id === 'string' || typeof id === 'number') && /^[A-Za-z0-9_-]{1,128}$/.test(String(id)) ? String(id) : undefined
 }
 
-export const loadContentVisualPreview = async ({ payload, req, collection, documentId }: { payload: Pick<Payload, 'findByID'>; req: PayloadRequest; collection: PreviewCollection; documentId: string }): Promise<PageVisualPreview> => {
+export const loadContentVisualPreview = async ({ payload, req, collection, documentId }: { payload: Pick<Payload, 'findByID'> & Partial<Pick<Payload, 'config'>>; req: PayloadRequest; collection: PreviewCollection; documentId: string }): Promise<PageVisualPreview> => {
   if (!isOwner(req.user)) throw new APIError('Se requiere una sesión owner.', 403)
   if (!isPreviewCollection(collection)) throw new APIError('La colección no dispone de vista editorial.', 400)
   if (!idOf(documentId)) throw new APIError('Identificador no válido.', 400)
@@ -46,7 +46,7 @@ export const loadContentVisualPreview = async ({ payload, req, collection, docum
     if (resolved !== value) pinnedMedia.add(id)
     return resolved
   }, presentAsset: (value, id) => {
-    const asset = presentPreviewAsset(value, id)
+    const asset = presentPreviewAsset(value, id, payload.config?.serverURL)
     return pinnedMedia.has(id)
       ? { ...asset, url: `/api/media/snapshot/${encodeURIComponent(String(page.restoredMediaSnapshot))}/${encodeURIComponent(id)}` }
       : asset

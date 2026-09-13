@@ -143,6 +143,24 @@ try {
       const history = await fetch(`${origin}/api/projects/versions`, { signal: AbortSignal.timeout(10_000) })
       assert.equal(history.status, 403, 'Anonymous visitors cannot enumerate project history')
       await history.arrayBuffer()
+      for (const project of projectsBefore) {
+        const versions = await request(`/api/projects/versions?where[parent][equals]=${project.id}&depth=0`)
+        assert.equal(versions.status, 200)
+        const { docs } = await versions.json()
+        assert(docs.length > 0, 'The privacy check must target an existing project version')
+        const versionId = docs[0].id
+        const ownedVersion = await request(`/api/projects/versions/${versionId}?depth=0`)
+        assert.equal(ownedVersion.status, 200, 'Owner can read the exact version being tested')
+        const snapshot = await ownedVersion.json()
+        assert.equal(snapshot.version.summary, project.summary)
+        const anonymousVersion = await fetch(`${origin}/api/projects/versions/${versionId}?depth=0`, {
+          signal: AbortSignal.timeout(10_000),
+        })
+        assert.equal(anonymousVersion.status, 403, 'Knowing a version ID must not reveal project history')
+        const denial = await anonymousVersion.text()
+        assert(!denial.includes(project.summary) && !denial.includes(project.caseStudyLayout[0].quote),
+          'Version denial must not contain authored project content')
+      }
       console.log('[production-http] anonymous project drafts and version history remain private')
     }
     let articlesBefore = []

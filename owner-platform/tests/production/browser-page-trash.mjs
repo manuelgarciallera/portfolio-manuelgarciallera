@@ -20,7 +20,16 @@ export const verifyBrowserPageTrash = async ({ page, origin, before }) => {
   await page.goto(`${origin}/admin/collections/pages/trash/${before.id}`, { waitUntil: 'domcontentloaded' })
   await page.getByRole('button', { name: 'Restaurar', exact: true }).click()
   const restoreDialog = page.locator('.restore-button')
-  await restoreDialog.waitFor({ state: 'visible' })
+  try {
+    await restoreDialog.waitFor({ state: 'visible' })
+  } catch (error) {
+    console.log('[page-trash diagnostic]', JSON.stringify({
+      path: new URL(page.url()).pathname,
+      text: (await page.locator('body').innerText()).slice(-9000),
+      dialogs: await page.locator('[role="dialog"]').evaluateAll(elements => elements.map(element => ({ className: element.className, text: element.textContent }))),
+    }))
+    throw error
+  }
   assert.equal(await restoreDialog.locator('#restore-as-published').isChecked(), false, 'Restore only as a draft')
   const restoring = page.waitForResponse(response => response.request().method() === 'PATCH' && new URL(response.url()).pathname === '/api/pages')
     .then(response => ({ response }), error => ({ error }))

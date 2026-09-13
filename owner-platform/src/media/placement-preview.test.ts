@@ -55,10 +55,28 @@ describe('buildMediaPlacementPreview', () => {
 })
 
 describe('presentPreviewAsset', () => {
+  it('normalizes an absolute upload URL only with an explicitly trusted origin', () => {
+    expect(presentPreviewAsset({ id: 12, url: 'https://owner.example.invalid/api/media/file/hero.webp' }, 12, 'https://owner.example.invalid').url).toBe('/api/media/file/hero.webp')
+  })
+  it.each([
+    'https://other.example.invalid/api/media/file/hero.webp',
+    'http://owner.example.invalid/api/media/file/hero.webp',
+    'https://owner.example.invalid:444/api/media/file/hero.webp',
+    'https://user:password@owner.example.invalid/api/media/file/hero.webp',
+    '//owner.example.invalid/api/media/file/hero.webp',
+    'https://owner.example.invalid/api/users',
+  ])('rejects an untrusted absolute media URL: %s', url => {
+    expect(() => presentPreviewAsset({ id: 12, url }, 12, 'https://owner.example.invalid')).toThrow()
+  })
   const revision = '12345678-1234-4234-8234-123456789012'
   const versioned = { id: 12, storageRevision: revision, filename: 'portada ñ.png', url: `/api/media/revision/12/${revision}/portada%20%C3%B1.png` }
   it('accepts a canonical local revision URL bound to the selected media metadata', () => {
     expect(presentPreviewAsset(versioned, 12).url).toBe(`/api/media/revision/12/${revision}/portada%20%C3%B1.png`)
+  })
+  it('preserves revision binding when normalizing the trusted origin', () => {
+    expect(presentPreviewAsset({ ...versioned, url: `https://owner.example.invalid${versioned.url}` }, 12, 'https://owner.example.invalid').url).toBe(versioned.url)
+    expect(() => presentPreviewAsset({ ...versioned, url: `https://owner.example.invalid/api/media/revision/13/${revision}/portada%20%C3%B1.png` }, 12, 'https://owner.example.invalid')).toThrow()
+    expect(() => presentPreviewAsset({ id: 12, url: 'https://owner.example.invalid/api/media/file/hero.webp' }, 12)).toThrow()
   })
   it.each([
     { url: `/api/media/revision/13/${revision}/portada%20%C3%B1.png` },

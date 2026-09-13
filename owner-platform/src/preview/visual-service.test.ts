@@ -9,6 +9,13 @@ const page = { id: 7, title: 'Inicio', updatedAt: '2026-09-05T10:00:00Z', _statu
 ] }
 
 describe('private visual page preview', () => {
+  it('renders absolute native media URLs from the configured owner origin', async () => {
+    const findByID = vi.fn(async ({ collection }) => collection === 'articles'
+      ? { title: 'Artículo', articleLayout: [{ blockType: 'articleGallery', items: [{ asset: 9 }] }] }
+      : { id: 9, url: 'https://owner.example.invalid/api/media/file/cover.webp', alt: 'Original' })
+    const result = await loadContentVisualPreview({ payload: { findByID, config: { serverURL: 'https://owner.example.invalid' } } as never, req: req as never, collection: 'articles', documentId: '2' })
+    expect(result.assets['9']?.url).toBe('/api/media/file/cover.webp')
+  })
   it('loads article galleries with contextual alt and rejects unrelated placements', async () => {
     const findByID = vi.fn(async ({ collection }) => collection === 'articles' ? { title: 'Artículo', articleLayout: [
       { blockType: 'articleGallery', items: [{ asset: 9, alt: 'Primer uso', placement: 4 }, { asset: 9, alt: 'Segundo uso' }] },
