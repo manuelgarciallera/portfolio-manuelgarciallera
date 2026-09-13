@@ -65,3 +65,43 @@ environment or production config changed. No patch to node_modules.
 Next: isolate the Next/Turbopack worker boundary and compare with the previously
 successful Linux candidate. Active Windows build remains red; do not commit the
 dependency cutover as fully verified or deploy it on the strength of unit tests.
+
+## Windows build gate resolved without changing TLS trust
+
+The missing reproduction detail was `execArgv: []`: a native Node Worker with
+that explicit option and inherited NODE_OPTIONS=--use-system-ca rejects the
+flag (2aad10). Next's Turbopack build worker explicitly supplies execArgv. The
+earlier minimal worker inherited arguments and therefore did not reproduce it.
+
+Node documents NODE_USE_SYSTEM_CA=1 as the equivalent supported environment
+form since24.6/22.19: https://nodejs.org/api/cli.html#node_use_system_ca1.
+For this build only, used a child environment with NODE_OPTIONS empty and
+NODE_USE_SYSTEM_CA=1, after checking the original NODE_OPTIONS contained exactly
+the single --use-system-ca flag. No other options were removed; no machine or
+repository settings were changed. The explicit precondition prevents silently
+discarding a different configuration.
+
+Hash comparison of sorted default trusted certificate sets from two fresh Node
+processes (original flag versus environment form) matches (6e3af6). No certificate
+contents were recorded. Build using the child environment passes (ebf43b):
+compile15s, TypeScript22.9s, 23/23 pages, exit0. This is the active Windows tree,
+not the previous Linux candidate. First trust-check command had a shell quoting
+error and was rerun correctly; only6e3af6 is evidence.
+
+Reproduce from owner-platform in PowerShell:
+
+```powershell
+node -e "const {spawnSync}=require('node:child_process');if((process.env.NODE_OPTIONS||'').trim()!=='--use-system-ca')throw Error('Unexpected NODE_OPTIONS; refusing to replace');const r=spawnSync(process.execPath,['scripts/build.mjs'],{stdio:'inherit',env:{...process.env,NODE_OPTIONS:'',NODE_USE_SYSTEM_CA:'1'}});if(r.error)throw r.error;process.exit(r.status??1)"
+```
+
+Do not use this workaround blindly when other NODE_OPTIONS are present. It is
+an explicit local invocation, not an automatic runtime/environment normalizer.
+
+## Active SQLite integration remains incomplete
+
+`npm run test:integration` terminated exit1 (bdffb7): 68 passed,23 skipped out of
+92;7 files passed,4 skipped out of12, plus an unhandled worker-fork unexpected
+exit. The skipped cases are PostgreSQL-specific; this does not explain away
+the missing test/worker error. A fresh verbose run is needed to identify the
+unfinished file. No production or test code has been changed to bypass it.
+Do not confuse the green build with completion of all integration gates.
