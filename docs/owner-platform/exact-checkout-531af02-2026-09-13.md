@@ -32,6 +32,12 @@ remains. No deployment approval.
   Login, history, frozen preview and independent page/article edits worked
   after recovery. Original logical state and backup receipts stayed unchanged.
   The runner confirmed shutdown and cleanup. Synthetic local drill only.
+- Exact-checkout npm test completed exit0 (93fafe):1311 passed,2 Windows-only
+  path-security tests skipped on Linux,171 files;8 script tests also pass
+  (4d995c). These skips guard drive-relative and UNC/device roots and are
+  explicitly conditional on win32, not disabled to obtain a passing run.
+  Typecheck and complete lint pass1b908a. This does not fix or retest the
+  intermittent native Windows SQLite process failure.
 
 No production changes, real credentials, new provider or public code edits.
 Next: installation and intermittent Windows native-crash limitations remain
