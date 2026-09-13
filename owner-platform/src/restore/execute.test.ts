@@ -53,6 +53,45 @@ const makePayload = (events: string[], persistedPin: unknown = 13) => {
 }
 
 describe('executeOwnerRestorePlan', () => {
+  it.each([
+    { name: 'regenerated block row ID', patch: { layout: [{ blockType: 'hero', heading: 'Versión restaurada', id: 'new-row' }] }, allowed: true },
+    { name: 'changed title', patch: { title: 'Changed' }, allowed: false },
+    { name: 'changed slug', patch: { slug: 'other' }, allowed: false },
+    { name: 'lost block', patch: { layout: [] }, allowed: false },
+    { name: 'changed block text', patch: { layout: [{ blockType: 'hero', heading: 'Changed' }] }, allowed: false },
+    { name: 'added image relation', patch: { layout: [{ blockType: 'hero', heading: 'Versión restaurada', image: 99 }] }, allowed: false },
+    { name: 'nested content ID', patch: { layout: [{ blockType: 'hero', heading: 'Versión restaurada', body: { id: 'content-reference' } }] }, allowed: false },
+    { name: 'changed brand relation', patch: { brandProfile: 4 }, allowed: false },
+    { name: 'changed brand color', patch: { brandOverrides: { accent: '#000000' } }, allowed: false },
+    { name: 'added SEO directive', patch: { seo: { noIndex: true } }, allowed: false },
+  ])('verifies editorial state: $name', async ({ patch, allowed }) => {
+    const events: string[] = []
+    const payload = makePayload(events)
+    const execution = executeOwnerRestorePlan({
+      confirmation: 'EJECUTAR RESTAURACIÓN', planId: 50, payload, req: { payload, user: owner },
+      dependencies: {
+        begin: async () => { events.push('begin'); return true },
+        commit: async () => { events.push('commit') },
+        rollback: async () => { events.push('rollback') },
+        createDraft: async () => {
+          events.push('snapshot:draft')
+          return { id: 71, capsule: createDraftCapsule({
+            source: { collection: 'pages', documentId: '7', versionId: 'current:new' },
+            state: { ...targetCapsule.state, ...patch },
+          }) }
+        },
+        createPreview: async () => { events.push('snapshot:preview'); return { id: 72, manifest: confirmationManifest } },
+      },
+    })
+    if (allowed) {
+      await expect(execution).resolves.toMatchObject({ status: 'executed' })
+      expect(events.at(-1)).toBe('commit')
+      expect(events).not.toContain('rollback')
+    } else {
+      await expect(execution).rejects.toMatchObject({ status: 409 })
+      expect(events).toEqual(['begin', 'update:pages', 'snapshot:draft', 'rollback'])
+    }
+  })
   it.each([false, true])('checks the actual hook binding before committing (cloned request: %s)', async (cloneRequest) => {
     const events: string[] = []
     const payload = makePayload(events)

@@ -21,3 +21,7 @@ The first strict candidate rejected two otherwise valid restores. Temporary fixt
 - Eight owner-isolation negative/positive tests passed, session81577 terminal0 (`6da254`); fake-checkpoint fatal text is an intentional rejected negative case.
 
 The PostgreSQL run used the existing Linux QA checkout with the two changed files overlaid, not a fresh checkout of a new commit. No new browser/build/physical disaster-recovery claim. Next Codex: full regression, additional state-mutation coverage, exact-checkout verification and remaining operational gates. The Windows build failure remains separate and open.
+
+## Additional state coverage
+
+Ten cases exercise the real executor against controlled persistence responses: changed title, slug, lost block, changed block text, image relation, nested content ID, brand relation, brand color and SEO directive must reject409 before preview/success/commit. A regenerated top-level block row ID alone must still succeed. Focused suite21/21 passed (`d6f373`). These are unit boundary tests, not ten new database/browser scenarios; the real PostgreSQL rollback test above remains the persistence evidence.
