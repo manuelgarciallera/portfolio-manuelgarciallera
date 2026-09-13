@@ -8,7 +8,7 @@ Base4a3ad7e. This supersedes the earlier build blocker only for the explicit inv
 
 The current host has exactly --use-system-ca in NODE_OPTIONS (778e83). The diagnostic guards that exact value before changing anything in a child environment; it cannot discard unrelated options. Original process/global configuration remains unchanged. NODE_EXTRA_CA_CERTS and all other environment values are preserved; certificate verification is never disabled.
 
-`node owner-platform/tests/diagnostics/system-ca-equivalence.cjs` compares parent/child/worker default trusted certificate sets without emitting certificates. Execution17c22d on Node24.13.0 passed: both forms have247 unique certificates and identical SHA256852033512837186a4ba6b4c6f20062bc791f1a4b690d9ebd5e87143b308a2cf5. Explicit-env/execArgv-empty worker now exits normally. This establishes equivalence on this observed host, not every platform/runtime.
+`node owner-platform/tests/diagnostics/system-ca-equivalence.mjs` compares parent/child/worker default trusted certificate sets without emitting certificates. The diagnostic originally used `.cjs`; it was converted to ES modules after full lint rejected CommonJS imports. Execution17c22d on Node24.13.0 passed: both forms have247 unique certificates and identical SHA256852033512837186a4ba6b4c6f20062bc791f1a4b690d9ebd5e87143b308a2cf5. Explicit-env/execArgv-empty worker now exits normally. This establishes equivalence on this observed host, not every platform/runtime.
 
 ## Build invocation and terminal evidence
 

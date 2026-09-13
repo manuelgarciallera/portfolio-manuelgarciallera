@@ -1,9 +1,12 @@
 // Diagnostic only: reports trust-set digests, never certificate contents.
-const assert = require('node:assert/strict')
-const { spawnSync } = require('node:child_process')
-const { Worker, parentPort, isMainThread } = require('node:worker_threads')
-const { createHash } = require('node:crypto')
-const { getCACertificates } = require('node:tls')
+import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
+import { Worker, parentPort, isMainThread } from 'node:worker_threads'
+import { createHash } from 'node:crypto'
+import { getCACertificates } from 'node:tls'
+import { fileURLToPath } from 'node:url'
+
+const filename = fileURLToPath(import.meta.url)
 
 function certificateSet() {
   const certificates = [...new Set(getCACertificates('default'))].sort()
@@ -14,7 +17,7 @@ if (!isMainThread) {
 } else if (process.argv[2] === 'baseline') {
   console.log(JSON.stringify(certificateSet()))
 } else if (process.argv[2] === 'candidate') {
-  const worker = new Worker(__filename, { execArgv: [], env: { ...process.env } })
+  const worker = new Worker(filename, { execArgv: [], env: { ...process.env } })
   worker.on('message', result => {
     assert.deepEqual(result, certificateSet(), 'Worker default trust must match parent')
     console.log(JSON.stringify(result))
@@ -24,7 +27,7 @@ if (!isMainThread) {
 } else {
   assert.equal(process.env.NODE_OPTIONS?.trim(), '--use-system-ca', 'Probe requires exact known flag; do not discard other options')
   const run = (mode, env) => {
-    const result = spawnSync(process.execPath, [__filename, mode], { env, encoding: 'utf8', timeout: 20000 })
+    const result = spawnSync(process.execPath, [filename, mode], { env, encoding: 'utf8', timeout: 20000 })
     assert.equal(result.status, 0, `${mode} must exit normally: ${result.stderr}`)
     return JSON.parse(result.stdout)
   }

@@ -2,6 +2,28 @@
 
 Fecha: 2026-09-05. Base: `d4a785f`. Configuración local, sin push ni despliegue.
 
+## Seguimiento · 13 de septiembre de 2026
+
+Sobre la base `81d87c0`, el comando local `check` incorpora los dos ensayos
+existentes de recuperación física SQLite: esquema completo y medios versionados.
+Se ejecutan después de integración y antes de lint/tipos/build mediante `&&`:
+un fallo impide continuar. No se modifica el workflow de GitHub ni se solicitan
+credenciales, gasto, ejecución remota o despliegue.
+
+Motivo concreto: el ensayo de esquema completo detectó una inicialización
+incorrecta del secreto sintético antes del import de configuración, reparada en
+`81d87c0`. Al no formar parte de `check`, esa puerta quedaba fuera de la
+comprobación normal. Las cifras de abajo son históricas; la ejecución conjunta
+de esta ampliación debe verificarse antes de su cierre.
+
+Primera ejecución ampliada, sesión 31958: 23 pruebas de scripts, 1.346 unitarias,
+70 integraciones (24 exclusivas de PostgreSQL omitidas) y ambos ensayos físicos
+completados. Se detiene con salida 1 en lint (425e5b): el diagnóstico CA añadido
+usaba CommonJS. Se convierte a `.mjs` sin excepciones de lint; su prueba de
+confianza vuelve a pasar con 247 certificados y digest idéntico (505ea3).
+La compilación posterior termina con 23 páginas (101e2a). La cadena completa
+sobre el commit corregido queda pendiente de repetición; no se afirma CI verde.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
