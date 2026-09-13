@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseContactSubmission } from "@/lib/contact";
+import { CONTACT_BODY_BYTES, readContactBody } from "@/lib/contact-body";
 import { sendContactMessage } from "@/lib/mailer";
 
 // POST /api/contact
@@ -48,12 +49,18 @@ export async function POST(request: Request) {
     }
 
     const contentLength = Number(request.headers.get("content-length") || 0);
-    if (contentLength > 12_000) {
+    if (contentLength > CONTACT_BODY_BYTES) {
       return NextResponse.json({ ok: false, error: "El mensaje es demasiado grande." }, { status: 413 });
     }
 
-    const body = await request.json().catch(() => ({}));
-    const parsed = parseContactSubmission(body);
+    const body = await readContactBody(request);
+    if (!body.ok) {
+      return NextResponse.json(
+        { ok: false, error: body.status === 413 ? "El mensaje es demasiado grande." : "Solicitud no válida." },
+        { status: body.status },
+      );
+    }
+    const parsed = parseContactSubmission(body.data);
     if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
     if ("spam" in parsed) return NextResponse.json({ ok: true });
 
