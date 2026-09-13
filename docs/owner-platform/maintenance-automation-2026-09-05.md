@@ -131,6 +131,15 @@ ensayo local con concurrencia acotada, no CI remota, PostgreSQL ni staging.
 No hay modificación del lock ni despliegue. No se añade un test que compare
 texto de configuración: la regresión ejercita la batería real que falló.
 
+Después se ejecuta `npm run test:integration:postgres` con PostgreSQL 16 en
+el mismo entorno de dependencias nuevas, sesión 50124: salida 0 (0b58e9),
+94 pruebas y 12 archivos, sin omisiones. Incluye migraciones, transacciones,
+recuperación concurrente, restricciones de acceso y medios. El runner comprueba
+cierre de conexiones y anuncia parada del clúster y retirada de su raíz
+sintética. No son datos alojados ni correo real. El ajuste de concurrencia de
+unitarias no cambia esta configuración de integración. Siguiente puerta:
+editor completo con estas dependencias, antes de cualquier afirmación de UX.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
