@@ -11,7 +11,11 @@ export const verifyBrowserProjectGrid = async ({ page, context, origin, width, p
   await page.locator('.blocks-field__drawer-toggler').press('Enter')
   await page.getByRole('button', { name: 'Galería de proyectos', exact: true }).click()
   await page.getByRole('textbox', { name: /^Encabezado/ }).fill('Proyectos seleccionados')
-  const selection = page.locator('#field-layout__0__projects').getByRole('combobox')
+  const selection = page.getByRole('combobox', { name: 'Proyectos', exact: true })
+  await selection.waitFor({ timeout: 5000 })
+  await page.locator('#field-layout__0__projects label.field-label').click()
+  assert.equal(await selection.evaluate(element => document.activeElement === element), true,
+    'The project-grid label must focus its actual multi-select input')
   await selection.fill(project.title)
   await page.getByRole('option', { name: project.title, exact: true }).click()
   await page.locator('.blocks-field__drawer-toggler').press('Enter')
@@ -30,6 +34,10 @@ export const verifyBrowserProjectGrid = async ({ page, context, origin, width, p
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()
   await page.locator('#field-layout__0__projects').getByText(project.title, { exact: true }).waitFor()
+  await selection.waitFor({ timeout: 5000 })
+  await page.locator('#field-layout__0__projects label.field-label').click()
+  assert.equal(await selection.evaluate(element => document.activeElement === element), true,
+    'The project-grid selector must remain labelled after save and reload')
   await page.locator('#field-layout__1__featureKey').getByText('Panel de contacto', { exact: true }).waitFor()
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   const read = id => page.evaluate(async ({ collection, id }) => {

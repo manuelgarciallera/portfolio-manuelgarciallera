@@ -44,3 +44,22 @@ todas sus combinaciones, entradas inválidas, listas extensas o funcionalidades
 especiales. La composición propia de customFeature sigue pendiente de conexión.
 La usabilidad humana y los nuevos controles visuales requieren revisar el
 editor con Manuel. No se declara resuelta la intermitencia histórica de papelera.
+
+## Corrección posterior: nombre accesible del selector
+
+Sobre 8b539e6, el recorrido se refuerza exigiendo el combobox por el nombre
+visible «Proyectos» y foco real al pulsar su etiqueta, antes y después de
+guardar/recargar. RED: sesión 23886 termina 1 (396c1f); el selector no se
+encuentra por ese nombre aunque el ensayo anterior lo operaba por contenedor.
+
+Pages no había registrado en ProjectGrid el adaptador RelationshipLabelBinding
+ya utilizado en otros campos. Se registra únicamente en ese selector múltiple;
+no cambia permisos, búsqueda, datos ni el control nativo. No se añade una
+dependencia ni se modifica el bundle público.
+
+GREEN: sesión 80288, salida 0 (107132). A 390/1280, nombre accesible y foco
+verificados antes/después de recargar; selección, preview y las ocho páginas
+conservadas tras reinicio. Lint y 41 pruebas relacionadas pasan (12640a).
+Build incluido en el harness; procesos app/clúster cerrados y raíz retirada,
+ps sin QA activo (018fa1). El mismo overlay Linux descrito arriba incluye ahora
+estos dos archivos; no es prueba del SHA final ni de lector de pantalla físico.

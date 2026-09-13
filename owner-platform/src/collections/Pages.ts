@@ -108,7 +108,9 @@ const ProjectGridBlock: Block = {
   labels: { singular: 'Galería de proyectos', plural: 'Galerías de proyectos' },
   fields: [
     { name: 'heading', label: 'Encabezado', type: 'text' },
-    { name: 'projects', label: 'Proyectos', type: 'relationship', relationTo: 'projects', hasMany: true },
+    { name: 'projects', label: 'Proyectos', type: 'relationship', relationTo: 'projects', hasMany: true,
+      admin: { components: { beforeInput: ['./components/RelationshipLabelBinding#RelationshipLabelBinding'] } },
+    },
   ],
 }
 
