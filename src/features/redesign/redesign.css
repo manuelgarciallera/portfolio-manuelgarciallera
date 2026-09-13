@@ -1038,6 +1038,24 @@
 .rd-tech-stack__item:hover { color: var(--tech-color, currentColor); transform: none; }
 .rd-tech-stack--compact { flex-wrap: wrap; }
 .rd-tech-stack--compact .rd-tech-stack__item { min-width: 3.8rem; }
+.rd-case-mobile-stack { display: none; }
+@media (max-width: 767px) {
+  /* Keep technologies in normal flow, outside the clipped/hidden carousel copy. */
+  .rd-case-visual-copy .rd-tech-stack { display: none; }
+  .rd-case-mobile-stack {
+    display: block;
+    min-width: 0;
+    padding-block: 1rem 1.5rem;
+  }
+  .rd-case-mobile-stack .rd-tech-stack {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 1rem 1.15rem;
+    overflow: visible;
+  }
+  .rd-case-mobile-stack .rd-tech-stack__item { white-space: nowrap; }
+}
 @media (max-width: 760px) {
   .rd-tech-stack__item svg { width: 1.5rem; height: 1.5rem; }
 }

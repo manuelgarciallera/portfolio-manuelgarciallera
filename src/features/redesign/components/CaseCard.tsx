@@ -134,6 +134,11 @@ export function CaseCard({ item, viewportActive = false, registerPreview }: Case
           />
         </div>
       ) : null}
+      {item.visual ? (
+        <footer className="rd-case-mobile-stack">
+          <TechStack technologies={item.stack} />
+        </footer>
+      ) : null}
     </article>
   )
 }

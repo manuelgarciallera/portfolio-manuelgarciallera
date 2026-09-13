@@ -48,6 +48,16 @@ const buySell: CaseStudy = {
 }
 
 describe('CaseCard', () => {
+  it.each([5, 6, 7])('keeps all %i mobile technologies outside the image overlay', (count) => {
+    const stack = ['Figma', 'React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'OpenAI/Codex', 'Node.js'].slice(0, count)
+    const markup = renderToStaticMarkup(<CaseCard item={{ ...buySell, stack }} />)
+    const footer = markup.match(/<footer class="rd-case-mobile-stack">([\s\S]*?)<\/footer><\/article>/)?.[1]
+    expect(footer).toBeDefined()
+    expect(footer?.match(/class="rd-tech-stack__item"/g)).toHaveLength(count)
+    for (const technology of stack) expect(footer).toContain(technology)
+    expect(footer).not.toContain('rd-preview-carousel')
+  })
+
   it('renders a branded visual preview for a published project', () => {
     const markup = renderToStaticMarkup(<CaseCard item={buySell} />)
 
