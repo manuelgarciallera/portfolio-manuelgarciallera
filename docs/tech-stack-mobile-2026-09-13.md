@@ -20,3 +20,20 @@ afirma corrección verificada en producción ni en un dispositivo físico.
 
 Siguiente: permitir navegador local, revisar 320/390/767 y escritorio, verificar
 ambos estados del carrusel y publicar solo tras las puertas aplicables.
+
+## Comprobación previa a sincronizar GitHub
+
+Fetch del 13 de septiembre: remoto 5153661, local b9a8b3a, 124 commits por
+delante y cero por detrás. El único delta público está en CaseCard y su CSS/test;
+los restantes commits pertenecen al CMS/documentación. Seis archivos del arnés
+CMS siguen sin commit y no se mezclan con la corrección pública.
+
+`check:all` completo pasa (bbffca): 227 unitarias, 14 guardas, tipos, lint,
+build de 29 páginas, presupuesto de bundle de 10 rutas y auditoría de dependencias
+de producción sin vulnerabilidades reportadas. La primera ejecución falló por
+`--use-system-ca` heredado en NODE_OPTIONS; se retiró solo esa opción del proceso
+temporal, restaurándola después, sin desactivar validación TLS ni cambiar archivos.
+
+Esto no sustituye la comprobación visual pendiente. No push ni despliegue en esta
+comprobación. El conector de Vercel devuelve 404 al consultar el proyecto localmente
+enlazado; no se acredita configuración actual de publicación automática.
