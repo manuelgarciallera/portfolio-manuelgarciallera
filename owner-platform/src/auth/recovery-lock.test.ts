@@ -4,7 +4,7 @@ import { lockRecoveryToken } from './recovery-lock'
 
 const request = (sessions: Record<string, unknown>, transactionID?: string) => ({
   transactionID,
-  payload: { db: { name: 'postgres', sessions, drizzle: {
+  payload: { logger: { debug: vi.fn() }, db: { name: 'postgres', sessions, drizzle: {
     execute: () => { throw new Error('Must not use the pool outside the reset transaction') },
   } } },
 }) as unknown as PayloadRequest
@@ -33,5 +33,19 @@ describe('recovery transaction admission', () => {
   it('admits only an affirmative transaction result', async () => {
     const execute = vi.fn().mockResolvedValue({ rows: [{ acquired: true }] })
     await expect(lockRecoveryToken(request({ active: { db: { execute } } }, 'active'), 'synthetic-token')).resolves.toBeUndefined()
+  })
+
+  it.each([
+    [{ rows: [{ acquired: false }] }, 'contention_or_collision'],
+    [{ rows: [] }, 'unexpected_result'],
+  ])('diagnoses a rejected lock without recording recovery credentials: %j', async (result, reason) => {
+    const execute = vi.fn().mockResolvedValue(result)
+    const req = request({ active: { db: { execute } } }, 'active')
+    const token = 'private-synthetic-reset-token'
+    await expect(lockRecoveryToken(req, token)).rejects.toMatchObject({ status: 403 })
+    expect(req.payload.logger.debug).toHaveBeenCalledWith({
+      event: 'owner.auth.recovery.lock_not_acquired', reason,
+    }, 'Owner recovery lock not acquired')
+    expect(JSON.stringify(vi.mocked(req.payload.logger.debug).mock.calls)).not.toContain(token)
   })
 })
