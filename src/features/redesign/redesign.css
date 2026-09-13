@@ -1017,6 +1017,7 @@
 .rd-case-visual-details { display: none; }
 .rd-tech-stack {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: clamp(.75rem, 1vw, 1.15rem);
   min-width: 0;
@@ -2015,6 +2016,16 @@
   /* Sin hover, el area activa de estos enlaces tiene que valer por si sola. */
   .rd-identity__ids { gap: 0.2rem 1.6rem; }
   .rd-identity__ids a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+}
+
+/* All stacks wrap at their existing icon size, including compact/tablet stacks.
+   Overrides the historical mobile horizontal-strip rule above. */
+.rd-tech-stack,
+.rd-tech-stack--compact,
+.rd-meta-grid .rd-tech-stack {
+  max-width: 100%;
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 /* After the tablet rule: metadata must not reserve half the phone for Año. */
