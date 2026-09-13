@@ -81,6 +81,56 @@ No se han modificado componentes ni datos. El clon sigue sin cambios rastreados
 sesión completa Payload ni conexión real a proveedores o validación humana de
 usabilidad. Los navegadores de los harnesses cerraron al terminar.
 
+### Instalación Linux offline · 13 de septiembre
+
+La conexión directa también falla con `curl --resolve` conservando el nombre
+TLS (9e040e); no es solo resolución DNS. Alternativa sin alterar red ni confianza:
+prefetch Windows desde el mismo package/lock con `--os=linux --cpu=x64
+--libc=glibc --ignore-scripts` y caché nueva, salida 0 en el log npm (55093c).
+Se transfiere únicamente esa caché, nunca node_modules, al checkout Linux
+230278e ya identificado. Opciones documentadas por
+[npm](https://docs.npmjs.com/cli/v11/using-npm/config/).
+
+`npm ci --offline` Linux, sin ignore-scripts, termina 0 (48473 / f5da1c):
+731 paquetes, postinstall owner ejecutado, Node 24.18.0 / npm 11.16.0.
+`npm ls --depth=0`, hash del lock y diff rastreado correctos (208533).
+Npm avisa de cuatro scripts sin política allowScripts (esbuild y unrs-resolver);
+no se aprueban en bloque ni se modifica la política. No atribuir el resultado
+a una instalación descargada por Linux ni a una ejecución de GitHub Actions.
+
+Primera comprobación completa: salida 1 (28774 / 646c44), 23 scripts pasan;
+unitarias: 1.328 pasan, 16 fallan y dos se omiten por plataforma. Varios casos
+de archivos alcanzan 5 segundos y su limpieza posterior también falla;
+integración/recuperación/build no se ejecutan por la cadena `&&`.
+No se aumentan timeouts ni se omiten pruebas. Dos suites afectadas pasan
+aisladas con un worker: 28/28 (f44bba). Se investiga concurrencia del ensayo;
+este resultado parcial no cierra el fallo ni acredita el check completo.
+
+Comparación completa con la única opción `--maxWorkers=2`: 171 archivos pasan,
+1.344 pruebas correctas y dos exclusivas Windows omitidas, salida 0 (67479 /
+4e88dd), sin cambiar sus 5 segundos ni aserciones. El contenedor expone 12 CPU,
+sin throttling registrado y con memoria disponible (957878); no se atribuye el
+fallo a memoria insuficiente. Se limita a dos procesos en vitest.config.ts la
+competencia entre fixtures con escritura/sincronización física. No se modifica
+el runtime del CMS, ni su concurrencia, ni la configuración de integración.
+
+Repetición del `check` normal con ese delta explícito sobre 230278e, sesión
+59536: 23 scripts, 1.344 unitarias y dos omitidas (e3687c), 70 integraciones
+SQLite y 24 PostgreSQL omitidas (9fc662), recuperación completa con cinco
+archivos/cuatro medios/dos versiones (03a5a5) y versionada con 27 archivos,
+26 medios y siete daños rechazados (39afe5). Ambos ensayos conservan sus 47
+pruebas auxiliares. Lint pasa; tipos y build todavía en curso. Las pruebas de
+recuperación informan el SHA base: esta ejecución incluye el overlay de
+vitest.config.ts y no se presenta como checkout exacto del commit final.
+
+La sesión 59536 termina con salida 0 (ef32ed): tipos y build de 23 páginas
+completados, compilación 38,9 s y TypeScript 18,7 s. Configuración host/contenedor
+idéntica por SHA-256 a7443d499d8725b041ac4aebb9047863c8ac3aaa8b0373f48a9f25f1440e0768
+(ee0d78); solo ese archivo difiere de la base en el clon Linux. Es cierre del
+ensayo local con concurrencia acotada, no CI remota, PostgreSQL ni staging.
+No hay modificación del lock ni despliegue. No se añade un test que compare
+texto de configuración: la regresión ejercita la batería real que falló.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
