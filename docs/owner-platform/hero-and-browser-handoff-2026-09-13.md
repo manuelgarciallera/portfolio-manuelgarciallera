@@ -27,3 +27,16 @@ mobile screenshot in this delivery. Public deployment has not occurred.
 
 Hub reservations: b02f0b57-0ce3-4616-a91e-3c3176e30fd8 (CMS browser),
 13cb04a1-867e-4911-acbf-d11d273134f5 (hero).
+
+## Follow-up responsive observation
+
+After user requested desktop/mobile consistency, opened the local portfolio in
+the in-app browser at 1440x1000, 1024x900 and 390x1100 (dark), and 1920x1080
+(light). Screenshots show the clear orb above the three-line full name with
+García-Llera unbroken and no name/orb overlap. At the widest viewport the DOM
+measurement places the header right edge at 1842.27 and its last visible control
+at 1830.41 within a 1920px viewport; document scrollWidth is 1905. Browser captured
+error log is empty. Reset temporary viewport and returned theme to dark.
+
+Scope: local hero and top navigation, not an exhaustive all-pages visual audit,
+physical devices, every GPU, or production. No further code change or deployment.
