@@ -36,6 +36,27 @@ HEAD 230278e y requiere 11f75eb. No es copia externa ni respaldo de datos.
 La prueba usa dependencias ya instaladas en Windows; no acredita `npm ci`
 limpio en Ubuntu, CI remota, PostgreSQL alojado ni servicios de producción.
 
+### Instalación limpia en curso
+
+El intento Linux en `/tmp/owner-clean-install-yQ9arX/repo`, checkout limpio
+230278e sin node_modules y caché npm nueva, terminó con EAI_AGAIN al resolver
+registry.npmjs.org (18483 / d2a135). `strict-ssl` era true y el lock coincide
+con el revisado. Windows resuelve el mismo nombre; el lookup en el contenedor
+repite EAI_AGAIN (236946). No se cambiaron DNS ni TLS para ocultar el fallo.
+
+Alternativa separada: checkout Windows independiente
+`.audit/owner-clean-install-230278e`, sin node_modules (b87c53), sobre el mismo
+SHA. `npm ci` con caché nueva termina 0 (92101 / 8f2838): 729 paquetes en
+tres minutos y postinstall ejecutado. `npm ls --depth=0` termina 0; el lock
+conserva SHA-256 6d137a173cb560f26029e77fef1a1691c783c34fc567c6836b7c5c729f2d93fc
+(83728b). Sin cambios rastreados; solo npm-cache/ sin seguimiento en el clon.
+No se copió node_modules. Los avisos de obsolescencia no se trataron como
+autorización para actualizar versiones durante el ensayo.
+
+`npm run check` iniciado en ese checkout Windows nuevo, sesión 52629.
+Codex debe seguir ese handle hasta salida y distinguir esta prueba de la puerta
+Linux, aún impedida por DNS. No repetir la instalación ni la cadena por demora.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
