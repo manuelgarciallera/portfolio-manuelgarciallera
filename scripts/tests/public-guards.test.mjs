@@ -3,6 +3,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
+import { ESLint } from 'eslint'
 
 import { analyzePublicBoundary } from '../lib/public-boundary.mjs'
 import {
@@ -12,6 +13,15 @@ import {
 } from '../lib/public-bundle.mjs'
 
 const fixtures = join(import.meta.dirname, '..', '__fixtures__')
+
+test('root lint ignores disposable owner audit clones while retaining authored source checks', async () => {
+  const eslint = new ESLint()
+  assert.equal(await eslint.isPathIgnored('.audit/owner-clean-install/owner-platform/.next/server/chunks/generated.js'), true)
+  assert.equal(await eslint.isPathIgnored('.audit/owner-clean-install/owner-platform/src/collections/Pages.ts'), true)
+  assert.equal(await eslint.isPathIgnored('.owner-verification-builds/seo-proof/static/chunks/generated.js'), true)
+  const [result] = await eslint.lintText('export const invalid: any = 1', { filePath: 'src/audit-boundary-probe.ts' })
+  assert.ok(result.messages.some((message) => message.ruleId === '@typescript-eslint/no-explicit-any'))
+})
 
 test('public boundary rejects the sibling owner-platform source even without package imports', async () => {
   const result = await analyzePublicBoundary({ rootDir: join(fixtures, 'public-boundary', 'owner-root') })

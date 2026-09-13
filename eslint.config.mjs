@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "owner-platform/**",
+    // Disposable CMS verification clones contain their own sources and builds.
+    ".audit/**",
+    ".owner-verification-builds/**",
     "storybook-static/**",
     "next-env.d.ts",
   ]),
