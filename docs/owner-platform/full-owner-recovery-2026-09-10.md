@@ -81,6 +81,29 @@ fixture mínimo. `--full-owner` sin objetos se rechaza antes de crear un cluster
 - Typecheck y lint completos finales: salida 0 (73ad65). Sin cambios de runtime,
   no se ha repetido un build de Next ni desplegado este candidato.
 
+## Revalidación con instalación Linux nueva · 14/09/2026
+
+`npm run test:recovery:postgres -- --object-media --full-owner`, sesión 80532,
+termina con salida 0 (51e941) después de 47 pruebas auxiliares. PostgreSQL 16.15,
+pg_dump/pg_restore reales hacia una base nueva, con configuración owner completa
+y proveedor de objetos sintético. Instalación de dependencias Linux nueva desde
+caché, según maintenance-automation-2026-09-05.md.
+
+Resultado: 18 archivos de respaldo, 12 medios verificados, tres revisiones,
+tres versiones de página y dos de artículo; 12 daños rechazados antes de asignar
+el destino. Login, historial, preview congelado, plan de restauración y edición
+independiente de página/artículo recuperados. Diario/reconciliación de copia
+verificados, tres derivados retenidos. Estado lógico de origen y recibos de
+backup intactos; conexiones cerradas antes de copia, clúster detenido y raíz
+sintética retirada al terminar.
+
+Procedencia explícita: base Linux 230278e más overlays actuales de configuración
+unitaria, pruebas de bloques y etiqueta de ProjectGrid (5ea3e51 en el host).
+El SHA informado por el runner es la base, no el commit final. No se presenta
+como checkout exacto ni como backup externo, ensayo con datos de clientes,
+medición RPO/RTO o recuperación de infraestructura alojada. No se cambian
+runtime ni permisos en esta revalidación; no hay push o despliegue.
+
 ## Límites y siguiente puerta
 
 Configuración y esquema completos no equivalen a haber ejercitado todas las
