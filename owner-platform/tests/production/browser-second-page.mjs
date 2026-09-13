@@ -58,12 +58,17 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
     await content.press('ControlOrMeta+i')
   }
   // Lexical uses one strong element plus the italic theme class, not nested tags.
+  let savedRichText
   const assertEditorFormatting = async () => {
     const formatted = content.locator('strong')
     await formatted.waitFor()
     const style = await formatted.evaluate(element => ({ weight: getComputedStyle(element).fontWeight, style: getComputedStyle(element).fontStyle }))
     assert(Number(style.weight) >= 600, 'Bold text is visibly heavier in the editor')
-    assert.equal(style.style, 'italic', 'Italic text is visible in the editor')
+    assert.equal(style.style, 'italic', JSON.stringify({
+      assertion: 'Italic text is visible in the editor',
+      rendered: await formatted.evaluate(element => element.outerHTML),
+      savedRichText,
+    }))
   }
   await assertEditorFormatting()
   const saving = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/pages')
@@ -83,6 +88,7 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   }
   assert.equal(response.status(), 201, JSON.stringify(diagnostic))
   const { doc } = creation
+  savedRichText = doc.layout.find(block => block.blockType === 'richText')?.content
   assert.notEqual(doc.id, firstPage.id)
   await page.waitForURL(url => url.pathname === `/admin/collections/pages/${doc.id}`)
   await page.reload({ waitUntil: 'domcontentloaded' })

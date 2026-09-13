@@ -71,3 +71,30 @@ not that SHA alone, identify this tested implementation. Public protections pass
 These gates verify this local correction, not production readiness of the CMS.
 Native Windows intermittency, dependency cutover, real infrastructure and operator
 recovery are separate open gates; this fix does not close those by implication.
+
+## Subsequent browser and lifecycle verification
+
+Three additional lifecycle tests cover delayed initialization, rejected
+initialization and independent concurrently open sessions. The focused suite
+passes8/8, with ESLint and browser-test syntax checks passing (6274b7).
+These extend coverage of the existing implementation, not a new runtime fix.
+
+The native browser run43679 failed at1280px after saving and reloading rich text:
+the rendered strong element had normal, not italic, font style (648c1e).
+Its390px workflow had passed. Added diagnostic output of rendered HTML and
+the saved richText JSON; no delay, retry or weaker assertion was introduced.
+The diagnostic run8479 completed successfully (a77782, exit0), including390/1280
+native page/article editing, media, restoration, review without publication,
+anonymous denials and preservation across application restart. Owned app and
+database processes closed and the isolated root was cleaned.
+
+The later pass does NOT close the earlier intermittent formatting failure.
+Installed Lexical Field defers setValue through useRunDeprioritized; installed
+Payload Form captures field values during submission. A pending update racing
+with save is a hypothesis requiring controlled reproduction, not an established
+cause. Next action: distinguish saved-state loss from rendering/hydration timing
+using those diagnostics. Do not conceal it with arbitrary sleeps.
+
+This execution used the candidate dependency worktree and Linux source overlays,
+not a clean checkout of83c899c. Dependency cutover remains pending. Hub result
+df554fc1 records both runs and replaces the earlier in-progress report.

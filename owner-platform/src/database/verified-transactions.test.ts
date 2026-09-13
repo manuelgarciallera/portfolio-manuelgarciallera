@@ -59,4 +59,36 @@ describe('verified transaction outcomes', () => {
     await expect(adapter.rollbackTransaction(id!)).rejects.toBe(fault)
     expect(Object.keys(adapter.sessions)).toHaveLength(0)
   })
+  it('does not open a session before adapter initialization completes', async () => {
+    const { adapter } = fixture()
+    let initialize!: () => void
+    adapter.initializing = new Promise<void>(resolve => { initialize = resolve })
+    const opening = adapter.beginTransaction()
+    // Allow the asynchronous transaction callback to run if the gate is missing.
+    await new Promise(resolve => setImmediate(resolve))
+    expect(Object.keys(adapter.sessions)).toHaveLength(0)
+    initialize()
+    const id = await opening
+    expect(Object.keys(adapter.sessions)).toEqual([id])
+    await adapter.rollbackTransaction(id!)
+  })
+  it('propagates initialization failure without registering a session', async () => {
+    const { adapter } = fixture()
+    const failure = new Error('adapter initialization failed')
+    adapter.initializing = Promise.reject(failure)
+    await expect(adapter.beginTransaction()).rejects.toBe(failure)
+    expect(Object.keys(adapter.sessions)).toHaveLength(0)
+  })
+  it('keeps concurrently open sessions independent when one is rolled back', async () => {
+    const { adapter, persisted } = fixture()
+    const [first, second] = await Promise.all([adapter.beginTransaction(), adapter.beginTransaction()])
+    expect(first).not.toBe(second)
+    expect(Object.keys(adapter.sessions)).toHaveLength(2)
+    await adapter.rollbackTransaction(first!)
+    expect(persisted()).toBe(false)
+    expect(Object.keys(adapter.sessions)).toEqual([second])
+    await adapter.commitTransaction(second!)
+    expect(persisted()).toBe(true)
+    expect(Object.keys(adapter.sessions)).toHaveLength(0)
+  })
 })
