@@ -38,3 +38,31 @@ result still identify the previous lock: do not claim the new peer correction
 has Linux integration or physical recovery verification yet. Next: transfer
 the single new public tarball and candidate manifests, install offline, check
 the complete peer tree and rerun the relevant candidate gates. No deployment.
+
+## Linux correction and physical recovery recheck
+
+Transferred the one new public YAML tarball through the candidate cache, then
+installed the corrected lock with `npm ci --offline --strict-peer-deps
+--ignore-scripts --no-audit --no-fund`: exit 0, 731 Linux packages (`9255b8`).
+Complete npm ls JSON reports status 0 and no problems (`95fcaf`). Normalized the
+four copied file modes back to 100644. Exact isolated candidate commit:
+`3be89ecdc5b6a7da570a4829ef4d0389b8946496`.
+
+47 recovery helpers pass and full-owner object-backed PostgreSQL physical
+recovery passes (`aba73e`, exit 0) with this SHA: 18 backup files, 12 media files,
+three revisions, 12 rejected damage cases, page/article history and editing,
+login, migration reconciliation, restore plan, source state preservation and
+verified shutdown/cleanup. Preserved and verified a complete local Git bundle
+`.audit/payload389-candidate-3be89ec.bundle`; not an external production backup.
+
+The clean npm installation removed the old, already-stopped synthetic fixture
+PyuCTY from node_modules/.cache. Its raw files are no longer retained; the
+observed shutdown timing and diagnosis remain in the committed receipts. No
+real data was involved. Earlier wording about that fixture being retained is
+historical, not its current state.
+
+Full PostgreSQL integration of this corrected candidate also passes:
+92 tests / 12 files, 109.71 seconds (`8742e8`), followed by verified session
+closure, cluster shutdown and cleanup, terminal exit 0 (`294ed9`). This is fresh
+evidence for the corrected lock, not the previous-lock result. Active integration
+and authorized browser verification remain separate outstanding gates.
