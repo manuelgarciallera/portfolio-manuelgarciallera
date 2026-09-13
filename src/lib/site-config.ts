@@ -24,9 +24,9 @@ export const SITE_LANGUAGE = "es";
 export const PERSON_LEGAL_NAME = "Manuel Garc\u00EDa-Llera A\u00F1\u00F3n";
 export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa-Llera";
 export const SITE_NAME = PERSON_DISPLAY_NAME;
-export const SITE_TITLE = `${PERSON_DISPLAY_NAME} — Product Designer, Design Systems y HCI`;
+export const SITE_TITLE = `${PERSON_LEGAL_NAME} | Diseño UX/UI y sistemas de diseño`;
 export const SITE_DESCRIPTION =
-  "Manuel Garc\u00EDa-Llera, Product Designer y Design Engineer: sistemas de dise\u00F1o, HCI e interacci\u00F3n humano-IA, del prototipo al producto implementado.";
+  "Diseño UX/UI, sistemas de diseño e investigación en interacción humano-IA. Manuel García-Llera Añón: del concepto al producto digital.";
 
 export const SITE_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@manuelgarciallera.com";
 export const TWITTER_HANDLE = process.env.NEXT_PUBLIC_TWITTER_HANDLE || "";
