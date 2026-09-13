@@ -1,5 +1,39 @@
 # CMS owner: puertas operativas actuales
 
+## Punto de control · 14 de septiembre, base 4cea3f4
+
+Este apartado actualiza los anteriores sin sustituir sus bases de prueba:
+
+- Leídos completos los planes foundation, vertical-slice y studio-phase-2 del
+  04/09. Sus casillas sin marcar no son un inventario fiable de funciones
+  ausentes: se contrastan con fuentes y recibos, no se vuelven a implementar.
+- Foundation: 98 pruebas / 3 archivos pasan hoy; capacidades, contratos de
+  contenido y parsing Figma. No habilitan conectores externos.
+- Studio: 82 pruebas focales / 5 archivos pasan hoy sobre selector tipográfico,
+  herencia, manifiestos, servicio de preview y snapshots (8f025b). El selector
+  con muestra existe; el brief de revisión se actualiza para no pedirlo otra vez.
+- Cinco tipos de bloque probados en formularios nativos, incluyendo relación
+  ProjectGrid y etiqueta accesible: véase
+  [recibo de bloques](page-blocks-native-verification-2026-09-14.md).
+  Una referencia customFeature guardada no equivale a un módulo funcional.
+- Instalación Linux nueva, integración PostgreSQL y editor: recibos en
+  [mantenimiento](maintenance-automation-2026-09-05.md), commits 2be8ed5,
+  8817a4e y 244326b. Recuperación completa PostgreSQL posterior en
+  [recuperación](full-owner-recovery-2026-09-10.md), commit 20205f6.
+  Se mantienen declaradas las bases y overlays, no se afirma checkout exacto
+  del HEAD actual ni restauración en proveedor externo.
+- Aislamiento: boundary público pasa con 21 entradas; 8 tests de aislamiento
+  y 14 guards pasan (sesión 76723, salida 0 c3bbc9). Esto no sustituye un build
+  nuevo ni una comparación del bundle. El JSON de evidencia de fase 2 sigue
+  vinculado a b55325c: no certifica el HEAD actual.
+
+No se cierra el producto: faltan pruebas en destino alojado, correo real,
+respaldo externo restaurado, publicación/reversión autorizadas y revisión
+humana del editor. El objetivo vigente excluye despliegues y rediseños grandes.
+La siguiente acción no es activar readiness ni repetir baterías por rutina:
+reconciliar el resto de requisitos del plan con fuentes, y preparar la revisión
+del editor existente sin alterar el diseño público ni inventar capacidades.
+
 ## Punto de control · 13 de septiembre, base 59fa03c
 
 Esta sección prevalece sobre las cifras históricas de abajo, sin convertir
