@@ -4,6 +4,17 @@ import os from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import { prepareEditorAssets } from '../scripts/prepare-editor-assets.mjs'
+import { ESLint } from 'eslint'
+
+test('lint excludes copied editor distribution but still checks authored source and public scripts', async () => {
+  const lint = new ESLint({ cwd: path.resolve(import.meta.dirname, '..') })
+  assert.equal(await lint.isPathIgnored('public/vendor/monaco/0.56.0/vs/loader.js'), true)
+  for (const filePath of ['src/components/owner-check.ts', 'public/owner-check.js', 'scripts/owner-check.mjs']) {
+    assert.equal(await lint.isPathIgnored(filePath), false)
+    const [result] = await lint.lintText('const = ;', { filePath })
+    assert.ok(result.fatalErrorCount > 0, `${filePath} must still be checked`)
+  }
+})
 
 test('editor assets include the installed loader, workers and license without a CDN', async () => {
   const destination = await mkdtemp(path.join(os.tmpdir(), 'owner-editor-assets-'))
