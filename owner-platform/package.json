@@ -12,7 +12,7 @@
     "generate:types": "payload generate:types",
     "lint": "eslint .",
     "start": "next start",
-    "test": "node ./scripts/lexical-field-patch.mjs && node --test tests/lexical-field-patch.test.mjs tests/local-editor-assets.test.mjs tests/build-preserves-dev.test.mjs && vitest run",
+    "test": "node ./scripts/lexical-field-patch.mjs && node --test tests/lexical-field-patch.test.mjs tests/local-editor-assets.test.mjs tests/build-preserves-dev.test.mjs tests/build-environment.test.mjs && vitest run",
     "test:integration": "node scripts/test-integration.mjs",
     "test:integration:postgres": "node scripts/test-integration-postgres.mjs",
     "test:recovery": "node scripts/test-recovery.mjs",

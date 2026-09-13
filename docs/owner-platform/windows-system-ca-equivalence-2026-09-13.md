@@ -21,3 +21,15 @@ node -e "const assert=require('node:assert/strict');assert.equal(process.env.NOD
 Session28583 exits0 (f41fdc): compile8.6s, TypeScript13.6s,23/23 pages, normal Turbopack workers enabled. No bundler substitution, upstream patch, dependency change, global CA/antivirus setting, public source change or deployment. No ordinary npm-build success is claimed yet.
 
 Next Codex: integrate a narrowly guarded, version-aware equivalent child environment into the owner build launcher only after dedicated RED/GREEN tests; preserve all other options and legacy behavior. Native SQLite worker intermittency and provider/staging requirements remain separate. Do not call the whole CMS production-ready based on this build.
+
+## Launcher integration (subsequent to 8b336e0)
+
+The ordinary `npm run build` reproduced the actual worker error before the change (bc55ed, exit 1). A bare worker fixture alone passed and was not treated as proof of reproduction. The launcher-boundary test then failed on missing worker-compatible system trust (608a26, two failures).
+
+`scripts/build-environment.mjs` now translates only the standalone `--use-system-ca` flag, only on Windows with Node 22.19+, 24.6+, or 25+. All other options, unsupported runtimes and non-Windows environments remain untouched. The original environment is not mutated; no worker disabling or certificate-verification bypass is introduced. Compound/quoted option strings deliberately remain unchanged rather than risking removal of unrelated arguments.
+
+Seventeen targeted tests passed (ed207d). The ordinary `npm run build`, with no alternate command, exited 0 (session 24864, terminal 5488b7): compile 2.2 s, TypeScript 11.5 s, 23 static pages generated using 11 workers. Targeted ESLint exited 0 (a4569b); diff check clean. The repeated trust-set diagnostic passed (817210), with the same 247 certificates and digest, and the protected checkpoint remains unchanged.
+
+This closes the observed build invocation failure, not the remaining CMS operational gates. No public deployment, production-provider setup, or recovery-account capability is implied.
+
+Full `npm test` exited 0 (68962 / c18cef): 23 launcher/assets tests plus 1,346 unit tests in 171 files. Synthetic Payload fixtures emitted the existing no-email-adapter warnings; this is not a claim of production mail delivery. The new environment tests are included in the normal test command.

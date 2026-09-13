@@ -13,6 +13,7 @@ for (const exitCode of [0, 7]) {
         await mkdir(path.join(root, directory), { recursive: true })
       }
       await copyFile(new URL('../scripts/build.mjs', import.meta.url), path.join(root, 'scripts/build.mjs'))
+      await copyFile(new URL('../scripts/build-environment.mjs', import.meta.url), path.join(root, 'scripts/build-environment.mjs'))
       await copyFile(new URL('../scripts/lexical-field-patch.mjs', import.meta.url), path.join(root, 'scripts/lexical-field-patch.mjs'))
       for (const file of ['package.json', 'dist/field/Field.js', 'dist/exports/client/Field-J6MIUIWP.js']) {
         await copyFile(new URL(`../node_modules/@payloadcms/richtext-lexical/${file}`, import.meta.url), path.join(root, 'node_modules/@payloadcms/richtext-lexical', file))
@@ -26,15 +27,27 @@ for (const exitCode of [0, 7]) {
       // Exercise the real wrapper; the compiler is a controlled external process.
       await writeFile(path.join(root, 'node_modules/next/dist/bin/next'), `
         const fs = require('node:fs');
+        if (process.platform === 'win32') {
+          require('node:assert/strict').equal(process.env.NODE_USE_SYSTEM_CA, '1', 'System trust must survive worker-compatible configuration');
+          require('node:assert/strict').equal(process.env.NODE_OPTIONS, '', 'Do not forward worker-incompatible CA flag');
+        }
         if (!fs.existsSync('assets-prepared')) process.exit(99);
         fs.writeFileSync('compiler-receipt.json', JSON.stringify({
           args: process.argv.slice(2), phase: process.env.OWNER_PLATFORM_BUILD_PHASE
         }));
-        process.exit(${exitCode});
+        if (process.platform === 'win32') {
+          const { Worker } = require('node:worker_threads');
+          const worker = new Worker('0', { eval: true, execArgv: [], env: { ...process.env } });
+          worker.on('error', error => { console.error(error); process.exitCode = 98; });
+          worker.on('exit', code => { process.exitCode = code === 0 ? ${exitCode} : 98; });
+        } else {
+          process.exit(${exitCode});
+        }
       `)
       const result = spawnSync(process.execPath, ['scripts/build.mjs'], {
         cwd: root, encoding: 'utf8', timeout: 15_000,
-        env: { ...process.env, OWNER_PLATFORM_BUILD_PHASE: 'not-a-build' },
+        env: { ...process.env, OWNER_PLATFORM_BUILD_PHASE: 'not-a-build',
+          ...(process.platform === 'win32' ? { NODE_OPTIONS: '--use-system-ca' } : {}) },
       })
       assert.ifError(result.error)
       assert.equal(result.status, exitCode, result.stderr)
