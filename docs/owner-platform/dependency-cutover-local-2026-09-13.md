@@ -50,3 +50,18 @@ Fresh `npm test` passes: three script checks plus all 1305 unit tests / 170 file
 147.01s, exit0 (08de8a). Typecheck and full owner lint pass (b4c1de).
 Build is the next active gate; manifests are still pending final integration.
 Checkpoint resolves unchanged to 0f0adf686b2752e23c25d224f8c60815b10fd451.
+
+## Next gate: Windows build environment
+
+Cleanup fix committed as c8735bd. `npm run build` then fails before compilation
+with ERR_WORKER_INVALID_EXEC_ARGV: --use-system-ca is not allowed in NODE_OPTIONS
+(de3b3b). Host Node24.13.0 reports that flag allowed; it is present in inherited
+NODE_OPTIONS. A minimal worker_threads test with inherited and explicit copied
+environment passes, so this is not yet attributed to Node workers generally.
+Running the same build script with the bundled Node24.19.0 and unchanged trust
+settings also fails (f9d326). No antivirus, trust store, TLS validation, machine
+environment or production config changed. No patch to node_modules.
+
+Next: isolate the Next/Turbopack worker boundary and compare with the previously
+successful Linux candidate. Active Windows build remains red; do not commit the
+dependency cutover as fully verified or deploy it on the strength of unit tests.
