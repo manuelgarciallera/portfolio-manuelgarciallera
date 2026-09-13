@@ -190,7 +190,10 @@ export const createPostgresCluster = async ({ cache, kind, tools }) => {
         if (state.code === 0) {
           const pidInfo = (await readFile(path.join(cluster, 'postmaster.pid'), 'utf8')).split(/\r?\n/)
           if (path.resolve(pidInfo[1]) !== path.resolve(cluster)) throw new Error('Cluster PID file does not identify this exact data directory.')
-          await command('pg_ctl', ['stop', '-D', cluster, '-m', 'fast', '-w', '-t', '30'], { timeout: 45_000 })
+          // Durable shutdown checkpoints have taken 40 s on the isolated disk.
+          // Keep a finite wait plus process-exit margin; never bypass fsync or
+          // delete fixtures before the subsequent status/PID checks succeed.
+          await command('pg_ctl', ['stop', '-D', cluster, '-m', 'fast', '-w', '-t', '60'], { timeout: 75_000 })
         }
         if ((await command('pg_ctl', ['status', '-D', cluster], { acceptedCodes: [3] })).code !== 3) throw new Error('Exact PostgreSQL cluster did not stop.')
         try { await stat(path.join(cluster, 'postmaster.pid')); throw new Error('PostgreSQL PID file remained after shutdown.') } catch (error) { if (error?.code !== 'ENOENT') throw error }
