@@ -65,6 +65,22 @@ Esto acredita instalación desde lockfile y comprobación completa local en
 Windows, sin reutilizar dependencias. La puerta Linux sigue impedida por DNS,
 y ni esta copia de QA ni el resultado equivalen a staging o backup externo.
 
+### Controles de navegador tras instalación limpia
+
+En el mismo checkout 230278e se ejecutaron `npm run test:dashboard && npm run
+test:controls`, sesión 2516, salida 0 (ebbe3d). Dashboard: ocho combinaciones
+320/390/768/1280 claro/oscuro, ajuste al viewport, controles táctiles, búsqueda
+y orden de teclado. Acciones editoriales: 22 comprobaciones a 390/1280,
+incluyendo aprobación/rechazo y revisión/error de asistencia archivada.
+
+Inspección visual de `.data/verification-artifacts/assistance-review-390.png`
+y `assistance-review-1280.png` del clon: comparación apilada en móvil, foco
+visible, texto largo ajustado y marcado adversarial representado como texto.
+No se han modificado componentes ni datos. El clon sigue sin cambios rastreados
+(277009). Son componentes reales montados con API/contexto sintéticos, no
+sesión completa Payload ni conexión real a proveedores o validación humana de
+usabilidad. Los navegadores de los harnesses cerraron al terminar.
+
 ## Carencia encontrada
 
 La CI existente solo instalaba y comprobaba el paquete raíz. Una actualización
