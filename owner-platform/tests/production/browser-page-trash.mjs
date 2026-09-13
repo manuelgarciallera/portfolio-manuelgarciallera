@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 
 export const verifyBrowserPageTrash = async ({ page, origin, before }) => {
   assert.equal(new URL(origin).hostname, '127.0.0.1')
-  assert.match(before.slug, /^native-media-(390|1280)-/)
+  assert.match(before.slug, /^native-media-(320|390|768|1280)-/)
   assert.equal(new URL(page.url()).pathname, `/admin/collections/pages/${before.id}`)
   await page.locator('.doc-controls__popup').getByRole('button').click()
   await page.locator('#action-delete').click()

@@ -103,7 +103,7 @@ try {
   try {
     await start()
     const browserDrafts = await verifyProductionBrowserLogin(browserProxy?.origin ?? origin, credentials,
-      { editor: browserEditor, certificatePin: browserProxy?.certificatePin })
+      { editor: browserEditor, certificatePin: browserProxy?.certificatePin, compact: process.argv.includes('--compact-viewports') })
     const login = await fetch(`${origin}/api/users/login`, { signal: AbortSignal.timeout(10_000), method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentials) })
     assert.equal(login.status, 200, 'Owner login over production HTTP')
     const { token } = await login.json()

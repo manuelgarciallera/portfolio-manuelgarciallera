@@ -14,12 +14,12 @@ export const verifyBrowserRelease = async ({ page, origin, document, width }) =>
   const releaseInput = {
     name: `Synthetic workflow ${width}`,
     changeSummary: 'QA fixture only. Scores are synthetic, not measured quality.',
-    gitCommit: (width === 390 ? 'a' : 'b').repeat(40),
+    gitCommit: width.toString(16).padStart(40, '0'),
   }
   await registration.getByRole('textbox', { name: 'Nombre', exact: true }).fill(releaseInput.name)
   await registration.getByRole('textbox', { name: 'Commit Git completo', exact: true }).fill(releaseInput.gitCommit)
   await registration.getByRole('textbox', { name: 'Resumen de cambios', exact: true }).fill(releaseInput.changeSummary)
-  await registration.getByRole('combobox', { name: 'Viewport', exact: true }).selectOption(width === 390 ? 'mobile' : 'desktop')
+  await registration.getByRole('combobox', { name: 'Viewport', exact: true }).selectOption(width < 1024 ? 'mobile' : 'desktop')
   for (const name of ['Rendimiento', 'Usabilidad', 'Accesibilidad']) await registration.getByRole('spinbutton', { name, exact: true }).fill('80')
   await registration.getByRole('combobox', { name: 'Fuente', exact: true }).selectOption('manual')
   await registration.locator('input[name="measuredAt"]').fill('2026-09-11T10:00')
@@ -38,7 +38,7 @@ export const verifyBrowserRelease = async ({ page, origin, document, width }) =>
   assert.equal(release.gitCommit, releaseInput.gitCommit)
   assert.deepEqual(release.quality.map(({ viewport, performance, usability, accessibility, source, measuredAt }) =>
     ({ viewport, performance, usability, accessibility, source, measuredAt })), [{
-    viewport: width === 390 ? 'mobile' : 'desktop', performance: 80, usability: 80,
+    viewport: width < 1024 ? 'mobile' : 'desktop', performance: 80, usability: 80,
     accessibility: 80, source: 'manual', measuredAt,
   }], 'The registered measurements exactly match the synthetic form values')
   await registration.getByRole('link', { name: 'Ver versión inmutable', exact: true }).waitFor()

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 import { verifyProductionBrowserEditor } from './browser-editor.mjs'
 
-export const verifyProductionBrowserLogin = async (origin, credentials, { certificatePin, editor = false } = {}) => {
+export const verifyProductionBrowserLogin = async (origin, credentials, { certificatePin, editor = false, compact = false } = {}) => {
   const url = new URL(origin)
   assert.equal(url.hostname, '127.0.0.1')
   if (editor) {
@@ -14,8 +14,8 @@ export const verifyProductionBrowserLogin = async (origin, credentials, { certif
   const browser = await chromium.launch({ args: editor ? [`--ignore-certificate-errors-spki-list=${certificatePin}`] : [] })
   const drafts = []
   try {
-    for (const width of [390, 1280]) {
-      const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width === 390 })
+    for (const width of compact ? [320, 768] : [390, 1280]) {
+      const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width < 1024 })
       try {
         const page = await context.newPage()
         page.setDefaultTimeout(15_000)

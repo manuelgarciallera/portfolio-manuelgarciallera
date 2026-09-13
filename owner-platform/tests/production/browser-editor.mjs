@@ -53,8 +53,9 @@ export const verifyProductionBrowserEditor = async ({ page, context, origin, wid
     clearTimeout(pendingTimeout)
     await page.unroute(`${origin}/api/brand-profiles*`, holdBrandSave)
   }
-  assert.equal(brandResponse.status(), 201)
-  const { doc: brand } = await brandResponse.json()
+  const brandBody = await brandResponse.json()
+  assert.equal(brandResponse.status(), 201, JSON.stringify(brandBody.errors ?? []))
+  const { doc: brand } = brandBody
   await page.waitForURL(url => url.pathname === `/admin/collections/brand-profiles/${brand.id}`)
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.locator('form[data-form-ready="true"]').first().waitFor()

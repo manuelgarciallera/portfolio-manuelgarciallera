@@ -43,7 +43,7 @@ export const verifySecondPage = async ({ page, context, origin, width, firstPage
   const content = page.locator('[data-field-path="layout.1.content"] [contenteditable="true"]')
   await content.fill('Diseño de identidad, comunicación y experiencias digitales. Contenido ficticio para probar el editor; no es una oferta comercial.')
   await content.press('ControlOrMeta+a')
-  if (width === 390) {
+  if (width < 1024) {
     for (const name of ['Negrita', 'Cursiva']) {
       const button = page.getByRole('button', { name, exact: true })
       await button.click({ timeout: 5000 })
