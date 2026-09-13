@@ -141,3 +141,35 @@ package artifacts and candidate manifests to the isolated Linux checkout, then
 attempt an integrity-checked offline install and PostgreSQL/recovery tests.
 Do not transfer Windows native node_modules into Linux or alter DNS/TLS to make
 the gate appear green. This preparation is not yet performed.
+
+## Offline Linux install and PostgreSQL shutdown finding
+
+Prepared 76 changed/new public-registry tarballs in a candidate-specific Windows
+npm cache, exit 0 (`f06220`). Copied only its content cache into the isolated
+Linux candidate cache, seeded from the existing Linux npm cache. No Windows
+native node_modules or private npm configuration transferred; no network settings
+changed. The first offline install failed EACCES on root-owned copied manifests
+(`98ef84`). Corrected ownership of those two exact files, then ran
+`npm ci --offline --ignore-scripts --no-audit --no-fund`: 730 packages installed,
+exit 0 (`51ea83`). Candidate lock SHA-256 remains exactly the Windows value
+`83DCA3EE1297BD8AA59C172B8DE66346AE50B4A328A3DF85559D555DB167B1B5`.
+
+Full PostgreSQL integration: all 92 tests / 12 files passed in 114.26 seconds,
+but the outer runner correctly exited 1 when `pg_ctl stop -w -t 30` timed out
+(`e146f0`). This is NOT a successful complete gate.
+
+Evidence from the retained cluster log explains that shutdown failure:
+fast shutdown began at 12:52:48 UTC; checkpoint wrote 8,539 buffers and took
+40.037 seconds, of which 39.805 seconds was file synchronization. PostgreSQL
+logged complete shutdown at 12:53:28 UTC. Subsequent `pg_ctl status` reports no
+server, postmaster.pid is absent, and process inspection shows only init/sleep.
+No forced kill or restart was used. Fixture root remains preserved:
+`/tmp/owner-payload389-D25sDX/owner-platform/node_modules/.cache/owner-postgres-editorial-PyuCTY`.
+It contains synthetic credentials: do not publish or copy its raw contents into
+Git/Hub. The production database and CMS were never used.
+
+Next: test and adjust the bounded shutdown wait to accommodate observed durable
+checkpoint synchronization, while retaining fail-closed cleanup, exact-cluster
+validation and evidence of process closure. Then repeat the complete gate; do not
+retroactively convert this exit-1 run into a pass or disable durable PostgreSQL
+settings to shorten the test.
