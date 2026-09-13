@@ -32,6 +32,28 @@ declarado corregido). No habilitar multi-tenant, modelos ni puente público.
 La recuperación sin proveedor de correo utilizable requiere diseño y autoridad
 antes de añadir una vía operativa nueva.
 
+### Recuperación física Windows · seguimiento de 47e47cb
+
+- `npm run test:recovery -- --versioned-media`: salida 0 (52786 / fa3b84).
+  47 pruebas auxiliares; 27 archivos de respaldo, 26 medios verificados,
+  tres versiones, seis revisiones recuperadas y siete daños rechazados antes
+  de asignar el destino. Origen y recibos del respaldo intactos. Alcance:
+  medios y previews reales con entradas mínimas persistidas de página/marca.
+- `npm run test:recovery` falló inicialmente al importar configuración sin
+  `PAYLOAD_SECRET` (81804 / d2c54f). El padre ya había generado un secreto
+  sintético y lo enviaba por IPC, pero el override de getPayload llegaba tarde
+  para la validación ejecutada al importar. Se corrige únicamente el worker de
+  pruebas para introducir ese secreto en su entorno desechable antes del import.
+  No se relajan validaciones ni se leen secretos ambientales.
+- Repetición del comando: salida 0 (56023 / ee6bd7), 47 auxiliares y 12 controles
+  del recorrido; cinco archivos, cuatro medios y dos versiones de página
+  recuperados. Edición independiente y respaldo/origen intactos comprobados.
+  Base informada 47e47cb más el cambio explícito del worker; no checkout exacto.
+  ESLint del worker y diff check pasan (36624b).
+
+Ambos runners cierran antes de terminar y ejecutan su limpieza de raíces
+sintéticas. Son ensayos SQLite locales, no copias externas de producción.
+
 Actualización sobre `8bd695e`: la evidencia de recuperación y editor se amplió
 con un ensayo desde checkout limpio; véase
 [recuperación HTTP y procedencia](recovery-http-verification-2026-09-11.md).

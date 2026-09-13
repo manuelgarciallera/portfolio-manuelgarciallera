@@ -20,6 +20,10 @@ const openPayload = async ({ databaseDirectory, mediaDirectory, payloadSecret, p
   process.send?.({ progress: 'worker:loading-payload-module' })
   const { getPayload } = await import('payload')
   process.send?.({ progress: 'worker:loading-application-config' })
+  // The isolated parent supplies a fresh secret over IPC. Runtime validation
+  // runs on import, before getPayload's per-instance override can take effect.
+  // Set only this disposable worker's environment, never the operator's shell.
+  process.env.PAYLOAD_SECRET = payloadSecret
   const { default: applicationConfig, createLocalDatabaseAdapter } = await import('../../src/payload.config.ts')
   process.send?.({ progress: 'worker:application-config-loaded' })
   if (!postgres) await mkdir(databaseDirectory, { recursive: true })
