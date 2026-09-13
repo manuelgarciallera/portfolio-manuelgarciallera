@@ -71,6 +71,11 @@ export const verifyBrowserProject = async ({ page, context, origin, width, media
     await opened.preview.getByRole('heading', { name: editedTitle, exact: true }).waitFor()
     await opened.preview.getByText(summary, { exact: true }).waitFor()
     await opened.preview.getByText(quote, { exact: true }).waitFor()
+    const image = opened.preview.locator('article').getByRole('img', { name: media.alt, exact: true })
+    await image.scrollIntoViewIfNeeded()
+    await image.evaluate(element => element.decode())
+    assert.equal(await image.evaluate(element => element.naturalWidth > 0 && element.naturalHeight > 0), true,
+      'The selected project cover must render in the saved preview')
     assert.equal(await opened.preview.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
   } finally { await opened.preview.close() }
   console.log(`[project-editor] PASS ${width}px native block-only creation, media selection, edit and preview`)

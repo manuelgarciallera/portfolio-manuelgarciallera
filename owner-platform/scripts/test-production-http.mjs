@@ -125,9 +125,25 @@ try {
       assert.equal(result.totalDocs, 2, 'One browser-edited project fixture per viewport')
       projectsBefore = result.docs
       assert(projectsBefore.every(project => project._status === 'draft'))
-      const anonymousProjects = await fetch(`${origin}/api/projects?draft=true`, { signal: AbortSignal.timeout(10_000) })
-      assert.equal(anonymousProjects.status, 200)
-      assert.equal((await anonymousProjects.json()).totalDocs, 0, 'Project drafts remain private')
+      // No JWT or cookies: changing project access must not expose an authored
+      // draft through either the default read path or the explicit draft path.
+      for (const query of ['', '?draft=true']) {
+        const anonymousProjects = await fetch(`${origin}/api/projects${query}`, { signal: AbortSignal.timeout(10_000) })
+        assert.equal(anonymousProjects.status, 200)
+        const listed = await anonymousProjects.json()
+        assert.equal(listed.totalDocs, 0, 'Project drafts remain private')
+        assert.deepEqual(listed.docs, [])
+        for (const project of projectsBefore) {
+          const detail = await fetch(`${origin}/api/projects/${project.id}${query}`, { signal: AbortSignal.timeout(10_000) })
+          assert.equal(detail.status, 404, 'Anonymous project lookup must not disclose a draft')
+          const denial = await detail.text()
+          assert(!denial.includes(project.title) && !denial.includes(project.summary), 'Project denial must not disclose authored text')
+        }
+      }
+      const history = await fetch(`${origin}/api/projects/versions`, { signal: AbortSignal.timeout(10_000) })
+      assert.equal(history.status, 403, 'Anonymous visitors cannot enumerate project history')
+      await history.arrayBuffer()
+      console.log('[production-http] anonymous project drafts and version history remain private')
     }
     let articlesBefore = []
     if (browserEditor) {

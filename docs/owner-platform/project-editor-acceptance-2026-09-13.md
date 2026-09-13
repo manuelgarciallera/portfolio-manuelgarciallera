@@ -51,3 +51,15 @@ This supersedes the API-creation limitation for this quote-block scenario only.
 All project block types, preview image rendering and project history privacy
 remain separate coverage gaps; no application defect was found in this run.
 No physical-device or clean-install claim is made. No public code was changed.
+
+## Follow-up: cover rendering and anonymous access (passed)
+
+Run 69447 completed with exit 0 (17d38f). The selected cover decodes with
+positive natural dimensions in the real saved preview at 390 and 1280 px.
+Without cookies or JWT, project listings are empty with and without draft=true;
+direct draft requests return 404 without title/summary disclosure; the versions
+listing returns 403. Full browser/restart acceptance remains green and the
+runner closed and cleaned its owned resources. Syntax/lint 3569bb and diffcheck
+0d0def passed. These are test-only additions, not a security certification or
+proof of every version-detail/preview route. Other project blocks remain outside
+this scenario. No deployment or public-code change.
