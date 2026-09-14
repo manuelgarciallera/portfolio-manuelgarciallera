@@ -47,6 +47,39 @@ test('derives checkpoint manifest and lock directly from the immutable tagged co
   await rm(setup.rootDir, { recursive: true, force: true })
 })
 
+test('explicit public reference permits approved dependency changes but preserves historical evidence', async () => {
+  const setup = await fixture()
+  try {
+    await writeFile(join(setup.rootDir, 'package.json'), JSON.stringify({ private: true, dependencies: { next: '2.0.0' } }))
+    await writeFile(join(setup.rootDir, 'package-lock.json'), '{"lockfileVersion":3,"name":"updated-public"}')
+    runGit(setup.rootDir, ['add', 'package.json', 'package-lock.json'])
+    runGit(setup.rootDir, ['commit', '-m', 'approved public update'])
+    setup.gitHead = runGit(setup.rootDir, ['rev-parse', 'HEAD'])
+    await writeFile(join(setup.buildDir, '.owner-public-build-provenance.json'), JSON.stringify({
+      schemaVersion: 1, verifiedGitHead: setup.gitHead,
+      publicInputSha256: await hashPublicInputs(setup.rootDir), buildId: 'fixture-build',
+    }))
+    assert.equal((await proveOwnerIsolation(setup)).passed, false)
+    const evidence = await proveOwnerIsolation({ ...setup, publicReferenceCommit: setup.gitHead })
+    assert.equal(evidence.passed, true)
+    assert.equal(evidence.rootRuntimeManifestMatchesCheckpoint, false)
+    assert.equal(evidence.rootPackageLockMatchesCheckpoint, false)
+    assert.equal(evidence.publicReference.commit, setup.gitHead)
+    assert.equal(evidence.publicReference.runtimeMatches, true)
+    assert.equal(evidence.publicReference.lockMatches, true)
+    await writeFile(join(setup.rootDir, 'package-lock.json'), '{"lockfileVersion":3,"tampered":true}')
+    assert.equal((await proveOwnerIsolation({ ...setup, publicReferenceCommit: setup.gitHead })).passed, false)
+  } finally { await rm(setup.rootDir, { recursive: true, force: true }) }
+})
+
+test('public reference must be a pinned commit, never a mutable branch', async () => {
+  const setup = await fixture()
+  try {
+    await assert.rejects(proveOwnerIsolation({ ...setup, publicReferenceCommit: 'HEAD' }), /full commit/)
+    await assert.rejects(proveOwnerIsolation({ ...setup, publicReferenceCommit: '0'.repeat(40) }))
+  } finally { await rm(setup.rootDir, { recursive: true, force: true }) }
+})
+
 for (const dependency of ['graphql', 'better-sqlite3', 'sharp', 'pg']) {
   test(`rejects current/baseline collusion for injected runtime dependency: ${dependency}`, async () => {
     const setup = await fixture()

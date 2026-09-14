@@ -69,7 +69,7 @@ async function assertSafeBuildPath(buildDir, artifactRoot) {
 
 const git = (rootDir, args, encoding = 'utf8') => execFileSync('git', args, { cwd: rootDir, encoding })
 
-export async function proveOwnerIsolation({ artifactRoot, buildDir, checkpointCommit = CHECKPOINT_COMMIT, checkpointTag = CHECKPOINT_TAG, gitHead, requireFreshBuild = true, rootDir = process.cwd() } = {}) {
+export async function proveOwnerIsolation({ artifactRoot, buildDir, checkpointCommit = CHECKPOINT_COMMIT, checkpointTag = CHECKPOINT_TAG, publicReferenceCommit, gitHead, requireFreshBuild = true, rootDir = process.cwd() } = {}) {
   const absoluteRoot = resolve(rootDir)
   const safeRoot = resolve(artifactRoot ?? join(absoluteRoot, 'owner-platform', '.data', 'verification-artifacts'))
   if (!buildDir) throw new Error('PUBLIC_BUILD_DIR is required')
@@ -87,6 +87,21 @@ export async function proveOwnerIsolation({ artifactRoot, buildDir, checkpointCo
   const rootRuntimeManifestMatchesCheckpoint = stableJson(currentRuntime) === stableJson(runtimeManifest(checkpointPackage))
   const lockContents = await readFile(join(absoluteRoot, 'package-lock.json'))
   const rootPackageLockMatchesCheckpoint = sha256(lockContents) === sha256(checkpointLock)
+  // Opt-in comparison for an explicitly approved public revision. Never move
+  // the historical checkpoint or hide its independent comparison results.
+  let publicReference
+  if (publicReferenceCommit !== undefined) {
+    if (!/^[a-f0-9]{40}$/.test(publicReferenceCommit)) throw new Error('Public reference requires a full commit SHA')
+    git(absoluteRoot, ['cat-file', '-e', `${publicReferenceCommit}^{commit}`])
+    git(absoluteRoot, ['merge-base', '--is-ancestor', publicReferenceCommit, gitHead ?? 'HEAD'])
+    const referencePackage = JSON.parse(git(absoluteRoot, ['show', `${publicReferenceCommit}:package.json`]))
+    const referenceLock = git(absoluteRoot, ['show', `${publicReferenceCommit}:package-lock.json`], null)
+    publicReference = {
+      commit: publicReferenceCommit,
+      runtimeMatches: stableJson(currentRuntime) === stableJson(runtimeManifest(referencePackage)),
+      lockMatches: sha256(lockContents) === sha256(referenceLock),
+    }
+  }
   const publicBoundary = await analyzePublicBoundary({ rootDir: absoluteRoot })
   if (requireFreshBuild) await assertFreshBuild({ rootDir: absoluteRoot, buildDir: absoluteBuild })
   const snapshot = await createBundleSnapshot({ buildDir: absoluteBuild })
@@ -99,12 +114,16 @@ export async function proveOwnerIsolation({ artifactRoot, buildDir, checkpointCo
   const [markerStat, buildIdStat] = await Promise.all([stat(markerPath), stat(join(absoluteBuild, 'BUILD_ID'))])
   if (buildIdStat.mtimeMs > Date.now() + 5000 || markerStat.mtimeMs > Date.now() + 5000 || markerStat.mtimeMs < buildIdStat.mtimeMs) throw new Error('public build provenance timestamps are invalid or were touched')
   const provenanceMatches = marker.schemaVersion === 1 && marker.verifiedGitHead === verifiedGitHead && marker.publicInputSha256 === publicInputSha256 && marker.buildId === buildId
-  const passed = rootRuntimeManifestMatchesCheckpoint && rootPackageLockMatchesCheckpoint && publicBoundary.violations.length === 0 && regressions.length === 0
+  const dependenciesMatch = publicReference
+    ? publicReference.runtimeMatches && publicReference.lockMatches
+    : rootRuntimeManifestMatchesCheckpoint && rootPackageLockMatchesCheckpoint
+  const passed = dependenciesMatch && publicBoundary.violations.length === 0 && regressions.length === 0
   return {
     schemaVersion: 3, passed: passed && provenanceMatches, checkpoint: { commit: checkpointCommit, tag: checkpointTag }, verifiedGitHead,
     publicInputSha256, buildProvenanceMatches: provenanceMatches,
     rootRuntimeManifestSha256: sha256(stableJson(currentRuntime)), rootPackageLockSha256: sha256(lockContents),
     rootRuntimeManifestMatchesCheckpoint, rootPackageLockMatchesCheckpoint,
+    ...(publicReference ? { publicReference } : {}),
     ownerPackage: { name: ownerPackage.name, private: ownerPackage.private },
     publicBoundary: { entryCount: publicBoundary.entries.length, violations: publicBoundary.violations },
     publicBundle: { artifactName, routeCount: Object.keys(snapshot.routes).length, outputSha256: sha256(stableJson(snapshot.routes)), tolerance: snapshot.tolerance, regressions, routes: snapshot.routes },

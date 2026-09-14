@@ -7,6 +7,7 @@ import { assertEvidenceOnlyChanges } from './lib/owner-studio-evidence.mjs'
 const option = (name) => process.argv.find((argument) => argument.startsWith(`${name}=`))?.slice(name.length + 1)
 const writeTarget = option('--write')
 const verifyTarget = option('--verify')
+let publicReferenceCommit = option('--public-reference')
 if (writeTarget && verifyTarget) throw new Error('Choose either --write or --verify')
 const assertEvidenceTarget = (target) => {
   const absolute = resolve(target)
@@ -21,6 +22,8 @@ if (verifyTarget) {
   const absoluteTarget = assertEvidenceTarget(verifyTarget)
   saved = await readFile(absoluteTarget, 'utf8')
   const parsed = JSON.parse(saved)
+  if (publicReferenceCommit && publicReferenceCommit !== parsed.publicReference?.commit) throw new Error('Public reference differs from saved evidence')
+  publicReferenceCommit = parsed.publicReference?.commit
   verifiedGitHead = parsed.verifiedGitHead
   if (typeof verifiedGitHead !== 'string' || !/^[a-f0-9]{40}$/.test(verifiedGitHead)) throw new Error('Committed evidence has an invalid verifiedGitHead')
   execFileSync('git', ['merge-base', '--is-ancestor', verifiedGitHead, 'HEAD'], { stdio: 'ignore' })
@@ -28,7 +31,7 @@ if (verifyTarget) {
   const expected = relative(process.cwd(), absoluteTarget).split(sep).join('/')
   assertEvidenceOnlyChanges(changed, expected)
 }
-const evidence = await proveOwnerIsolation({ buildDir: process.env.PUBLIC_BUILD_DIR, gitHead: verifiedGitHead })
+const evidence = await proveOwnerIsolation({ buildDir: process.env.PUBLIC_BUILD_DIR, gitHead: verifiedGitHead, publicReferenceCommit })
 const rendered = `${JSON.stringify(evidence, null, 2)}\n`
 if (writeTarget) await writeFile(assertEvidenceTarget(writeTarget), rendered, { flag: 'w' })
 else if (verifyTarget) {
