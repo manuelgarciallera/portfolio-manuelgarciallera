@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { RedesignCasesIndex } from '@/features/redesign/case/RedesignCasesIndex'
-import { OG_IMAGE } from '@/lib/site-config'
+import { OG_IMAGE, PERSON_LEGAL_NAME } from '@/lib/site-config'
 import { getCaseCards } from '@/features/redesign/content/card-data'
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/casos' },
   openGraph: {
     url: '/casos',
-    title: 'Casos de producto — Manuel García-Llera',
+    title: `Casos de producto — ${PERSON_LEGAL_NAME}`,
     description: 'Investigación, sistemas, prototipos e implementación explicados mediante decisiones y evidencia.',
     images: [OG_IMAGE],
   },

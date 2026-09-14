@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { ProcessPage } from '@/features/redesign/process/ProcessPage'
-import { OG_IMAGE } from '@/lib/site-config'
+import { OG_IMAGE, PERSON_LEGAL_NAME } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Proceso',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/proceso' },
   openGraph: {
     url: '/proceso',
-    title: 'Proceso de diseño y desarrollo — Manuel García-Llera',
+    title: `Proceso de diseño y desarrollo — ${PERSON_LEGAL_NAME}`,
     description: 'De la pregunta a la evidencia, con responsabilidades humanas y de IA explícitamente documentadas.',
     images: [OG_IMAGE],
   },

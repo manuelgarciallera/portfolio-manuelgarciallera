@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { ResearchPage } from '@/features/redesign/research/ResearchPage'
-import { OG_IMAGE } from '@/lib/site-config'
+import { OG_IMAGE, PERSON_LEGAL_NAME } from '@/lib/site-config'
 
 export const metadata: Metadata = {
   title: 'Investigación',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/investigacion' },
   openGraph: {
     url: '/investigacion',
-    title: 'Investigación — Manuel García-Llera',
+    title: `Investigación — ${PERSON_LEGAL_NAME}`,
     description:
       'Cómo el diseño del siglo XX eliminó la dimensión háptica y qué efecto tiene recuperarla en la comprensión, la confianza y la decisión de quien usa una interfaz.',
     images: [OG_IMAGE],

@@ -33,3 +33,25 @@ No se ha hecho push, despliegue, solicitud Search Console ni cambio de baseline.
 El HTML en producción puede seguir usando los títulos anteriores hasta publicar.
 Pendientes independientes: títulos sociales abreviados, revisión factual del caso
 Hub, cierre de correo real y criterio histórico de aislamiento del CMS.
+
+## Continuación · títulos sociales de los cinco índices
+
+Base f253c0d. Se corrige el nombre en og:title de Casos, Sobre mí, Investigación,
+Proceso y Artículos mediante PERSON_LEGAL_NAME existente. Se mantienen intactas
+descripciones, imágenes, rutas, credenciales y contenido visible. La nota anterior
+de títulos sociales pendientes se conserva como histórico, no como estado actual
+de estos cinco índices.
+
+- RED c7d494: los cinco controles OG fallan por nombre incompleto; los once
+  controles anteriores pasan sobre el artefacto precedente.
+- Build aislado 396241 salida 0, TypeScript y 29 páginas. Base f253c0d más delta
+  explícito de cinco páginas, no checkout del commit final.
+- GREEN 0ce0ad: 16/16 controles; presupuesto público de diez rutas sin regresiones
+  frente a baseline existente, sin modificarlo. Lint dirigido/diff-check c5cec2/0ce0ad.
+- Revisión React: solo imports de constante existente y metadata en servidor;
+  no hooks, componentes, fetches ni dependencias nuevos.
+
+Reserva Hub3f2ef0a1. Sin publicación ni invalidación de cachés sociales. No prueba
+de vistas previas en LinkedIn/Google. No se amplía este cierre a todas las cadenas
+abreviadas del sitio ni a las descripciones. Siguiente: revisión factual del Hub y
+pendientes operativos independientes del CMS.

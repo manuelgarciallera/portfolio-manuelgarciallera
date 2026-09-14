@@ -10,6 +10,15 @@ const routes = ['casos', 'sobre-mi', 'investigacion', 'proceso', 'articulos',
   'casos/buy-sell-marketplace', 'casos/laliga-club-operations-hub',
   'casos/coordination-hub', 'casos/the-ux-union', 'casos/nude-project']
 
+for (const route of ['casos', 'sobre-mi', 'investigacion', 'proceso', 'articulos']) {
+  test(`${route} retains the full identity when shared`, async () => {
+    assert.ok(buildDir)
+    const html = await readFile(path.join(buildDir, 'server/app', `${route}.html`), 'utf8')
+    const title = html.match(/<meta property="og:title" content="([^"]*)"/)?.[1]
+    assert.ok(title?.includes('Manuel García-Llera Añón'), `Incomplete social identity: ${title}`)
+  })
+}
+
 test('requires an explicit public build artifact', () => {
   assert.ok(buildDir, 'Set PUBLIC_TITLE_BUILD_DIR to a completed public build')
 })
