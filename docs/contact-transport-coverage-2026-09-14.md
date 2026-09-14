@@ -28,3 +28,18 @@ credenciales, integración HTTP del formulario o límite de frecuencia compartid
 No equivale a entrega acreditada. No push/despliegue/cambio de proveedor.
 Reserva Hub17d4ebce. Siguiente Codex: puertas de cierre que no requieran secretos
 o nuevas decisiones; mantener pendiente la entrega real hasta verificarla.
+
+## Continuación: plazo de petición y retirada de temporizadores
+
+Base be11740. Tres casos adicionales verifican con reloj simulado que una petición
+Resend detenida sigue pendiente a 11.999 ms, se cancela a 12.000 ms y devuelve
+send-failed, y que HTTP 200/429 retiran el temporizador. El doble externo solo
+reacciona al AbortSignal que emite producción; no resuelve por sí solo al avanzar
+el reloj. Sin señal o sin cancelación, la aserción de finalización falla antes de
+esperar la promesa, evitando un falso aprobado o un bloqueo del test.
+
+20/20 pruebas dirigidas en tres archivos (028f55); lint/tipos salida 0 (3dfdaf).
+Checkpoint intacto f07f3f.
+No ensayo del timeout de sockets de nodemailer ni cancelación real de un correo:
+que cese la espera HTTP no prueba que un proveedor no haya aceptado el envío.
+No reintentos automáticos, runtime, build, despliegue o configuración nuevos.

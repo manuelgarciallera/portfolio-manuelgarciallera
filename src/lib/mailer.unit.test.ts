@@ -20,7 +20,7 @@ beforeEach(() => {
   smtp.createTransport.mockReturnValue({ sendMail: smtp.sendMail, close: smtp.close })
   smtp.sendMail.mockResolvedValue({ messageId: 'synthetic' })
 })
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
+afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals() })
 
 function configureSmtp() {
   vi.stubEnv('SMTP_HOST', 'smtp.example.invalid')
@@ -97,4 +97,29 @@ it('does not report provider rejection as delivery success', async () => {
   vi.stubEnv('RESEND_API_KEY', 'synthetic-alternative')
   http.mockResolvedValue(new Response('{}', { status: 429 }))
   expect(await sendContactMessage(submission)).toEqual({ ok: false, reason: 'send-failed', detail: 'resend 429' })
+})
+
+it('cancels a stalled alternative request at its deadline and returns a failure', async () => {
+  vi.useFakeTimers()
+  vi.stubEnv('RESEND_API_KEY', 'synthetic-alternative')
+  http.mockImplementation((_url: string, options: RequestInit) => new Promise((_resolve, reject) => {
+    options.signal?.addEventListener('abort', () => reject(new Error('Request cancelled')), { once: true })
+  }))
+  let settled = false
+  const delivery = sendContactMessage(submission).then(result => { settled = true; return result })
+  await vi.advanceTimersByTimeAsync(11_999)
+  expect(settled).toBe(false)
+  await vi.advanceTimersByTimeAsync(1)
+  expect(settled).toBe(true)
+  expect(await delivery).toEqual({ ok: false, reason: 'send-failed', detail: 'Request cancelled' })
+  expect(http).toHaveBeenCalledOnce()
+  expect(vi.getTimerCount()).toBe(0)
+})
+
+it.each([200, 429])('removes the deadline timer after HTTP %i', async status => {
+  vi.useFakeTimers()
+  vi.stubEnv('RESEND_API_KEY', 'synthetic-alternative')
+  http.mockResolvedValue(new Response('{}', { status }))
+  expect(await sendContactMessage(submission)).toMatchObject({ ok: status === 200 })
+  expect(vi.getTimerCount()).toBe(0)
 })
