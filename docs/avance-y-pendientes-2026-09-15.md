@@ -59,3 +59,13 @@ Codex debe resolver implementación, pruebas, integración, documentación y pub
 pública autorizada cuando tenga acceso. El CMS aún necesita correo real, medios
 durables, copia externa restaurada y puente de publicación/reversión en destino.
 No se ofrece todavía como plataforma multiusuario o producto comercial terminado.
+
+## Incremento 07:24–07:28 Madrid
+
+- Sesión Chrome disponible de Vercel comprobada: continúa en Login; no se ha
+  completado acceso ni publicación. No se pidió otra autorización.
+- Discovery Figma ahora declara respuestas privadas no almacenables, con seis
+  fallos RED reproducidos y 135 pruebas de regresión aprobadas en 21 archivos.
+  Tipos/lint dirigidos y frontera pública correctos; checkpoint intacto.
+- Recibo: `owner-platform/figma-discovery-privacy-2026-09-15.md`.
+  No se activan conectores, proveedores, cobros ni CMS público.

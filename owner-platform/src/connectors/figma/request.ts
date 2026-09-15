@@ -44,8 +44,10 @@ const statusFor = (result: FigmaDiscoveryResult): number => {
 }
 
 export const handleFigmaDiscoverRequest = async (request: Request, dependencies: Dependencies): Promise<Response> => {
+  const respond = (body: unknown, status: number, extraHeaders?: Record<string, string>) =>
+    Response.json(body, { status, headers: { ...extraHeaders, 'cache-control': 'private, no-store' } })
   const authentication = await dependencies.authenticate(request.headers)
-  if (!isOwner(authentication.user)) return Response.json({ error: 'Owner authentication required.' }, { status: 403 })
+  if (!isOwner(authentication.user)) return respond({ error: 'Owner authentication required.' }, 403)
   let source
   try {
     const raw = await readBody(request)
@@ -53,14 +55,14 @@ export const handleFigmaDiscoverRequest = async (request: Request, dependencies:
     if (!body || typeof body !== 'object' || typeof (body as { source?: unknown }).source !== 'string') throw new Error('INVALID_REQUEST')
     source = parseFigmaSource((body as { source: string }).source)
   } catch (error) {
-    if (error instanceof Error && error.message === 'REQUEST_TOO_LARGE') return Response.json({ error: 'Request body is too large.' }, { status: 413 })
-    return Response.json({ error: 'Invalid request.' }, { status: 400 })
+    if (error instanceof Error && error.message === 'REQUEST_TOO_LARGE') return respond({ error: 'Request body is too large.' }, 413)
+    return respond({ error: 'Invalid request.' }, 400)
   }
   try {
     const result = await dependencies.discover(source)
     const headers = !result.ok && result.code === 'rate_limited' && result.retryAfter ? { 'retry-after': result.retryAfter } : undefined
-    return Response.json(result, { status: statusFor(result), headers })
+    return respond(result, statusFor(result), headers)
   } catch {
-    return Response.json({ error: 'Figma could not complete discovery.' }, { status: 502 })
+    return respond({ error: 'Figma could not complete discovery.' }, 502)
   }
 }
