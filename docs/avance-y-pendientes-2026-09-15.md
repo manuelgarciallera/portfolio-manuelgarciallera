@@ -2,6 +2,21 @@
 
 Responsable: Codex. Ventana solicitada: 06:52–15:52 Europe/Madrid.
 
+## Estado operativo vigente · 13:40 Madrid
+
+Esta sección prevalece sobre las observaciones horarias históricas inferiores.
+
+- Portfolio público: última publicación registrada `3e18af2`, despliegue `dpl_7ANJZytUU4Xg8sLosVYko8zkWsbh`; stack informativo sin estados interactivos inertes y enlace Figma explícito, tamaños y salto de línea conservados. Recibo [stack](stack-informativo-2026-09-15.md). No se ha repetido aquí la auditoría visual.
+- CMS: cambios propios subidos hasta `5454ff8`, HEAD/remoto sin diferencia en comprobación de esta sesión. Hay documentos compartidos y carpetas privadas sin integrar: no confundir «commits propios subidos» con «árbol totalmente limpio».
+- Analítica: comparaciones protegidas por fuente/periodo, fuente visible, respuestas privadas no almacenables e importación inválida rechazada antes de escritura. Pruebas y límites en [recibo](owner-platform/analytics-readiness-2026-09-15.md). No recoge visitas reales; el CMS no está desplegado.
+- No es necesario repetir login en Vercel: la CLI autenticada ya permitió publicar. Solo se solicitará acceso nuevo ante un fallo concreto comprobado.
+- Primera acción pendiente de Manuel: cuenta Umami Cloud Hobby, correo verificado y región UE; sin tarjeta ni trial de pago. Petición ya enviada, no reiterarla automáticamente. Codex comprobará condiciones/API y preparará integración y privacidad; no tratar una cuenta creada como tracking activado.
+- Revisión del editor con Manuel: sigue pendiente en portátil. El recorrido automatizado de segunda página está probado, pero no sustituye comprobar si el usuario entiende y completa la tarea.
+- CMS alojado: medios durables, copia externa restaurada, correo de recuperación y publicación/reversión en destino siguen pendientes. Analítica inicial en proveedor no depende de cerrar todo este alojamiento.
+- Search Console: revisar último rastreo y estado de URLs cuando haya sesión disponible. Nombre/foto/marcado publicados no prueban que Google haya actualizado título, favicon o imagen.
+
+No hay nueva contratación, traslado de datos ni despliegue del CMS autorizado por esta actualización. El siguiente paso técnico tras acceso es configurar/probar el piloto, no añadir más indicadores simulados ni repetir las mismas suites por rutina.
+
 ## Actualización prioritaria · 09:12–09:14 Madrid
 
 PUBLICACIÓN RESUELTA: CLI Vercel59 cacheada estaba autenticada como Manuel
@@ -70,8 +85,7 @@ Coordinación PILOT, escritor único; sin nuevos servicios ni despliegue del CMS
 
 ## Para el portátil
 
-- Completar login de Vercel en la sesión de navegador accesible a Codex si sigue
-  pendiente. Un login independiente desde el móvil no autentica este navegador.
+- No repetir el login de Vercel como requisito: ese bloqueo quedó resuelto mediante CLI.
 - Probar el editor local: crear una página, elegir estilo, editar/ordenar bloques,
   previsualizar, guardar y recuperar. Validar comprensión, no solo apariencia.
 - Configurar secretos directamente en el proveedor cuando se apruebe el staging;
