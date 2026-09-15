@@ -14,6 +14,12 @@ Fallo reproducido (606c46): el resumen comparaba fuentes distintas. Ahora omite 
 
 ## Proveedor: propuesta, no activación
 
+### Etiquetado visible y regresión del dashboard
+
+El dashboard muestra la fuente del snapshot; `synthetic-qa` se presenta como «Datos de prueba · no son visitas reales». Una fuente ausente o inválida muestra «Fuente no identificada». Esto aporta transparencia, no aislamiento de datos.
+
+Verificación del etiquetado: 75 pruebas en 28 archivos de analytics/dashboard pasan (8ed868), TypeScript y ESLint focal sin errores. El harness de navegador comprueba tanto estado vacío como estadísticas simuladas y aviso visible en 320/390/768/1280 px, claro y oscuro, sin desbordamiento horizontal ni errores de página (a2e906). Sigue siendo HTTP simulado, no una conexión a un proveedor ni una sesión completa del CMS.
+
 1. Umami: candidato principal para piloto portable; API de estadísticas/eventos y opción cloud o instalación propia. Hay que confirmar plan, coste, región, mantenimiento y permisos antes de conectarlo. https://docs.umami.is/docs/api
 2. Plausible: candidato si se prefiere servicio gestionado. Su Stats API v2 es lectura de agregados; documentación actual indica función Business, por lo que no presupuestar API incluida en cualquier plan. https://plausible.io/docs/stats-api
 3. GA4: Data API permite informes para un dashboard propio. Considerarlo si hacen falta adquisición/campañas del ecosistema Google; no instalar por defecto ni duplicar recolectores. https://developers.google.com/analytics/devguides/reporting/data/v1

@@ -85,6 +85,7 @@ export const OwnerOverview = () => {
         {view.analytics.available ? (
           <>
             <p className={styles.period}>{view.analytics.periodLabel}</p>
+            <p className={styles.period}>{view.analytics.sourceLabel}</p>
             <div className={styles.analyticsGrid}>
               <dl className={styles.traffic}>
                 {view.analytics.metrics.map((metric) => (

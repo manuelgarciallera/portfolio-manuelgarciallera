@@ -4,6 +4,7 @@ type RecentItem = { href: string; label: string; meta: string; updatedAt: string
 type VersionItem = { createdAt: string; href: string; name: string; restoreHref: string; scores: { label: string; value: number }[]; summary: string }
 type AnalyticsPresentation = { available: false } | {
   available: true
+  sourceLabel: string
   metrics: { change: number | null; label: string; value: string }[]
   periodLabel: string
   routes: { label: string; value: number }[]
@@ -102,6 +103,11 @@ const analyticsPresentation = (value: unknown): AnalyticsPresentation => {
   }
   return {
     available: true,
+    sourceLabel: data.source === 'synthetic-qa'
+      ? 'Datos de prueba · no son visitas reales'
+      : typeof data.source === 'string' && /^[a-z][a-z0-9-]{1,31}$/.test(data.source)
+        ? `Fuente: ${data.source}`
+        : 'Fuente no identificada',
     metrics: [
       { change: change(traffic.pageViewsChangePercent), label: 'Páginas vistas', value: numberLabel(count(traffic.pageViews), 0) },
       { change: change(traffic.visitorsChangePercent), label: 'Visitantes', value: numberLabel(count(traffic.visitors), 0) },

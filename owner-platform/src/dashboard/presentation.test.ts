@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import { presentOwnerDashboard } from './presentation'
+import { createAnalyticsSnapshot } from '../analytics/snapshot'
+import { buildAnalyticsSummary } from '../analytics/summary'
+import syntheticFixture from '../../tests/fixtures/analytics-synthetic.json'
 
 describe('presentOwnerDashboard', () => {
+  it('labels synthetic analytics explicitly rather than presenting them as real visits', () => {
+    const data = buildAnalyticsSummary(createAnalyticsSnapshot(syntheticFixture))
+    const view = presentOwnerDashboard({ analytics: { available: true, data } })
+    expect(view.analytics).toMatchObject({ sourceLabel: 'Datos de prueba · no son visitas reales' })
+  })
   it('gives workflow rows distinct identities even when their destinations coincide', () => {
     const rows = presentOwnerDashboard({}).workflow.items
     expect(new Set(rows.map((row) => row.href)).size).toBeLessThan(rows.length)
@@ -110,6 +118,7 @@ describe('presentOwnerDashboard', () => {
           { change: null, label: 'Rebote', value: '31,5%' },
         ],
         periodLabel: '1 ago – 1 sept 2026',
+        sourceLabel: 'Fuente: manual-export',
         routes: [
           { label: '/casos', value: 80 },
           { label: '/', value: 40 },

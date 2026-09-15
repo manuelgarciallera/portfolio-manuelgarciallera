@@ -18,6 +18,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 900 } })
     const errors = []
     const searches = []
+    let showSyntheticAnalytics = false
     page.on('pageerror', (error) => errors.push(error.message))
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url())
@@ -25,7 +26,16 @@ try {
       if (url.pathname === '/fixture') return route.fulfill({ contentType: 'text/html', body: '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script src="/fixture.js"></script></body></html>' })
       if (url.pathname === '/fixture.js') return route.fulfill({ contentType: 'text/javascript', body: js })
       if (url.pathname === '/fixture.css') return route.fulfill({ contentType: 'text/css', body: `*{box-sizing:border-box}html{font-size:12px}body{margin:16px;font-family:Arial,sans-serif;background:${theme === 'dark' ? '#111' : '#fff'};--theme-text:${theme === 'dark' ? '#eee' : '#111'};--theme-bg:${theme === 'dark' ? '#171717' : '#fff'};--theme-input-bg:var(--theme-bg);--theme-elevation-50:var(--theme-bg);--theme-elevation-0:var(--theme-bg);--theme-elevation-600:${theme === 'dark' ? '#aaa' : '#555'};--theme-elevation-700:var(--theme-text);--theme-success-500:#068550;color:var(--theme-text)}${css}` })
-      if (url.pathname === '/api/owner/dashboard') return route.fulfill({ json: { overview: {} } })
+      if (url.pathname === '/api/owner/dashboard') return route.fulfill({ json: { overview: showSyntheticAnalytics ? {
+        analytics: { available: true, data: {
+          source: 'synthetic-qa',
+          period: { from: '2026-09-01T00:00:00.000Z', to: '2026-09-08T00:00:00.000Z' },
+          traffic: { pageViews: 120, visitors: 60, pageViewsChangePercent: null, visitorsChangePercent: null },
+          engagement: { averageDurationSeconds: null, bounceRatePercent: null },
+          topRoutes: [{ path: '/casos/buy-sell-marketplace', pageViews: 50, visitors: 30 }],
+          vitals: { cls: null, inp: null, lcp: null },
+        } },
+      } : {} } })
       if (url.pathname === '/api/owner/search') {
         searches.push(url.searchParams.get('q'))
         return route.fulfill({ json: { search: { count: 1, results: [{ adminPath: '/admin/collections/pages/1', collection: 'pages', id: 1, label: `Página ${'responsive'.repeat(30)}`, status: 'draft', updatedAt: '2026-09-05T12:00:00Z' }] } } })
@@ -55,6 +65,14 @@ try {
       await page.getByRole('link', { name: /Página responsive/ }).waitFor()
       assert.deepEqual(searches, ['responsive'])
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Long content names must not overflow')
+      assert.deepEqual(errors, [])
+      showSyntheticAnalytics = true
+      await page.reload()
+      const warning = page.getByText('Datos de prueba · no son visitas reales', { exact: true })
+      await warning.waitFor()
+      assert.equal(await warning.isVisible(), true)
+      assert.equal(await page.getByText('120', { exact: true }).isVisible(), true)
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Populated analytics must not overflow')
       assert.deepEqual(errors, [])
       console.log(`PASS dashboard ${width}px ${theme}`)
     } catch (error) { failures.push(`${width}px ${theme}: ${error.message}`) }
