@@ -10,8 +10,13 @@ const rate = (value: number, good: number, poor: number): Rating => value <= goo
 export const buildAnalyticsSummary = (current: AnalyticsSnapshot, previous?: AnalyticsSnapshot) => {
   hashAnalyticsSnapshot(current)
   if (previous) hashAnalyticsSnapshot(previous)
-  // Different providers (including QA fixtures) do not share a comparable population.
-  const baseline = previous?.source === current.source ? previous : undefined
+  // Compare adjacent, equally long UTC windows only; rolling exports can overlap.
+  const currentFrom = Date.parse(current.period.from)
+  const currentDuration = Date.parse(current.period.to) - currentFrom
+  const baseline = previous?.source === current.source
+    && Date.parse(previous.period.to) === currentFrom
+    && Date.parse(previous.period.to) - Date.parse(previous.period.from) === currentDuration
+    ? previous : undefined
   const vital = <K extends keyof AnalyticsSnapshot['vitals']>(key: K, good: number, poor: number) => {
     const value = current.vitals[key]
     return value === undefined ? null : { rating: rate(value, good, poor), value }

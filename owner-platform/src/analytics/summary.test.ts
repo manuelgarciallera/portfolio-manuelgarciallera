@@ -6,12 +6,27 @@ import { buildAnalyticsSummary } from './summary'
 
 const make = (pageViews: number, visitors: number, suffix: string) => createAnalyticsSnapshot({
   capturedAt: `2026-09-0${suffix}T00:00:00.000Z`,
-  period: { from: `2026-08-0${suffix}T00:00:00.000Z`, to: `2026-09-0${suffix}T00:00:00.000Z` },
+  period: { from: `2026-08-0${suffix}T00:00:00.000Z`, to: `2026-08-0${Number(suffix) + 1}T00:00:00.000Z` },
   routes: [{ path: '/casos', pageViews: pageViews - 10, visitors: visitors - 5 }, { path: '/', pageViews: 10, visitors: 5 }],
   source: 'manual-export', totals: { pageViews, visitors }, vitals: { cls: 0.12, inpMilliseconds: 180, lcpMilliseconds: 2800 },
 })
 
 describe('analytics dashboard summary', () => {
+  it.each([
+    ['overlapping', '2026-08-01T12:00:00Z', '2026-08-02T12:00:00Z'],
+    ['identical', '2026-08-02T00:00:00Z', '2026-08-03T00:00:00Z'],
+    ['future', '2026-08-03T00:00:00Z', '2026-08-04T00:00:00Z'],
+    ['shorter', '2026-08-01T12:00:00Z', '2026-08-02T00:00:00Z'],
+    ['longer', '2026-07-31T00:00:00Z', '2026-08-02T00:00:00Z'],
+    ['non-adjacent', '2026-07-30T00:00:00Z', '2026-07-31T00:00:00Z'],
+  ])('omits growth for %s periods without hiding current totals', (_label, from, to) => {
+    const { hash, schemaVersion, ...input } = make(100, 50, '1')
+    void hash; void schemaVersion
+    const previous = createAnalyticsSnapshot({ ...input, period: { from, to } })
+    const summary = buildAnalyticsSummary(make(120, 60, '2'), previous)
+    expect(summary.previousPeriod).toBeNull()
+    expect(summary.traffic).toEqual({ pageViews: 120, visitors: 60, pageViewsChangePercent: null, visitorsChangePercent: null })
+  })
   it('accepts the isolated demo fixture without fabricating unavailable engagement or vitals', () => {
     const summary = buildAnalyticsSummary(createAnalyticsSnapshot(syntheticFixture))
     expect(summary.source).toBe('synthetic-qa')

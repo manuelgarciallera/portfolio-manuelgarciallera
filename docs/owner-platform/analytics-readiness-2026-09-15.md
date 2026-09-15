@@ -10,7 +10,11 @@ Identidad pública verificada por HTTP el 15/09: Person incluye Manuel García-L
 
 Se añade fixture `owner-platform/tests/fixtures/analytics-synthetic.json`: 120 vistas y 60 visitantes INVENTADOS para pruebas, nunca tráfico real. Usar exclusivamente base aislada y desechable. No importarlo en la colección que se vaya a usar para producción: el campo source por sí solo NO aísla datasets ni evita que el último snapshot sustituya la vista principal.
 
-Fallo reproducido (606c46): el resumen comparaba fuentes distintas. Ahora omite periodo anterior y deltas si source difiere, conservando cifras actuales y verificación de integridad. No resuelve comparabilidad de ventanas temporales ni segmentación de datasets: puertas pendientes antes de sincronización automática.
+Fallo reproducido (606c46): el resumen comparaba fuentes distintas. Ahora omite periodo anterior y deltas si source difiere, conservando cifras actuales y verificación de integridad. La segmentación de datasets sigue pendiente antes de sincronización automática.
+
+Actualización temporal: seis casos RED (a29be3) demuestran que aceptaba ventanas solapadas, idénticas, futuras, más cortas, más largas o separadas por un hueco. Ahora solo calcula deltas entre ventanas adyacentes de igual duración UTC y misma fuente; conserva totales si no hay comparación válida. La prueba positiva usa dos días consecutivos, no dos exportaciones mensuales solapadas. No normaliza meses de distinta duración ni cambios de horario local: omite la comparación conservadoramente. No deduce identidad de propiedad a partir de source ni busca un periodo alternativo más antiguo.
+
+Regresión: 81 pruebas de analytics/dashboard en 28 archivos pasan (af800e), tipos y lint focal sin errores. Prueba unitaria del cálculo, no nueva integración con proveedor ni despliegue CMS.
 
 ## Proveedor: propuesta, no activación
 
