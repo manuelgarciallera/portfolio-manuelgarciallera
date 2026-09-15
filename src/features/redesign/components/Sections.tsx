@@ -100,6 +100,7 @@ export function Footer() {
         <Link href="/proceso">Proceso</Link>
         <Link href="/articulos">Artículos</Link>
         <Link href="/#contacto">Contacto</Link>
+        <Link href="/privacidad">Privacidad</Link>
         <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
       </nav>
       <Image

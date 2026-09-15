@@ -5,6 +5,17 @@
     "bytes": 2048
   },
   "routes": {
+    "/privacidad": {
+      "rawBytes": 71888,
+      "gzipBytes": 25223,
+      "files": [
+        "static/chunks/0axdrs6tow-4n.js",
+        "static/chunks/1-z9t-us4-z3y.js",
+        "static/chunks/1nl9a6ehbw0vk.js",
+        "static/chunks/1zbb40u7wj_9b.js",
+        "static/chunks/3fntmmi971322.js"
+      ]
+    },
     "/": {
       "rawBytes": 211578,
       "gzipBytes": 71340,

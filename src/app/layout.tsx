@@ -3,6 +3,7 @@ import { Playfair_Display } from "next/font/google";
 import Script from "next/script";
 
 import { WebVitalsReporter } from "@/components/analytics/WebVitalsReporter";
+import { UMAMI_BOOTSTRAP } from "@/lib/umami-tracker";
 import {
   PERSON_LEGAL_NAME,
   SITE_DESCRIPTION,
@@ -124,6 +125,7 @@ export default function RootLayout({
       </head>
       <body>
         <WebVitalsReporter />
+        <Script id="portfolio-analytics-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: UMAMI_BOOTSTRAP }} />
         {children}
       </body>
     </html>

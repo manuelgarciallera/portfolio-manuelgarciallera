@@ -1,0 +1,6 @@
+.page { max-width: 48rem; margin: 0 auto; padding: clamp(24px, 6vw, 80px) 24px; color: #f4f4f4; background: #0a0a0a; font-family: system-ui, sans-serif; line-height: 1.7; overflow-wrap: anywhere; }
+.page h1 { font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.15; margin: 2rem 0; }
+.page h2 { font-size: 1.5rem; margin-top: 2rem; }
+.page p { margin: 1rem 0; }
+.page a { color: #acd7ff; text-decoration: underline; text-underline-offset: 3px; }
+.page a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
