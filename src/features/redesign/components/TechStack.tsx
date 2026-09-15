@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import {
   siAngular,
   siBootstrap,
@@ -38,13 +37,12 @@ const ICONS: Record<string, Pick<SimpleIcon, 'path' | 'hex'>> = {
 
 export function TechStack({ technologies, compact = false }: { technologies: string[]; compact?: boolean }) {
   return (
-    <span className={`rd-tech-stack${compact ? ' rd-tech-stack--compact' : ''}`} aria-label="Stack tecnológico" tabIndex={0}>
+    <span className={`rd-tech-stack${compact ? ' rd-tech-stack--compact' : ''}`} aria-label="Stack tecnológico">
       {technologies.map((technology) => {
         const icon = ICONS[technology]
         if (!icon) return <span className="rd-tech-stack__item" key={technology}><span>{technology}</span></span>
-        const style = { '--tech-color': `#${icon.hex}` } as CSSProperties
         return (
-          <span className="rd-tech-stack__item" key={technology} title={technology} style={style}>
+          <span className="rd-tech-stack__item" key={technology}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon.path} /></svg>
             <span>{technology}</span>
           </span>

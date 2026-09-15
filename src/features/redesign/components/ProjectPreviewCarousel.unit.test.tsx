@@ -13,7 +13,6 @@ describe('ProjectPreviewCarousel', () => {
     expect(css).toMatch(/\.rd-tech-stack__item svg\s*\{[^}]*width:\s*1\.75rem[^}]*height:\s*1\.75rem/)
     expect(css).toMatch(/\.rd-tech-stack__item\s*\{[^}]*row-gap:\s*\.45rem[^}]*font-size:\s*\.7rem/)
     expect(css).toMatch(/@media\s*\(max-width:\s*760px\)[^{]*\{[\s\S]*?\.rd-tech-stack__item svg\s*\{[^}]*width:\s*1\.5rem[^}]*height:\s*1\.5rem/)
-    expect(css).toMatch(/\.rd-tech-stack__item:hover\s*\{[^}]*color:\s*var\(--tech-color, currentColor\)[^}]*transform:\s*none/)
   })
 
   it('renders a semantic coordination flow instead of inventing a screenshot', () => {

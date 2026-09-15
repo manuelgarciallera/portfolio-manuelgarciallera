@@ -106,7 +106,7 @@ export const CASES: CaseStudy[] = [
     ],
     links: [
       {
-        label: 'Explorar la evidencia en Figma',
+        label: 'Abrir diseño en Figma',
         href: 'https://www.figma.com/design/ilgPpOdrbhQoPV25IgWXfK/Buy-Sell?node-id=0-1',
       },
     ],

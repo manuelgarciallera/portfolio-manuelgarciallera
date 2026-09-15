@@ -31,6 +31,5 @@ describe('CasePage theme hydration', () => {
     const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
     expect(css).toMatch(/\.rd-case-feature-brand--theuxunion\s*\{[^}]*width:\s*min\(100%,\s*28rem\)[^}]*aspect-ratio:\s*16\s*\/\s*10/)
     expect(css).toMatch(/\.rd-meta-grid \.rd-tech-stack\s*\{[^}]*margin-top:\s*\.7rem/)
-    expect(css).toMatch(/\.rd-tech-stack__item:hover\s*\{[^}]*transform:\s*none/)
   })
 })

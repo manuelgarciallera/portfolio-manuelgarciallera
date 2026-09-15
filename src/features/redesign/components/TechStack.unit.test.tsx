@@ -23,10 +23,13 @@ describe('TechStack', () => {
     expect(markup).not.toContain(siOpenaigym.path)
   })
 
-  it('lets keyboard users enter the horizontally scrollable technology list', () => {
+  it('keeps informational technologies readable without inert keyboard stops or controls', () => {
     const markup = renderToStaticMarkup(<TechStack technologies={['Figma', 'React']} compact />)
 
-    expect(markup).toContain('aria-label="Stack tecnológico" tabindex="0"')
+    expect(markup).toContain('aria-label="Stack tecnológico"')
+    expect(markup).not.toContain('tabindex=')
+    expect(markup).not.toContain('<button')
+    expect(markup).not.toContain('<a ')
     expect(markup).toContain('Figma')
     expect(markup).toContain('React')
   })

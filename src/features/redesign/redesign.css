@@ -1032,10 +1032,8 @@
   font-size: .7rem;
   line-height: 1.1;
   text-align: center;
-  transition: color 180ms ease;
 }
 .rd-tech-stack__item svg { width: 1.75rem; height: 1.75rem; fill: currentColor; }
-.rd-tech-stack__item:hover { color: var(--tech-color, currentColor); transform: none; }
 .rd-tech-stack--compact { flex-wrap: wrap; }
 .rd-tech-stack--compact .rd-tech-stack__item { min-width: 3.8rem; }
 .rd-case-mobile-stack { display: none; }
