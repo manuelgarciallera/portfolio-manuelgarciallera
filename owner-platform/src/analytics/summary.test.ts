@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import syntheticFixture from '../../tests/fixtures/analytics-synthetic.json'
 
 import { createAnalyticsSnapshot } from './snapshot'
 import { buildAnalyticsSummary } from './summary'
@@ -11,6 +12,24 @@ const make = (pageViews: number, visitors: number, suffix: string) => createAnal
 })
 
 describe('analytics dashboard summary', () => {
+  it('accepts the isolated demo fixture without fabricating unavailable engagement or vitals', () => {
+    const summary = buildAnalyticsSummary(createAnalyticsSnapshot(syntheticFixture))
+    expect(summary.source).toBe('synthetic-qa')
+    expect(summary.traffic.pageViews).toBe(120)
+    expect(summary.engagement).toEqual({ averageDurationSeconds: null, bounceRatePercent: null })
+    expect(summary.vitals).toEqual({ cls: null, inp: null, lcp: null })
+  })
+  it('does not report growth between synthetic and real data sources', () => {
+    const { hash, schemaVersion, ...input } = make(100, 50, '1')
+    void hash; void schemaVersion
+    const synthetic = createAnalyticsSnapshot({ ...input, source: 'synthetic-qa' })
+    const summary = buildAnalyticsSummary(make(120, 60, '2'), synthetic)
+    expect(summary.previousPeriod).toBeNull()
+    expect(summary.traffic.pageViewsChangePercent).toBeNull()
+    expect(summary.traffic.visitorsChangePercent).toBeNull()
+    expect(summary.traffic.pageViews).toBe(120)
+  })
+
   it('compares verified periods, ranks routes and rates web vitals', () => {
     const summary = buildAnalyticsSummary(make(120, 60, '2'), make(100, 50, '1'))
     expect(summary.traffic).toEqual({ pageViews: 120, pageViewsChangePercent: 20, visitors: 60, visitorsChangePercent: 20 })

@@ -10,6 +10,8 @@ const rate = (value: number, good: number, poor: number): Rating => value <= goo
 export const buildAnalyticsSummary = (current: AnalyticsSnapshot, previous?: AnalyticsSnapshot) => {
   hashAnalyticsSnapshot(current)
   if (previous) hashAnalyticsSnapshot(previous)
+  // Different providers (including QA fixtures) do not share a comparable population.
+  const baseline = previous?.source === current.source ? previous : undefined
   const vital = <K extends keyof AnalyticsSnapshot['vitals']>(key: K, good: number, poor: number) => {
     const value = current.vitals[key]
     return value === undefined ? null : { rating: rate(value, good, poor), value }
@@ -20,14 +22,14 @@ export const buildAnalyticsSummary = (current: AnalyticsSnapshot, previous?: Ana
       bounceRatePercent: current.totals.bounceRatePercent ?? null,
     },
     period: current.period,
-    previousPeriod: previous?.period ?? null,
+    previousPeriod: baseline?.period ?? null,
     source: current.source,
     topRoutes: [...current.routes].sort((a, b) => b.pageViews - a.pageViews || a.path.localeCompare(b.path)).slice(0, 10),
     traffic: {
       pageViews: current.totals.pageViews,
-      pageViewsChangePercent: change(current.totals.pageViews, previous?.totals.pageViews),
+      pageViewsChangePercent: change(current.totals.pageViews, baseline?.totals.pageViews),
       visitors: current.totals.visitors,
-      visitorsChangePercent: change(current.totals.visitors, previous?.totals.visitors),
+      visitorsChangePercent: change(current.totals.visitors, baseline?.totals.visitors),
     },
     vitals: {
       cls: vital('cls', 0.1, 0.25),
