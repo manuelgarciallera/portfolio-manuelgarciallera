@@ -24,6 +24,8 @@ Revisión 15/09 12:35 Madrid: los handlers de consulta e importación no declara
 
 Hallazgo pendiente del importador: `service.ts` reemplaza capturedAt por la hora de importación y `snapshotHash` incluye esa hora. El índice único del hash no acredita deduplicación del mismo agregado importado a horas distintas. No presentar el importador manual como sincronización idempotente; el futuro conector requiere identidad estable de propiedad/periodo, reintentos y prueba concurrente en BD. Esta revisión no cambia esquema ni borra duplicados/datos reales.
 
+Cobertura añadida 13:08: `request-service.test.ts` enlaza handler HTTP y servicio reales con la frontera de almacenamiento controlada. Siete pruebas pasan (6f2426, proceso salida0 f1553c): secretos/campos personales, query libre, totales negativos, periodo invertido y rutas duplicadas devuelven400 sin invocar almacenamiento; caso válido201 transmite identidad owner y auditoría. Tipos y lint focal pasan. Es validación de flujo existente, no corrección nueva, ni prueba de DB/reinicio/servidor o deduplicación de snapshots. No se importaron datos reales.
+
 ### Etiquetado visible y regresión del dashboard
 
 El dashboard muestra la fuente del snapshot; `synthetic-qa` se presenta como «Datos de prueba · no son visitas reales». Una fuente ausente o inválida muestra «Fuente no identificada». Esto aporta transparencia, no aislamiento de datos.
