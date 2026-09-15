@@ -18,6 +18,12 @@ Regresión: 81 pruebas de analytics/dashboard en 28 archivos pasan (af800e), tip
 
 ## Proveedor: propuesta, no activación
 
+### Privacidad de respuestas e importaciones repetidas
+
+Revisión 15/09 12:35 Madrid: los handlers de consulta e importación no declaraban política de caché. Once casos RED (d1f6a2) comprueban la ausencia en éxito, denegación, entrada inválida, exceso de tamaño y errores manejados. Ahora añaden `Cache-Control: private, no-store` siguiendo el patrón de readiness existente; estados, autenticación y contenido de respuestas intactos. Regresión 92 pruebas/28 archivos aprobadas (ab7301), tipos/lint focal/diff check correctos. Es prueba de handlers con dependencias controladas, no observación de CDN ni servidor desplegado; fallos de inicialización anteriores al handler quedan fuera del alcance. No se acredita una filtración previa.
+
+Hallazgo pendiente del importador: `service.ts` reemplaza capturedAt por la hora de importación y `snapshotHash` incluye esa hora. El índice único del hash no acredita deduplicación del mismo agregado importado a horas distintas. No presentar el importador manual como sincronización idempotente; el futuro conector requiere identidad estable de propiedad/periodo, reintentos y prueba concurrente en BD. Esta revisión no cambia esquema ni borra duplicados/datos reales.
+
 ### Etiquetado visible y regresión del dashboard
 
 El dashboard muestra la fuente del snapshot; `synthetic-qa` se presenta como «Datos de prueba · no son visitas reales». Una fuente ausente o inválida muestra «Fuente no identificada». Esto aporta transparencia, no aislamiento de datos.

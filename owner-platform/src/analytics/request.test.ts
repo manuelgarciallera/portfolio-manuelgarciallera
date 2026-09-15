@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { APIError } from 'payload'
 
 import { handleAnalyticsSnapshotRequest, parseAnalyticsSnapshotRequest } from './request'
 
@@ -10,6 +11,23 @@ const data = {
 const valid = { confirmation: 'IMPORTAR ANALÍTICA', data }
 
 describe('analytics snapshot HTTP boundary', () => {
+  it.each([201, 400, 403, 413, 409, 500])('prevents storage of the handled %s import response', async (status) => {
+    const response = await handleAnalyticsSnapshotRequest(new Request('https://owner.test/api', {
+      method: 'POST',
+      body: status === 400 ? '{bad' : JSON.stringify(valid),
+      headers: status === 413 ? { 'content-length': '262145' } : {},
+    }), {
+      authenticate: async () => ({ user: status === 403 ? null : owner }),
+      create: async () => {
+        if (status === 500) throw new Error('private diagnostic')
+        if (status === 409) throw new APIError('private diagnostic', 409)
+        return { id: 110 }
+      },
+    })
+    expect(response.status).toBe(status)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(await response.text()).not.toContain('private diagnostic')
+  })
   it('accepts only the exact import envelope', () => {
     expect(parseAnalyticsSnapshotRequest(valid)).toEqual(valid)
     expect(() => parseAnalyticsSnapshotRequest({ ...valid, token: 'secret' })).toThrow(/campo|permitido/i)
