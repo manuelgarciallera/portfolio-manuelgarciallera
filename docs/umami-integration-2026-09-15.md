@@ -22,3 +22,13 @@ Autorización: Manuel proporcionó el website ID y aprobó integrar, probar y pu
 La instalación del tracker no equivale a un conector del Dashboard CMS. El conector autenticado y la confirmación visual del dato dentro de la cuenta Umami siguen separados. No se ha solicitado ni guardado una API key. Comprobar el despliegue público tras publicar; no inferirlo de este documento.
 
 Rollback de referencia: producción anterior `dpl_7ANJZytUU4Xg8sLosVYko8zkWsbh` (runtime `3e18af2`).
+
+## Publicado y comprobado — 19:59 Madrid
+
+- Commit runtime `f72a420`, push confirmado en GitHub.
+- Preview `dpl_F2kaCH1TDwSJLvAfNWFumm1Tymzv` Ready; HTML de privacidad y website ID verificados antes de promover.
+- Producción `dpl_8LDCkrdVAGvgAvaDCi6UVwNJb8YF` Ready, alias `manuelgarciallera.com` confirmado.
+- Prueba opt-in `UMAMI_PRODUCTION_SMOKE=1 node --test scripts/tests/umami-production-smoke.test.mjs`: PASS. HTML 200, colección Umami 200, ID correcto, ruta `/privacidad`, sin título y una única etiqueta de seguimiento.
+- Esta prueba sí registra una visita QA real; la prueba interceptada anterior no. La inspección adicional del navegador puede registrar otra visita de QA.
+- Página publicada inspeccionada en navegador. Presupuesto público PASS: límites existentes intactos; nueva ruta privacidad 25.223 bytes gzip de chunks propios del build (no incluye script remoto).
+- Pendiente solo confirmación visual del dato en la cuenta Umami; la recepción HTTP no acredita por sí sola la presentación del panel. El Dashboard CMS no está conectado todavía.
