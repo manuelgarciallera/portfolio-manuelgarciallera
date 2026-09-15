@@ -76,3 +76,13 @@ La protección discovery queda verificada también por servidor Next construido
 con PostgreSQL aislado:403/400/413/503, login390/1280 y borrador conservado tras
 reinicio. Sesión53909 salida0; no editor completo ni Figma externo. CI remota
 del cambio61aead7:34932864218 success. No equivale a CMS desplegado.
+
+## Segunda página a320/768
+
+Recorrido completo del editor pasa en tamaños compactos nuevos, sesión32740
+salida0. Ocho páginas/dos marcas y contenido relacionado persisten tras reinicio,
+con borradores privados. Capturas revisadas: segunda página de marca distinta
+sin solapamientos observados, pero preview básica, no web comercial publicada.
+Guion de prueba manual y límites en
+`owner-platform/second-page-compact-2026-09-15.md`. No nueva decisión necesaria
+desde móvil; la revisión humana del editor queda en la lista del portátil.
