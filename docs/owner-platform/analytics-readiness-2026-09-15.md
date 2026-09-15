@@ -39,3 +39,28 @@ Verificación nueva: 76 pruebas de analítica/dashboard en 29 archivos pasan (f8
 ## Pendientes que requieren Manuel
 
 Elegir modalidad/coste tras presupuesto concreto y entrar en la cuenta elegida para configurar acceso. No enviar secretos por chat. Para Search Console, sesión disponible y comprobación de URLs, no garantía de posición o fotografía.
+
+## Siguiente hito acotado: primeras visitas verificadas
+
+Actualización 15/09: recomendación concreta Umami Cloud Hobby, región UE, sin pasar a prueba de pago ni introducir tarjeta. La FAQ oficial confirma plan gratuito, regiones UE/EEUU y exportación. El precio del piloto es 0 USD de suscripción mientras se permanezca en el plan gratuito; no representa presupuesto del CMS ni garantiza cuotas ilimitadas. Comprobar cuotas, retención y disponibilidad efectiva de API en la cuenta antes de conectar. No actualizar de plan automáticamente.
+
+Acción de Manuel: crear o abrir su cuenta en https://cloud.umami.is/signup, verificar el correo y seleccionar región europea. Mantener la titularidad y los secretos en la cuenta, no enviarlos al chat. Avisar cuando la sesión esté disponible. Si el alta exige pago, parar antes de aceptarlo.
+
+Codex se encarga después de:
+
+1. Comprobar condiciones, región, cuotas y permisos efectivos. Preparar propiedad de producción y QA separada si el plan lo admite; en caso contrario mantener QA local sin contaminar producción.
+2. Preparar recolector mínimo y revisar consentimiento/aviso de privacidad, dominios y exclusión de contenido del formulario y parámetros libres. No activar grabación de sesiones ni identificación personal.
+3. Verificar navegación SPA sin duplicados y eventos explícitos. Publicar únicamente tras pruebas y autorización aplicable.
+4. Comprobar que una visita controlada aparece en la propiedad adecuada. Este hito puede cerrarse en el panel del proveedor antes de que exista CMS en la nube.
+5. Conectar agregados al dashboard owner: API exclusivamente desde servidor, tratamiento de errores/cuotas, fecha de actualización, idempotencia y separación de fuentes. No afirmar que esta integración existe todavía.
+
+Criterio de cierre del primer hito: visita y clic controlados observables, sin doble conteo ni datos del formulario, privacidad revisada, dominio público estable y configuración documentada. El dashboard propio conectado es un segundo hito, no una condición para empezar a medir.
+
+Para CMS accesible desde cualquier lugar siguen pendientes infraestructura destino, medios durables, copia externa restaurada, recuperación de acceso por correo y ensayo de publicación/reversión. No obligar a Manuel a contratar esas piezas para comenzar la analítica. Search Console es otro acceso independiente; no es requisito para medir visitas.
+
+Fuentes oficiales consultadas:
+- https://docs.umami.is/docs/cloud/faq (plan gratuito; una prueba de plan de pago sí puede facturar al terminar).
+- https://docs.umami.is/docs/cloud/sign-up (verificación de correo y elección de región).
+- https://docs.umami.is/docs/cloud/api-key (API Cloud `/v1`, región `/eu`, autenticación Bearer y límite documentado de 50 llamadas/15 segundos; no prueba del permiso efectivo del plan).
+
+Validación de esta actualización: revisión documental y Git HEAD/remoto sincronizados al inicio. Sin tests nuevos de runtime, contratación, tracker, conector ni despliegue en este turno.
