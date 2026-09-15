@@ -69,3 +69,10 @@ No se ofrece todavía como plataforma multiusuario o producto comercial terminad
   Tipos/lint dirigidos y frontera pública correctos; checkpoint intacto.
 - Recibo: `owner-platform/figma-discovery-privacy-2026-09-15.md`.
   No se activan conectores, proveedores, cobros ni CMS público.
+
+## Incremento HTTP posterior
+
+La protección discovery queda verificada también por servidor Next construido
+con PostgreSQL aislado:403/400/413/503, login390/1280 y borrador conservado tras
+reinicio. Sesión53909 salida0; no editor completo ni Figma externo. CI remota
+del cambio61aead7:34932864218 success. No equivale a CMS desplegado.

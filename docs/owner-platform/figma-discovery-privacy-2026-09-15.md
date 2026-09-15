@@ -41,3 +41,25 @@ en este manejador. No modifica configuración global de caché.
 Siguiente Codex: incorporar este cambio al próximo ensayo HTTP pertinente y
 continuar puertas existentes, sin repetir estas baterías por rutina. Publicación
 CMS, staging, correo y almacenamiento reales siguen pendientes.
+
+## Ensayo HTTP posterior · 15/09 08:05 Madrid
+
+Sesión53909 finaliza con salida0 (`24d23f`). Checkout aislado
+`61aead71b86d90515c4357b69cef0c3be24094f7`, único delta de fuentes: nuevas
+aserciones en `scripts/test-production-http.mjs`. Build fresco con configuración
+sintética, PostgreSQL16 y login real en Chromium emulado a390/1280.
+
+- Discovery anónimo403; propietario con JSON inválido400, exceso de cuerpo413
+  y petición válida sin token503/disabled. Las cuatro respuestas HTTP llevan
+  `private, no-store`.
+- Readiness conserva las tres puertas false; un borrador editado persiste tras
+  reiniciar el proceso Next. App, clúster y raíz sintética de datos cerrados/limpios.
+- Editor completo y papelera no ejecutados; no se acredita éxito200 de discovery
+  contra Figma externo. El200 sintético sigue cubierto por la prueba unitaria.
+- Dependencias Linux reutilizadas desde la instalación previa después de comparar
+  ambos lockfiles idénticos; no afirmar instalación nueva. La copia de código QA
+  permanece local para reproducibilidad, distinta de la raíz de datos limpiada.
+- Sin cambios runtime adicionales, datos reales, correo externo ni despliegue.
+
+Las aserciones quedan en el harness habitual para futuras regresiones. No se ha
+repetido el RED sobre un build viejo: el RED de manejador está documentado arriba.

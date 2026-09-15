@@ -223,6 +223,27 @@ try {
     assert.equal(readinessState.deploymentAllowed, false)
     assert.equal(readinessState.publicBridgeEnabled, false)
     if (objectMedia) assert.equal(readinessState.runtime.mediaStorage.kind, 'objects')
+    const discoveryPath = '/api/owner/figma/discover'
+    const validDiscoveryBody = JSON.stringify({ source: 'https://figma.com/design/AbC_123-xy/name' })
+    const forbiddenDiscovery = await fetch(origin + discoveryPath, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: validDiscoveryBody,
+      signal: AbortSignal.timeout(10_000),
+    })
+    assert.equal(forbiddenDiscovery.status, 403)
+    assert.equal(forbiddenDiscovery.headers.get('cache-control'), 'private, no-store')
+    await forbiddenDiscovery.arrayBuffer()
+    for (const [body, expectedStatus] of [
+      ['{invalid', 400],
+      [JSON.stringify({ source: 'x'.repeat(5000) }), 413],
+      [validDiscoveryBody, 503],
+    ]) {
+      const response = await request(discoveryPath, { method: 'POST', body })
+      assert.equal(response.status, expectedStatus, 'Figma discovery retains validation and disabled behavior')
+      assert.equal(response.headers.get('cache-control'), 'private, no-store', 'Discovery responses must not be stored')
+      const result = await response.json()
+      if (expectedStatus === 503) assert.equal(result.code, 'disabled', 'No real Figma token is available in this fixture')
+    }
+    console.log('[production-http] Figma discovery 403/400/413/503 are private, no-store; connector disabled')
     const verifyMediaAfterRestart = objectMedia ? await verifyProductionObjectMedia({ origin, token, environment: objectEnvironment }) : undefined
     const created = await request('/api/pages?draft=true', { method: 'POST', body: JSON.stringify({ title: 'Production HTTP draft', slug: 'production-http-qa', layout: [{ blockType: 'hero', heading: 'Saved over HTTP' }] }) })
     assert.equal(created.status, 201)
