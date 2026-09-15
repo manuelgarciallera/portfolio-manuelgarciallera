@@ -1,6 +1,30 @@
 # Ventana de avance · 15 de septiembre de 2026
 
 Responsable: Codex. Ventana solicitada: 06:52–15:52 Europe/Madrid.
+
+## Actualización prioritaria · 09:12–09:14 Madrid
+
+PUBLICACIÓN RESUELTA: CLI Vercel59 cacheada estaba autenticada como Manuel
+(`whoami`0263e6), aunque MCP devuelve404 y Chrome pide login. No hace falta
+iniciar sesión en el portátil para esta publicación. Se corrigió el diagnóstico
+previo de bloqueo al comprobar esta vía, sin nuevos permisos ni credenciales.
+
+La promoción autorizada de Preview8769f59 generó el despliegue productivo
+`dpl_5TGAUyowvBoUHZt2EkdGBhsw3y9v`, Ready con dominio principal asociado
+(`afabf2`). Anterior identificada para rollback: `dpl_FDNSwy2n5atVLrxhoRan2LCrhWFX`.
+Vercel reconstruyó al promover; no fue un simple cambio instantáneo de alias.
+
+Verificación fresca del dominio:
+- Sobre mí e Investigación sirven nombre completo (`d4ae73`).
+- Favicon200; /admin y /api/users404, CMS no expuesto.
+- Navegador1440: esfera blanca, nombre debajo en tres líneas con García-Llera
+  íntegro; clic Contacto llega al encabezado visible (top408 dentro de1000).
+- Buy&Sell390: título completo; siete iconos en filas4+3, sin barra horizontal,
+  ancho342 y scrollWidth342. Captura inspeccionada, viewport restablecido.
+
+No se acredita entrega de correo real, indexación actualizada en Google ni móvil
+físico por estas comprobaciones. Cambios CMS posteriores a8769f59 están en Git,
+no desplegados. Manuel puede revisar ahora el dominio desde el móvil.
 Reanudaciones cada 30 minutos mediante la automatización existente; requieren
 host y aplicación disponibles. No equivalen a nueve horas de ejecución continua.
 Coordinación PILOT, escritor único; sin nuevos servicios ni despliegue del CMS.
