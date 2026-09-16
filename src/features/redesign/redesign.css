@@ -685,17 +685,18 @@
 /* Desktop uses the available width and height; the accepted mobile composition stays independent. */
 @media (min-width: 768px) {
   .rd-hero {
+    --hero-desktop-type: clamp(2rem, min(6.5vw, 9.5svh), 7rem);
     grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr);
     padding-inline: clamp(2rem, 8vw, 12rem);
   }
   .rd-hero-copy { gap: clamp(2.75rem, 7svh, 5rem); }
   .rd-hero-copy h1 {
     max-width: 16ch;
-    font-size: clamp(2rem, min(6.5vw, 9.5svh), 7rem);
+    font-size: var(--hero-desktop-type);
     line-height: 1;
   }
 }
-/* Color is already on the letters at first paint; 0.8-second pass every 20 seconds. */
+/* Color is centered at first paint; a legible 1.4-second pass every 20 seconds. */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .rd-hero-copy h1 {
     --sweep-blue: #1753b5; --sweep-violet: #7041b7; --sweep-pink: #a82c79;
@@ -703,7 +704,7 @@
     padding-bottom: .12em; margin-bottom: -.12em;
     background-image: linear-gradient(135deg, var(--ink) 40%, var(--sweep-blue) 46%,
       var(--sweep-violet) 50%, var(--sweep-pink) 54%, var(--ink) 60%);
-    background-size: 300% 300%; background-position: 60% 60%;
+    background-size: 300% 300%; background-position: 50% 50%;
     background-clip: text; -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: rd-hero-type-sweep 20s linear infinite;
@@ -714,8 +715,8 @@
   .rd-hero-copy h1::selection { -webkit-text-fill-color: var(--bg); }
 }
 @keyframes rd-hero-type-sweep {
-  0% { background-position: 60% 60%; }
-  4%, 100% { background-position: 0% 0%; }
+  0% { background-position: 50% 50%; }
+  7%, 100% { background-position: 0% 0%; }
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   .rd-hero-copy h1 {
@@ -1276,7 +1277,22 @@
 /* Los cortes siguientes solo cambian composición, nunca tamaño tipográfico. */
 @media (min-width: 768px) {
   /* Keep the scene inside its grid column instead of extending over the copy. */
-  .rd-hero-art { max-width: 100%; }
+  .rd-hero-art {
+    max-width: 100%; width: 100%; aspect-ratio: auto;
+    display: flex; flex-direction: column; align-items: center;
+    transform: translateY(calc(var(--hero-desktop-type) * -.6));
+  }
+  .rd-hero-canvas-stage { position: relative; inset: auto; width: 100%; height: calc(var(--hero-desktop-type) * 4); flex: none; }
+  .rd-hero-art-fallback { height: calc(var(--hero-desktop-type) * 4); align-items: center; }
+  .rd-hero-static-orb { width: calc(var(--hero-desktop-type) * 3.2); height: calc(var(--hero-desktop-type) * 3.2); }
+  .rd-hero-name {
+    position: relative; top: auto; inset-inline: auto; width: 100%;
+    font-size: clamp(1.125rem, calc(var(--hero-desktop-type) * .32), 2rem);
+    line-height: 1.1;
+  }
+}
+@media (min-width: 1180px) {
+  .rd-hero-name span { display: inline; }
 }
 @media (min-width: 768px) and (max-width: 1179px) {
   .rd-axes { grid-template-columns: 1fr; gap: var(--space-3); }

@@ -4,12 +4,10 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('HeroOrbCanvas recovered artifact', () => {
-  it('uses the clear stacked orb and label placement on desktop as well as mobile', () => {
+  it('preserves the clear material while adapting desktop composition independently', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
     expect(source).toContain('transmission={0.72}')
     expect(source).toContain('emissiveIntensity={0.25}')
-    expect(source).toContain('scale={COMPACT_GEOMETRY.orbScale}')
-    expect(source).toContain('position={[0, COMPACT_GEOMETRY.orbY, 0]}')
   })
   it('recovers the stable refractive sphere without loading an HDR environment', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')

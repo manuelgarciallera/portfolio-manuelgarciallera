@@ -5,14 +5,13 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Suspense, useMemo, useRef } from 'react'
 import { AdditiveBlending, Color, FrontSide, Group, MathUtils } from 'three'
 
-// Composición única: esfera clara arriba y nombre completo debajo en todos los
-// dispositivos. El apellido compuesto nunca se divide: los saltos son explícitos.
+// Mobile keeps its accepted composition; desktop fills a stage scaled with the H1.
 const COMPACT_GEOMETRY = { orbY: 0.5, orbScale: 0.72 } as const
 
 interface HeroOrbCanvasProps {
   isDark: boolean
   reduceMotion: boolean
-  // Solo adapta el presupuesto de render; la composición es compartida.
+  // Shares the CSS breakpoint for composition and rendering budget.
   isCompact: boolean
   onReady?: () => void
 }
@@ -131,8 +130,8 @@ function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps,
 function ResponsiveOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   return (
     <group
-      scale={COMPACT_GEOMETRY.orbScale}
-      position={[0, COMPACT_GEOMETRY.orbY, 0]}
+      scale={isCompact ? COMPACT_GEOMETRY.orbScale : 1.25}
+      position={[0, isCompact ? COMPACT_GEOMETRY.orbY : 0, 0]}
     >
       <LiquidOrb isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} />
     </group>

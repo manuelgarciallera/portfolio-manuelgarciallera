@@ -45,3 +45,18 @@ El portfolio sí contiene implementaciones, pero todavía no controles editorial
 Revisar la versión vigente al retomarlo; estas referencias no fijan para siempre valores o arquitectura. Diseñar después el esquema de configuración, su integración con el editor y la previsualización/publicación. No se ha implementado ni verificado ese recorrido CMS por guardar esta ficha.
 
 Siguiente responsable: Codex al reanudar el trabajo del CMS con Manuel. Entrega documental, no cambio de producción.
+
+## CMS-LAYOUT-01 · colocación visual accesible
+
+Solicitud posterior de Manuel (16/09/2026): pulir la usabilidad del CMS para personas no iniciadas, con arrastre de cajas, cruceta en móvil y desktop y ajuste imantado a márgenes o layout. **Registrado para diseño/prueba posterior; no implementado ni validado con usuarios.**
+
+- Arrastrar para reordenar y mover bloques, con destino y contorno visibles antes de soltar.
+- Cruceta de desplazamiento al seleccionar un elemento; ofrecer también teclado y comandos «Mover antes/después». Ninguna operación dependerá exclusivamente del arrastre.
+- Propuesta de modo inicial: layout guiado, con ajuste a columnas, márgenes y separaciones. Modo libre opcional dentro de una caja delimitada, no coordenadas absolutas indiscriminadas que rompan móvil.
+- En móvil, separar selección, arrastre y scroll; controles táctiles claros y sin tapar el contenido. Mostrar posición y guías mientras se mueve, sin requerir precisión fina.
+- Deshacer/rehacer, cancelar movimiento, restaurar alineación y previsualizar cada anchura antes de publicar.
+- Separar orden de lectura y posición visual: comprobar teclado, foco, lectores de pantalla, solapamientos y contenido que crece.
+- Los ajustes responsive deben heredarse de forma comprensible, con excepciones por formato explícitas; un cambio desktop no alterará móvil silenciosamente.
+- Cierre exigido: crear, mover, alinear, deshacer, guardar, reabrir, previsualizar y publicar con resultado coherente en táctil y ratón/teclado. Probar con personas no iniciadas antes de afirmar usabilidad validada.
+
+Diseñar sobre el editor existente al retomar CMS, sin abrir otro motor de layout ni importar librerías por anticipado. Pendientes: inspección de capacidades actuales, prototipo de interacción y aprobación de reglas antes de implementación.
