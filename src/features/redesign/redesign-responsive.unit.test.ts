@@ -223,7 +223,7 @@ describe('case-study responsive safeguards', () => {
 
   it('keeps the hero seamless and uses the LaLiga coral surface', () => {
     const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
-    expect(css).toMatch(/\.rd-hero-art\s*\{[^}]*background:\s*var\(--bg\)/)
+    expect(css).toMatch(/\.rd-hero-art\s*\{[^}]*background:\s*transparent/)
     expect(css).toMatch(/\.rd-case-visual--laliga \.rd-preview-viewport[^}]*background:\s*#ef3340/i)
   })
 
