@@ -112,7 +112,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         gl.viewport(0, 0, width, height)
         gl.uniform2f(resolution, width, height); gl.uniform1f(time, elapsed)
         gl.uniform1f(theme, settings.current.isDark ? 0 : 1)
-        gl.uniform1f(zoom, isCompact ? 2.35 : 2.6)
+        gl.uniform1f(zoom, isCompact ? 2.5 : 2.6)
         gl.uniform1f(offset, 0)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
         if (!ready) { ready = true; settings.current.onReady?.() }

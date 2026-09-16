@@ -20,11 +20,14 @@ try{
    assert.equal(new Set(geometry.tops).size,1,'mobile name must occupy one line')
    assert.ok(geometry.scroll<=geometry.width+1,'name fits without clipping')
    const {data,info}=await sharp(await page.locator('.rd-hero-static-orb').screenshot()).removeAlpha().raw().toBuffer({resolveWithObject:true})
-   let lo=info.width,hi=0
-   for(let i=0;i<data.length;i+=3)if(data[i+2]>data[i]+25){const x=(i/3)%info.width;lo=Math.min(lo,x);hi=Math.max(hi,x)}
+   let lo=info.width,hi=0,bottom=0
+   for(let i=0;i<data.length;i+=3)if(data[i+2]>data[i]+25){const x=(i/3)%info.width;lo=Math.min(lo,x);hi=Math.max(hi,x);bottom=Math.max(bottom,Math.floor(i/3/info.width))}
    assert.ok(hi-lo>width*.60,'organic envelope is visibly larger than the previous small mobile orb')
    assert.ok(hi-lo<width*.94,'droplets retain side clearance')
-   assert.ok(geometry.top>=(await page.locator('.rd-hero-static-orb').boundingBox()).y+info.height-1,'name below scene')
+   const visibleBottom=(await page.locator('.rd-hero-static-orb').boundingBox()).y+bottom
+   assert.ok(geometry.top>=visibleBottom+4,'name clears the visible liquid and droplets')
+   assert.ok(geometry.top-visibleBottom<60,'name is close to the orb, not separated by a large empty area')
+   assert.ok(await name.evaluate(e=>parseFloat(getComputedStyle(e).fontSize))>=width*.059,'mobile identity has the requested larger type')
    console.log('PASS mobile layout',width)
   }catch(e){failures.push(`${width} layout: ${e.message}`)}
   await page.emulateMedia({reducedMotion:'no-preference'})

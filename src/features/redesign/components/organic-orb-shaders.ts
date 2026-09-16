@@ -47,12 +47,20 @@ export const ORB_FRAGMENT = `
       uv.y-=verticalOffset;
       vec3 origin=vec3(0.,0.,3.7), ray=normalize(vec3(uv,-cameraZoom));
       float travel=0.; vec3 p=origin; float distanceToSurface=1.;
+      // Estimate subpixel silhouette coverage from the nearest ray approach.
+      // MSAA on the full-screen quad cannot smooth a ray-marched boundary.
+      float nearest=1000.; vec3 edgePoint=origin;
       for(int i=0;i<64;i++){
         p=origin+ray*travel; distanceToSurface=shape(p);
+        float footprint=max(.0001,2.*travel/(cameraZoom*resolution.y));
+        float proximity=distanceToSurface/footprint;
+        if(proximity<nearest){nearest=proximity;edgePoint=p;}
         if(distanceToSurface<.0015||travel>6.)break;
         travel+=distanceToSurface*.8;
       }
-      if(travel>6.||distanceToSurface>.006){gl_FragColor=vec4(0.);return;}
+      float coverage=1.-smoothstep(.25,1.25,nearest);
+      if(coverage<=0.){gl_FragColor=vec4(0.);return;}
+      p=edgePoint;
       vec2 e=vec2(.002,0.);
       vec3 n=normalize(vec3(shape(p+e.xyy)-shape(p-e.xyy),shape(p+e.yxy)-shape(p-e.yxy),shape(p+e.yyx)-shape(p-e.yyx)));
       vec3 q=local(p);
@@ -61,8 +69,11 @@ export const ORB_FRAGMENT = `
       float ribbon=smoothstep(.15,.95,flow);
       float veins=pow(.5+.5*inner,6.);
       vec3 blue=vec3(.025,.19,.68), cyan=vec3(.015,.75,.9), violet=vec3(.45,.12,.75);
-      vec3 pigment=mix(blue,cyan,ribbon);
-      pigment=mix(pigment,violet,.24*(.5+.5*sin(q.y*2.+time*.1)));
+      float colourPhase=q.y*2.1+q.x*1.4+inner*.65+sin(q.z*2.-time*.18);
+      float purpleWave=smoothstep(-.8,.8,sin(colourPhase-time*.28));
+      float roseWave=pow(.5+.5*sin(colourPhase*1.3+time*.21+1.4),5.);
+      vec3 pigment=mix(mix(blue,cyan,ribbon*.68),vec3(.48,.16,.82),purpleWave*.72);
+      pigment=mix(pigment,vec3(.85,.3,.57),roseWave*.22);
       float diffuse=.3+.7*max(dot(n,normalize(vec3(-.6,.9,1.2))),0.);
       float fresnel=pow(1.-max(dot(n,-ray),0.),2.4);
       float specular=pow(max(dot(reflect(ray,n),normalize(vec3(-.6,.8,1.))),0.),65.);
@@ -70,5 +81,5 @@ export const ORB_FRAGMENT = `
       vec3 color=mix(bg,pigment*diffuse,.63+.24*ribbon)+veins*vec3(.09,.25,.28);
       color=mix(color,mix(vec3(.2,.82,1.),vec3(.06,.28,.54),lightTheme),fresnel*.8);
       color+=specular*vec3(.8,.9,1.);
-      gl_FragColor=vec4(color,1.);
+      gl_FragColor=vec4(color,coverage);
     }`

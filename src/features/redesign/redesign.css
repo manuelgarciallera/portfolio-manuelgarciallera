@@ -1371,14 +1371,14 @@
   }
   .rd-hero-art {
     width: 100%; min-height: 0; aspect-ratio: auto; margin-inline: 0;
-    display: flex; flex-direction: column; gap: .75rem; padding-bottom: 2.5rem;
+    display: flex; flex-direction: column; gap: 0; padding-bottom: 2.5rem; margin-top: -1.5rem;
     background: transparent;
   }
   .rd-hero-canvas-stage { position: relative; inset: auto; width: 100%; height: min(100cqi, 30rem); flex: none; }
   .rd-hero-art-fallback { height: min(100cqi, 30rem); }
   .rd-hero-name {
     position: relative; top: auto; inset-inline: auto; width: calc(100% - 2rem);
-    font-size: clamp(1rem, 5.6cqi, 1.625rem); line-height: 1.25; white-space: nowrap;
+    font-size: clamp(1rem, 6cqi, 1.75rem); line-height: 1.25; white-space: nowrap; margin-top: -1rem;
   }
   .rd-hero-name span { display: inline; }
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
