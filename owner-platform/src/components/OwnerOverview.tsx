@@ -82,6 +82,10 @@ export const OwnerOverview = () => {
           <h3>Analítica</h3>
           <Link href="/admin/collections/analytics-snapshots">Ver snapshots</Link>
         </div>
+        <nav className={styles.actions} aria-label="Estadísticas externas">
+          <a href="https://cloud.umami.is/analytics/eu/websites/7c0010a4-8f44-4340-8ee2-d8a7bda1152c" target="_blank" rel="noopener noreferrer">Abrir estadísticas en Umami ↗</a>
+        </nav>
+        <p className={styles.period}>Abre una pestaña nueva y requiere tu sesión de Umami. Los datos del proveedor no se sincronizan automáticamente con este Dashboard.</p>
         {view.analytics.available ? (
           <>
             <p className={styles.period}>{view.analytics.periodLabel}</p>
