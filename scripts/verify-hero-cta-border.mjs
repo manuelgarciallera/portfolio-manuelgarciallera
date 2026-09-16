@@ -46,7 +46,11 @@ try {
     assert.equal(moving.glowAngle, moving.angle, 'halo and border stay synchronized')
     await cta.hover()
     if (width >= 768) {
-      await page.waitForFunction(() => getComputedStyle(document.querySelector('.rd-hero-copy a')).backdropFilter.includes('blur'))
+      await page.waitForFunction(() => {
+        const css = getComputedStyle(document.querySelector('.rd-hero-copy a'))
+        // Read the finished 180ms surface transition, not its opaque first frame.
+        return css.backdropFilter.includes('blur') && css.backgroundColor.endsWith(', 0.86)')
+      })
       const glass = await style()
       assert.match(glass.surface, /linear-gradient/, 'glass reflection')
       assert.match(glass.fill, /rgba/, 'translucent glass surface')
