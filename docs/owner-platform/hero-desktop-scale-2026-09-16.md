@@ -24,4 +24,14 @@
 - Candidato histórico encontrado: `src/features/portfolio/three/HeroOrbCanvas.jsx`, `LiquidMesh` deformado y rotación; no podemos afirmar que sea exactamente el ente recordado por Manuel. No se ha restaurado sobre la web pública.
 - CMS: arrastre, cruceta y guías registrados como CMS-LAYOUT-01 en `visual-effects-backlog-2026-09-16.md`; propuesta pendiente de diseño/prueba editorial, no implementación.
 
-Publicación y verificación live se registrarán después del despliegue. Reversión pública disponible en `fcf979e` / dpl_J6FwFV3vmEGbTbig5CuGp9iJE4ug. Reserva Hub8bd7f858. Siguiente responsable Codex para publicación y prueba; Manuel para revisión estética al volver.
+## Publicación y entrega
+
+Runtime `1eb1997` commit/push `78a077`. Preview dpl_Coy167koMjaF7um58QbWJFJ1ygZG READY `457314`; promoción generó producción **dpl_Dc1SFYuGf1zfrwkUgG29apTMK6s8**, creada18:58:07CEST, READY y alias manuelgarciallera.com `959c1f`. CI35125119998 completa SUCCESS `f011d3` (validate y owner).
+
+LIVE URL canónica: seis composiciones y cuatro ensayos H1 PASS `fd7e05` (salidas `fed007`, `4ac48a`), incluyendo móvil intacto, nombre una/tres líneas, proporción esfera y viewport. Logs error5min sin entradas `edd92c`.
+
+Transparencia LIVE: ocho transiciones desktop/móvil, estático/WebGL y ambos temas PASS `87e060` (salidas previas1d92b4/3ce4db/d62ca4). Checkpoint0f0adf6 intacto `bb67b0`. Reserva liberada en la entrega final del Hub.
+
+Prototipo aislado `b6a1c19`, push confirmado `e9e546`: shaders, ambos temas, cambio real de imagen, pausa estable y movimiento reducido PASS390/900 `a436e6`; lint/diff `a6f6a3`. Capturas revisadas: dirección orgánica funcional, todavía predominan pigmento y bandas; no se presenta como vidrio final ni rendimiento físico validado. No se ha promovido este experimento a producción.
+
+Reversión pública disponible en `fcf979e` / dpl_J6FwFV3vmEGbTbig5CuGp9iJE4ug. Reserva Hub8bd7f858; siguiente Manuel revisión estética del hero publicado y del prototipo local al volver, Codex integración posterior solo tras revisión. Sin CMS runtime, costes, secretos, automatización nueva ni proceso del usuario detenido.
