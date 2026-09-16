@@ -40,16 +40,17 @@
   background: transparent; border: 0; color: inherit; font: inherit;
   font-size: 1.5rem; min-width: 44px; min-height: 44px; cursor: pointer; border-radius: 0.5rem;
 }
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 1rem 0 0.5rem; }
+.actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: 0.5rem; margin: 1rem 0 0.5rem; }
 .choice {
   background: var(--consent-bg); color: var(--consent-text); border: 1px solid var(--consent-border);
   border-radius: 0.5rem; padding: 0.7rem 0.8rem; min-height: 44px;
-  font: inherit; font-weight: 600; cursor: pointer; overflow-wrap: anywhere;
+  font: inherit; font-weight: 600; cursor: pointer;
 }
 .choice:hover:not(:disabled), .close:hover { background: color-mix(in srgb, var(--consent-text) 8%, var(--consent-bg)); }
 .choice:disabled { opacity: 0.55; cursor: not-allowed; }
 .root :is(button, a, input, summary):focus-visible { outline: 3px solid var(--consent-focus); outline-offset: 3px; }
 .link { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.card > a.link { display: inline-flex; align-items: center; min-height: 44px; }
 .details { margin-top: 0.5rem; }
 .details summary { padding: 0.75rem 0; min-height: 44px; cursor: pointer; }
 .details fieldset { margin: 1rem 0; padding: 0; border: 0; min-width: 0; }
