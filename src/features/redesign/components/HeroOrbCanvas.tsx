@@ -123,8 +123,10 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       const offset = gl.getUniformLocation(program, 'verticalOffset')
       const pressPoint = gl.getUniformLocation(program, 'pressPoint')
       const pressAge = gl.getUniformLocation(program, 'pressAge'), pressStrength = gl.getUniformLocation(program, 'pressStrength')
+      // Only dimensions are cached: pointer coordinates still use a fresh rect
+      // after scrolling. Animation does not need a layout read on every frame.
+      let rect = canvas.getBoundingClientRect()
       draw = (now) => {
-        const rect = canvas.getBoundingClientRect()
         if (!rect.width || !rect.height || disposed) return
         const ratio = Math.min(1.25, (isCompact ? 384 : 560) / Math.max(rect.width, rect.height))
         const width = Math.max(1, Math.round(rect.width * ratio)), height = Math.max(1, Math.round(rect.height * ratio))
@@ -143,7 +145,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         if (!ready) { ready = true; settings.current.onReady?.() }
       }
       refresh.current = restart
-      resize = new ResizeObserver(restart); resize.observe(canvas)
+      resize = new ResizeObserver(() => { rect = canvas.getBoundingClientRect(); restart() }); resize.observe(canvas)
       intersection = new IntersectionObserver(entries => { inView = entries[0].isIntersecting; restart() })
       intersection.observe(canvas)
       document.addEventListener('visibilitychange', visibility)

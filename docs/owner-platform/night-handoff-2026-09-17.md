@@ -36,3 +36,9 @@ Actualizar esta sección con cada hito material: commit, prueba y resultado, lim
 ### Investigación 3D/CMS y experimento descartado
 
 Ver `interactive-3d-and-cms-research-2026-09-17.md`: fuentes primarias, criterios táctiles/carga y contraste con editor existente. Precálculo shader preservó píxeles pero empeoró 34 % en SwiftShader; revertido, no publicado. Comparador reutilizable con gate explícito `--require-improvement`. CMS: 57 pruebas focales pasan (`a73a7b`); todavía no nueva interfaz ni validación con principiantes. Siguiente incremento: comunicar/restaurar herencia responsive en encuadre existente antes de abrir un motor libre. Investigación no sustituye implementación.
+
+### Siguiente corrección de coste principal
+
+`hero-orb-layout-cost-2026-09-17.md`: 12 lecturas de layout por 12 dibujos en producción; caché invalidada por ResizeObserver elimina esas lecturas en pruebas locales390/1280 y conserva redimensionado. No modifica shader ni calidad, no demuestra mejora GPU ni FPS físico. Estado de publicación y pruebas finales en ese recibo.
+
+Para el siguiente incremento CMS, revisar además `MediaPlacements.ts`: el hook combina excepciones anteriores con las entrantes. Al implementar «volver al valor heredado», probar guardado/reapertura en base real para asegurar que una excepción borrada no se reconstruye por combinación parcial. No basta con probar el selector o el adaptador de preview.
