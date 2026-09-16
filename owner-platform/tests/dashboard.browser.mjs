@@ -19,6 +19,7 @@ try {
     const errors = []
     const searches = []
     let showSyntheticAnalytics = false
+    let rejectSession = false
     page.on('pageerror', (error) => errors.push(error.message))
     await page.route('**/*', async (route) => {
       const url = new URL(route.request().url())
@@ -26,6 +27,7 @@ try {
       if (url.pathname === '/fixture') return route.fulfill({ contentType: 'text/html', body: '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script src="/fixture.js"></script></body></html>' })
       if (url.pathname === '/fixture.js') return route.fulfill({ contentType: 'text/javascript', body: js })
       if (url.pathname === '/fixture.css') return route.fulfill({ contentType: 'text/css', body: `*{box-sizing:border-box}html{font-size:12px}body{margin:16px;font-family:Arial,sans-serif;background:${theme === 'dark' ? '#111' : '#fff'};--theme-text:${theme === 'dark' ? '#eee' : '#111'};--theme-bg:${theme === 'dark' ? '#171717' : '#fff'};--theme-input-bg:var(--theme-bg);--theme-elevation-50:var(--theme-bg);--theme-elevation-0:var(--theme-bg);--theme-elevation-600:${theme === 'dark' ? '#aaa' : '#555'};--theme-elevation-700:var(--theme-text);--theme-success-500:#068550;color:var(--theme-text)}${css}` })
+      if (url.pathname === '/api/owner/dashboard' && rejectSession) return route.fulfill({ status: 403, json: { error: 'Owner session required' } })
       if (url.pathname === '/api/owner/dashboard') return route.fulfill({ json: { overview: showSyntheticAnalytics ? {
         analytics: { available: true, data: {
           source: 'synthetic-qa',
@@ -81,6 +83,19 @@ try {
       assert.equal(await warning.isVisible(), true)
       assert.equal(await page.getByText('120', { exact: true }).isVisible(), true)
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Populated analytics must not overflow')
+      assert.deepEqual(errors, [])
+      rejectSession = true
+      await page.reload()
+      const retry = page.getByRole('button', { name: 'Reintentar resumen', exact: true })
+      await retry.waitFor()
+      assert.equal(await actions.count(), 0, 'Rejected overview must not expose editorial actions')
+      assert.equal(await analyticsLink.count(), 0, 'Rejected overview must not expose provider access')
+      assert.equal(await page.getByText('120', { exact: true }).count(), 0, 'Rejected overview must not display analytics')
+      rejectSession = false
+      await retry.click()
+      await analyticsLink.waitFor()
+      assert.equal(await actions.count(), 6, 'Valid retry restores editorial overview')
+      assert.equal(await warning.isVisible(), true, 'Retry preserves synthetic provenance')
       assert.deepEqual(errors, [])
       console.log(`PASS dashboard ${width}px ${theme}`)
     } catch (error) { failures.push(`${width}px ${theme}: ${error.message}`) }

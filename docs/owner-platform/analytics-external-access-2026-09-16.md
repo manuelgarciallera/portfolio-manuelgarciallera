@@ -16,6 +16,10 @@ OwnerOverview muestra «Abrir estadísticas en Umami» hacia la propiedad UE del
 
 ## Pendientes y continuidad
 
+### Regresión de acceso — 08:23 Madrid
+
+Sobre40ea12c: harness ampliado con respuesta403 del resumen tras recarga; verifica ausencia de acciones editoriales, métricas y enlace externo. Al reintentar con respuesta válida recupera seis acciones, acceso Umami y aviso de datos sintéticos. Ocho variantes pasan (7fa8b6/1fc0f4), ESLint/diffcheck pasan (2ae202). Solo pruebas: no fallo runtime encontrado, no prueba de revocación en caliente ni del servidor de autenticación Payload.
+
 El enlace no arregla el rechazo de conexión en el móvil: afecta también a Google Analytics, causa todavía desconocida. No se cambia configuración de red ni protecciones. Acceso CMS remoto/alojamiento siguen independientes; no se declara CMS desplegado.
 
 Automatización existente reactivada hasta 16/09 15:50 Europe/Madrid, cada 30 minutos, para estabilidad CMS y pruebas acotadas; pausa al terminar, sin gasto, exposición CMS, nuevos permisos ni migración. Depende de disponibilidad de host/app. Próximo responsable: Codex, revisar puertas operativas y avances posteriores antes de elegir el siguiente hito.
