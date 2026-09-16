@@ -682,6 +682,19 @@
   font-size: clamp(2rem, min(5.8vw, 7.5svh), 7rem); font-weight: 700;
   line-height: 0.94; letter-spacing: -0.06em; text-wrap: balance;
 }
+/* Desktop uses the available width and height; the accepted mobile composition stays independent. */
+@media (min-width: 768px) {
+  .rd-hero {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr);
+    padding-inline: clamp(2rem, 8vw, 12rem);
+  }
+  .rd-hero-copy { gap: clamp(2.75rem, 7svh, 5rem); }
+  .rd-hero-copy h1 {
+    max-width: 16ch;
+    font-size: clamp(2rem, min(6.5vw, 9.5svh), 7rem);
+    line-height: 1;
+  }
+}
 /* A brief color pass; the remaining eighteen seconds retain the theme ink. */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .rd-hero-copy h1 {
