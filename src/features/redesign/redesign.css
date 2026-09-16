@@ -735,7 +735,7 @@
   content: ''; position: absolute; inset: 0;
   border-radius: inherit; pointer-events: none;
   background: conic-gradient(from var(--rd-cta-angle), #00d1ff, #944dff, #ff38ca, #944dff, #00d1ff);
-  animation: rd-cta-border-intro 4.8s linear;
+  animation: rd-cta-border-intro 4.4s linear;
   /* Hollow rings keep the label area clear, including the blurred halo. */
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -752,7 +752,7 @@
 .rd-hero-copy a:hover { box-shadow: 0 0 0 4px rgb(167 139 250 / 12%); }
 .rd-hero-copy a:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
 @media (hover: hover) {
-  .rd-hero-copy a:hover::before, .rd-hero-copy a:hover .rd-cta-glow::before { animation: rd-cta-border-hover 8s linear infinite; }
+  .rd-hero-copy a:hover::before, .rd-hero-copy a:hover .rd-cta-glow::before { animation: rd-cta-border-hover 7.3s linear infinite; }
 }
 @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
   .rd-hero-copy a:hover {

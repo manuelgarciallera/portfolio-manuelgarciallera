@@ -30,6 +30,7 @@ try {
         width:r.width, height:r.height, bottom:r.bottom }
     })
     const first = await style()
+    assert.equal(first.duration, '4.4s', 'intro rotation is slightly faster')
     assert.doesNotMatch(first.mask, /radial-gradient/, 'halo follows capsule, not an ellipse')
     assert.equal(first.radius, first.ctaRadius, 'same pill radius')
     assert.match(first.image, /conic-gradient/, 'visible colored border')
@@ -57,6 +58,7 @@ try {
         return css.backdropFilter.includes('blur') && css.backgroundColor.endsWith(', 0.86)')
       })
       const glass = await style()
+      assert.equal(glass.duration, '7.3s', 'hover rotation is slightly faster')
       assert.match(glass.surface, /linear-gradient/, 'glass reflection')
       assert.match(glass.fill, /rgba/, 'translucent glass surface')
       assert.equal(glass.color, first.color, 'readable label retained')
