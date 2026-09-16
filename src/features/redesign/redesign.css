@@ -682,6 +682,33 @@
   font-size: clamp(2rem, min(5.8vw, 7.5svh), 7rem); font-weight: 700;
   line-height: 0.94; letter-spacing: -0.06em; text-wrap: balance;
 }
+/* A brief color pass; the remaining eighteen seconds retain the theme ink. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .rd-hero-copy h1 {
+    --sweep-blue: #1753b5; --sweep-violet: #7041b7; --sweep-pink: #a82c79;
+    /* Give glyph descenders paint space without moving the following CTA. */
+    padding-bottom: .12em; margin-bottom: -.12em;
+    background-image: linear-gradient(90deg, var(--ink) 40%, var(--sweep-blue) 46%,
+      var(--sweep-violet) 50%, var(--sweep-pink) 54%, var(--ink) 60%);
+    background-size: 300% 100%; background-position: 100% 0;
+    background-clip: text; -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rd-hero-type-sweep 20s linear infinite;
+  }
+  [data-theme="dark"] .rd-hero-copy h1 {
+    --sweep-blue: #79b8ff; --sweep-violet: #a78bfa; --sweep-pink: #ec9cce;
+  }
+  .rd-hero-copy h1::selection { -webkit-text-fill-color: var(--bg); }
+}
+@keyframes rd-hero-type-sweep {
+  0%, 30% { background-position: 100% 0; }
+  40%, 100% { background-position: 0% 0; }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
+  .rd-hero-copy h1 {
+    animation: none; background-image: none; -webkit-text-fill-color: currentColor;
+  }
+}
 .rd-hero-copy a {
   position: relative; isolation: isolate;
   display: inline-flex; align-items: center; min-height: 2.9rem; padding: 0.78rem 1.15rem;
