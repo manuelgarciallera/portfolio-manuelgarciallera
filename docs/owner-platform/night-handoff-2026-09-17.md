@@ -32,3 +32,7 @@ LIVE A/B reversible `measure-orb-frame-cost.mjs`, salida `d0bf33`, canvas384×38
 Conclusión limitada: coste de cálculo del shader dominante en este laboratorio. NO demuestra100ms en el teléfono físico; NO permite afirmar ausencia de lag ni pasar el gate de rendimiento. Siguiente: optimización aislada medible con comparación de borde/calidad, contacto sostenido, scroll y presupuesto. No volver a la pausa al hacer scroll ni al impulso que termina mientras se mantiene pulsado. El CMS no debe declararse iniciado/completado por este diagnóstico.
 
 Actualizar esta sección con cada hito material: commit, prueba y resultado, limitación, pendiente y responsable. Investigación y propuestas deben quedar separadas de implementación y publicación.
+
+### Investigación 3D/CMS y experimento descartado
+
+Ver `interactive-3d-and-cms-research-2026-09-17.md`: fuentes primarias, criterios táctiles/carga y contraste con editor existente. Precálculo shader preservó píxeles pero empeoró 34 % en SwiftShader; revertido, no publicado. Comparador reutilizable con gate explícito `--require-improvement`. CMS: 57 pruebas focales pasan (`a73a7b`); todavía no nueva interfaz ni validación con principiantes. Siguiente incremento: comunicar/restaurar herencia responsive en encuadre existente antes de abrir un motor libre. Investigación no sustituye implementación.
