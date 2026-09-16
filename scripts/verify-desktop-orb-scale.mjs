@@ -36,8 +36,8 @@ try {
       assert.equal(new Set(m.lines).size,width>=1180?1:3,'name changes composition at narrow desktop')
     } else {
       assert.ok(Math.abs(m.art.y-712)<=1,'mobile identity remains below first viewport')
-      assert.equal(new Set(m.lines).size,3)
-      assert.ok(Math.abs(m.name.font-27.456)<.2,'mobile identity type preserved')
+      assert.equal(new Set(m.lines).size,1,'mobile identity is one line under the enlarged orb')
+      assert.ok(m.name.y>=m.orb.bottom,'mobile name below the whole scene')
     }
     await page.screenshot({path:`.audit/desktop-orb-scale/${width}.png`})
     await page.close()

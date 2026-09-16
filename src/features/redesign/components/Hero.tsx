@@ -79,7 +79,7 @@ export function Hero({ isDark = true }: HeroProps) {
         <div className="rd-hero-art-fallback" aria-hidden="true">
           {(reduceMotion || sceneFailed) && <Image
             className="rd-hero-static-orb"
-            src={`/art/hero-organic-static-${isCompact ? 'mobile-' : ''}${isDark ? 'dark' : 'light'}.png`}
+            src={`/art/hero-organic-static-${isCompact ? 'mobile-v2-' : ''}${isDark ? 'dark' : 'light'}.png`}
             alt=""
             width={384}
             height={384}

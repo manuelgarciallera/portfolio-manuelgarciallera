@@ -30,21 +30,43 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     let buffer: WebGLBuffer | null = null
     let frame = 0, elapsed = 0, previous = 0, lastDraw = 0
     let ready = false, inView = true, disposed = false
+    let touching = false, scrolling = false, resumeTimer = 0
     let resize: ResizeObserver | undefined, intersection: IntersectionObserver | undefined
     const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0 }
     const dispose = () => {
       disposed = true; stop(); refresh.current = null
+      window.clearTimeout(resumeTimer)
+      window.removeEventListener('touchstart', touchStart)
+      window.removeEventListener('touchend', touchEnd)
+      window.removeEventListener('touchcancel', touchEnd)
+      window.removeEventListener('scroll', scroll)
       resize?.disconnect(); intersection?.disconnect()
-      document.removeEventListener('visibilitychange', restart)
+      document.removeEventListener('visibilitychange', visibility)
       canvas.removeEventListener('webglcontextlost', lost)
       if (buffer) gl.deleteBuffer(buffer)
       if (program) gl.deleteProgram(program)
       shaders.forEach(shader => gl.deleteShader(shader))
     }
     const lost = (event: Event) => { event.preventDefault(); stop(); settings.current.onFailure?.() }
+    // Keep the last rendered frame during mobile gestures and their inertia.
+    // Passive listeners never intercept native scrolling; resume only when quiet.
+    const settle = () => {
+      window.clearTimeout(resumeTimer)
+      resumeTimer = window.setTimeout(() => {
+        scrolling = false
+        if (!touching) restart()
+      }, 180)
+    }
+    const touchStart = () => { touching = true; stop(); window.clearTimeout(resumeTimer) }
+    const touchEnd = (event: TouchEvent) => { touching = event.touches?.length > 0; settle() }
+    const scroll = () => { scrolling = true; stop(); settle() }
+    const visibility = () => {
+      if (document.hidden) { touching = false; scrolling = false; window.clearTimeout(resumeTimer) }
+      restart()
+    }
     let draw: (now: number) => void = () => {}
     const tick = (now: number) => {
-      if (disposed || !inView || document.hidden || settings.current.reduceMotion) return
+      if (disposed || !inView || document.hidden || touching || scrolling || settings.current.reduceMotion) return
       if (now - lastDraw >= 1000 / 30) {
         if (previous) elapsed += Math.min((now - previous) / 1000, .1)
         previous = now; lastDraw = now; draw(now)
@@ -53,7 +75,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     }
     function restart() {
       stop()
-      if (disposed || !inView || document.hidden) return
+      if (disposed || !inView || document.hidden || touching || scrolling) return
       draw(performance.now())
       if (!settings.current.reduceMotion) frame = requestAnimationFrame(tick)
     }
@@ -90,8 +112,8 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         gl.viewport(0, 0, width, height)
         gl.uniform2f(resolution, width, height); gl.uniform1f(time, elapsed)
         gl.uniform1f(theme, settings.current.isDark ? 0 : 1)
-        gl.uniform1f(zoom, isCompact ? 1.5 : 2.6)
-        gl.uniform1f(offset, isCompact ? .36 : 0)
+        gl.uniform1f(zoom, isCompact ? 2.35 : 2.6)
+        gl.uniform1f(offset, 0)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
         if (!ready) { ready = true; settings.current.onReady?.() }
       }
@@ -99,8 +121,14 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       resize = new ResizeObserver(restart); resize.observe(canvas)
       intersection = new IntersectionObserver(entries => { inView = entries[0].isIntersecting; restart() })
       intersection.observe(canvas)
-      document.addEventListener('visibilitychange', restart)
+      document.addEventListener('visibilitychange', visibility)
       canvas.addEventListener('webglcontextlost', lost)
+      if (isCompact) {
+        window.addEventListener('touchstart', touchStart, { passive: true })
+        window.addEventListener('touchend', touchEnd, { passive: true })
+        window.addEventListener('touchcancel', touchEnd, { passive: true })
+        window.addEventListener('scroll', scroll, { passive: true })
+      }
       restart()
     } catch {
       dispose(); settings.current.onFailure?.()

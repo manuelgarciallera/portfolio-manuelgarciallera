@@ -33,7 +33,7 @@ try {
       assert.ok((Math.max(bg, fg) + .05) / (Math.min(bg, fg) + .05) >= 4.5, 'palette contrast')
     }
     const sample = time => title.evaluate((el, time) => {
-      const animation = el.getAnimations().find(a => a.animationName === 'rd-hero-type-sweep')
+      const animation = el.getAnimations().find(a => a.animationName.startsWith('rd-hero-type-sweep'))
       if (animation) { animation.pause(); animation.currentTime = time }
       const css = getComputedStyle(el), r = el.getBoundingClientRect()
       return { exists:!!animation, position:css.backgroundPositionX, y:css.backgroundPositionY, image:css.backgroundImage,
@@ -43,7 +43,7 @@ try {
     const rest = await sample(0)
     assert.equal(rest.exists, true, 'headline has an occasional color sweep')
     assert.equal(rest.duration, 18000)
-    assert.equal(parseFloat(rest.position), 50, 'color is centered on the headline at first frame')
+    assert.equal(parseFloat(rest.position), width<768?100:50, 'mobile starts before the left edge; desktop keeps its approved opening')
     const early = await sample(100)
     assert.notEqual(early.position, rest.position, 'sweep moves immediately without initial wait')
     assert.match(rest.image, /135deg/, 'diagonal color band')
@@ -56,10 +56,10 @@ try {
     await page.screenshot({ path:`.audit/hero-type-sweep/${width}-${theme}-sweep.png` })
     assert.ok(parseFloat((await sample(800)).position) > 0, 'color remains visible longer than the previous fast pass')
     assert.ok(parseFloat((await sample(1400)).position) > 0, 'pass is slower than the previous 1.4 seconds')
-    const after = await sample(1800)
-    assert.ok(Math.abs(parseFloat(after.position)) < .001, 'first sweep completes in 1.8 seconds')
+    const after = await sample(width<768?3600:1800)
+    assert.ok(Math.abs(parseFloat(after.position)) < .001, 'full mobile path completes in3.6s; desktop half-path in1.8s')
     assert.ok(Math.abs(parseFloat(after.y)) < .001)
-    assert.ok(Math.abs(parseFloat((await sample(2000)).position)) < .001, 'solid text after the short pass')
+    assert.ok(Math.abs(parseFloat((await sample(4000)).position)) < .001, 'solid text after the full pass')
     assert.ok(Math.abs(parseFloat((await sample(17000)).position)) < .001, 'long quiet interval')
     assert.equal((await sample(18600)).position, mid.position, 'next sweep repeats after eighteen seconds')
     assert.equal(await page.locator('h1').count(), 1)

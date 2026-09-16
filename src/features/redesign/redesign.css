@@ -718,6 +718,15 @@
   0% { background-position: 50% 50%; }
   10%, 100% { background-position: 0% 0%; }
 }
+/* Full mobile traversal: twice the distance, same leisurely travel speed. */
+@keyframes rd-hero-type-sweep-mobile {
+  0% { background-position: 100% 100%; }
+  20%, 100% { background-position: 0% 0%; }
+}
+@keyframes rd-hero-name-sweep {
+  0% { background-position: 100% 50%; }
+  60%, 100% { background-position: 0% 50%; }
+}
 @media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   .rd-hero-copy h1 {
     animation: none; background-image: none; -webkit-text-fill-color: currentColor;
@@ -1361,8 +1370,29 @@
     .rd-hero-copy { padding-top: 6.5rem; padding-bottom: 3.75rem; }
   }
   .rd-hero-art {
-    width: 100%; min-height: 22rem; aspect-ratio: auto; margin-inline: 0;
+    width: 100%; min-height: 0; aspect-ratio: auto; margin-inline: 0;
+    display: flex; flex-direction: column; gap: .75rem; padding-bottom: 2.5rem;
     background: transparent;
+  }
+  .rd-hero-canvas-stage { position: relative; inset: auto; width: 100%; height: min(100cqi, 30rem); flex: none; }
+  .rd-hero-art-fallback { height: min(100cqi, 30rem); }
+  .rd-hero-name {
+    position: relative; top: auto; inset-inline: auto; width: calc(100% - 2rem);
+    font-size: clamp(1rem, 5.6cqi, 1.625rem); line-height: 1.25; white-space: nowrap;
+  }
+  .rd-hero-name span { display: inline; }
+  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    @media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+      .rd-hero-copy h1 { animation-name: rd-hero-type-sweep-mobile; background-position: 100% 100%; }
+      .rd-hero-name {
+        --name-blue: #1753b5; --name-light-blue: #0867a4;
+        background-image: linear-gradient(110deg, var(--ink) 35%, var(--name-blue) 45%, var(--name-light-blue) 52%, var(--ink) 65%);
+        background-size: 300% 100%; background-position: 100% 50%;
+        background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        animation: rd-hero-name-sweep 4.5s linear infinite;
+      }
+      [data-theme="dark"] .rd-hero-name { --name-blue: #398dff; --name-light-blue: #9bdcff; }
+    }
   }
   .rd-axes { grid-template-columns: 1fr; gap: var(--space-3); }
   .rd-case-visual, .rd-case-feature { grid-template-columns: 1fr; min-height: 38rem; padding: 1.25rem; }
