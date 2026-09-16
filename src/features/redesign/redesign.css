@@ -695,15 +695,15 @@
     line-height: 1;
   }
 }
-/* A brief color pass; the remaining eighteen seconds retain the theme ink. */
+/* Immediate diagonal pass for 1.2 seconds, then quiet until the next 20-second cycle. */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .rd-hero-copy h1 {
     --sweep-blue: #1753b5; --sweep-violet: #7041b7; --sweep-pink: #a82c79;
     /* Give glyph descenders paint space without moving the following CTA. */
     padding-bottom: .12em; margin-bottom: -.12em;
-    background-image: linear-gradient(90deg, var(--ink) 40%, var(--sweep-blue) 46%,
+    background-image: linear-gradient(135deg, var(--ink) 40%, var(--sweep-blue) 46%,
       var(--sweep-violet) 50%, var(--sweep-pink) 54%, var(--ink) 60%);
-    background-size: 300% 100%; background-position: 100% 0;
+    background-size: 300% 300%; background-position: 80% 80%;
     background-clip: text; -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: rd-hero-type-sweep 20s linear infinite;
@@ -714,8 +714,8 @@
   .rd-hero-copy h1::selection { -webkit-text-fill-color: var(--bg); }
 }
 @keyframes rd-hero-type-sweep {
-  0%, 30% { background-position: 100% 0; }
-  40%, 100% { background-position: 0% 0; }
+  0% { background-position: 80% 80%; }
+  6%, 100% { background-position: 0% 0%; }
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   .rd-hero-copy h1 {
