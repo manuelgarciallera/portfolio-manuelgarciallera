@@ -683,12 +683,37 @@
   line-height: 0.94; letter-spacing: -0.06em; text-wrap: balance;
 }
 .rd-hero-copy a {
+  position: relative;
   display: inline-flex; align-items: center; min-height: 2.9rem; padding: 0.78rem 1.15rem;
-  border-radius: var(--radius-pill); color: var(--bg); background: var(--ink);
+  border-radius: var(--radius-pill); color: #f7f7f5; background: #101112;
   font-size: 0.75rem; font-weight: 700; letter-spacing: 0.035em; text-decoration: none;
   transition: color 180ms ease, background 180ms ease, box-shadow 300ms ease, transform 300ms var(--ease-out);
 }
-.rd-hero-copy a:hover { color: var(--ink); background: var(--bg); box-shadow: 0 0 0 1px var(--ink), 0 0 0 6px color-mix(in srgb, var(--accent) 13%, transparent); transform: translateY(-2px); }
+@property --rd-cta-angle { syntax: '<angle>'; initial-value: 35deg; inherits: false; }
+.rd-hero-copy a::before {
+  content: ''; position: absolute; inset: 0; padding: 1.5px;
+  border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--rd-cta-angle), #79b8ff, #a78bfa, #ec9cce, #a78bfa, #79b8ff);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: rd-cta-border-intro 4.8s linear;
+}
+.rd-hero-copy a:hover { box-shadow: 0 0 0 4px rgb(167 139 250 / 12%); }
+.rd-hero-copy a:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+@media (hover: hover) {
+  .rd-hero-copy a:hover::before { animation: rd-cta-border-hover 8s linear infinite; }
+}
+@keyframes rd-cta-border-intro { to { --rd-cta-angle: 395deg; } }
+@keyframes rd-cta-border-hover { to { --rd-cta-angle: 395deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .rd-hero-copy a::before, .rd-hero-copy a:hover::before { animation: none; }
+}
+@media (forced-colors: active) {
+  .rd-hero-copy a { outline: 1px solid ButtonText; }
+  .rd-hero-copy a::before { display: none; }
+}
 .rd-hero-art {
   container-type: inline-size;
   position: relative; min-width: 0; width: min(58vw, 58rem); aspect-ratio: 1.15;
