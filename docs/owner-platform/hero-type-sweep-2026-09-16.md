@@ -1,0 +1,13 @@
+# Barrido de color del titular — 16/09/2026
+
+Manuel aprueba propuesta acotada: H1 del hero, barrido2s cada20s, texto blanco/negro entre pasadas, colores azul/violeta/rosa según tema y reduced-motion desactivado. Reserva Hub25832afe, basea6e15da. Solo CSS y script de verificación; sin duplicar texto, JavaScript o cambiar semántica del H1.
+
+Primera pasada6–8s; siguientes26–28s y sucesivas. Fondo300% recortado al texto, banda fuera de las letras durante reposo. Colores profundos en tema claro y luminosos en oscuro; selección legible, texto sólido con reduced-motion/forced-colors/impresión. Espacio de pintura inferior0,12em compensado con margen negativo evita recortar descendentes sin desplazar CTA. La guía de diseño orientó el intervalo largo y alcance exclusivo al titular.
+
+RED452772 ausencia de animación. Prueba inicial124e91 leyó fill transparente inmediatamente tras emular reduced-motion; diagnóstico d8867b confirmó color sólido sin cambio runtime. Se espera la condición estable, no se elimina la aserción. Prueba de tema75e471 modificaba atributos antes de estabilizar la hidratación; se cambió a preferencia real rd-theme. Hipótesis intermedia#fff basada en globals.css fue incorrecta: sonda73ba67 confirma light efectivo#fafaf6, ink#080908. Se restaura esa expectativa manteniendo el arranque real con preferencia guardada, sin modificar temas de producción.
+
+Build final30rutas/tipos b47bea. Guardas hero/tipografía/navegación6036a9. Ocho tamaños de viewport320–1280 PASSa1a45f: CTA conserva posiciones anteriores, H1 con caja de pintura extendida sin mover glifos. El indicador scrollWidth del CTA incluye el halo exterior anterior, no implica recorte de etiqueta; capturas verificadas. Bundle fresco9f6d99: home138663raw/50598gzip, errores[], sin crecimientoJS.
+
+Runtime48adb5c commit/push9ce488. Prueba final9c351e PASS390/1280×claro/oscuro: barrido, reposo, recurrencia, geometría, color sólido con movimiento reducido y contraste de cada color de la paleta ≥4,5:1 contra fondo efectivo. Capturas finales claro/oscuro inspeccionadas. Lint/diff047911. Rollback anterior dpl_Cm9gjspQH1PfPYFU7xMXAbFkKnkP. Sin cambios CMS/cookies/automatización ni procesos de usuario detenidos. No se acredita certificación de accesibilidad completa ni rendimiento GPU físico.
+
+Producción dpl_FUimF13B4xxtE7L6vW22yihBJyN7 READY, creada17:22:45CEST; alias https://manuelgarciallera.com confirmadoad376b. LIVE cuatro combinaciones PASS2efc5e con el mismo ensayo; logs errores5min sin entradas24f078. CI35114783858 validateSUCCESS y owner en curso9ea73e; no se afirma suite global completa. Hito publicado y verificado técnicamente; siguiente Manuel revisión estética física. Reserva25832afe liberada mediante entrega.
