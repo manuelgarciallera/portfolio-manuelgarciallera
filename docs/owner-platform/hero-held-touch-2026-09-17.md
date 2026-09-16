@@ -16,3 +16,11 @@ Layout compilado320/390/430/767 PASS (`7ce0ec`):2líneas sin overflow, orbe/H1/C
 Pendiente al crear recibo: restantes regresiones compiladas, CI, publicación y LIVE. Chromium no sustituye una comprobación física del navegador Android del usuario ni acredita ausencia universal de lag. Movimiento reducido y pestaña oculta continúan siendo excepciones intencionadas a la animación.
 
 Regresión compilada desktop390–1920 pasa (`af64d0`): desktop conserva altura de viewport y composición previa; móvil dos líneas. Pulsación nativa y sostenida compilada390/1280 pasa (`b1aafc`).
+
+Ensayo ampliado compilado también pasa cancelación y pérdida de foco en390/1280 (`8d1405`). Commit `4cd3aac` subido; CI35161705913 validateSUCCESS, owner en curso al iniciar cierre. Automatización nocturna existente actualizada para preservar la reacción sostenida y estas decisiones, sin volver al impulso que caduca durante la pulsación.
+
+## Publicación
+
+CI35161705913 completaSUCCESS y logs error5min sin entradas (`be01f7`).
+
+Producción `dpl_94PR7oS9dTa3PSVuXJG3iDoVgU1Z` READY y dominio original comprobado (`487da5`). LIVE: pulsación sostenida/nativa, release/cancel/blur y scroll390/1280 PASS (`1a8b38`); geometría320/390/430/767 PASS (`28faf7`). Barridos y layout claro/oscuro compilados PASS (`f16aa1`). Servidor3020 detenido;3015/3017 conservados. Rollback runtime `e6ea37e`, producción `dpl_8SSnduDukgszDw9F6Y797mbeBo2p`. Sin cambios CMS ni gasto. Pendiente revisión en teléfono físico del usuario; no atribuir a pruebas emuladas garantías universales.
