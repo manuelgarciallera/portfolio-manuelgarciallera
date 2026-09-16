@@ -41,4 +41,6 @@ Ver `interactive-3d-and-cms-research-2026-09-17.md`: fuentes primarias, criterio
 
 `hero-orb-layout-cost-2026-09-17.md`: 12 lecturas de layout por 12 dibujos en producción; caché invalidada por ResizeObserver elimina esas lecturas en pruebas locales390/1280 y conserva redimensionado. No modifica shader ni calidad, no demuestra mejora GPU ni FPS físico. Estado de publicación y pruebas finales en ese recibo.
 
+Runtime actualizado `11b2532`, subido y publicado en producción `dpl_CCMdh5LKN8bpidGS1Abj9gyZ7wsj`, READY/alias original. CI web+owner SUCCESS; LIVE caché/resize390/1280 PASS. No regresión de presupuesto. La prueba física de fluidez sigue pendiente, pero el trabajo CMS aislado no requiere acceso al teléfono ni una nueva clave; no confundir esta continuación con aprobar métricas GPU físicas.
+
 Para el siguiente incremento CMS, revisar además `MediaPlacements.ts`: el hook combina excepciones anteriores con las entrantes. Al implementar «volver al valor heredado», probar guardado/reapertura en base real para asegurar que una excepción borrada no se reconstruye por combinación parcial. No basta con probar el selector o el adaptador de preview.

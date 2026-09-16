@@ -24,4 +24,8 @@ Esto elimina lecturas innecesarias del hilo principal; **no acredita una mejora 
 
 ## Entrega pendiente
 
-Completar regresión, commit/push, CI y preview antes de promoción autorizada; comprobar dominio y pruebas LIVE después. CMS no publicado. Rollback runtime anterior `4cd3aac`. Conservar dev3015 y lab3017; detener únicamente el servidor de prueba3020 de esta ejecución.
+Runtime `11b253298d996d05ec26c32c22188ae54d5e3695`, commit/push confirmado `daec07`. Preview `dpl_Z2shYkjhCDMs9c7qCVJXTuqSAoiJ` READY. CI35163886975: validate SUCCESS (`3bcb8d`); owner aún en ejecución al promover. Promoción autorizada crea nueva producción `dpl_CCMdh5LKN8bpidGS1Abj9gyZ7wsj` (`f9afd2`); falta confirmar READY/dominio y LIVE. Timeout inicial de API GitHub resuelto al reintentar; no se omitió CI.
+
+CMS no publicado. Rollback runtime anterior `4cd3aac`. Conservar dev3015 y lab3017; detener únicamente el servidor de prueba3020 de esta ejecución.
+
+Producción `dpl_CCMdh5LKN8bpidGS1Abj9gyZ7wsj` READY y alias original confirmado (`24c334`). LIVE390/1280 caché y resize PASS (`c8bcd3`), presión sostenida/liberación/cancelación/blur/scroll PASS (`0c2630`, `476959`). CI completo validate+owner SUCCESS (`dda3fd`). Escaneo de errores5min sin entradas (`c2eabd`), no garantía de ausencia global de errores. Servidor propio3020 detenido (`d078e9`), dev/lab preservados. Hito acotado publicado y verificado; próxima tarea CMS aislado, pendiente revisión física sin bloquear tareas seguras.
