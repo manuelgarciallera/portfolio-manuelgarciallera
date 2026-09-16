@@ -10,6 +10,10 @@ Alternativas examinadas: pegar gtag sin interfaz (descartado: no cumple la propu
 
 ## Incremento A: consentimiento y medición pública
 
+### Aprobación y modificación de Manuel (16/09/2026)
+
+Manuel autoriza implementar la tarjeta discreta adaptada a la web. Esta modificación sustituye las menciones anteriores a consentimiento sólo de Google: **ambos proveedores estarán apagados por defecto**. Primera capa con «Aceptar analítica», «Rechazar analítica» de igual prominencia y detalles desplegables; segunda capa con Google Analytics y Umami desmarcados inicialmente. Guardar selección permite elegir uno, ambos o ninguno. Cerrar y pulsar fuera no aceptan. No se contrata CMP ni plan Pro. La persuasión se limita a explicar el beneficio real de mejorar contenidos; no se esconde el rechazo. La integración pública exige retirar el cargador Umami anterior y revisar WebVitals; un componente aislado no acredita cumplimiento de la web desplegada.
+
 - Aviso no modal al pie, adaptable a móvil/desktop, sin ocultar Contacto ni bloquear navegación. Texto claro sobre Google Analytics, enlace a privacidad y botones equivalentes «Aceptar Google Analytics» / «Rechazar Google Analytics». No confundir rechazo de Google con rechazo global de Umami, que se conserva temporalmente y se explica por separado.
 - Control permanente «Preferencias de analítica» para reabrir la elección. Sin casillas preseleccionadas ni aceptación por navegar o cerrar. Un cierre sin elección mantiene GA4 apagado.
 - Estado local versionado con fecha y caducidad propuesta de seis meses; almacenamiento ausente, corrupto, caducado o inaccesible se trata como no aceptado. Esta duración es decisión de implementación propuesta, no certificación legal.
