@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import styles from './privacy.module.css'
 
 export const metadata: Metadata = {
@@ -10,7 +9,9 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return <main className={styles.page}>
-    <Link href="/">← Volver al portfolio</Link>
+    {/* Full navigation is intentional: this informational page needs no Link/prefetch client bundle. */}
+    {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+    <a href="/">← Volver al portfolio</a>
     <h1>Privacidad y cookies</h1>
     <p>Este portfolio pertenece a Manuel García-Llera Añón. Para consultas sobre tus datos puedes escribir a <a href="mailto:hello@manuelgarciallera.com">hello@manuelgarciallera.com</a>.</p>
     <h2>Qué medimos y para qué</h2>

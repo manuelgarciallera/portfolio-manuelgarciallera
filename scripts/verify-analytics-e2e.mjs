@@ -5,10 +5,10 @@ import assert from 'node:assert/strict'
 // Only official SDK downloads may reach the network. Collection is intercepted.
 const base = process.env.CONSENT_TEST_URL || 'http://localhost:3025'
 const browser = await chromium.launch()
+let closing = false
 try {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
   const page = await context.newPage(), collection = [], scripts = [], errors = []
-  let closing = false
   page.setDefaultTimeout(15000)
   page.on('pageerror', e => errors.push(e.message))
   await context.route('**/*', async route => {
@@ -43,7 +43,8 @@ try {
   await page.getByRole('button', { name: 'Rechazar analítica', exact: true }).click()
   const stoppedAt = collection.length
   await page.getByRole('link', { name: 'Volver al portfolio', exact: false }).click()
-  await page.waitForURL('https://manuelgarciallera.com/', { waitUntil: 'networkidle' })
+  await page.waitForURL('https://manuelgarciallera.com/', { waitUntil: 'domcontentloaded' })
+  await page.locator('h1').waitFor()
   await page.waitForTimeout(1500)
   assert.equal(collection.length, stoppedAt, 'no collection after withdrawal and navigation')
   assert.ok(!(await context.cookies()).some(c => c.name.startsWith('mgl_ga')))
@@ -51,4 +52,4 @@ try {
   closing = true
   await context.close()
   console.log('PASS actual Next UI + official GA4/Umami SDKs; opt-in, sanitized URLs, withdrawal, navigation; collection intercepted')
-} finally { await browser.close() }
+} finally { closing = true; await browser.close() }
