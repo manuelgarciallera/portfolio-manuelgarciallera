@@ -10,4 +10,12 @@ Manuel pide implementar y publicar el titular mayor dentro de la caja marcada, c
 - Build final30páginas/tipos PASS33e778. Lint completo, tipografía8perfiles, menú móvil y estructura hero PASSc93949; lint del test12d411. Solo CSS, no nueva lógica React.
 - Bundle fresco PASS40bef4, sin crecimiento JS: home138318raw/50545gzip; privacidad65476raw/22437gzip. Baseline intacta.
 
-Siguiente: commit/push explícitos y promoción del deployment correspondiente; verificar mismo guion en URL original. Rollback runtime previo d586393, deployment dpl_4asVSijC1DZQzcUTa3zGkWfw4TB8. No declarar publicación hasta verificar dominio.
+## Publicado y comprobado
+
+- Commit/push c1b8cfe344975e09d21e509e73576a098a82fa95 (3394f6). Preview dpl_E4wrN6qWrT76epymP3tN96EVPkwf READY.
+- Promoción solicitada por Manuel ejecutada4f72bb. Producción **dpl_7qwUUJXzaVbgYoTEf5NJUAr5Ej5b**, READY, alias **https://manuelgarciallera.com** verificado7ab144. Publicación16:15CEST.
+- Mismo guion contra el dominio real: ocho tamaños PASS228bdc; referencia390×712 igual a las medidas locales, captura revisada. Cero errores JS, desbordamientos y solicitudes analíticas sin consentimiento en los escenarios. La primera consulta arrancó durante la transición del deployment y leyó el CSS anterior (fa5d3d); se repitió solo después de confirmar READY, sin cambiar código ni rebajar aserciones.
+- GitHub Actions35107086427 SUCCESS, validate y owner (e2b826). Logs de errores del deployment últimos10min: sin entradas (bd2b12); drains no inspeccionados, no garantía universal.
+- Hito móvil implementado, subido y publicado. Desktop y consentimiento intactos. No servidor nuevo ni automatización reactivada; cambios compartidos preservados.
+
+Rollback runtime previo d586393, deployment dpl_4asVSijC1DZQzcUTa3zGkWfw4TB8. No ejecutado. Próximo: revisión visual de Manuel en su móvil, sin bloquear este cierre técnico.
