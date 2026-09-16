@@ -20,4 +20,10 @@ Petición de Manuel: botón «Ver proyectos» y etiqueta mayores, algo más arri
 - 279unitarias/43archivos y lint757dc3; lint final y frontera22 PASS0e87a9; build final30páginas/tipos e44e9d.
 - Bundle fresco961955: home138663raw/50598gzip; privacidad65821raw/22490gzip. Incremento345raw/53gzip respecto al runtime anterior por presentación accesible; presupuesto original verde, sin nuevas dependencias ni cambio de baseline.
 
-Siguiente: commit/push y promoción autorizada, después prueba del dominio. Rollback identificado: runtimec1b8cfe, deploymentdpl_7qwUUJXzaVbgYoTEf5NJUAr5Ej5b. No publicación acreditada todavía en este checkpoint.
+## Publicación y cierre
+
+- Runtime d4eed238041468a726cbca2056415e89a91e00f4 comprometido y subido. CI35109549245 completada: validate y owner SUCCESS (ddd543).
+- Producción dpl_2M4k9Sb3RqRMdMxNVr3w2X9ptWDp READY, creada16:36:55CEST, alias https://manuelgarciallera.com confirmado89ee9a. Promoción autorizada terminada2d3346.
+- Repetición en dominio real: normal, DNT y GPC PASS ee6aa4, sin generar visitas analíticas de prueba. Captura home-dnt-live.png revisada: titular y CTA completos en390×712, sin aviso automático con DNT. Aviso normal compacto y aceptación habilitada verificados por el script.
+- Hito implementado, publicado y verificado técnicamente; siguiente responsable Manuel: revisión en móvil físico. DNT/GPC siguen impidiendo la medición, no se han ignorado esas señales.
+- Rollback identificado, no ejecutado: runtimec1b8cfe, deploymentdpl_7qwUUJXzaVbgYoTEf5NJUAr5Ej5b. CMS no publicado; servidor de usuario3015 preservado y QA3016 detenido. Automatización anterior permanece pausada.
