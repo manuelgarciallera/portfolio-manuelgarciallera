@@ -7,6 +7,9 @@ export const ORB_FRAGMENT = `
     uniform float lightTheme;
     uniform float cameraZoom;
     uniform float verticalOffset;
+    uniform vec2 pressPoint;
+    uniform float pressAge;
+    uniform float pressStrength;
     mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
     vec3 local(vec3 p){p.y-=.055*sin(time*.65);p.xy=turn(time*.1)*p.xy;p.xz=turn(.3+time*.025)*p.xz;return p;}
     float merge(float a,float b,float k){
@@ -14,6 +17,7 @@ export const ORB_FRAGMENT = `
       return mix(b,a,h)-k*h*(1.-h);
     }
     float shape(vec3 p){
+      vec2 surfacePoint=p.xy;
       p=local(p);
       float waves=sin(p.x*3.+time*.52)*sin(p.y*3.4-time*.41)*sin(p.z*3.1+time*.45);
       float body=length(p)-.96-.085*waves;
@@ -34,6 +38,10 @@ export const ORB_FRAGMENT = `
         vec3 center=direction*(.88+.43*pulse);
         float radius=.024+.014*(.5+.5*sin(f*3.));
         body=merge(body,length(p-center)-radius,.035);
+      }
+      if(pressStrength>.001){
+        float radius=length(surfacePoint-pressPoint);
+        body+=.12*pressStrength*cos(radius*10.-pressAge*7.)*exp(-radius*3.);
       }
       return body;
     }

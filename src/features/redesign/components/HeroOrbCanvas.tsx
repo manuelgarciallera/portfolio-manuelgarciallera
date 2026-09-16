@@ -30,15 +30,14 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     let buffer: WebGLBuffer | null = null
     let frame = 0, elapsed = 0, previous = 0, lastDraw = 0
     let ready = false, inView = true, disposed = false
-    let touching = false, scrolling = false, resumeTimer = 0
+    let scrolling = false, resumeTimer = 0
+    let pressAt = -10000, pressX = 0, pressY = 0
     let resize: ResizeObserver | undefined, intersection: IntersectionObserver | undefined
     const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0 }
     const dispose = () => {
       disposed = true; stop(); refresh.current = null
       window.clearTimeout(resumeTimer)
-      window.removeEventListener('touchstart', touchStart)
-      window.removeEventListener('touchend', touchEnd)
-      window.removeEventListener('touchcancel', touchEnd)
+      canvas.removeEventListener('pointerdown', press)
       window.removeEventListener('scroll', scroll)
       resize?.disconnect(); intersection?.disconnect()
       document.removeEventListener('visibilitychange', visibility)
@@ -48,25 +47,33 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       shaders.forEach(shader => gl.deleteShader(shader))
     }
     const lost = (event: Event) => { event.preventDefault(); stop(); settings.current.onFailure?.() }
-    // Keep the last rendered frame during mobile gestures and their inertia.
-    // Passive listeners never intercept native scrolling; resume only when quiet.
+    // Only actual scrolling suspends drawing, never contact/holding a finger.
+    // The finite impulse needs no pointerup, capture or blocking touch listener.
     const settle = () => {
       window.clearTimeout(resumeTimer)
       resumeTimer = window.setTimeout(() => {
         scrolling = false
-        if (!touching) restart()
+        restart()
       }, 180)
     }
-    const touchStart = () => { touching = true; stop(); window.clearTimeout(resumeTimer) }
-    const touchEnd = (event: TouchEvent) => { touching = event.touches?.length > 0; settle() }
+    const press = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button > 0 || settings.current.reduceMotion) return
+      const rect = canvas.getBoundingClientRect()
+      if (!rect.width || !rect.height) return
+      const scale = 2.8 / (isCompact ? 2.5 : 2.6)
+      pressX = ((event.clientX - rect.left) * 2 - rect.width) / rect.height * scale
+      pressY = (rect.height - (event.clientY - rect.top) * 2) / rect.height * scale
+      if (Math.hypot(pressX, pressY) > 1.3) return
+      pressAt = performance.now()
+    }
     const scroll = () => { scrolling = true; stop(); settle() }
     const visibility = () => {
-      if (document.hidden) { touching = false; scrolling = false; window.clearTimeout(resumeTimer) }
+      if (document.hidden) { scrolling = false; pressAt = -10000; window.clearTimeout(resumeTimer) }
       restart()
     }
     let draw: (now: number) => void = () => {}
     const tick = (now: number) => {
-      if (disposed || !inView || document.hidden || touching || scrolling || settings.current.reduceMotion) return
+      if (disposed || !inView || document.hidden || scrolling || settings.current.reduceMotion) return
       if (now - lastDraw >= 1000 / 30) {
         if (previous) elapsed += Math.min((now - previous) / 1000, .1)
         previous = now; lastDraw = now; draw(now)
@@ -75,7 +82,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     }
     function restart() {
       stop()
-      if (disposed || !inView || document.hidden || touching || scrolling) return
+      if (disposed || !inView || document.hidden || scrolling) return
       draw(performance.now())
       if (!settings.current.reduceMotion) frame = requestAnimationFrame(tick)
     }
@@ -103,7 +110,9 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       const time = gl.getUniformLocation(program, 'time'), resolution = gl.getUniformLocation(program, 'resolution')
       const theme = gl.getUniformLocation(program, 'lightTheme'), zoom = gl.getUniformLocation(program, 'cameraZoom')
       const offset = gl.getUniformLocation(program, 'verticalOffset')
-      draw = () => {
+      const pressPoint = gl.getUniformLocation(program, 'pressPoint')
+      const pressAge = gl.getUniformLocation(program, 'pressAge'), pressStrength = gl.getUniformLocation(program, 'pressStrength')
+      draw = (now) => {
         const rect = canvas.getBoundingClientRect()
         if (!rect.width || !rect.height || disposed) return
         const ratio = Math.min(1.25, (isCompact ? 384 : 560) / Math.max(rect.width, rect.height))
@@ -114,6 +123,10 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         gl.uniform1f(theme, settings.current.isDark ? 0 : 1)
         gl.uniform1f(zoom, isCompact ? 2.5 : 2.6)
         gl.uniform1f(offset, 0)
+        const age = Math.max(0, (now - pressAt) / 1000)
+        gl.uniform2f(pressPoint, pressX, pressY)
+        gl.uniform1f(pressAge, Math.min(age, 2))
+        gl.uniform1f(pressStrength, settings.current.reduceMotion ? 0 : Math.pow(Math.max(0, 1 - age / 1.4), 2))
         gl.drawArrays(gl.TRIANGLES, 0, 6)
         if (!ready) { ready = true; settings.current.onReady?.() }
       }
@@ -123,10 +136,8 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       intersection.observe(canvas)
       document.addEventListener('visibilitychange', visibility)
       canvas.addEventListener('webglcontextlost', lost)
+      canvas.addEventListener('pointerdown', press, { passive: true })
       if (isCompact) {
-        window.addEventListener('touchstart', touchStart, { passive: true })
-        window.addEventListener('touchend', touchEnd, { passive: true })
-        window.addEventListener('touchcancel', touchEnd, { passive: true })
         window.addEventListener('scroll', scroll, { passive: true })
       }
       restart()

@@ -11,8 +11,9 @@ await mkdir('.audit/orb-edge',{recursive:true})
 const browser=await chromium.launch()
 try {
  const page=await browser.newPage()
- for(const time of [0,4,9]) {
-  const url=await page.evaluate(({vertex,fragment,time})=>{
+ let resting
+ for(const [time,strength] of [[0,0],[4,0],[9,0],[0,.8]]) {
+  const url=await page.evaluate(({vertex,fragment,time,strength})=>{
    const canvas=document.createElement('canvas');canvas.width=canvas.height=384
    const gl=canvas.getContext('webgl',{alpha:true,antialias:false,premultipliedAlpha:false})
    const compile=(type,source)=>{const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
@@ -20,12 +21,15 @@ try {
    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW)
    const a=gl.getAttribLocation(p,'position');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0)
    gl.uniform2f(gl.getUniformLocation(p,'resolution'),384,384)
-   for(const [key,value] of Object.entries({time,lightTheme:0,cameraZoom:2.5,verticalOffset:0}))gl.uniform1f(gl.getUniformLocation(p,key),value)
+   for(const [key,value] of Object.entries({time,lightTheme:0,cameraZoom:2.5,verticalOffset:0,pressStrength:strength,pressAge:.2}))gl.uniform1f(gl.getUniformLocation(p,key),value)
+   gl.uniform2f(gl.getUniformLocation(p,'pressPoint'),.4,.2)
    gl.drawArrays(gl.TRIANGLES,0,6)
    return canvas.toDataURL()
-  },{vertex,fragment,time})
+  },{vertex,fragment,time,strength})
+  if(time===0&&!strength)resting=url
+  if(strength)assert.ok(url!==resting,'touch impulse changes the actual rendered liquid at identical animation time')
   const png=Buffer.from(url.split(',')[1],'base64')
-  await writeFile(`.audit/orb-edge/frame-${time}.png`,png)
+  await writeFile(`.audit/orb-edge/frame-${time}-${strength}.png`,png)
   const {data}=await sharp(png).ensureAlpha().raw().toBuffer({resolveWithObject:true})
   let edge=0,solid=0,clear=0
   for(let i=3;i<data.length;i+=4){if(data[i]>8&&data[i]<247)edge++;if(data[i]===255)solid++;if(data[i]===0)clear++}
