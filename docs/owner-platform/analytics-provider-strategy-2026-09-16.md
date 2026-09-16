@@ -88,4 +88,8 @@ Destino: adaptadores de analítica del Dashboard CMS y futuras fichas de presupu
 - https://support.google.com/analytics/answer/13644080
 - https://developers.google.com/tag-platform/security/concepts/consent-mode
 
-Sin pruebas runtime nuevas: inspección y documentación. Siguiente responsable Codex: concretar integración tras decidir alcance de consentimiento y proveedor; Manuel aprueba gastos y ampliaciones de acceso por separado.
+Sin pruebas runtime nuevas en esa comparación: inspección y documentación. Manuel aprueba gastos y ampliaciones de acceso por separado.
+
+## Actualización verificada en cuenta · 16/09/2026
+
+Settings > Billing de Umami Cloud, sesión del portfolio región EU: Hobby $0/mes, 100.000 eventos/mes, 1 web y 6 meses de conservación. Oferta Pro visible: $20/mes, 1 millón de eventos, 20 webs, 10 miembros, 2 años de conservación y acceso API; eventos adicionales $0,00003 por evento. Son precios mostrados en USD, no presupuesto final con impuestos ni precio de venta a clientes. No se contrató nada. La recogida con script no necesita API de informes; un Dashboard propio sí requiere resolver ese acceso. Recibo técnico: analytics-consent-release-2026-09-16.md.

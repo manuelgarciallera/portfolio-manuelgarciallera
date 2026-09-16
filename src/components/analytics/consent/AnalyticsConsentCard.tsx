@@ -16,6 +16,9 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
   const title = useRef<HTMLHeadingElement>(null)
   const heading = useId()
   const open = visibility?.revision === revision(snapshot) ? visibility.open : !snapshot.consent
+  const error = snapshot.error === 'storage'
+    ? 'No se pudo guardar tu elección. Analítica desactivada en esta pestaña; deberás elegir de nuevo en otras visitas.'
+    : snapshot.error === 'provider' ? 'Analítica no disponible. Puedes seguir navegando.' : ''
 
   function close() {
     setVisibility({ open: false, revision: revision(controller.getSnapshot()) })
@@ -25,8 +28,8 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
   function save(selection: Selection) {
     if (controller.choose(selection)) {
       setMessage(selection.google || selection.umami
-        ? 'Preferencias guardadas. Puedes cambiarlas cuando quieras.'
-        : 'Analítica rechazada. Puedes seguir navegando con normalidad.')
+        ? 'Preferencias guardadas.'
+        : 'Analítica rechazada.')
       close()
     }
   }
@@ -40,21 +43,18 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
           aria-label="Cerrar preferencias sin cambiar la elección">×</button>
       </div>
       <p>Con tu permiso, Manuel García-Llera Añón usa Google Analytics (cookies) y Umami
-        para conocer las visitas y mejorar este portfolio. Puedes aceptar, rechazar o elegir cada herramienta.</p>
+        para medir visitas y mejorar el portfolio.</p>
       <a className={styles.link} href="/privacidad">Privacidad y cookies</a>
-      {snapshot.privacy ? <p role="status">Tu navegador solicita no ser rastreado. La analítica permanece desactivada.</p> : null}
+      {snapshot.privacy ? <p role="status">No rastrear activado: analítica desactivada.</p> : null}
       <div className={styles.actions}>
         <button type="button" className={styles.choice} disabled={snapshot.privacy}
           onClick={() => save({ google: true, umami: true })}>Aceptar analítica</button>
         <button type="button" className={styles.choice}
           onClick={() => save({ ...NO_ANALYTICS })}>Rechazar analítica</button>
       </div>
-      <Preferences key={`${snapshot.consent?.savedAt ?? 'new'}-${snapshot.consent?.google}-${snapshot.consent?.umami}`}
+      <Preferences key={revision(snapshot)}
         selection={snapshot.consent ?? NO_ANALYTICS} privacy={snapshot.privacy} save={save} />
-      {snapshot.error === 'storage' ? <p role="alert">No se pudo guardar tu elección. La analítica está
-        desactivada en esta pestaña. Es posible que debas elegir de nuevo en otra visita.</p> : null}
-      {snapshot.error === 'provider' ? <p role="status">Una herramienta de analítica no se ha podido activar.
-        Puedes seguir navegando.</p> : null}
+      {error ? <p role="alert">{error}</p> : null}
     </section> : null}
     <div className={styles.preferences}>
       <button type="button" ref={reopen} onClick={() => {
@@ -63,9 +63,7 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
         requestAnimationFrame(() => title.current?.focus({ preventScroll: true }))
       }}
         aria-expanded={open} className={styles.link}>Preferencias de analítica</button>
-      <p role="status" className={styles.status}>{snapshot.error === 'provider'
-        ? 'Una herramienta de analítica no está disponible. Puedes seguir navegando.'
-        : snapshot.error === 'storage' ? 'La analítica está desactivada: no se pudo guardar tu elección.' : message}</p>
+      <p role="status" className={styles.status}>{open ? '' : error || message}</p>
     </div>
   </div>
 }
@@ -73,31 +71,18 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
 function Preferences({ selection, privacy, save }: {
   selection: Selection; privacy: boolean; save(selection: Selection): void
 }) {
-  const [draft, setDraft] = useState<Selection>({ google: selection.google, umami: selection.umami })
-  const id = useId()
-  return <details className={styles.details}>
+  const [state, setState] = useState<{ Body?: typeof import('./PreferencesBody').default; loading?: boolean; error?: boolean }>({})
+  function load() {
+    if (state.Body || state.loading) return
+    setState({ loading: true })
+    void import('./PreferencesBody').then(module => setState({ Body: module.default }))
+      .catch(() => setState({ error: true }))
+  }
+  return <details className={styles.details} onToggle={event => { if (event.currentTarget.open) load() }}>
     <summary>Detalles y preferencias</summary>
-    <p>La finalidad es medir el uso del portfolio. No usamos estas herramientas para publicidad.
-      Rechazar no limita el acceso a los contenidos.</p>
-    <fieldset>
-      <legend>Herramientas de analítica opcionales</legend>
-      <label className={styles.option}>
-        <input type="checkbox" checked={!privacy && draft.google} disabled={privacy}
-          aria-labelledby={`${id}-google`} aria-describedby={`${id}-google-description`}
-          onChange={event => setDraft({ ...draft, google: event.target.checked })} />
-        <span><span id={`${id}-google`}>Google Analytics</span><small id={`${id}-google-description`}>Visitas y uso de páginas mediante cookies e identificadores.
-          Google recibe los datos de medición.</small></span>
-      </label>
-      <label className={styles.option}>
-        <input type="checkbox" checked={!privacy && draft.umami} disabled={privacy}
-          aria-labelledby={`${id}-umami`} aria-describedby={`${id}-umami-description`}
-          onChange={event => setDraft({ ...draft, umami: event.target.checked })} />
-        <span><span id={`${id}-umami`}>Umami</span><small id={`${id}-umami-description`}>Estadísticas de visitas sin cookies de seguimiento.
-          Umami Cloud recibe los datos de medición.</small></span>
-      </label>
-    </fieldset>
-    <p>Guardamos esta elección en tu navegador durante 180 días. Puedes retirarla en «Preferencias de analítica».
-      Retirarla no borra los datos ya recogidos.</p>
-    <button type="button" className={styles.choice} onClick={() => save(privacy ? NO_ANALYTICS : draft)}>Guardar selección</button>
+    {state.Body ? <state.Body selection={selection} privacy={privacy} save={save} /> : state.error
+      ? <><p role="alert">No se pudieron cargar las preferencias. Puedes reintentar o rechazar.</p>
+        <button type="button" className={styles.choice} onClick={load}>Reintentar</button></>
+      : state.loading ? <p role="status">Cargando preferencias…</p> : null}
   </details>
 }

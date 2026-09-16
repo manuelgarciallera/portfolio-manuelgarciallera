@@ -1,10 +1,12 @@
 import { createController, type AnalyticsAdapter } from './controller'
 import { CONSENT_KEY, effectiveConsent, readConsent, type Selection } from './policy'
 
+const HOST = 'manuelgarciallera.com'
+
 export function createBrowserConsent(allowedPaths: readonly string[]) {
   const allowed = new Set(allowedPaths)
   const privacy = () => navigator.doNotTrack === '1' || (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
-  const canonical = () => location.origin === 'https://manuelgarciallera.com' && allowed.has(location.pathname)
+  const canonical = () => location.origin === `https://${HOST}` && allowed.has(location.pathname)
   const granted = (provider: keyof Selection) => {
     try { return canonical() && effectiveConsent(readConsent(localStorage.getItem(CONSENT_KEY), Date.now()), privacy())[provider] }
     catch { return false }
@@ -12,7 +14,7 @@ export function createBrowserConsent(allowedPaths: readonly string[]) {
   function disableGoogle() {
     ;(window as Window & { 'ga-disable-G-SD9S08GHWS'?: boolean })['ga-disable-G-SD9S08GHWS'] = true
     for (const name of ['mgl_ga', 'mgl_ga_SD9S08GHWS']) {
-      for (const domain of ['', ';domain=manuelgarciallera.com', ';domain=.manuelgarciallera.com']) {
+      for (const domain of ['', `;domain=${HOST}`]) {
         document.cookie = `${name}=;max-age=0;path=/;SameSite=Lax;Secure${domain}`
       }
     }
@@ -29,7 +31,7 @@ export function createBrowserConsent(allowedPaths: readonly string[]) {
     let active = false
     let pending: string | null = null
     return {
-      start() { active = true; providers?.[provider].start() },
+      start() { active = true },
       stop() { active = false; pending = null; providers?.[provider].stop(); if (provider === 'google') disableGoogle() },
       page(path) {
         if (!active || !granted(provider)) return

@@ -37,6 +37,8 @@ Separar control del consentimiento de SDK evita que una prueba con un proveedor 
 
 ## Ejecución 16/09/2026
 
+Actualización posterior: tareas 1–5 implementadas y verificadas localmente; integración 4bcc32b y responsive f54fc6d. La petición posterior de Manuel incluye dejarlo listo para recoger visitas. Presupuesto y configuración remota resueltos; la publicación queda pendiente de acceso al proyecto Vercel, no de claves de analítica. Estado canónico y evidencias actuales: docs/owner-platform/analytics-consent-release-2026-09-16.md. Los párrafos siguientes conservan el historial, no el estado vigente.
+
 - Tareas 1 y 2 implementadas y verificadas; 23 pruebas. Tarea 3 implementada como componente aislado más lifecycle compartido; 2 pruebas adicionales de caducidad y eventos, ensayo navegador verde.
 - Tarea 4 pendiente: solicitudes de relevo ca92fc43 y 008574fe sin confirmación observada. No se han editado layout, cargador anterior, WebVitals ni privacidad. Adaptadores reales, borrado selectivo de cookies, descarga del runtime y wrapper Next pendientes; no afirmar seguimiento consentido en producción.
 - Tarea 5 parcial: 286 unitarias/44 archivos, tipos, lint focal, frontera pública22 y navegador aislado pasan. No build global nuevo ni medición de incremento real de bundle: el módulo todavía no está montado. Recibo detallado: docs/owner-platform/analytics-consent-isolated-2026-09-16.md.
