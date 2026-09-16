@@ -30,15 +30,12 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     let buffer: WebGLBuffer | null = null
     let frame = 0, elapsed = 0, previous = 0, lastDraw = 0
     let ready = false, inView = true, disposed = false
-    let scrolling = false, resumeTimer = 0
     let pressAt = -10000, pressX = 0, pressY = 0
     let resize: ResizeObserver | undefined, intersection: IntersectionObserver | undefined
     const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0 }
     const dispose = () => {
       disposed = true; stop(); refresh.current = null
-      window.clearTimeout(resumeTimer)
       canvas.removeEventListener('pointerdown', press)
-      window.removeEventListener('scroll', scroll)
       resize?.disconnect(); intersection?.disconnect()
       document.removeEventListener('visibilitychange', visibility)
       canvas.removeEventListener('webglcontextlost', lost)
@@ -47,15 +44,8 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       shaders.forEach(shader => gl.deleteShader(shader))
     }
     const lost = (event: Event) => { event.preventDefault(); stop(); settings.current.onFailure?.() }
-    // Only actual scrolling suspends drawing, never contact/holding a finger.
-    // The finite impulse needs no pointerup, capture or blocking touch listener.
-    const settle = () => {
-      window.clearTimeout(resumeTimer)
-      resumeTimer = window.setTimeout(() => {
-        scrolling = false
-        restart()
-      }, 180)
-    }
+    // Contact and scrolling must not freeze a visible orb. Only visibility and
+    // reduced motion suspend animation; the finite impulse needs no release.
     const press = (event: PointerEvent) => {
       if (!event.isPrimary || event.button > 0 || settings.current.reduceMotion) return
       const rect = canvas.getBoundingClientRect()
@@ -66,14 +56,13 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       if (Math.hypot(pressX, pressY) > 1.3) return
       pressAt = performance.now()
     }
-    const scroll = () => { scrolling = true; stop(); settle() }
     const visibility = () => {
-      if (document.hidden) { scrolling = false; pressAt = -10000; window.clearTimeout(resumeTimer) }
+      if (document.hidden) pressAt = -10000
       restart()
     }
     let draw: (now: number) => void = () => {}
     const tick = (now: number) => {
-      if (disposed || !inView || document.hidden || scrolling || settings.current.reduceMotion) return
+      if (disposed || !inView || document.hidden || settings.current.reduceMotion) return
       if (now - lastDraw >= 1000 / 30) {
         if (previous) elapsed += Math.min((now - previous) / 1000, .1)
         previous = now; lastDraw = now; draw(now)
@@ -82,7 +71,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     }
     function restart() {
       stop()
-      if (disposed || !inView || document.hidden || scrolling) return
+      if (disposed || !inView || document.hidden) return
       draw(performance.now())
       if (!settings.current.reduceMotion) frame = requestAnimationFrame(tick)
     }
@@ -137,9 +126,6 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       document.addEventListener('visibilitychange', visibility)
       canvas.addEventListener('webglcontextlost', lost)
       canvas.addEventListener('pointerdown', press, { passive: true })
-      if (isCompact) {
-        window.addEventListener('scroll', scroll, { passive: true })
-      }
       restart()
     } catch {
       dispose(); settings.current.onFailure?.()

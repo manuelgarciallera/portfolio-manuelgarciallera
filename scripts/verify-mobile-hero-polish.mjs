@@ -54,15 +54,14 @@ try{
    assert.ok(await page.evaluate(()=>window.orbDraws)>before,'a stationary touch does not freeze the orb')
    await page.evaluate(()=>window.dispatchEvent(new Event('touchend')))
    const inertia=await page.evaluate(async()=>{
-    const start=scrollY
+    const start=scrollY,before=window.orbDraws
     for(let i=0;i<6;i++){window.scrollBy({top:4,behavior:'instant'});await new Promise(r=>setTimeout(r,60))}
-    const before=window.orbDraws;await new Promise(r=>setTimeout(r,60))
     return{before,after:window.orbDraws,moved:scrollY!==start}
    })
    assert.ok(inertia.moved,'actual scroll position changes during the test')
-   assert.equal(inertia.after,inertia.before,'scroll inertia holds the frame')
+   assert.ok(inertia.after>inertia.before,'orb continues animating during scrolling')
    await page.waitForFunction(n=>window.orbDraws>n,inertia.after)
-   console.log('PASS touch animation and scroll pause/resume',width)
+   console.log('PASS continuous touch and scroll animation',width)
   }catch(e){failures.push(`${width} scroll: ${e.message}`)}
   await page.close()
  }

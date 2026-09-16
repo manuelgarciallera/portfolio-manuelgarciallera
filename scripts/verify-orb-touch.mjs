@@ -9,10 +9,10 @@ try {
   await page.addInitScript(()=>{
    Object.defineProperty(navigator,'doNotTrack',{get:()=> '1'})
    localStorage.setItem('rd-theme','dark')
-   window.drawCount=0;window.strength=0
+   window.drawCount=0;window.strength=0;window.orbTime=0
    const names=new WeakMap(),get=WebGLRenderingContext.prototype.getUniformLocation,set=WebGLRenderingContext.prototype.uniform1f,draw=WebGLRenderingContext.prototype.drawArrays
    WebGLRenderingContext.prototype.getUniformLocation=function(p,n){const loc=get.call(this,p,n);if(loc)names.set(loc,n);return loc}
-   WebGLRenderingContext.prototype.uniform1f=function(loc,v){if(this.canvas.closest('.rd-hero-art')&&names.get(loc)==='pressStrength')window.strength=v;return set.call(this,loc,v)}
+   WebGLRenderingContext.prototype.uniform1f=function(loc,v){if(this.canvas.closest('.rd-hero-art')){if(names.get(loc)==='pressStrength')window.strength=v;if(names.get(loc)==='time')window.orbTime=v}return set.call(this,loc,v)}
    WebGLRenderingContext.prototype.drawArrays=function(...args){if(this.canvas.closest('.rd-hero-art'))window.drawCount++;return draw.apply(this,args)}
   })
   await page.goto(base,{waitUntil:'domcontentloaded'})
@@ -32,10 +32,12 @@ try {
   await page.waitForFunction(n=>window.drawCount>n,recovered)
   if(width<768){
    const result=await page.evaluate(async()=>{
-    const y=scrollY;for(let i=0;i<8;i++){scrollBy({top:4,behavior:'instant'});await new Promise(r=>setTimeout(r,60))}
-    const before=window.drawCount;await new Promise(r=>setTimeout(r,60));return{before,after:window.drawCount,moved:scrollY!==y}
+    const y=scrollY,before=window.drawCount,timeBefore=window.orbTime;let moved=false
+    for(let i=0;i<16;i++){scrollBy({top:i<8?4:-4,behavior:'instant'});await new Promise(r=>setTimeout(r,60));if(i===7)moved=scrollY!==y}
+    return{before,after:window.drawCount,moved,timeBefore,timeAfter:window.orbTime}
    })
-   assert.ok(result.moved);assert.equal(result.before,result.after,'real scrolling still suspends expensive drawing')
+   assert.ok(result.moved);assert.ok(result.after-result.before>4,'orb must keep animating throughout real down/up scrolling')
+   assert.ok(result.timeAfter>result.timeBefore,'scrolling advances the actual shader time, not repeated frozen frames')
    await page.waitForFunction(n=>window.drawCount>n,result.after)
   }
   console.log('PASS touch does not freeze, finite reaction, scroll recovery',width)
