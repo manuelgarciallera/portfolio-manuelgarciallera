@@ -16,17 +16,22 @@ try {
     await page.goto(base, { waitUntil: 'domcontentloaded' })
     const cta = page.locator('.rd-hero-copy a')
     await cta.waitFor()
+    assert.equal(await cta.locator('.rd-cta-glow[aria-hidden="true"]').count(), 1, 'capsule contour has an independent blur layer')
     await page.waitForFunction(theme => document.documentElement.dataset.theme === theme, theme)
     const style = () => cta.evaluate(el => {
-      const s = getComputedStyle(el, '::before'), glow = getComputedStyle(el, '::after'), own = getComputedStyle(el), r = el.getBoundingClientRect()
+      const layer = el.querySelector('.rd-cta-glow')
+      const s = getComputedStyle(el, '::before'), glow = getComputedStyle(layer, '::before'), halo = getComputedStyle(layer), own = getComputedStyle(el), r = el.getBoundingClientRect()
       return { image:s.backgroundImage, animation:s.animationName, duration:s.animationDuration,
         angle:s.getPropertyValue('--rd-cta-angle'), pointer:s.pointerEvents,
-        glowImage:glow.backgroundImage, glowFilter:glow.filter, glowOpacity:parseFloat(glow.opacity),
+        glowImage:glow.backgroundImage, glowFilter:halo.filter, glowOpacity:parseFloat(halo.opacity),
+        mask:glow.maskImage, radius:halo.borderRadius, ctaRadius:own.borderRadius,
         glowAngle:glow.getPropertyValue('--rd-cta-angle'), glowAnimation:glow.animationName, glowPointer:glow.pointerEvents,
         backdrop:own.backdropFilter, surface:own.backgroundImage, fill:own.backgroundColor, color:own.color,
         width:r.width, height:r.height, bottom:r.bottom }
     })
     const first = await style()
+    assert.doesNotMatch(first.mask, /radial-gradient/, 'halo follows capsule, not an ellipse')
+    assert.equal(first.radius, first.ctaRadius, 'same pill radius')
     assert.match(first.image, /conic-gradient/, 'visible colored border')
     assert.match(first.glowImage, /conic-gradient/, 'colored exterior halo')
     assert.match(first.glowFilter, /blur/, 'soft halo, not another hard outline')
