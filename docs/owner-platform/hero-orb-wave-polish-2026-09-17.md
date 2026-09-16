@@ -21,4 +21,8 @@ ESLint focal y 274 tests/43 archivos PASS391e34. Compilación aislada 30 rutas y
 
 Responsive 390–1920 PASS6ed9ce: H1/CTA conservados, nombre sin overflow, desktop una o tres líneas según ancho. Orbe compilado 390/1280 ambos temas PASS1dbf53: animación, máximo de buffer, pausa fuera de vista, fallback reducido y pérdida de contexto. Capturas claro/oscuro revisadas.
 
-Pendiente en este recibo: commit, publicación y comprobación LIVE. Interacción reactiva al dedo sigue como siguiente mejora; este lote no la implementa.
+Publicado: commit/push `25cc2db577510ffaf348d3748135b7a7b3da001d`, CI35157281233 SUCCESS (validate + owner). Preview dpl_GwQUWSitME7vjHY5umQoRbU1AwzL, promoción a producción **dpl_H7Mgw4Xub7mfHSixzgFj7pFLFoqu**, READY y alias manuelgarciallera.com verificados0072cd. Logs de error5min vacíos e7f791. Reversión: runtime anterior412f3f3/dpl_8hhRRTBh2S8Xq9BoPUSJncuLxzid. Servidor propio de prueba3020 detenido;3015 y laboratorio3017 preservados.
+
+LIVE sobre dominio principal: `verify-mobile-hero-polish.mjs` cuatro combinaciones PASSf90440, exit0; geometría, texto, barridos y pausa/reanudación del orbe durante scroll comprobados. Capturas actualizadas.
+
+Interacción reactiva al dedo sigue como siguiente mejora; este lote no la implementa. La suavidad física en el teléfono y ampliaciones extremas requieren revisión de Manuel; no afirmar calidad vectorial infinita ni ausencia universal de lag.
