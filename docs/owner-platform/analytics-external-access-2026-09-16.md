@@ -16,6 +16,10 @@ OwnerOverview muestra «Abrir estadísticas en Umami» hacia la propiedad UE del
 
 ## Pendientes y continuidad
 
+### Compilación completa — 08:56 Madrid
+
+Build nativo Windows sobre `f8145cf`: `npm run build` en owner-platform termina0 (647909), TypeScript y generación23/23 correctas. Incluye Dashboard con enlace externo, no servidor desplegado ni prueba de correo/DB real. No otros builds owner activos detectados; caché dev pública conservada. Frontera pública22 entradas PASS y checkpoint0f0adf686b2752e23c25d224f8c60815b10fd451 intacto (f611cf). Git conserva únicamente los cinco documentos compartidos previamente modificados: build no introduce cambios rastreados. No se considera resuelta la intermitencia histórica de Windows por este resultado.
+
 ### Regresión de acceso — 08:23 Madrid
 
 Sobre40ea12c: harness ampliado con respuesta403 del resumen tras recarga; verifica ausencia de acciones editoriales, métricas y enlace externo. Al reintentar con respuesta válida recupera seis acciones, acceso Umami y aviso de datos sintéticos. Ocho variantes pasan (7fa8b6/1fc0f4), ESLint/diffcheck pasan (2ae202). Solo pruebas: no fallo runtime encontrado, no prueba de revocación en caliente ni del servidor de autenticación Payload.
