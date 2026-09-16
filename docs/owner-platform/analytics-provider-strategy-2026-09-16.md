@@ -4,6 +4,8 @@
 
 ## Estado contrastado
 
+**Actualización posterior al piloto:** GA4 y Umami ya publicados con consentimiento según [recibo](analytics-consent-release-2026-09-16.md). Los puntos iniciales siguientes son históricos. La [decisión de medición mínima y límites legales](analytics-lawful-baseline-2026-09-16.md) conserva ambos opt-in y no contrata Pro. La capa agregada candidata requiere validar fuente, finalidad y contratos antes de activarla; no es una exención automática por no usar cookies.
+
 - Umami instalado: medición pública con filtros de privacidad; cuenta Cloud gratuita, API bloqueada por Pro según la interfaz observada por Manuel.
 - GA4: flujo G-SD9S08GHWS creado por Manuel; no instalado en el layout actual.
 - CMS: enlace externo Umami, no sincronización automática de su API.
