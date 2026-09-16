@@ -776,7 +776,7 @@
   container-type: inline-size;
   position: relative; min-width: 0; width: min(58vw, 58rem); aspect-ratio: 1.15;
   display: grid; place-items: center; justify-self: end; overflow: hidden;
-  background: var(--bg);
+  background: transparent;
 }
 .rd-hero-art-fallback {
   position: absolute; inset: 0; display: grid; justify-items: center; align-items: start;
@@ -1346,7 +1346,7 @@
   }
   .rd-hero-art {
     width: 100%; min-height: 22rem; aspect-ratio: auto; margin-inline: 0;
-    background: var(--bg);
+    background: transparent;
   }
   .rd-axes { grid-template-columns: 1fr; gap: var(--space-3); }
   .rd-case-visual, .rd-case-feature { grid-template-columns: 1fr; min-height: 38rem; padding: 1.25rem; }

@@ -40,6 +40,8 @@ void main() {
 
 function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps, 'isDark' | 'reduceMotion' | 'isCompact'>) {
   const groupRef = useRef<Group>(null)
+  // Preserve the glass refraction without painting an opaque canvas rectangle.
+  const transmissionBackground = useMemo(() => new Color(isDark ? '#0d0e0c' : '#fafaf6'), [isDark])
   const rimUniforms = useMemo(
     () => ({
       uColor: { value: new Color(isDark ? '#eaf4ff' : '#334155') },
@@ -70,6 +72,7 @@ function LiquidOrb({ isDark, reduceMotion, isCompact }: Pick<HeroOrbCanvasProps,
       <mesh>
         <sphereGeometry args={[1, 96, 64]} />
         <MeshTransmissionMaterial
+          background={transmissionBackground}
           backside
           backsideThickness={0.48}
           chromaticAberration={0.035}
@@ -158,7 +161,6 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady }: Hero
       aria-hidden="true"
     >
       <Suspense fallback={null}>
-        <color attach="background" args={[isDark ? '#0d0e0c' : '#fafaf6']} />
         <ambientLight intensity={isDark ? 0.9 : 1.5} />
         <directionalLight position={[3, 4, 4]} intensity={isDark ? 2.2 : 1.8} />
         <pointLight position={[-3, 1.5, 3]} color="#9fe6ff" intensity={isDark ? 5 : 3.4} distance={7} />
