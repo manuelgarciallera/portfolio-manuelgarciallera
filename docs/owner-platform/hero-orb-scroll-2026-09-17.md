@@ -19,4 +19,12 @@ No equivale a demostrar ausencia de lag en un teléfono físico. El shader conse
 
 ## Continuación nocturna
 
+## Publicación verificada
+
+CI35160655559 validate+owner SUCCESS (`38e913`). Producción `dpl_8SSnduDukgszDw9F6Y797mbeBo2p` READY con alias manuelgarciallera.com (`5057f6`). Prueba LIVE390/1280 pasa (`39423e`): contacto no congela, impulso decae y el tiempo del shader avanza durante desplazamiento arriba/abajo. Consulta logs error5min sin entradas (`0d4037`). Servidor de prueba3020 detenido,3015/3017 conservados. La comprobación de continuidad queda cerrada; rendimiento físico y optimización diferencial siguen como siguiente control, sin declarar coste nulo ni lag eliminado universalmente.
+
+Rollback: runtime anterior `a160cba`, producción `dpl_HZybwdW1iQWuXUmwHpLM28MAAqbS` (recupera también la pausa durante scroll).
+
+Commit runtime `e6ea37e` subido. Repetición compilada con tiempo real del shader avanzando durante scroll pasa (`93c921`); prueba móvil completa320/390/430 oscuro y390 claro, geometría/barridos/toque/scroll, pasa (`a9ddaa`).
+
 Automatización existente `portfolio-y-cms-ventana-de-ocho-horas` reactivada hasta17/09/2026 08:50 Europe/Madrid, sin duplicar tareas. Primero control del orbe, después CMS si pasa los controles disponibles. El objetivo de la app permanece pausado: la herramienta no permite reanudarlo; el mecanismo activado es el seguimiento de esta misma tarea. Sin garantía de ejecución continua ni autorización nueva para publicar CMS/gastar.
