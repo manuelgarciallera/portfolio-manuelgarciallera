@@ -696,7 +696,7 @@
     line-height: 1;
   }
 }
-/* Color is centered at first paint; a legible 1.4-second pass every 20 seconds. */
+/* Color is centered at first paint; a legible 1.8-second pass every 18 seconds. */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .rd-hero-copy h1 {
     --sweep-blue: #1753b5; --sweep-violet: #7041b7; --sweep-pink: #a82c79;
@@ -707,7 +707,7 @@
     background-size: 300% 300%; background-position: 50% 50%;
     background-clip: text; -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: rd-hero-type-sweep 20s linear infinite;
+    animation: rd-hero-type-sweep 18s linear infinite;
   }
   [data-theme="dark"] .rd-hero-copy h1 {
     --sweep-blue: #79b8ff; --sweep-violet: #a78bfa; --sweep-pink: #ec9cce;
@@ -716,7 +716,7 @@
 }
 @keyframes rd-hero-type-sweep {
   0% { background-position: 50% 50%; }
-  7%, 100% { background-position: 0% 0%; }
+  10%, 100% { background-position: 0% 0%; }
 }
 @media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   .rd-hero-copy h1 {
