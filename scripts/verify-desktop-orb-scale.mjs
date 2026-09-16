@@ -35,7 +35,7 @@ try {
       assert.ok(Math.abs(m.hero.bottom-height)<=1,'desktop section remains one viewport')
       assert.equal(new Set(m.lines).size,width>=1180?1:3,'name changes composition at narrow desktop')
     } else {
-      assert.ok(m.art.y>=680&&m.art.y<712,'mobile identity is raised slightly without moving the CTA')
+      assert.ok(m.art.y>=650&&m.art.y<688,'mobile identity is raised further without moving the CTA')
       assert.equal(new Set(m.lines).size,1,'mobile identity is one line under the enlarged orb')
       assert.ok(m.name.y>=m.orb.bottom-20,'mobile name uses the transparent bottom margin without crossing the liquid')
     }
