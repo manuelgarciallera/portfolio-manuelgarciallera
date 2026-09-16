@@ -20,4 +20,6 @@ La optimización anterior detenía WebGL con cualquier `touchstart` global y esp
 
 Build aislado30rutas/tipos PASS cb95c1; presupuesto138706raw/50638gzip sin errores8e08d1. Prueba táctil repetida sobre compilación producción3020 PASS122012 ambos anchos.
 
-Pendiente cierre: pruebas fallback, commit/push/publicación y prueba LIVE. Navegador Chromium con eventos sintéticos; no certifica GPU ni sensación del móvil físico de Manuel.
+Fallback/reduced/offscreen/contextloss390/1280 ambos temas PASS262baa. Commit/push **87a709d132b75afd281c408a06bd4ee1f82e47eb**. CI35158368894 SUCCESS. Preview dpl_5Kj3iWsexfQoNMgTxLUqK9AwD6Ny; promovido a **dpl_5r9hpB8XPcuaMwzHX11g91frABAU**, READY y dominio manuelgarciallera.com verificados12c456. Prueba LIVE390/1280 PASSa965e6: contacto mantenido no congela, impulso real decae y scroll reanuda. Logs error5min vacíos3c48d2. Servidor propio3020 detenido;3015/3017 preservados. Reversión25cc2db/dpl_H7Mgw4Xub7mfHSixzgFj7pFLFoqu.
+
+Navegador Chromium con eventos sintéticos; no certifica GPU ni sensación del móvil físico de Manuel. Próximo Manuel revisar reacción y fluidez en su dispositivo.
