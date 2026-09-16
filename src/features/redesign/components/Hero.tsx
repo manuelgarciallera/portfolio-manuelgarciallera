@@ -79,17 +79,17 @@ export function Hero({ isDark = true }: HeroProps) {
         <div className="rd-hero-art-fallback" aria-hidden="true">
           {(reduceMotion || sceneFailed) && <Image
             className="rd-hero-static-orb"
-            src="/art/hero-refractive-orb-fallback-v2.webp"
+            src={`/art/hero-organic-static-${isCompact ? 'mobile-' : ''}${isDark ? 'dark' : 'light'}.png`}
             alt=""
-            width={1400}
-            height={1400}
+            width={384}
+            height={384}
             sizes="(max-width: 767px) 78vw, 42vw"
           />}
         </div>
         <div className="rd-hero-canvas-stage" aria-hidden="true">
           {canMountCanvas && !reduceMotion && !sceneFailed ? (
             <SceneBoundary onFailure={() => setSceneFailed(true)}>
-              <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} />
+              <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} onFailure={() => setSceneFailed(true)} />
             </SceneBoundary>
           ) : null}
         </div>

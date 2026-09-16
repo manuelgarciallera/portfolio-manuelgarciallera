@@ -43,8 +43,6 @@ describe('Hero', () => {
     expect(source).toContain('onReady={() => setCanvasReady(true)}')
   })
 
-  it('uses the exact page colours inside the transparent WebGL stage', () => {
-    const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/HeroOrbCanvas.tsx'), 'utf8')
-    expect(source).toContain("isDark ? '#0d0e0c' : '#fafaf6'")
-  })
+  // Actual canvas colours and transparency are tested through rendered pixels
+  // in verify-organic-orb-public.mjs and verify-hero-theme-transparency.mjs.
 })

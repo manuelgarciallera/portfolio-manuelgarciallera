@@ -782,7 +782,7 @@
 .rd-hero-art-fallback {
   position: absolute; inset: 0; display: grid; justify-items: center; align-items: start;
 }
-.rd-hero-static-orb { width: 55%; height: 62%; object-fit: contain; }
+.rd-hero-art .rd-hero-static-orb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .rd-hero-name {
   position: absolute; z-index: 1; top: 62%; inset-inline: 5%; margin: 0;
   color: var(--ink); font-family: var(--font-sans); font-size: clamp(1.32rem, 7.04cqi, 3.96rem);
@@ -1284,7 +1284,7 @@
   }
   .rd-hero-canvas-stage { position: relative; inset: auto; width: 100%; height: calc(var(--hero-desktop-type) * 4); flex: none; }
   .rd-hero-art-fallback { height: calc(var(--hero-desktop-type) * 4); align-items: center; }
-  .rd-hero-static-orb { width: calc(var(--hero-desktop-type) * 3.2); height: calc(var(--hero-desktop-type) * 3.2); }
+  .rd-hero-static-orb { width: 100%; height: 100%; }
   .rd-hero-name {
     position: relative; top: auto; inset-inline: auto; width: 100%;
     font-size: clamp(1.125rem, calc(var(--hero-desktop-type) * .32), 2rem);
