@@ -58,6 +58,16 @@ try {
     const reject = page.getByRole('button', { name: 'Rechazar analítica', exact: true })
     await accept.waitFor({ timeout: 5000 })
     assert.deepEqual(scripts, [], 'no SDK before consent')
+    const banner = page.getByRole('region', { name: 'Tu privacidad, tu elección' })
+    const initialBox = await banner.boundingBox()
+    assert.ok(initialBox.height <= (width >= 1024 ? 140 : 290), 'compact initial banner')
+    await page.screenshot({ path: `${output}/compact-${width}.png` })
+    await page.getByRole('heading', { name: 'Portfolio — ensayo aislado' }).click()
+    await accept.waitFor({ state: 'hidden' })
+    assert.deepEqual(scripts, [], 'outside click never grants consent')
+    assert.equal(await page.evaluate(() => localStorage.getItem('portfolio-analytics-consent-v1')), null)
+    await page.getByRole('button', { name: 'Preferencias de analítica', exact: true }).click()
+    await accept.waitFor()
     for (const button of [accept, reject]) {
       const box = await button.boundingBox(); assert.ok(box.height >= 44)
     }

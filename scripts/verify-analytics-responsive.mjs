@@ -35,7 +35,9 @@ try {
         box: (() => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight })() }))
       assert.deepEqual(overflow, { horizontal: false, viewport: false, box: true }, name)
       const privacy = card.getByRole('link', { name: 'Privacidad y cookies' })
-      assert.ok((await privacy.boundingBox()).height >= 44, `${name}: privacy link touch area >=44px`)
+      // The privacy link is now inline prose (WCAG target-size inline exception).
+      assert.ok(await privacy.isVisible(), `${name}: inline privacy information remains visible`)
+      assert.equal(await privacy.getAttribute('href'), '/privacidad')
       for (const label of ['Aceptar analítica', 'Rechazar analítica']) {
         const box = await card.getByRole('button', { name: label, exact: true }).boundingBox()
         assert.ok(box.height >= 44 && box.width >= 44, `${name}: button touch area`)
@@ -43,7 +45,11 @@ try {
       const accept = await card.getByRole('button', { name: 'Aceptar analítica', exact: true }).boundingBox()
       const reject = await card.getByRole('button', { name: 'Rechazar analítica', exact: true }).boundingBox()
       assert.ok(Math.abs(accept.width - reject.width) < 1, `${name}: equivalent choices`)
-      if (scale === 2) assert.ok(reject.y >= accept.y + accept.height, `${name}: large text stacks choices`)
+      if (scale === 2) {
+        for (const label of ['Aceptar analítica', 'Rechazar analítica']) {
+          assert.ok(await card.getByRole('button', { name: label, exact: true }).evaluate(el => el.scrollWidth <= el.clientWidth), `${name}: enlarged text is not clipped`)
+        }
+      }
       await page.screenshot({ path: `${output}/${name}.png` })
       const summary = card.getByText('Detalles y preferencias', { exact: true })
       await summary.focus(); await page.keyboard.press('Enter')

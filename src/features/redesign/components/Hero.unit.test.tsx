@@ -6,6 +6,11 @@ import { describe, expect, it } from 'vitest'
 import { Hero } from './Hero'
 
 describe('Hero', () => {
+  it('renders the complete name as accessible HTML outside the decorative fallback', () => {
+    const markup = renderToStaticMarkup(<Hero />)
+    expect(markup).toMatch(/<p class="rd-hero-name">[\s\S]*?Manuel[\s\S]*?García-Llera[\s\S]*?Añón[\s\S]*?<\/p>/)
+    expect(markup).not.toMatch(/data-ready="false" aria-hidden="true"/)
+  })
   it('opens with one human promise, one visual and one primary action', () => {
     const markup = renderToStaticMarkup(<Hero />)
 
@@ -14,7 +19,7 @@ describe('Hero', () => {
     expect(markup).toContain('rd-hero-canvas-stage')
     expect(markup).toContain('data-ready="false"')
     expect(markup.match(/rd-hero-art-fallback/g)).toHaveLength(1)
-    expect(markup).toContain('Manuel García-Llera Añón')
+    expect(markup.replace(/<[^>]*>/g, '')).toContain('Manuel García-Llera Añón')
     expect(markup).toContain('Diseño sistemas digitales que conectan investigación, interfaz y código')
     expect(markup).not.toContain('productos que se entienden, se usan y evolucionan')
     expect(markup).toContain('Ver proyectos')

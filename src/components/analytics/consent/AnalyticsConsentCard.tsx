@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import type { ConsentController, ConsentSnapshot } from '../../../lib/analytics-consent/controller'
 import { NO_ANALYTICS, type Selection } from '../../../lib/analytics-consent/policy'
 import styles from './consent.module.css'
@@ -13,9 +13,21 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
   const [visibility, setVisibility] = useState<{ open: boolean; revision: string } | null>(null)
   const [message, setMessage] = useState('')
   const reopen = useRef<HTMLButtonElement>(null)
+  const root = useRef<HTMLDivElement>(null)
   const title = useRef<HTMLHeadingElement>(null)
   const heading = useId()
   const open = visibility?.revision === revision(snapshot) ? visibility.open : !snapshot.consent
+  useEffect(() => {
+    if (!open) return
+    function dismissOutside(event: MouseEvent) {
+      if (event.target instanceof Node && !root.current?.contains(event.target)) {
+        // Dismissal is not a choice. Do not store consent or steal outside focus.
+        setVisibility({ open: false, revision: revision(controller.getSnapshot()) })
+      }
+    }
+    document.addEventListener('click', dismissOutside)
+    return () => document.removeEventListener('click', dismissOutside)
+  }, [open, controller])
   const error = snapshot.error === 'storage'
     ? 'No se pudo guardar tu elección. Analítica desactivada en esta pestaña; deberás elegir de nuevo en otras visitas.'
     : snapshot.error === 'provider' ? 'Analítica no disponible. Puedes seguir navegando.' : ''
@@ -34,18 +46,18 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
     }
   }
 
-  return <div className={styles.root}>
+  return <div className={styles.root} ref={root}>
     {open ? <section className={styles.card} aria-labelledby={heading}
       onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); close() } }}>
       <div className={styles.header}>
         <h2 id={heading} ref={title} tabIndex={-1}>Tu privacidad, tu elección</h2>
-        <button type="button" className={styles.close} onClick={close}
-          aria-label="Cerrar preferencias sin cambiar la elección">×</button>
+        <p>Con tu permiso, Manuel García-Llera Añón usa Google Analytics (cookies) y Umami
+          para medir visitas y mejorar el portfolio.{' '}
+          <a className={styles.link} href="/privacidad">Privacidad y cookies</a></p>
       </div>
-      <p>Con tu permiso, Manuel García-Llera Añón usa Google Analytics (cookies) y Umami
-        para medir visitas y mejorar el portfolio.</p>
-      <a className={styles.link} href="/privacidad">Privacidad y cookies</a>
-      {snapshot.privacy ? <p role="status">No rastrear activado: analítica desactivada.</p> : null}
+      <button type="button" className={styles.close} onClick={close}
+        aria-label="Cerrar preferencias sin cambiar la elección">×</button>
+      {snapshot.privacy ? <p className={styles.notice} role="status">Tu navegador indica «No rastrear»: aceptar está deshabilitado y la analítica permanece apagada.</p> : null}
       <div className={styles.actions}>
         <button type="button" className={styles.choice} disabled={snapshot.privacy}
           onClick={() => save({ google: true, umami: true })}>Aceptar analítica</button>

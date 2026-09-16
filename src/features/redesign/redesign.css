@@ -688,15 +688,21 @@
 }
 .rd-hero-copy a:hover { color: var(--ink); background: var(--bg); box-shadow: 0 0 0 1px var(--ink), 0 0 0 6px color-mix(in srgb, var(--accent) 13%, transparent); transform: translateY(-2px); }
 .rd-hero-art {
+  container-type: inline-size;
   position: relative; min-width: 0; width: min(58vw, 58rem); aspect-ratio: 1.15;
   display: grid; place-items: center; justify-self: end; overflow: hidden;
   background: var(--bg);
 }
 .rd-hero-art-fallback {
-  width: 90%; display: grid; justify-items: center; gap: 1rem;
+  position: absolute; inset: 0; display: grid; justify-items: center; align-items: start;
 }
-.rd-hero-static-orb { width: min(65%, 22rem); height: auto; object-fit: contain; }
-.rd-hero-fallback-name { margin: 0; color: var(--ink); font-family: var(--font-sans); font-size: clamp(1.5rem, 3vw, 3rem); font-weight: 700; line-height: 1.05; text-align: center; text-wrap: balance; }
+.rd-hero-static-orb { width: 55%; height: 62%; object-fit: contain; }
+.rd-hero-name {
+  position: absolute; z-index: 1; top: 62%; inset-inline: 5%; margin: 0;
+  color: var(--ink); font-family: var(--font-sans); font-size: clamp(1.5rem, 8cqi, 4.5rem);
+  font-weight: 700; line-height: 1.05; text-align: center; user-select: text;
+}
+.rd-hero-name span { display: block; white-space: nowrap; }
 .rd-hero-canvas-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; }
 .rd-hero-canvas-stage canvas { width: 100% !important; height: 100% !important; }
 .rd-hero-art[data-ready='true'] .rd-hero-canvas-stage { opacity: 1; }

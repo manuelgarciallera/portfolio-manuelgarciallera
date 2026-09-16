@@ -75,9 +75,8 @@ export function Hero({ isDark = true }: HeroProps) {
       <div
         className="rd-hero-art"
         data-ready={canvasReady && !reduceMotion && !sceneFailed ? 'true' : 'false'}
-        aria-hidden="true"
       >
-        <div className="rd-hero-art-fallback">
+        <div className="rd-hero-art-fallback" aria-hidden="true">
           {(reduceMotion || sceneFailed) && <Image
             className="rd-hero-static-orb"
             src="/art/hero-refractive-orb-fallback-v2.webp"
@@ -86,15 +85,15 @@ export function Hero({ isDark = true }: HeroProps) {
             height={1400}
             sizes="(max-width: 767px) 78vw, 42vw"
           />}
-          <p className="rd-hero-fallback-name">Manuel García-Llera Añón</p>
         </div>
-        <div className="rd-hero-canvas-stage">
+        <div className="rd-hero-canvas-stage" aria-hidden="true">
           {canMountCanvas && !reduceMotion && !sceneFailed ? (
             <SceneBoundary onFailure={() => setSceneFailed(true)}>
               <HeroOrbCanvas isDark={isDark} reduceMotion={reduceMotion} isCompact={isCompact} onReady={() => setCanvasReady(true)} />
             </SceneBoundary>
           ) : null}
         </div>
+        <p className="rd-hero-name"><span>Manuel</span>{' '}<span>García-Llera</span>{' '}<span>Añón</span></p>
       </div>
     </section>
   )
