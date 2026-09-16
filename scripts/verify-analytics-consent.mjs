@@ -74,6 +74,7 @@ try {
     const style = locator => locator.evaluate(el => {
       const s = getComputedStyle(el); return [s.backgroundColor, s.color, s.border, s.fontWeight]
     })
+    await page.mouse.move(0, 0)
     assert.deepEqual(await style(accept), await style(reject), 'equal visual prominence')
     await page.getByText('Detalles y preferencias', { exact: true }).click()
     assert.equal(await page.getByRole('checkbox', { name: 'Google Analytics', exact: true }).isChecked(), false)
@@ -125,7 +126,12 @@ try {
     page.on('request', req => { if (req.url().includes('/sdk/')) requests.push(req.url()) })
     await page.goto(url)
     if (scenario === 'privacy') {
-      assert.equal(await page.getByRole('button', { name: 'Aceptar analítica', exact: true }).isDisabled(), true)
+      assert.equal(await page.getByRole('region', { name: 'Tu privacidad, tu elección' }).count(), 0)
+      await page.getByRole('button', { name: 'Preferencias de analítica', exact: true }).click()
+      assert.equal(await page.getByRole('button', { name: 'Aceptar analítica', exact: true }).count(), 0)
+      await page.getByText('Tu navegador indica «No rastrear»: la analítica permanece apagada.', { exact: true }).waitFor()
+      await page.getByRole('button', { name: 'Entendido', exact: true }).click()
+      assert.equal(await page.getByRole('region', { name: 'Tu privacidad, tu elección' }).count(), 0)
     } else {
       await page.getByRole('button', { name: 'Aceptar analítica', exact: true }).click()
       await page.getByRole('alert').waitFor()

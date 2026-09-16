@@ -16,7 +16,7 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
   const root = useRef<HTMLDivElement>(null)
   const title = useRef<HTMLHeadingElement>(null)
   const heading = useId()
-  const open = visibility?.revision === revision(snapshot) ? visibility.open : !snapshot.consent
+  const open = visibility?.revision === revision(snapshot) ? visibility.open : !snapshot.consent && !snapshot.privacy
   useEffect(() => {
     if (!open) return
     function dismissOutside(event: MouseEvent) {
@@ -57,12 +57,14 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
       </div>
       <button type="button" className={styles.close} onClick={close}
         aria-label="Cerrar preferencias sin cambiar la elección">×</button>
-      {snapshot.privacy ? <p className={styles.notice} role="status">Tu navegador indica «No rastrear»: aceptar está deshabilitado y la analítica permanece apagada.</p> : null}
+      {snapshot.privacy ? <p className={styles.notice} role="status">Tu navegador indica «No rastrear»: la analítica permanece apagada.</p> : null}
       <div className={styles.actions}>
-        <button type="button" className={styles.choice} disabled={snapshot.privacy}
-          onClick={() => save({ google: true, umami: true })}>Aceptar analítica</button>
-        <button type="button" className={styles.choice}
-          onClick={() => save({ ...NO_ANALYTICS })}>Rechazar analítica</button>
+        {snapshot.privacy ? <button type="button" className={styles.choice} onClick={close}>Entendido</button> : <>
+        <button type="button" className={styles.choice} aria-label="Aceptar analítica"
+          onClick={() => save({ google: true, umami: true })}>Aceptar<span className={styles.qualifier}> analítica</span></button>
+        <button type="button" className={styles.choice} aria-label="Rechazar analítica"
+          onClick={() => save({ ...NO_ANALYTICS })}>Rechazar<span className={styles.qualifier}> analítica</span></button>
+        </>}
       </div>
       <Preferences key={revision(snapshot)}
         selection={snapshot.consent ?? NO_ANALYTICS} privacy={snapshot.privacy} save={save} />

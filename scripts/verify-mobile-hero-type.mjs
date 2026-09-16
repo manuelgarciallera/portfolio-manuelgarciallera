@@ -26,6 +26,8 @@ try {
     assert.ok(measured.title.top >= measured.header.bottom + 16)
     assert.ok(measured.cta.bottom <= height - 16)
     if (width < 768) {
+      assert.ok(measured.cta.font >= 14, 'CTA label is comfortably readable')
+      assert.ok(measured.cta.bottom - measured.cta.top >= 48, 'larger CTA touch target')
       assert.ok(measured.title.line / measured.title.font >= 1.03, 'more breathing room between lines')
       assert.ok(measured.cta.top - measured.title.bottom >= 32, 'clear separation before CTA')
       assert.ok(measured.title.top <= Math.max(160, height * .2), 'title starts in the marked upper area')
