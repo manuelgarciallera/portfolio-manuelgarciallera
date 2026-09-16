@@ -17,7 +17,7 @@ try{
   await page.locator('.rd-hero-static-orb').evaluate(e=>e.decode())
   try{
    const geometry=await name.evaluate(e=>{const r=e.getBoundingClientRect();return{tops:[...e.children].map(s=>s.getBoundingClientRect().top),width:r.width,scroll:e.scrollWidth,top:r.top}})
-   assert.equal(new Set(geometry.tops).size,1,'mobile name must occupy one line')
+   assert.equal(new Set(geometry.tops).size,2,'mobile name has Manuel above the complete surname')
    assert.ok(geometry.scroll<=geometry.width+1,'name fits without clipping')
    const {data,info}=await sharp(await page.locator('.rd-hero-static-orb').screenshot()).removeAlpha().raw().toBuffer({resolveWithObject:true})
    let lo=info.width,hi=0,bottom=0

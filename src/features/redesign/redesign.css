@@ -798,6 +798,7 @@
   font-weight: 700; line-height: 1.05; text-align: center; user-select: text;
 }
 .rd-hero-name span { display: block; white-space: nowrap; }
+.rd-hero-canvas { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: pan-y pinch-zoom; }
 .rd-hero-canvas-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; }
 .rd-hero-canvas-stage canvas { width: 100% !important; height: 100% !important; }
 .rd-hero-art[data-ready='true'] .rd-hero-canvas-stage { opacity: 1; }
@@ -1371,7 +1372,7 @@
   }
   .rd-hero-art {
     width: 100%; min-height: 0; aspect-ratio: auto; margin-inline: 0;
-    display: flex; flex-direction: column; gap: 0; padding-bottom: 2.5rem; margin-top: -1.5rem;
+    display: flex; flex-direction: column; gap: 0; padding-bottom: 6.5rem; margin-top: -1.5rem;
     /* Lift the identity visually, retaining its flow space as breathing room below. */
     transform: translateY(-1.5rem);
     background: transparent;
@@ -1380,9 +1381,10 @@
   .rd-hero-art-fallback { height: min(100cqi, 30rem); }
   .rd-hero-name {
     position: relative; top: auto; inset-inline: auto; width: calc(100% - 2rem);
-    font-size: clamp(1rem, 6.7cqi, 2rem); line-height: 1.25; white-space: nowrap; margin-top: -1rem;
+    font-size: clamp(1.5rem, 8.6cqi, 2.5rem); line-height: 1.18; white-space: nowrap; margin-top: -1rem;
   }
   .rd-hero-name span { display: inline; }
+  .rd-hero-name span:first-child { display: block; }
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
     @media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
       .rd-hero-copy h1 { animation-name: rd-hero-type-sweep-mobile; background-position: 100% 100%; }
