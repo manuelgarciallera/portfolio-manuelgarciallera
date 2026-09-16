@@ -6,6 +6,10 @@ Professional portfolio built with **Next.js 16 + React 19 + Three.js** using a f
 
 [Mapa de productos](00_Coordinacion_IA/docs/ECOSISTEMA.md), [protocolo multi-IA](00_Coordinacion_IA/docs/PROTOCOLO.md) y [registro de avances](00_Coordinacion_IA/docs/REGISTRO.md). La coordinación está en fase PILOT; el mapa distingue implementación, propuestas y dependencias pendientes.
 
+## Pendientes del CMS
+
+- [CMS-VISUAL-01 · Efectos visuales configurables](docs/owner-platform/visual-effects-backlog-2026-09-16.md): halos, bordes, barridos de texto y hover cristal; guardado para retomar después, todavía no implementado.
+
 ## Stack
 - Next.js (App Router)
 - React 19
