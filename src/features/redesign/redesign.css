@@ -1253,10 +1253,10 @@
     grid-template-columns: 1fr; align-content: start; gap: 0; padding: 0;
   }
   .rd-hero-copy {
-    min-height: 100svh; box-sizing: border-box; align-content: center; gap: 1.5rem;
-    padding: clamp(6rem, 14svh, 8rem) 1.5rem clamp(2rem, 8svh, 4rem);
+    min-height: 100svh; box-sizing: border-box; align-content: space-between; gap: 2rem;
+    padding: clamp(7.5rem, 17svh, 10rem) 1.5rem clamp(3rem, 8svh, 4.5rem);
   }
-  .rd-hero-copy h1 { max-width: 13ch; font-size: clamp(2rem, min(11.5vw, 8svh), 4.15rem); line-height: 0.95; }
+  .rd-hero-copy h1 { max-width: 13ch; font-size: clamp(2rem, min(14vw, 7.6svh), 4rem); line-height: 1.04; }
   .rd-hero-copy a { min-height: 2.7rem; padding: 0.7rem 1rem; font-size: 0.7rem; }
   .rd-hero-art {
     width: 100%; min-height: 22rem; aspect-ratio: auto; margin-inline: 0;
