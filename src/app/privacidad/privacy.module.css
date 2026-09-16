@@ -1,6 +1,12 @@
-.page { max-width: 48rem; margin: 0 auto; padding: clamp(24px, 6vw, 80px) 24px; color: #f4f4f4; background: #0a0a0a; font-family: system-ui, sans-serif; line-height: 1.7; overflow-wrap: anywhere; }
+.page { max-width: 48rem; margin: 0 auto; padding: clamp(24px, 6vw, 80px) 24px; color: var(--text, #f5f5f7); background: var(--bg, #0a0a0a); font-family: system-ui, sans-serif; line-height: 1.7; overflow-wrap: anywhere; }
 .page h1 { font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.15; margin: 2rem 0; }
 .page h2 { font-size: 1.5rem; margin-top: 2rem; }
 .page p { margin: 1rem 0; }
 .page a { color: #acd7ff; text-decoration: underline; text-underline-offset: 3px; }
 .page a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+:global([data-theme="light"]) .page a { color: #006b70; }
+.tableWrap { margin: 1.5rem 0; }
+.page table { width: 100%; border-collapse: collapse; font-size: 0.875rem; table-layout: fixed; }
+.page caption { text-align: left; font-weight: 600; margin-bottom: 0.75rem; }
+.page th, .page td { text-align: left; vertical-align: top; border-bottom: 1px solid #777; padding: 0.75rem 0.4rem; }
+.page code { font-size: 0.8125rem; overflow-wrap: anywhere; }

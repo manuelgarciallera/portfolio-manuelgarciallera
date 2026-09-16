@@ -19,6 +19,7 @@ export function createController(options: ControllerOptions) {
   const providers = ['google', 'umami'] as const
 
   function sync(consent: Consent | null, error: ConsentSnapshot['error'] = null) {
+    if (!error && providers.some(provider => broken[provider])) error = 'provider'
     const { canonical, privacy } = options.environment()
     const selection = effectiveConsent(consent, privacy || !canonical || storageFailed)
     for (const provider of providers) {
@@ -66,6 +67,12 @@ export function createController(options: ControllerOptions) {
       return () => { listeners.delete(listener) }
     },
     refresh,
+    reportFailure(provider: keyof Selection) {
+      broken[provider] = true
+      active[provider] = false
+      try { options.adapters[provider].stop() } catch { /* Provider failure must not break navigation. */ }
+      sync(snapshot.consent, 'provider')
+    },
     choose(selection: Selection) {
       const consent = createConsent(selection, options.now())
       try {

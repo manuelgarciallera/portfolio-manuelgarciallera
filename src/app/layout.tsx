@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display } from "next/font/google";
 import Script from "next/script";
 
-import { WebVitalsReporter } from "@/components/analytics/WebVitalsReporter";
-import { UMAMI_BOOTSTRAP } from "@/lib/umami-tracker";
+import { Suspense } from "react";
+import { AnalyticsConsent } from "@/components/analytics/consent/AnalyticsConsent";
+import { ARTICLES } from "@/features/redesign/content/articles";
+import { getPublishedCases } from "@/features/redesign/content/cases";
 import {
   PERSON_LEGAL_NAME,
   SITE_DESCRIPTION,
@@ -27,6 +29,9 @@ const playfairDisplay = Playfair_Display({
 
 const websiteJsonLd = JSON.stringify(getWebsiteJsonLd()).replace(/</g, "\\u003c");
 const personJsonLd = JSON.stringify(getPersonJsonLd()).replace(/</g, "\\u003c");
+const analyticsPaths = ["/", "/casos", "/sobre-mi", "/proceso", "/investigacion", "/articulos", "/privacidad",
+  ...ARTICLES.map(({ slug }) => `/articulos/${slug}`),
+  ...getPublishedCases().map(({ slug }) => `/casos/${slug}`)];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -124,9 +129,8 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <WebVitalsReporter />
-        <Script id="portfolio-analytics-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: UMAMI_BOOTSTRAP }} />
         {children}
+        <Suspense fallback={null}><AnalyticsConsent allowedPaths={analyticsPaths} /></Suspense>
       </body>
     </html>
   );

@@ -68,6 +68,8 @@ Registrar horas, coste externo, peso incremental, tiempo de alta, errores/API, c
 
 ## Próxima intervención de Manuel
 
+Actualización 16/09: interfaz aprobada e integrada localmente por instrucción posterior. La retirada implementada no fuerza recarga: deshabilita GA mediante su indicador oficial, borra sólo cookies propias y detiene el adaptador manual de Umami. Ensayo con SDK reales y colección interceptada verifica ausencia de envíos posteriores y conservación del formulario. Las referencias anteriores a recarga son el diseño inicial, sustituido por este comportamiento. No cancela envíos ya en tránsito ni elimina histórico remoto.
+
 - Revisar este alcance, especialmente aviso y retirada con recarga, antes de programar la nueva interfaz de consentimiento.
 - Cuando sea posible: facilitar sólo el ID numérico de propiedad y su zona horaria (no secreto) para preparar lectura. No necesita enviar contraseñas ni claves.
 - El acceso autenticado a API se coordina después; no es necesario para redactar tests/diseño y no se pide repetidamente desde el móvil.

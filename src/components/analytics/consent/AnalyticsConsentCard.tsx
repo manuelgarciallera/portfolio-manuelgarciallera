@@ -63,7 +63,9 @@ export function AnalyticsConsentCard({ controller }: { controller: ConsentContro
         requestAnimationFrame(() => title.current?.focus({ preventScroll: true }))
       }}
         aria-expanded={open} className={styles.link}>Preferencias de analítica</button>
-      <p role="status" className={styles.status}>{message}</p>
+      <p role="status" className={styles.status}>{snapshot.error === 'provider'
+        ? 'Una herramienta de analítica no está disponible. Puedes seguir navegando.'
+        : snapshot.error === 'storage' ? 'La analítica está desactivada: no se pudo guardar tu elección.' : message}</p>
     </div>
   </div>
 }

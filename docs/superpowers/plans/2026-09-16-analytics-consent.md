@@ -7,6 +7,14 @@
 **Tech Stack:** React 19, TypeScript, CSS Modules, Vitest y Playwright ya instalados.
 **Spec:** docs/superpowers/specs/2026-09-16-ga4-pilot-design.md, modificación aprobada del 16/09.
 
+## Actualización de ejecución: integración local 16/09/2026
+
+La instrucción posterior de Manuel «Hazlo todo y cerremos esto», tras explicar el relevo pendiente, autoriza completar la integración local. Notificada en Hub (8c2e709a); no equivale a aceptación de Claude ni a autorización de publicación. Los estados de ejecución aislada al final son históricos.
+
+Montaje Next, sustitución del cargador anterior, adaptadores oficiales diferidos hasta consentimiento, retirada sin recargar ni perder formularios y actualización de privacidad implementados. WebVitalsReporter queda sin montar para no abrir otra recogida previa al consentimiento. No se implementa aquí el conector API del CMS.
+
+Verificación final y puertas no resueltas: docs/owner-platform/analytics-consent-integration-2026-09-16.md. La publicación exige confirmar ajustes de medición mejorada/retención y resolver el presupuesto raw de /privacidad. No se certifica cumplimiento legal ni se afirma despliegue.
+
 ## Global Constraints
 
 No publicación, gasto, secretos, nuevas dependencias ni cambios owner. No modificar layout/privacidad sin resolver relevo solicitado en Hub. Preservar checkpoint y cambios ajenos. No afirmar integración si sólo se prueba el módulo aislado. GA4 requiere verificar medición mejorada desactivada antes de habilitación real.
