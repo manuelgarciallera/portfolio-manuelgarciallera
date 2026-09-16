@@ -3,6 +3,27 @@ import {mkdir} from 'node:fs/promises'
 import {resolve} from 'node:path'
 import {pathToFileURL} from 'node:url'
 import {chromium} from 'playwright'
+import sharp from 'sharp'
+
+async function particleCount(png) {
+  const {data,info}=await sharp(png).removeAlpha().raw().toBuffer({resolveWithObject:true})
+  const mask=new Uint8Array(info.width*info.height)
+  for(let i=0;i<mask.length;i++) mask[i]=Number(data[i*3+2]>data[i*3]+20)
+  let droplets=0
+  for(let i=0;i<mask.length;i++) {
+    if(!mask[i])continue
+    const queue=[i];mask[i]=0;let area=0
+    for(let j=0;j<queue.length;j++) {
+      const p=queue[j];area++
+      const x=p%info.width
+      for(const n of [x>0?p-1:-1,x<info.width-1?p+1:-1,p-info.width,p+info.width]) {
+        if(n>=0&&n<mask.length&&mask[n]){mask[n]=0;queue.push(n)}
+      }
+    }
+    if(area>=3&&area<200)droplets++
+  }
+  return droplets
+}
 
 // Local experiment only: never navigates to production or generates analytics.
 await mkdir('.audit/organic-orb',{recursive:true})
@@ -16,6 +37,7 @@ try {
     assert.equal(await page.locator('#status').textContent(),'')
     const canvas=page.locator('canvas')
     const frozen=await canvas.screenshot()
+    assert.ok(await particleCount(frozen)>=2,'small detached droplets are actually visible outside the liquid body')
     assert.deepEqual(await canvas.screenshot(),frozen,'reduced motion renders a stable still')
     await page.getByRole('button',{name:'Tema claro'}).click()
     assert.notDeepEqual(await canvas.screenshot(),frozen,'theme changes the actual rendered material')

@@ -17,3 +17,11 @@ Antes de integrar:
 5. Verificar presupuesto, movimiento reducido, limpieza de recursos/contexto y publicar solo tras aprobación estética.
 
 Estado: prueba local funcional, no elemento de producción ni motor reutilizable del CMS.
+
+## Iteración · líquido emergente y gotas (16/09/2026)
+
+Manuel aprueba tres salidas suaves de líquido que se estiran y vuelven a fusionarse con el cuerpo. Cinco gotas pequeñas siguen ciclos desfasados de separación y retorno; algunas están dentro del cuerpo en cada instante, no son cinco partículas visibles permanentemente. Las corrientes internas se han acelerado moderadamente, conservando giro lento y flotación.
+
+Se amplía ligeramente el campo de visión del prototipo para dejar margen a las gotas; no cambia el tamaño ni la geometría del hero público. Capturas390/900 claro/oscuro inspeccionadas; sin recorte. La prueba comprueba también componentes pequeños separados en la imagen renderizada, no solo la presencia de código de partículas.
+
+Servidor local de revisión: `http://127.0.0.1:3017/`, contenido actualizado al recargar. Limitado a loopback y a esta página; no accesible desde móvil remoto. Sigue pendiente aprobación visual y medida de rendimiento físico antes de cualquier integración pública.
