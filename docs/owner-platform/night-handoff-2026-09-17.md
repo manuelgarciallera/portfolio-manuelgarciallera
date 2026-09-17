@@ -1,6 +1,8 @@
 # Entrega nocturna · 17 septiembre 2026
 
-Informe único para Manuel al terminar la ventana de08:50 Europe/Madrid. En curso: no es un informe final ni acredita ocho horas continuas de trabajo.
+Informe de cierre de la ventana nocturna, terminada a08:50 Europe/Madrid. Automatización pausada al comprobar el límite; no acredita ocho horas continuas de trabajo. Las peticiones directas posteriores continúan por separado.
+
+Balance: mejoras públicas de espaciado/nombre y reloj del orbe publicadas; herencia de encuadres CMS implementada, probada y subida, sin despliegue CMS. Pendientes de Manuel: comprobar Firefox Android físico y autorizar destino/alcance de staging antes de cerrar las cinco puertas operativas. Los efectos/cruceta están documentados como requisitos, no implementados. Petición matinal desktop/gotas en `hero-desktop-drops-2026-09-17.md`, fuera del resultado nocturno.
 
 ## Estado vigente · 07:35 Europe/Madrid
 
