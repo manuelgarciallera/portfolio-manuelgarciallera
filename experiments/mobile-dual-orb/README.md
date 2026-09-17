@@ -1,5 +1,11 @@
 # Dos entes líquidos · prueba desechable
 
+## Evolución aprobada: formación y conexión (17/09)
+
+Manuel aprueba la composición de946631e y añade formación al bajar, pocas gotas azules transferidas y brillo degradado al absorber. `scene.mjs` mantiene el renderer azul intacto: el cálido aparece por progreso de scroll pasivo (escala/opacidad); dos elementos decorativos reutilizados recorren arcos espaciados, sin capturar eventos. Llegadas activan un uniforme del shader cálido, sin canvas adicional ni blur. Movimiento reducido elimina transferencias y brillo; comparación, fuera de vista y pestaña oculta detienen el ciclo. Al volver arriba el cálido desaparece. La unión es una ilusión visual de laboratorio, no simulación física de transferencia de masa.
+
+Pruebas: `connection.test.mjs` RED9d393d (naranja visible al entrar) → GREEN016592, incluyendo uniforme real de absorción, retorno arriba y reduced motion. `verify.mjs` GREENc90421 a390/1280, sin overflow ni errores. Captura connected.png inspeccionada. Coste ea718e A/B/A Chromium software: medianas183,3/100/183,3ms; primera muestra p95516,6ms, posible interferencia del final de otra prueba. No se interpreta como benchmark móvil ni mejora; sigue sin aprobar publicación. Panel3032 solicitado (encolado). Base946631e recuperable; ningún src/public ni despliegue.
+
 Solicitud aprobada por Manuel: solo móvil, azul delante y orbe naranja/amarillo1,6× detrás, arriba/derecha; misma sustancia, gotas y reloj propios, sin conexión. No modifica `src` ni `public`, no está publicado. Base pública fc2d29e conservada.
 
 Ejecutar build existente en3020 y `node experiments/mobile-dual-orb/server.mjs`. Abrir `http://127.0.0.1:3032` en formato móvil. Botón «Comparar» alterna dos orbes/solo azul. Servidor solo loopback/GET/HEAD, sin proxy de cookies ni API; etiquetas noindex/no-store. La paleta cálida se deriva del shader vigente, manteniendo la misma geometría/corrientes.

@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict'
+import {chromium} from 'playwright'
+const browser=await chromium.launch()
+try {
+ const page=await browser.newPage({viewport:{width:390,height:844}})
+ const errors=[];page.on('pageerror',e=>errors.push(e.message))
+ await page.addInitScript(()=>{Object.defineProperty(navigator,'doNotTrack',{get:()=> '1'});localStorage.setItem('rd-theme','dark')})
+ await page.goto('http://127.0.0.1:3032',{waitUntil:'domcontentloaded'})
+ const warm=page.locator('.rd-dual-warm');await warm.waitFor({state:'attached',timeout:60000})
+ assert.equal(await warm.evaluate(e=>Number(getComputedStyle(e).opacity)),0,'warm orb absent at entry')
+ await page.evaluate(()=>{const s=document.querySelector('.rd-hero-canvas-stage').getBoundingClientRect();scrollTo(0,scrollY+s.top-250)})
+ await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('.rd-dual-warm')).opacity)>.95)
+ await page.waitForFunction(()=>Number(document.querySelector('.rd-dual-warm').dataset.absorptions)>0,{},{timeout:20000})
+ assert.ok(await warm.evaluate(e=>{const g=e.getContext('webgl'),p=g.getParameter(g.CURRENT_PROGRAM);return g.getUniform(p,g.getUniformLocation(p,'absorption'))>0}),'arrival actually illuminates shader')
+ assert.ok(await page.locator('.rd-transfer-drop').count()<=2)
+ assert.equal(await page.locator('.rd-transfer-drop').first().evaluate(e=>getComputedStyle(e).pointerEvents),'none')
+ await page.screenshot({path:'.audit/mobile-dual-orb/connected.png',style:'.rd-dual-toggle{visibility:hidden}'})
+ await page.emulateMedia({reducedMotion:'reduce'})
+ await page.waitForTimeout(400)
+ const count=await warm.getAttribute('data-absorptions')
+ await page.waitForTimeout(1500)
+ assert.equal(await warm.getAttribute('data-absorptions'),count)
+ await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(300)
+ assert.equal(await warm.evaluate(e=>Number(getComputedStyle(e).opacity)),0)
+ assert.deepEqual(errors,[])
+ console.log('PASS entry hidden, scroll formation, absorption, bounded droplets, reduced motion')
+}finally{await browser.close()}
