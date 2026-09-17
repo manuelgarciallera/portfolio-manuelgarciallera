@@ -9,3 +9,7 @@ Petición directa de Manuel del 17/09, base f3801d5. Reserva Hub216fac15-a371-43
 - 274 pruebas unitarias/43 archivos PASS a079f2. Compilación pública aislada30rutas y tipos PASS81feb7. Captura390 revisada para tipografía/espaciado; no acredita la animación ni carga del fallback.
 
 La captura enviada por Manuel muestra una línea; no se reprodujo en el CSS local previo, que ya define dos. Intento de verificación de dominio agotó timeout b8189d; no atribuir a caché sin evidencia. Verificar el dominio después de publicación. Estado de publicación pendiente al crear este recibo.
+
+## Cierre
+
+Runtime fdafc99 commit/push cd9974. Escritorio siete tamaños PASS e35c6a; CI35183367182 completo SUCCESS9808b9. Preview6CHvK8vjZPW1LaL9ybBCWkP4rya8 ligado al SHA exacto ee4956. Promoción9e9979 genera producciónH3WEmuYJeJszxEPak4MieXReNt6T; READY y dominio original48eb77. LIVE320/390/430/767 PASS01b614, dos líneas/tamaño/margen inferior y siguiente sección intacta. No prueba física ni cambios del render WebGL. Rollback runtime11b2532. CMS local preservado sin publicar.
