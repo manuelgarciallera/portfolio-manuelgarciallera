@@ -29,8 +29,9 @@ try {
       let left=info.width,right=0
       for(let y=0;y<info.height;y++)for(let x=0;x<info.width;x++){const i=(y*info.width+x)*3;if(data[i+2]>data[i]+25){left=Math.min(left,x);right=Math.max(right,x)}}
       const diameter=(right-left)/m.title.font
-      assert.ok(diameter>=2.7 && diameter<=3.8,'organic silhouette follows roughly three H1 lines')
-      assert.ok(m.name.y>=m.orb.bottom,'name below sphere')
+      assert.ok(diameter>=(width>=1180?4:2.7) && diameter<=5.5,'desktop silhouette grows within the available column')
+      assert.ok(m.name.font>=m.title.font*.37,'desktop identity remains readable under the larger orb')
+      assert.ok(m.name.y>=m.orb.bottom-1,'name below sphere')
       assert.ok(m.name.bottom<=height && m.cta.bottom<height,'identity and CTA stay inside viewport')
       assert.ok(Math.abs(m.hero.bottom-height)<=1,'desktop section remains one viewport')
       assert.equal(new Set(m.lines).size,width>=1180?1:3,'name changes composition at narrow desktop')

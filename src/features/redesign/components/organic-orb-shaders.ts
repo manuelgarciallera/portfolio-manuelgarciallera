@@ -67,10 +67,29 @@ export const ORB_FRAGMENT = `
         travel+=distanceToSurface*.8;
       }
       float coverage=1.-smoothstep(.25,1.25,nearest);
+      // Four detached drops: analytic ray/sphere hits, outside the expensive
+      // repeated distance-field march. Same pigment and soft subpixel edge.
+      vec3 dropNormal=vec3(0.); bool detached=false;
+      for(int i=0;i<4;i++){
+        float f=float(i), angle=.55+f*1.5708+time*.055;
+        float reach=1.36+.035*sin(time*.6+f*2.);
+        vec3 center=vec3(cos(angle)*reach,sin(angle)*reach,.035*sin(time*.4+f));
+        float radius=.033+.009*(.5+.5*sin(f*2.4));
+        vec3 offset=origin-center;
+        float along=-dot(offset,ray);
+        float perpendicular=length(offset+ray*along);
+        float footprint=max(.0001,2.*along/(cameraZoom*resolution.y));
+        float alpha=1.-smoothstep(radius-footprint*.5,radius+footprint*.5,perpendicular);
+        float hit=along-sqrt(max(0.,radius*radius-perpendicular*perpendicular));
+        if(alpha>0. && (coverage<=0. || hit<travel)){
+          coverage=alpha; travel=hit; edgePoint=origin+ray*hit;
+          dropNormal=normalize(edgePoint-center); detached=true;
+        }
+      }
       if(coverage<=0.){gl_FragColor=vec4(0.);return;}
       p=edgePoint;
       vec2 e=vec2(.002,0.);
-      vec3 n=normalize(vec3(shape(p+e.xyy)-shape(p-e.xyy),shape(p+e.yxy)-shape(p-e.yxy),shape(p+e.yyx)-shape(p-e.yyx)));
+      vec3 n=detached?dropNormal:normalize(vec3(shape(p+e.xyy)-shape(p-e.xyy),shape(p+e.yxy)-shape(p-e.yxy),shape(p+e.yyx)-shape(p-e.yyx)));
       vec3 q=local(p);
       float flow=current(q);
       float inner=current(q*.78+refract(ray,n,.72)*.6+vec3(0.,time*.025,0.));
