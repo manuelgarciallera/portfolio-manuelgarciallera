@@ -84,6 +84,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     }
     let draw: (now: number) => void = () => {}
     const tick = (now: number) => {
+      frame = 0
       if (disposed || !inView || document.hidden || settings.current.reduceMotion) return
       if (now - lastDraw >= 1000 / 30) {
         if (previous) elapsed += Math.min((now - previous) / 1000, .1)
@@ -92,10 +93,16 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       frame = requestAnimationFrame(tick)
     }
     function restart() {
-      stop()
-      if (disposed || !inView || document.hidden) return
+      if (disposed || !inView || document.hidden || settings.current.reduceMotion) {
+        stop()
+        if (!disposed && inView && !document.hidden) draw(performance.now())
+        return
+      }
+      // Resize/observer/React refreshes update inputs, not the running clock.
+      // Cancelling on every refresh starves elapsed time during mobile resizing.
+      if (frame) return
       draw(performance.now())
-      if (!settings.current.reduceMotion) frame = requestAnimationFrame(tick)
+      frame = requestAnimationFrame(tick)
     }
     try {
       const compile = (type: number, source: string) => {
