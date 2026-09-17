@@ -1,5 +1,17 @@
 # Prueba de dos orbes desde el móvil
 
+## Estado actual: archivada por decisión de Manuel (17/09/2026)
+
+Manuel descarta el segundo orbe en el Hero por saturación visual y ralentización percibida. Conservarlo para posibles usos futuros, sin reactivarlo ni publicarlo de nuevo por defecto. Producción restaurada mediante rollback explícito a `dpl_ETCh9v7FwddDvnnGSJ3Uiw1h2tnc`, runtime `b6fd0c1`, checkpoint remoto `checkpoint/approved-blue-orb-2026-09-17`. La portada mantiene solo el azul y `/lab/orbes` deja de estar publicado (404).
+
+Verificación fresca: rollback CLI correcto (`b8334d`); Firefox emulado 390×844 contra el dominio original confirma canvas azul listo, ningún `.rd-dual-warm` y prueba retirada con HTTP 404 (`73db61`). No es medición de FPS en dispositivo físico.
+
+Recuperación del experimento: commit `b9e3edd`, `src/features/redesign/lab/`, `src/app/lab/orbes/page.tsx` y `experiments/mobile-dual-orb/`. El código permanece en Git y en la rama de trabajo; **antes del siguiente despliegue desde esta rama hay que excluir o desactivar la ruta de laboratorio para no republicarla accidentalmente**. No ejecutar un despliegue global de HEAD como continuación de este rollback. Las pruebas `verify-dual-orb-lab.mjs` corresponden al experimento archivado, no al dominio restaurado.
+
+El primer ente 3D, distinto de este experimento, sigue localizado en [hero-original-recovery.md](../hero-original-recovery.md): commit `5d61c80`, archivos `HeroBackgroundCanvas.jsx` y `heroShaders.js`. Prioridad futura: recuperarlo en una prueba visual aislada; no reemplazar el azul aprobado sin nueva revisión de Manuel.
+
+Siguiente responsable: Codex conserva ambos antecedentes y respeta el bloqueo de republicación; Manuel decide si se reutilizan en otra sección. El registro histórico siguiente describe la prueba anterior, ya retirada.
+
 Manuel quiere probar conservando la versión azul aprobada. Por el coste adicional observado se comunica una URL opt-in `/lab/orbes`, sin sustituir la portada. Tag remoto `checkpoint/approved-blue-orb-2026-09-17` apunta a b6fd0c1. No se modifica Hero, H1, esfera azul ni CSS público.
 
 La ruta noindex abre la portada same-origin en iframe con título accesible. Al estar lista en formato móvil importa el motor cálido únicamente en el laboratorio; salida al portfolio y comparación dos/solo azul. Sin trackers, recursos de terceros ni API nuevos. El motor conserva shader, resolución y recorte aprobado; añade disposición de recursos GL, observers, listeners, RAF y estilos al salir/fallar. Context loss retira cálido y conserva azul. Reduced-motion detiene transferencias/brillo, o conserva solo fallback azul al entrar con la preferencia activada. No es física de fluidos ni garantía de FPS móvil.
