@@ -1,3 +1,4 @@
+// Historical release f38e1a2 verifier; replaced by scripts/verify-orb-fluid-light.mjs.
 import assert from 'node:assert/strict'
 import {chromium,firefox} from 'playwright'
 const base=process.env.HERO_TEST_URL||'http://127.0.0.1:3020'

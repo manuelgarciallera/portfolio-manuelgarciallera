@@ -21,22 +21,6 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
   }, [isDark, reduceMotion, onReady, onFailure])
 
   useEffect(() => {
-    if (isCompact || reduceMotion) return
-    const media = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
-    let generation = 0, cleanup: (() => void) | undefined
-    const update = () => {
-      const current = ++generation
-      cleanup?.(); cleanup = undefined
-      if (!media.matches) return
-      void import('./orb-bubbles-overlay').then(({ attachOrbBubbles }) => {
-        if (current === generation && canvasRef.current) cleanup = attachOrbBubbles(canvasRef.current)
-      }).catch(() => { /* Optional decoration must never affect the base orb. */ })
-    }
-    update(); media.addEventListener('change', update)
-    return () => { generation++; cleanup?.(); media.removeEventListener('change', update) }
-  }, [isCompact, reduceMotion])
-
-  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: false, powerPreference: 'low-power' })
@@ -50,6 +34,8 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     let activePointer: number | null = null, releasedAt = -10000
     let hovering = false, hoverAt = -10000, hoverLeftAt = -10000
     const hoverCapability = window.matchMedia('(any-hover: hover)')
+    const lightCapability = window.matchMedia('(hover: hover) and (pointer: fine)')
+    let lightMouse = false, lightX = 0, lightY = 0, trailX = 0, trailY = 0, lightPower = 0, lightAt = 0
     let resize: ResizeObserver | undefined, intersection: IntersectionObserver | undefined
     const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0 }
     const dispose = () => {
@@ -80,7 +66,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       if (!hovering) return
       hovering = false; hoverLeftAt = performance.now()
     }
-    const clearInteraction = () => { clearPress(); leaveHover() }
+    const clearInteraction = () => { clearPress(); leaveHover(); lightMouse = false }
     const release = (event: PointerEvent) => {
       if (event.pointerId === activePointer) clearPress()
     }
@@ -101,15 +87,17 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       if (event.target !== canvas || !locate(event)) { leaveHover(); return }
       if (!hovering) { hoverAt = performance.now(); pressAt = hoverAt }
       hovering = true
+      lightMouse = true
     }
     const press = (event: PointerEvent) => {
       if (!event.isPrimary || event.button > 0 || settings.current.reduceMotion) return
       if (!locate(event)) return
       activePointer = event.pointerId
+      lightMouse = event.pointerType === 'mouse'
       pressAt = performance.now()
     }
     const visibility = () => {
-      if (document.hidden) { activePointer = null; hovering = false; hoverLeftAt = -10000; pressAt = -10000; releasedAt = -10000 }
+      if (document.hidden) { activePointer = null; hovering = false; hoverLeftAt = -10000; pressAt = -10000; releasedAt = -10000; lightPower = 0; lightMouse = false }
       restart()
     }
     let draw: (now: number) => void = () => {}
@@ -160,6 +148,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       const offset = gl.getUniformLocation(program, 'verticalOffset')
       const pressPoint = gl.getUniformLocation(program, 'pressPoint')
       const pressAge = gl.getUniformLocation(program, 'pressAge'), pressStrength = gl.getUniformLocation(program, 'pressStrength')
+      const lightPoint = gl.getUniformLocation(program, 'lightPoint'), lightTrail = gl.getUniformLocation(program, 'lightTrail'), lightStrength = gl.getUniformLocation(program, 'lightStrength')
       // Only dimensions are cached: pointer coordinates still use a fresh rect
       // after scrolling. Animation does not need a layout read on every frame.
       let rect = canvas.getBoundingClientRect()
@@ -180,6 +169,20 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         const hoverStrength = .35 * (hovering ? Math.min(1, (now - hoverAt) / 180) : Math.pow(Math.max(0, 1 - (now - hoverLeftAt) / 700), 2))
         const strength = activePointer !== null ? 1 : Math.max(hoverStrength, Math.pow(Math.max(0, 1 - releaseAge / 1.4), 2))
         gl.uniform1f(pressStrength, settings.current.reduceMotion ? 0 : strength)
+        // Reuse the orb clock: a leading light and a slower, short-lived wake.
+        // Exponential damping uses wall time, not the simulation's capped step:
+        // a slow renderer must not prolong the cursor light after exit.
+        const dt = Math.max(0, (now - lightAt) / 1000); lightAt = now
+        const lightEnabled = !isCompact && !settings.current.reduceMotion && lightCapability.matches
+        const target = lightEnabled && lightMouse && (hovering || activePointer !== null) ? 1 : 0
+        if (target && lightPower < .001) { lightX = trailX = pressX; lightY = trailY = pressY }
+        const follow = 1 - Math.exp(-dt / .12), wake = 1 - Math.exp(-dt / .28)
+        lightX += (pressX - lightX) * follow; lightY += (pressY - lightY) * follow
+        trailX += (lightX - trailX) * wake; trailY += (lightY - trailY) * wake
+        lightPower += (target - lightPower) * (1 - Math.exp(-dt / (target ? .16 : .22)))
+        if (!lightEnabled || lightPower < .001) lightPower = 0
+        gl.uniform2f(lightPoint, lightX, lightY); gl.uniform2f(lightTrail, trailX, trailY)
+        gl.uniform1f(lightStrength, lightPower)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
         if (!ready) { ready = true; settings.current.onReady?.() }
       }

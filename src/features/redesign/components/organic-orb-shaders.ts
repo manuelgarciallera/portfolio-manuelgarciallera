@@ -10,6 +10,9 @@ export const ORB_FRAGMENT = `
     uniform vec2 pressPoint;
     uniform float pressAge;
     uniform float pressStrength;
+    uniform vec2 lightPoint;
+    uniform vec2 lightTrail;
+    uniform float lightStrength;
     mat2 turn(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
     vec3 local(vec3 p){p.y-=.055*sin(time*.65);p.xy=turn(time*.1)*p.xy;p.xz=turn(.3+time*.025)*p.xz;return p;}
     float merge(float a,float b,float k){
@@ -108,5 +111,19 @@ export const ORB_FRAGMENT = `
       vec3 color=mix(bg,pigment*diffuse,.63+.24*ribbon)+veins*vec3(.09,.25,.28);
       color=mix(color,mix(vec3(.2,.82,1.),vec3(.06,.28,.54),lightTheme),fresnel*.8);
       color+=specular*vec3(.8,.9,1.);
+      // Refracted illumination stays inside the liquid silhouette. No extra
+      // ray-march steps, particles, geometry or overlay canvas are required.
+      if(lightStrength>.001 && !detached){
+        vec2 lit=p.xy+refract(ray,n,.72).xy*.16+vec2(inner,flow)*.035;
+        vec2 delta=lit-lightPoint, path=lightTrail-lightPoint;
+        float along=clamp(dot(delta,path)/max(dot(path,path),.0001),0.,1.);
+        float wake=exp(-dot(delta-path*along,delta-path*along)*32.);
+        float beam=exp(-pow(dot(delta,vec2(-.6,.8))+.045*inner,2.)*95.)*exp(-dot(delta,delta)*2.);
+        float glow=exp(-dot(delta,delta)*7.);
+        float energy=lightStrength*(beam*.6+glow*.2+wake*.16)*(.65+.35*veins);
+        vec3 tint=mix(vec3(.12,.62,1.),vec3(.36,.82,1.),.5+.5*flow);
+        tint=mix(tint,vec3(.6,.3,1.),(.5+.5*inner)*.2);
+        color+=(1.-clamp(color,0.,1.))*tint*energy;
+      }
       gl_FragColor=vec4(color,coverage);
     }`
