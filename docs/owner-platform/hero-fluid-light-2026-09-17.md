@@ -11,3 +11,7 @@ Comparación real de shader b499c6, mismo fotograma384px en oscuro/claro: delta 
 Recuperación: f38e1a2 conserva burbujas; 32c669b conserva orbe sin burbujas ni nueva luz. No cambios de layout, contenido ni CMS.
 
 Verificación tras corregir damping: build30/tipos b57bbb PASS; 277unitarias/lint46bc21 PASS; presupuesto originalf0f14e PASS. Chromium94aba8 y Firefox8e1784 PASS cursor/seguimiento/salida a0/click continuo/móvil sin luz/reduced-motion. Hover baseb40ff3 PASS. Sin recursos externos nuevos ni métricas físicas inferidas.
+
+Tacto sostenido/cancel/release/blur y scroll390/1280 PASSd9cac2/3300c1. Commit/pushfc2d29e confirmado23b09e; preview6sMdTPgEo9YJMUUJzE5VUQ3kms99 READY/SHA984ced, CI35208852145 completoSUCCESS6bd143. Promoción de la sustitución aprobada iniciada en HYscn6EmQptxAKUUMMmNwJNmKrny; falta comprobación LIVE. Servidor3020 propio detenido, checkpoint16661d intacto.
+
+Cierre: producción HYscn6EmQptxAKUUMMmNwJNmKrny READY y alias original confirmados0ac6d5. LIVE Chromiume12907 y Firefox3fdc05 PASS luz/seguimiento/click/salida/reduced/móvil sin efecto, cero errores JS observados. Logs error5min sin entradas7dd5c8; no garantía universal ni FPS físico. Reserva b4ee82fd liberada; siguiente Manuel revisión estética del nuevo efecto desktop. Reversión documentada arriba; no procesos propios pendientes.
