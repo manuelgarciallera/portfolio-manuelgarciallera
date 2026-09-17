@@ -32,6 +32,12 @@ El test nativo ampliado está escrito pero pendiente de ejecución satisfactoria
 
 ## Estado de entrega
 
+**Cierre funcional de este incremento**: recorrido nativo estándar390/1280 también termina0 (sesión30905,ca282b). Cuatroanchuras320/390/768/1280 cubiertas en dos ejecuciones completas; reset del encuadre móvil, guardar/reabrir, volver a personalizar y preview de página conservan escritorio/medio original. Privacidad y persistencia tras reinicio pasan. No quedan cambios runtime adicionales al commit358683b; este recibo cierra el gate nativo pendiente, no todas las puertas operativas del CMS ni usabilidad humana.
+
+Commit/push358683b/f1a90e. **Gate nativo compacto superado**: sesión1945 salida0/470192,320y768px, Payload real+PostgreSQL+HTTPS con configuración sintética. Incluye reset/reapertura/volver a personalizar del test ampliado; imagen original intacta, previsualización de página, teclado, borradores/restauración y privacidad. Tras reiniciar conserva8borradores,2marcas y2encuadres; app/clúster cerrados. No publicaciónCMS. Se repite el recorrido a390/1280 antes de cierre final.
+
+Entorno recuperado: instalación Linux offline731paquetes1508e8, npm ls sin erroresf4c7e5; caché pública prefetched desde manifiestos de358683b con plataformaLinux e ignore-scripts solo en host5f7ef5, postinstall normal en Linux. No copia de node_modules entre plataformas ni cambio DNS/TLS. Fuente archivada358683b, no checkout Git; lock idéntico317619. Checkpoint protegido88aa4a intacto.
+
 Repetición de los12escenarios de componente tras recuperación del host PASSef58f7, misma implementación. Preparada para commit recuperable; aceptación nativa sigue pendiente. Se arrancó solo el contenedor QA propio owner-editor-6dc5c51-0911; npm ls detectó instalación interrumpida (4a32f3), se rehace npm ci offline en la copia aislada, sin tocar servicios Linocube/PostgreSQL ajenos.
 
 `npm run check` Windows termina con salida0 (sesión79298,34677f):1377 unitarias, integración SQLite, ambas recuperaciones físicas, lint, tipos y build23rutas. El mismo recorrido arrancó en f3801d5 y durante su ejecución se comprometió fdafc99 solo público; CMS permaneció con su delta local constante. No acredita el browser nativo pendiente. Docker vuelve a responder tras intervención de Manuel; contenedor QA no arrancado todavía. Pendiente commit recuperable CMS. La web pública avanzó separadamente con ajuste móvil fdafc99; sin publicación CMS, gasto, cambios de permisos ni datos reales. Siguiente Codex: retomar aceptación nativa y cerrar entrega CMS.

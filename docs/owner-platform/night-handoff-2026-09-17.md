@@ -47,6 +47,8 @@ Para el siguiente incremento CMS, revisar además `MediaPlacements.ts`: el hook 
 
 ### CMS · encuadre e herencia por formato
 
+**Cierre07:22:**358683b subido. Herencia responsive y «Usar encuadre de escritorio» implementados y verificados en Payload real/PostgreSQL/HTTPS a320/390/768/1280 (470192,ca282b). Reset, guardar/reabrir y volver a personalizar sin alterar imagen/escritorio; recorridos editoriales y recuperación completos conservan datos tras reiniciar. Instalación Linux del mismo lock recuperada sin debilitar TLS/DNS. Sin despliegueCMS. Este hito queda cerrado; no repetirlo por rutina. Siguiente Codex: puertas operativas abiertas del CMS, conservando pendientes de staging/servicios/validación humana y sin abrir motor libre por inferencia.
+
 Actualización07:05: comprobación completa local `npm run check` termina0 (34677f),1377unitarias, SQLite, ambas recuperaciones, lint/tipos/build. Implementación CMS aún no publicada; cierre Git y recorrido nativo pendientes. Docker ahora disponible por intervención de Manuel.
 
 Orbe: Manuel precisa Firefox Android, no Brave/Chromium. Runtime público5df24e5 corrige reinicio del reloj durante cambios continuos de tamaño (RED/GREEN real, recibo orb-scroll-clock-2026-09-17.md); CI35184051125 completoSUCCESS341243. LIVE Chromium emulado pasa gesto antes de soltar y resize, pero eso NO acredita Firefox Android. Pregunta pendiente única: tras recarga, ¿sigue la pausa y se reanuda al soltar? No pedir otra vez qué navegador. No reducir calidad ni modificar gestos sin reproducción. Fuentes históricas Bugzilla sobre otros entornos no prueban una incidencia actual en este teléfono.
