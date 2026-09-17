@@ -32,16 +32,19 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     let ready = false, inView = true, disposed = false
     let pressAt = -10000, pressX = 0, pressY = 0
     let activePointer: number | null = null, releasedAt = -10000
+    let hovering = false, hoverAt = -10000, hoverLeftAt = -10000
+    const hoverCapability = window.matchMedia('(any-hover: hover)')
     let resize: ResizeObserver | undefined, intersection: IntersectionObserver | undefined
     const stop = () => { cancelAnimationFrame(frame); frame = 0; previous = 0 }
     const dispose = () => {
       disposed = true; stop(); refresh.current = null
       canvas.removeEventListener('pointerdown', press)
       canvas.removeEventListener('contextmenu', contextMenu)
+      canvas.removeEventListener('pointerleave', leaveHover)
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', release)
       window.removeEventListener('pointercancel', release)
-      window.removeEventListener('blur', clearPress)
+      window.removeEventListener('blur', clearInteraction)
       resize?.disconnect(); intersection?.disconnect()
       document.removeEventListener('visibilitychange', visibility)
       canvas.removeEventListener('webglcontextlost', lost)
@@ -57,6 +60,11 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       if (activePointer === null) return
       activePointer = null; releasedAt = performance.now()
     }
+    const leaveHover = () => {
+      if (!hovering) return
+      hovering = false; hoverLeftAt = performance.now()
+    }
+    const clearInteraction = () => { clearPress(); leaveHover() }
     const release = (event: PointerEvent) => {
       if (event.pointerId === activePointer) clearPress()
     }
@@ -69,8 +77,14 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       return Math.hypot(pressX, pressY) <= 1.3
     }
     const move = (event: PointerEvent) => {
-      if (event.pointerId !== activePointer) return
-      if (event.buttons === 0 || !locate(event)) clearPress()
+      if (activePointer !== null) {
+        if (event.pointerId === activePointer && (event.buttons === 0 || !locate(event))) clearPress()
+        return
+      }
+      if (isCompact || event.pointerType !== 'mouse' || !hoverCapability.matches || settings.current.reduceMotion) return
+      if (event.target !== canvas || !locate(event)) { leaveHover(); return }
+      if (!hovering) { hoverAt = performance.now(); pressAt = hoverAt }
+      hovering = true
     }
     const press = (event: PointerEvent) => {
       if (!event.isPrimary || event.button > 0 || settings.current.reduceMotion) return
@@ -79,7 +93,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       pressAt = performance.now()
     }
     const visibility = () => {
-      if (document.hidden) { activePointer = null; pressAt = -10000; releasedAt = -10000 }
+      if (document.hidden) { activePointer = null; hovering = false; hoverLeftAt = -10000; pressAt = -10000; releasedAt = -10000 }
       restart()
     }
     let draw: (now: number) => void = () => {}
@@ -147,7 +161,9 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
         gl.uniform2f(pressPoint, pressX, pressY)
         const releaseAge = Math.max(0, (now - releasedAt) / 1000)
         gl.uniform1f(pressAge, age)
-        gl.uniform1f(pressStrength, settings.current.reduceMotion ? 0 : activePointer !== null ? 1 : Math.pow(Math.max(0, 1 - releaseAge / 1.4), 2))
+        const hoverStrength = .35 * (hovering ? Math.min(1, (now - hoverAt) / 180) : Math.pow(Math.max(0, 1 - (now - hoverLeftAt) / 700), 2))
+        const strength = activePointer !== null ? 1 : Math.max(hoverStrength, Math.pow(Math.max(0, 1 - releaseAge / 1.4), 2))
+        gl.uniform1f(pressStrength, settings.current.reduceMotion ? 0 : strength)
         gl.drawArrays(gl.TRIANGLES, 0, 6)
         if (!ready) { ready = true; settings.current.onReady?.() }
       }
@@ -159,10 +175,11 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       canvas.addEventListener('webglcontextlost', lost)
       canvas.addEventListener('pointerdown', press, { passive: true })
       canvas.addEventListener('contextmenu', contextMenu)
+      canvas.addEventListener('pointerleave', leaveHover, { passive: true })
       window.addEventListener('pointermove', move, { passive: true })
       window.addEventListener('pointerup', release, { passive: true })
       window.addEventListener('pointercancel', release, { passive: true })
-      window.addEventListener('blur', clearPress)
+      window.addEventListener('blur', clearInteraction)
       restart()
     } catch {
       dispose(); settings.current.onFailure?.()
