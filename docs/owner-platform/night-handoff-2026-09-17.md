@@ -44,3 +44,11 @@ Ver `interactive-3d-and-cms-research-2026-09-17.md`: fuentes primarias, criterio
 Runtime actualizado `11b2532`, subido y publicado en producción `dpl_CCMdh5LKN8bpidGS1Abj9gyZ7wsj`, READY/alias original. CI web+owner SUCCESS; LIVE caché/resize390/1280 PASS. No regresión de presupuesto. La prueba física de fluidez sigue pendiente, pero el trabajo CMS aislado no requiere acceso al teléfono ni una nueva clave; no confundir esta continuación con aprobar métricas GPU físicas.
 
 Para el siguiente incremento CMS, revisar además `MediaPlacements.ts`: el hook combina excepciones anteriores con las entrantes. Al implementar «volver al valor heredado», probar guardado/reapertura en base real para asegurar que una excepción borrada no se reconstruye por combinación parcial. No basta con probar el selector o el adaptador de preview.
+
+### CMS · encuadre e herencia por formato
+
+Actualización07:05: comprobación completa local `npm run check` termina0 (34677f),1377unitarias, SQLite, ambas recuperaciones, lint/tipos/build. Implementación CMS aún no publicada; cierre Git y recorrido nativo pendientes. Docker ahora disponible por intervención de Manuel.
+
+Orbe: Manuel precisa Firefox Android, no Brave/Chromium. Runtime público5df24e5 corrige reinicio del reloj durante cambios continuos de tamaño (RED/GREEN real, recibo orb-scroll-clock-2026-09-17.md); CI35184051125 completoSUCCESS341243. LIVE Chromium emulado pasa gesto antes de soltar y resize, pero eso NO acredita Firefox Android. Pregunta pendiente única: tras recarga, ¿sigue la pausa y se reanuda al soltar? No pedir otra vez qué navegador. No reducir calidad ni modificar gestos sin reproducción. Fuentes históricas Bugzilla sobre otros entornos no prueban una incidencia actual en este teléfono.
+
+Implementación local y pruebas detalladas en `cms-media-inheritance-2026-09-17.md`. La acción para volver al encuadre base y el estado heredado/personalizado pasan12 escenarios de componente y una prueba de persistencia SQLite real. Backend sin cambios. Falta la aceptación nativa completa: TLS Windows y DNS Linux impidieron llegar al recorrido; después Docker dejó de estar disponible. No se alteraron protecciones ni servicios de otros proyectos. Se retoma verificación Windows tras la interrupción, sin afirmar continuidad durante ese intervalo.
