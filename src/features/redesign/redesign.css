@@ -696,7 +696,7 @@
     line-height: 1;
   }
 }
-/* Color is centered at first paint; a legible 1.8-second pass every 18 seconds. */
+/* Desktop: immediate four-second pass, then six seconds of quiet. */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .rd-hero-copy h1 {
     --sweep-blue: #1753b5; --sweep-violet: #7041b7; --sweep-pink: #a82c79;
@@ -707,7 +707,7 @@
     background-size: 300% 300%; background-position: 50% 50%;
     background-clip: text; -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: rd-hero-type-sweep 18s linear infinite;
+    animation: rd-hero-type-sweep 10s linear infinite;
   }
   [data-theme="dark"] .rd-hero-copy h1 {
     --sweep-blue: #79b8ff; --sweep-violet: #a78bfa; --sweep-pink: #ec9cce;
@@ -716,7 +716,7 @@
 }
 @keyframes rd-hero-type-sweep {
   0% { background-position: 50% 50%; }
-  10%, 100% { background-position: 0% 0%; }
+  40%, 100% { background-position: 0% 0%; }
 }
 /* Full mobile traversal: twice the distance, same leisurely travel speed. */
 @keyframes rd-hero-type-sweep-mobile {
@@ -1389,7 +1389,7 @@
   .rd-hero-name span:first-child { display: block; }
   @supports ((background-clip: text) or (-webkit-background-clip: text)) {
     @media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
-      .rd-hero-copy h1 { animation-name: rd-hero-type-sweep-mobile; background-position: 100% 100%; }
+      .rd-hero-copy h1 { animation-name: rd-hero-type-sweep-mobile; animation-duration: 18s; background-position: 100% 100%; }
       .rd-hero-name {
         --name-blue: #1753b5; --name-light-blue: #0867a4;
         background-image: linear-gradient(110deg, var(--ink) 35%, var(--name-blue) 45%, var(--name-light-blue) 52%, var(--ink) 65%);
