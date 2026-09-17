@@ -1372,7 +1372,7 @@
   }
   .rd-hero-art {
     width: 100%; min-height: 0; aspect-ratio: auto; margin-inline: 0;
-    display: flex; flex-direction: column; gap: 0; padding-bottom: 6.5rem; margin-top: -1.5rem;
+    display: flex; flex-direction: column; gap: 0; padding-bottom: 10rem; margin-top: -1.5rem;
     /* Lift the identity visually, retaining its flow space as breathing room below. */
     transform: translateY(-1.5rem);
     background: transparent;
@@ -1381,7 +1381,7 @@
   .rd-hero-art-fallback { height: min(100cqi, 30rem); }
   .rd-hero-name {
     position: relative; top: auto; inset-inline: auto; width: calc(100% - 2rem);
-    font-size: clamp(1.5rem, 8.6cqi, 2.5rem); line-height: 1.18; white-space: nowrap; margin-top: -1rem;
+    font-size: clamp(1.5rem, 9.4cqi, 2.75rem); line-height: 1.25; white-space: nowrap; margin-top: 0.5rem;
   }
   .rd-hero-name span { display: inline; }
   .rd-hero-name span:first-child { display: block; }

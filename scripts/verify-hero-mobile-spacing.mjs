@@ -20,6 +20,9 @@ try {
   // Previous accepted layout, on the same page/fonts/viewport: detects regressions
   // in position, remaining black space, wrapping and unrelated hero geometry.
   const after=await measure()
+  assert.ok(after.hero.bottom-after.name.bottom>=150,'mobile identity retains at least 150px of hero background below it')
+  assert.ok(after.font>=Math.min(44,width*.093),'mobile name uses the larger approved type scale')
+  assert.ok(after.name.y-after.orb.bottom>=7,'identity is separated from the orb stage')
   await page.locator('.rd-hero-name').scrollIntoViewIfNeeded()
   await page.screenshot({path:`.audit/hero-mobile-spacing/${width}.png`})
   const previousFont=Math.min(32,Math.max(16,width*.067))
