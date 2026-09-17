@@ -1,0 +1,7 @@
+# Portadas grandes solo en el blog
+
+Manuel confirma recuperar portadas grandes en `/articulos` y conservar el carrusel horizontal de la landing. Se recupera estructura anterior a `c9e4c12`: imagen grande izquierda y texto derecha; móvil apila imagen y texto. `ArticlesIndex` reutiliza `ArticleCover` y los estilos anteriores sin modificar `ArticlesSection`, el Hero ni el contenido. CSS acotado al índice corrige mínimos rígidos para tablet y añade foco visible; no nuevas dependencias ni efectos. Se elimina el enlace redundante al propio índice y los controles de carrusel solo allí.
+
+RED test real del índice `9735b2`, GREEN 279 pruebas/45 archivos `3d4b9b`; lint del área sin errores. Build y TypeScript30rutas `66a07e`; boundary22entradas `e4337a`. Navegador390/768/1280: portadas grandes, columnas/apilado, enlaces y foco, sin overflow, landing conserva rail y controles, amarillo ausente (`92582c`). Capturas inspeccionadas en `.audit/blog-covers/`. Comparación JS exacta `7fb76d`: portada138706raw/50638gzip, blog84865raw/30409gzip antes/después. Presupuestos PASS `fa8f1e` tras quitar únicamente ruta lab retirada, sin ampliar tolerancias.
+
+La prueba amarilla permanece archivada: se retira su page.tsx y entrada de presupuesto para no reactivarla al publicar; motores/prototipo y commit `b9e3edd` conservados. Checkpoint azul intacto. Registro compartido y trabajo ajeno no se incluyen en el commit. Publicación pendiente de verificación remota; no CMS ni cambios de datos.

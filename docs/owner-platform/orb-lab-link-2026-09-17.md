@@ -2,6 +2,8 @@
 
 ## Estado actual: archivada por decisión de Manuel (17/09/2026)
 
+Actualización posterior, al recuperar portadas grandes del blog: se elimina `src/app/lab/orbes/page.tsx` y su única entrada de presupuesto para impedir republicar el amarillo en el siguiente deploy. Los motores y el prototipo siguen guardados; la ruta completa se recupera desde `b9e3edd`. Verificación de build/blog exige `/lab/orbes` 404. Queda resuelto el gate preventivo indicado abajo.
+
 Manuel descarta el segundo orbe en el Hero por saturación visual y ralentización percibida. Conservarlo para posibles usos futuros, sin reactivarlo ni publicarlo de nuevo por defecto. Producción restaurada mediante rollback explícito a `dpl_ETCh9v7FwddDvnnGSJ3Uiw1h2tnc`, runtime `b6fd0c1`, checkpoint remoto `checkpoint/approved-blue-orb-2026-09-17`. La portada mantiene solo el azul y `/lab/orbes` deja de estar publicado (404).
 
 Verificación fresca: rollback CLI correcto (`b8334d`); Firefox emulado 390×844 contra el dominio original confirma canvas azul listo, ningún `.rd-dual-warm` y prueba retirada con HTTP 404 (`73db61`). No es medición de FPS en dispositivo físico.
