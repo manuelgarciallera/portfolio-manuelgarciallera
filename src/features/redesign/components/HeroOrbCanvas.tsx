@@ -21,6 +21,22 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
   }, [isDark, reduceMotion, onReady, onFailure])
 
   useEffect(() => {
+    if (isCompact || reduceMotion) return
+    const media = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
+    let generation = 0, cleanup: (() => void) | undefined
+    const update = () => {
+      const current = ++generation
+      cleanup?.(); cleanup = undefined
+      if (!media.matches) return
+      void import('./orb-bubbles-overlay').then(({ attachOrbBubbles }) => {
+        if (current === generation && canvasRef.current) cleanup = attachOrbBubbles(canvasRef.current)
+      }).catch(() => { /* Optional decoration must never affect the base orb. */ })
+    }
+    update(); media.addEventListener('change', update)
+    return () => { generation++; cleanup?.(); media.removeEventListener('change', update) }
+  }, [isCompact, reduceMotion])
+
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: false, powerPreference: 'low-power' })
