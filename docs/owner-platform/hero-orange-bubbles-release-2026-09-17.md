@@ -11,3 +11,9 @@ TDD: tres pruebas nuevas fallaron con el stub y pasan con el motor. 277 unitaria
 La versión de laboratorio se conserva en `experiments/orb-bubbles/`, sin integrar sus controles ni proxy en la web pública.
 
 Navegador local: gesto real produce dibujo visible, disolución completa, reposo sin dibujo, preferencias dinámicas y exclusión móvil/coarse PASS Chromium (`d17334`) y Firefox (`61e7b2`). Hover/seguimiento/click/salida/blur base PASS ambos (`906870`, `00dbf0`). Se corrigió un selector de prueba que esperaba el canvas animado cuando reduced-motion utiliza una imagen estática; no fue un fallo de producción. La primera prueba de tacto apuntó al servidor antiguo 3015 detenido, se repite contra 3020.
+
+Tacto sostenido, release/cancel/blur y scroll 390/1280 PASS (`2e083e`, `14cb8c`). Matriz del orbe 390/1280 oscuro/claro, límites GPU, animación, pausa fuera de vista, reduced-motion y pérdida de contexto PASS (`48a4b7`, `022088`, `17fcf1`).
+
+Commit/push `f38e1a2` (`e1c955`), CI `35206266725` completo SUCCESS (`cae52f`). Preview `dpl_6hwBZehk2kDLLUoVa9iitG18YFQm` READY/SHA correcto. Promoción autorizada a `dpl_7iFAtznpn6H9MHvVzoR6DMq6PzsB`, READY y dominio `manuelgarciallera.com` con SHA `f38e1a22d56babc832a6ec5ec64d015aea70ce27` confirmados (`c9f629`). Servidores propios 3020 y 3031 detenidos tras las pruebas. Checkpoint original intacto (`e14bf9`); archivos compartidos ajenos no incluidos.
+
+LIVE: Chromium (`78ca7b`) y Firefox escritorio (`ff0b62`) PASS gesto real, disolución, ausencia de dibujo en reposo, móvil/coarse, reduced-motion y limpieza al cambiar formato. Logs de error Vercel 5 minutos sin entradas (`5b7cd7`), sin afirmar ausencia universal de errores cliente. Reserva liberada; siguiente Manuel valorar sensación estética desde desktop. Vuelta atrás documentada al inicio, no requiere rescatar archivos privados. Ninguna acción requerida en móvil.
