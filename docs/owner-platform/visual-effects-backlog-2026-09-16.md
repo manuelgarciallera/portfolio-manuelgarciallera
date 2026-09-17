@@ -52,6 +52,7 @@ Solicitud posterior de Manuel (16/09/2026): pulir la usabilidad del CMS para per
 
 - Arrastrar para reordenar y mover bloques, con destino y contorno visibles antes de soltar.
 - Cruceta de desplazamiento al seleccionar un elemento; ofrecer también teclado y comandos «Mover antes/después». Ninguna operación dependerá exclusivamente del arrastre.
+- **Paso exacto solicitado por Manuel:** el centro de la cruceta muestra el número de píxeles de cada movimiento y permite introducir un valor exacto. Ofrecer además un modo continuo para desplazarse más rápido mientras se mantiene pulsada una dirección. Son dos modos explícitos, no una aceleración oculta. Este detalle se conserva como requisito pendiente; no existe todavía el control.
 - Propuesta de modo inicial: layout guiado, con ajuste a columnas, márgenes y separaciones. Modo libre opcional dentro de una caja delimitada, no coordenadas absolutas indiscriminadas que rompan móvil.
 - En móvil, separar selección, arrastre y scroll; controles táctiles claros y sin tapar el contenido. Mostrar posición y guías mientras se mueve, sin requerir precisión fina.
 - Deshacer/rehacer, cancelar movimiento, restaurar alineación y previsualizar cada anchura antes de publicar.

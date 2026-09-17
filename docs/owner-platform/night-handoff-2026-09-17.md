@@ -2,6 +2,23 @@
 
 Informe único para Manuel al terminar la ventana de08:50 Europe/Madrid. En curso: no es un informe final ni acredita ocho horas continuas de trabajo.
 
+## Estado vigente · 07:35 Europe/Madrid
+
+Esta tabla prevalece sobre los hitos históricos que siguen; no confundir una corrección publicada con la confirmación del teléfono físico.
+
+| Hito | Estado | Evidencia / siguiente paso |
+| --- | --- | --- |
+| Nombre móvil y espacio inferior | 🟢 Publicado | fdafc99: Manuel / García-Llera Añón, más grande y separado, sección siguiente intacta; LIVE cuatro anchuras |
+| Reloj del orbe durante cambios de tamaño | 🟢 Corrección publicada | 5df24e5, producción4iSgwLP2eBVASjGsWpM8xBRJWkAj; RED/GREEN y LIVE, CI completo correcto |
+| Pausa reportada en Firefox Android | 🟡 Pendiente de confirmación física | No nueva respuesta sobre si se reanuda al soltar tras recargar; Firefox escritorio pasa, no equivale a Android |
+| Herencia de encuadres CMS | 🟢 Implementado y verificado, no desplegado | 358683b; Payload/PostgreSQL/HTTPS320/390/768/1280, guardar/reabrir/restaurar; recibo0a05e7b y CI completo correcto |
+| CMS en infraestructura real | 🔴 Fuera del alcance nocturno autorizado | Falta destino autorizado y verificar correo, restauración DB, medios durables, puente público y revisión de despliegue; readiness sigue false deliberadamente |
+| Efectos y colocación visual libre | 🟡 Requisitos guardados, no implementación en curso | CMS-VISUAL-01/CMS-LAYOUT-01; siguiente diseño revisable sobre editor existente, sin sustituirlo durante ausencia |
+
+Para revisar el CMS, comprobar en una sesión guiada si Manuel puede editar texto, ordenar un bloque, ajustar un encuadre móvil, volver al de escritorio, guardar/reabrir, previsualizar y recuperar un borrador sin ayuda. Las pruebas automáticas ya cubren recorridos técnicos, pero no demuestran comprensión ni facilidad de uso humana. No se inició una investigación con participantes ni se recogieron datos personales.
+
+Prioridad siguiente: revisión de comprensión del editor y diseño de colocación guiada. La cruceta debe conservar el paso exacto en píxeles visible/editable en su centro y un modo continuo explícito. No publicar el CMS ni provisionar servicios para aparentar que las puertas pendientes están cerradas. Preparar una única propuesta de staging con alcance/coste cuando Manuel autorice ese paso; no solicitar claves en chat.
+
 ## Confirmado antes de continuar CMS
 
 - Público `4cd3aac`, producción `dpl_94PR7oS9dTa3PSVuXJG3iDoVgU1Z`, dominio original verificado. Nombre móvil Manuel / García-Llera Añón, mayor; fondo inferior ampliado sin recortar la sección blanca.
