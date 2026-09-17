@@ -9,10 +9,13 @@ export const handlePublicationExportRequest = async (request: Request, artifactI
   authenticate(headers: Headers): Promise<{ user: unknown }>
   generate(artifactId: string | number, user: unknown): Promise<PublicationExport>
 }): Promise<Response> => {
+  const reject = (error: string, status: number) => Response.json({ error }, {
+    status, headers: { 'cache-control': 'private, no-store' },
+  })
   try {
     const authentication = await dependencies.authenticate(request.headers)
-    if (!isOwner(authentication.user)) return Response.json({ error: 'Owner authentication required.' }, { status: 403 })
-    if (!safeId(artifactId)) return Response.json({ error: 'Invalid publication artifact identifier.' }, { status: 400 })
+    if (!isOwner(authentication.user)) return reject('Owner authentication required.', 403)
+    if (!safeId(artifactId)) return reject('Invalid publication artifact identifier.', 400)
     const output = await dependencies.generate(artifactId, authentication.user)
     const body = JSON.stringify(output)
     return new Response(body, { status: 200, headers: {
@@ -23,7 +26,7 @@ export const handlePublicationExportRequest = async (request: Request, artifactI
       'x-content-type-options': 'nosniff',
     } })
   } catch (error) {
-    if (error instanceof APIError) return Response.json({ error: 'Publication export failed.' }, { status: error.status >= 400 && error.status < 500 ? error.status : 500 })
-    return Response.json({ error: 'Publication export failed.' }, { status: 500 })
+    if (error instanceof APIError) return reject('Publication export failed.', error.status >= 400 && error.status < 500 ? error.status : 500)
+    return reject('Publication export failed.', 500)
   }
 }
