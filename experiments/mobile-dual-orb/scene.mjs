@@ -57,6 +57,16 @@ function layout(){
  canvas.width=canvas.height=320;gl.viewport(0,0,320,320);paint()
 }
 function paint(){
+ // Rasterize only visible pixels, preserving the full-resolution coordinate
+ // system and a one-pixel guard for the filtered edge during scroll/scale.
+ const rect=canvas.getBoundingClientRect(),clamp=v=>Math.max(0,Math.min(320,v))
+ if(rect.width<=0||rect.height<=0)return
+ const left=clamp(Math.floor(-rect.left/rect.width*320)-1)
+ const right=clamp(Math.ceil((innerWidth-rect.left)/rect.width*320)+1)
+ const bottom=clamp(Math.floor((rect.bottom-innerHeight)/rect.height*320)-1)
+ const top=clamp(Math.ceil(rect.bottom/rect.height*320)+1)
+ gl.disable(gl.SCISSOR_TEST);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT)
+ gl.enable(gl.SCISSOR_TEST);gl.scissor(left,bottom,Math.max(0,right-left),Math.max(0,top-bottom))
  gl.uniform2f(uniforms.resolution,320,320);gl.uniform1f(uniforms.time,elapsed)
  gl.uniform1f(uniforms.cameraZoom,2.5);gl.uniform1f(uniforms.verticalOffset,0)
  gl.uniform1f(uniforms.lightTheme,document.documentElement.dataset.theme==='light'?1:0)
@@ -73,5 +83,5 @@ new ResizeObserver(layout).observe(stage)
 new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;update()}).observe(stage)
 new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})
 document.addEventListener('visibilitychange',update);mobile.addEventListener('change',update);reduced.addEventListener('change',update)
-document.addEventListener('scroll',reveal,{passive:true})
+document.addEventListener('scroll',()=>{reveal();if(reduced.matches)paint()},{passive:true})
 layout();update()
