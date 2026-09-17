@@ -490,6 +490,27 @@ it('characterizes missing historical bytes in the legacy local storage configura
   }
 }, 30_000)
 
+it('clears mobile crop overrides durably without changing desktop, tablet or original media', async () => {
+  const req = await createLocalReq({ user: owner }, payload)
+  const bytes = await sharp({ create: { width: 32, height: 24, channels: 3, background: '#2255aa' } }).png().toBuffer()
+  const media = await payload.create({ collection: 'media', req, overrideAccess: false, data: { alt: 'Inheritance fixture' },
+    file: { name: `inherit-${randomUUID()}.png`, data: bytes, mimetype: 'image/png', size: bytes.length },
+  })
+  const crop = await payload.create({ collection: 'media-placements', req, draft: true, overrideAccess: false, data: {
+    name: 'Responsive inheritance', placement: { asset: media.id, zoom: 2, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3',
+      overrides: { mobile: { zoom: 4, focalX: 0, focalY: 1, fit: 'contain', frame: '9:16' }, tablet: { zoom: 3 } } },
+  } })
+  await payload.update({ collection: 'media-placements', id: crop.id, draft: true, req, overrideAccess: false, data: {
+    placement: { overrides: { mobile: { zoom: null, focalX: null, focalY: null, fit: null, frame: null } } },
+  } })
+  const reopened = await payload.findByID({ collection: 'media-placements', id: crop.id, draft: true, depth: 0, req, overrideAccess: false })
+  for (const key of ['zoom', 'focalX', 'focalY', 'fit', 'frame'] as const) expect(reopened.placement.overrides?.mobile?.[key] ?? null).toBeNull()
+  expect(reopened.placement).toMatchObject({ asset: media.id, zoom: 2, focalX: 0.2, focalY: 0.7, fit: 'cover', frame: '4:3', overrides: { tablet: { zoom: 3 } } })
+  const untouched = await payload.findByID({ collection: 'media', id: media.id, draft: true, depth: 0, req, overrideAccess: false })
+  expect(await readFile(path.join(mediaDirectory, media.filename!))).toEqual(bytes)
+  expect(untouched.updatedAt).toBe(media.updatedAt)
+})
+
 it('captures real versioned crop recipes without losing mobile overrides or using newer edits as baseline', async () => {
   const { page, req } = await createReleaseFixture()
   const bytes = await sharp({ create: { width: 32, height: 32, channels: 4, background: '#336699' } }).png().toBuffer()

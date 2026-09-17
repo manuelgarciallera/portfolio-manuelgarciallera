@@ -5,6 +5,11 @@
 .breakpoints { display: flex; gap: 0.25rem; padding: 0.2rem; border: 1px solid var(--theme-elevation-150); border-radius: 0.4rem; }
 .breakpoints button { min-height: 2rem; padding-inline: 0.65rem; color: var(--theme-elevation-650); background: transparent; border: 0; border-radius: 0.25rem; cursor: pointer; }
 .breakpoints button[aria-pressed='true'] { color: var(--theme-text); background: var(--theme-elevation-100); }
+.inheritance { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+.inheritance p { flex: 1 1 15rem; margin: 0; color: var(--theme-elevation-650); font-size: 0.8rem; line-height: 1.5; }
+.inheritance button { max-width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--theme-elevation-250); border-radius: 0.3rem; color: var(--theme-text); background: var(--theme-bg); cursor: pointer; font: inherit; font-size: 0.8rem; }
+.inheritance button:disabled { color: var(--theme-elevation-650); cursor: default; }
+.inheritance button:focus-visible { outline: 2px solid var(--theme-success-500); outline-offset: 2px; }
 .layout { display: grid; grid-template-columns: minmax(16rem, 1.4fr) minmax(13rem, 0.6fr); gap: 1rem; align-items: start; }
 .stage { position: relative; display: grid; place-items: center; width: 100%; max-height: 34rem; overflow: hidden; color: var(--theme-elevation-650); background: var(--theme-elevation-100); border: 1px solid var(--theme-elevation-150); border-radius: 0.4rem; }
 .stage img { width: 100%; height: 100%; min-height: 0; }

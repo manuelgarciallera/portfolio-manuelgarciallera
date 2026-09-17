@@ -45,6 +45,13 @@ export const MediaPlacementEditor = ({ readOnly = false }: Pick<UIFieldClientPro
     dispatchFields({ path: path(name), type: 'UPDATE', value })
     setModified(true)
   }
+  const customizedPaths = breakpoint === 'desktop' ? [] : ['focalX', 'focalY', 'zoom', 'fit', 'frame']
+    .map(name => path(name)).filter(fieldPath => formFields[fieldPath]?.value != null)
+  const resetToDesktop = () => {
+    if (disabled || customizedPaths.length === 0) return
+    for (const fieldPath of customizedPaths) dispatchFields({ path: fieldPath, type: 'UPDATE', value: null })
+    setModified(true)
+  }
   const currentAsset = asset && preview && String(asset.id) === String(preview.assetId) ? asset : null
   const assetError = Boolean(preview && assetErrorId === String(preview.assetId))
   const ratio = preview?.aspectRatio === 'auto' && currentAsset?.width && currentAsset.height ? `${currentAsset.width} / ${currentAsset.height}` : preview?.aspectRatio ?? '16 / 9'
@@ -64,6 +71,14 @@ export const MediaPlacementEditor = ({ readOnly = false }: Pick<UIFieldClientPro
             <button aria-pressed={breakpoint === value} key={value} onClick={() => setBreakpoint(value)} type="button">{breakpointLabels[value]}</button>
           ))}
         </div>
+      </div>
+      <div className={styles.inheritance}>
+        <p role="status">{breakpoint === 'desktop'
+          ? 'Encuadre base para escritorio. Móvil y tablet lo usan salvo sus ajustes propios.'
+          : customizedPaths.length === 0
+            ? 'Usa el encuadre de escritorio. Si cambias un control, solo se personaliza este formato.'
+            : `${customizedPaths.length} ${customizedPaths.length === 1 ? 'ajuste propio' : 'ajustes propios'} para ${breakpoint === 'mobile' ? 'móvil' : 'tablet'}. Los demás siguen el escritorio.`}</p>
+        {breakpoint !== 'desktop' && <button type="button" disabled={disabled || customizedPaths.length === 0} onClick={resetToDesktop}>Usar encuadre de escritorio</button>}
       </div>
       <div className={styles.layout}>
         <div className={styles.stage} style={{ aspectRatio: ratio }}>
