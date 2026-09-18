@@ -7,3 +7,7 @@ Causa: background-size240% recortaba el espectro. Solo se modifica brand-signatu
 Prueba raster Chromium de CSS real `node scripts/verify-brand-spectrum.mjs`: RED16px cian0/rosa0; GREEN16px cian9/azul38/violeta31/rosa12;36px41/209/168/56. Umbrales independientes, al menos3píxeles por familia. Capturas `.audit/brand-spectrum`. No es medición perceptual de usuarios.
 
 280 tests PASS; build30 y TypeScript correctos; ESLint focal, Hero y responsive PASS. Navbar390/1280 ambos temas PASS: paleta compilada, hover y reduced motion, sin overflow. Capturas móvil y escritorio inspeccionadas. Presupuesto público sin incidencias, baseline intacta. Publicación pendiente. Volver atrás: revertir solo el commit de esta corrección, sin restauración destructiva del workspace.
+
+Implementación `680db14` enviada a origin; CI35364405999 validate+owner SUCCESS. Preview9yE6brQkqZ4Nwy78McWv5v9A6ETE READY. Producción `dpl_qEDVePom2DSDCAvzHpKvsq7jUdsQ` READY con alias manuelgarciallera.com confirmado. No se cambia el favicon, que ya tenía su espectro completo sin el recorte CSS.
+
+Estado final: publicado y verificado LIVE en390/1280 dark/light, paleta correcta, hover/reduced motion y sin overflow (694735). Logs de errores5min sin entradas (6c20e2), no garantía universal. Reserva liberada, siguiente Manuel revisión visual. Sin prueba en móvil físico.
