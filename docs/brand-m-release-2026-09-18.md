@@ -22,4 +22,10 @@ Base anterior: `9364385`; producción anterior: `dpl_Gga3sP4GDanfjkfjARYj5Q4GBHW
 
 Navegador local: PASS 390/768/1280 en dark/light; imagen cargada, marca visible en su contexto, assets y favicon HTTP 200, sin overflow ni errores de página, apertura/cierre Escape del menú móvil. Capturas móvil dark/light y escritorio compacto inspeccionadas. SVG 178 bytes; ICO 895 bytes (anterior 5641).
 
-Estado: verificado localmente, preparado para publicación. La aceptación estética definitiva corresponde a Manuel.
+## Publicación
+
+Implementación `3882643`, enviada a origin. CI `35344388467`: validate y owner SUCCESS. Preview `dpl_6T3WY7HLDzEiy5X9oPtFZUAhHD7a` READY; reconstrucción con entorno production `dpl_2WzccPTYXvSEFKPXxrupLGTaZbLA` READY y alias `manuelgarciallera.com` confirmado. Consulta de errores de los últimos 5 minutos sin entradas (no garantiza ausencia universal de errores).
+
+Prueba LIVE en el dominio: los seis escenarios 390/768/1280 dark/light PASS, mismos controles de asset/favicon, marca visible, menú móvil, ausencia de overflow y errores de página. No prueba en dispositivo físico.
+
+Estado: publicado y verificado LIVE. La aceptación estética definitiva corresponde a Manuel.
