@@ -24,4 +24,12 @@ Referencias: fotografías propias 694d631f/1,3,5 y M aprobada e77d963c/3. Recons
 - `verify-brand-navigation.mjs`: GREEN retorno arriba en misma ruta y retorno desde Sobre mí.
 - `verify-brand-reveal.mjs`: verifica temas, apertura/cierre hover, posiciones de navegación, teclado real Tab/Shift+Tab, movimiento reducido, ausencia de animación móvil/errores/overflow. Evidencia visual en `.audit/brand-reveal`.
 
-Navegador local: seis escenarios 390/768/1280 dark/light PASS, incluidos teclado real y movimiento reducido. Capturas dark móvil, hover768/1280 dark y hover1280 light inspeccionadas. No equivale a prueba en móvil físico. Publicación pendiente; aceptación estética final: Manuel.
+Navegador local: seis escenarios 390/768/1280 dark/light PASS, incluidos teclado real y movimiento reducido. Capturas dark móvil, hover768/1280 dark y hover1280 light inspeccionadas. No equivale a prueba en móvil físico.
+
+## Publicación
+
+Commit `0eb8dfa` enviado a origin. CI `35347188610`: validate y owner SUCCESS. Preview `dpl_BWpMFSsmTgKS9D913oLj4gjA6hvw` READY (clonado tardó 3m20s, compilación correcta). Reconstrucción con entorno production `dpl_2s6QtUKR2W4ChbffD5eLr3XSG3Wc` READY y alias `manuelgarciallera.com` confirmado.
+
+Prueba LIVE del clic: PASS regreso al inicio en home y desde Sobre mí (504297). Aceptación estética final: Manuel. Reversión: revertir únicamente `0eb8dfa` o restaurar el despliegue anterior citado arriba, preservando mejoras posteriores.
+
+Prueba LIVE visual/funcional: seis escenarios 390/768/1280 dark/light PASS (c056ad), con hover, teclado, reduced motion, posición de enlaces, sin overflow ni errores de página. Logs de errores últimos5min: sin entradas (735289), no garantía universal de ausencia de errores. Reserva de marca liberada; siguiente responsable Manuel para valoración visual.
