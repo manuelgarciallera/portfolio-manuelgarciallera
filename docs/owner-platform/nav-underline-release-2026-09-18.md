@@ -4,7 +4,9 @@
 
 Sobre la captura de Proyectos pide bajar un poco la línea y dejar huecos en descendentes. Base f78885c, reserva f77e4edd. CSS0.06→0.10em, skip-ink none→auto; color/grosor/layout intactos. Prueba actualizada RED contra producción anterior f26c0a; GREEN build real Chromium9b1b9d y Firefox49ca58: cuatro anchuras, dos temas, cajas intactas, CV/Escape conservados. Capturas390 en ambos navegadores revisadas. No prueba en teléfono físico.
 
-Primer build falló por descarga transitoria Google Fonts c67542; reintento sin cambios de fuentes PASS947d3b, TypeScript/30páginas. Responsive/lint/diff PASS, presupuesto72460b sin incremento JS ni baseline. Pendiente commit/publicación/LIVE de este refinamiento. Revertir solo el nuevo commit para recuperar línea continua previa.
+Primer build falló por descarga transitoria Google Fonts c67542; reintento sin cambios de fuentes PASS947d3b, TypeScript/30páginas. Responsive/lint/diff PASS, presupuesto72460b sin incremento JS ni baseline.
+
+Refinamiento publicado: `2154142` commit/push. Preview63RgBfM9Gbqo7bsfo2k1e56nBpa5 READY; producción `dpl_FDKgq8kEgLQ9WLScekNVuibCUwjx` READY/alias629a20. LIVE Firefox cuatroanchuras/dostemas PASS c810f0. Logs error5min sin entradas ce5cbe. CI35334152902 validateSUCCESS, owner todavía en curso al entregar, sin cambios owner. Reserva f77e4edd liberada. Revertir solo2154142 para recuperar línea continua previa. Siguiente Manuel revisión visual en teléfono.
 
 ## Entrega anterior (histórico)
 
