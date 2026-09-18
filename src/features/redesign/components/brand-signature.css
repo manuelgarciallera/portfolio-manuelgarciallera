@@ -1,0 +1,38 @@
+/* Motion stays inside the existing brand slot: no navigation reflow. */
+.rd-brand .rd-brand-monogram { overflow: visible; justify-items: start; }
+.rd-brand-signature { display: inline-flex; align-items: center; height: 2.25rem; color: #fff; }
+[data-theme="light"] .rd-brand-signature { color: #000; }
+.rd-brand-m { position: relative; display: block; flex: 0 0 2.25rem; width: 2.25rem; height: 2.25rem; }
+.rd-brand-m svg { display: block; width: 100%; height: 100%; }
+.rd-brand-m-color {
+  position: absolute; inset: 0; clip-path: polygon(6.25% 6.25%, 93.75% 6.25%, 93.75% 93.75%);
+  background: linear-gradient(125deg, #22d3ee 0%, #3874ff 32%, #a56bff 66%, #e879d4 84%, #22d3ee 100%);
+  background-size: 240% 240%; background-position: 25% 50%;
+}
+.rd-brand-letters { display: none; }
+@keyframes rd-brand-spectrum { 0%, 100% { background-position: 25% 50%; } 50% { background-position: 95% 50%; } }
+@media (min-width: 768px) {
+  .rd-brand-letters { display: inline-flex; gap: .125rem; width: 0; overflow: hidden; pointer-events: none; transition: width 480ms ease; }
+  .rd-brand-letter { flex: 0 0 2.25rem; width: 2.25rem; height: 2.25rem; opacity: 0; clip-path: inset(0 100% 0 0); transition: opacity 180ms ease, clip-path 320ms ease; }
+  .rd-brand:focus-visible .rd-brand-wordmark { opacity: 0; pointer-events: none; }
+  .rd-brand:focus-visible .rd-brand-monogram { opacity: 1; transform: none; }
+  .rd-brand:focus-visible .rd-brand-letters { width: 7rem; }
+  .rd-brand:focus-visible .rd-brand-letter { opacity: 1; clip-path: inset(0); }
+  .rd-brand:focus-visible .rd-brand-letter:nth-child(2) { transition-delay: 100ms; }
+  .rd-brand:focus-visible .rd-brand-letter:nth-child(3) { transition-delay: 200ms; }
+  .rd-brand:focus-visible .rd-brand-m-color { animation: rd-brand-spectrum 3.6s ease-in-out infinite; }
+}
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .rd-brand:hover .rd-brand-wordmark { opacity: 0; pointer-events: none; }
+  .rd-brand:hover .rd-brand-monogram { opacity: 1; transform: none; }
+  .rd-brand:hover .rd-brand-letters { width: 7rem; }
+  .rd-brand:hover .rd-brand-letter { opacity: 1; clip-path: inset(0); }
+  .rd-brand:hover .rd-brand-letter:nth-child(2) { transition-delay: 100ms; }
+  .rd-brand:hover .rd-brand-letter:nth-child(3) { transition-delay: 200ms; }
+  .rd-brand:hover .rd-brand-m-color { animation: rd-brand-spectrum 3.6s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rd-brand:is(:hover, :focus-visible) .rd-brand-m-color { animation: none; }
+  .rd-brand .rd-brand-letters, .rd-brand .rd-brand-letter,
+  .rd-brand .rd-brand-wordmark, .rd-brand .rd-brand-monogram { transition: none; }
+}

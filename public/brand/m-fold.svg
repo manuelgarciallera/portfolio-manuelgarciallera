@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <path fill="#2458E6" d="M4 4H60V60Z"/>
-  <path fill="#22B8D6" d="M4 4L32 32L4 60Z"/>
+  <style>.neutral{fill:#000}@media(prefers-color-scheme:dark){.neutral{fill:#fff}}</style>
+  <defs><linearGradient id="spectrum" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset=".4" stop-color="#3874ff"/><stop offset=".75" stop-color="#a56bff"/><stop offset="1" stop-color="#e879d4"/></linearGradient></defs>
+  <path fill="url(#spectrum)" d="M4 4H60V60Z"/>
+  <path class="neutral" d="M4 4L32 32L4 60Z"/>
 </svg>

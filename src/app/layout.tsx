@@ -67,8 +67,8 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   icons: {
     icon: [
-      { url: "/favicon.ico?v=m-fold-20260918", type: "image/x-icon" },
-      { url: "/brand/m-fold.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon.ico?v=m-spectrum-20260918", type: "image/x-icon" },
+      { url: "/brand/m-fold.svg?v=spectrum", type: "image/svg+xml", sizes: "any" },
     ],
   },
   openGraph: {
