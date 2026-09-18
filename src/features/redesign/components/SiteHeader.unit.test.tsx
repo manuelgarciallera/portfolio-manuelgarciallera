@@ -4,6 +4,14 @@ import { describe, expect, it } from 'vitest'
 import { SiteHeader } from './SiteHeader'
 
 describe('SiteHeader', () => {
+  it('offers both direct CV downloads only inside mobile navigation', () => {
+    const markup = renderToStaticMarkup(<SiteHeader isDark onToggleTheme={() => undefined} />)
+    const mobile = markup.split('id="mobile-navigation"')[1]
+    const desktop = markup.split('id="mobile-navigation"')[0]
+    expect(mobile).toContain('Descargar CV')
+    expect(mobile.match(/download="[^"]+\.pdf"/g)).toHaveLength(2)
+    expect(desktop).not.toContain('Descargar CV')
+  })
   it('exposes an icon-only theme control with an accessible name', () => {
     const markup = renderToStaticMarkup(<SiteHeader isDark={false} onToggleTheme={() => undefined} forceVisible />)
 

@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { PROFILE_LINKS } from '../../../lib/site-config'
+import { CvDownloads } from '../about/CvDownloads'
 import '../responsive.css'
+import './mobile-cv.css'
 
 const NAV_ITEMS = [
   { href: '/casos', label: 'Proyectos' },
@@ -53,8 +55,9 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const focusable = Array.from(mobileNavRef.current?.querySelectorAll<HTMLElement>('a, button') ?? [])
-    focusable[0]?.focus()
+    const getFocusable = () => Array.from(mobileNavRef.current?.querySelectorAll<HTMLElement>('a, button, summary') ?? [])
+      .filter((element) => element.getClientRects().length > 0)
+    getFocusable()[0]?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -62,7 +65,9 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
         menuButtonRef.current?.focus()
         return
       }
-      if (event.key !== 'Tab' || focusable.length === 0) return
+      if (event.key !== 'Tab') return
+      const focusable = getFocusable()
+      if (focusable.length === 0) return
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
       if (event.shiftKey && document.activeElement === first) {
@@ -142,9 +147,12 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
           <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer" onClick={closeMenu}>LinkedIn ↗</a>
           <Link className="rd-mobile-nav-contact" href="/#contacto" onClick={closeMenu}>Contacto</Link>
         </div>
-        <button type="button" className="rd-theme-btn" aria-label={themeLabel} title={themeLabel} onClick={onToggleTheme}>
-          {themeIcon}
-        </button>
+        <div className="rd-mobile-nav-utilities">
+          <CvDownloads />
+          <button type="button" className="rd-theme-btn" aria-label={themeLabel} title={themeLabel} onClick={onToggleTheme}>
+            {themeIcon}
+          </button>
+        </div>
       </nav>
     </header>
     </Fragment>

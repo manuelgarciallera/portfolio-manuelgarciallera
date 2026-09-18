@@ -1,0 +1,20 @@
+/* Keep downloads in the mobile menu, without changing the desktop header. */
+@media (max-width: 1179px) {
+  .rd-header .rd-mobile-nav {
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    gap: 1.5rem;
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+
+  .rd-mobile-nav > * { flex-shrink: 0; }
+
+  .rd-mobile-nav-utilities {
+    display: grid;
+    gap: 1.5rem;
+    width: 100%;
+    justify-items: start;
+  }
+}
