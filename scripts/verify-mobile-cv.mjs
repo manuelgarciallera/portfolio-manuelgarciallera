@@ -28,7 +28,8 @@ try {
         await link.click()
         const download = await downloadPromise
         assert.equal(await download.failure(), null)
-        assert.match(download.suggestedFilename(), /Manuel-Garcia-Llera-CV-(ES|EN)-2026-09-07\.pdf/)
+        // The production Content-Disposition takes precedence over the HTML download name.
+        assert.match(download.suggestedFilename(), /Manuel-Garcia-Llera-CV-(ES|EN)-2026-09-07\.pdf/i)
       }
       await summary.focus()
       await page.keyboard.press('Tab')

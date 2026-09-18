@@ -22,7 +22,11 @@ Manuel aprueba probar «Descargar CV» en el menú móvil y poder volver atrás.
 
 ## Publicación y vuelta atrás
 
-Pendiente de commit, CI y LIVE. Producción anterior a esta prueba: `dpl_7Tgi8U59Smf3za12qrr8RnnHVdJo`, runtime `5b6be4f` (conserva las portadas grandes del blog). Para deshacer solo esta prueba, revertir su commit, no restaurar el antiguo checkpoint del Hero.
+Implementación `a35c461`, commit y push. CI `35332079958`: validate y owner SUCCESS. Preview `dpl_Ciag4WY8H2GzV5uzJ35StMs2wbfW` READY; redeploy producción `dpl_7fg98SVJefWn5WFzQ6GF27MTPzmS` READY, alias `https://manuelgarciallera.com` actualizado.
+
+LIVE: mismo ensayo Chromium 3 rutas / 4 anchuras PASS (`3e8b29`), ambos temas, teclado, descargas y About/desktop preservados. Primera ejecución rechazó solo el nombre sugerido del fichero: Content-Disposition de producción usa minúsculas. Corregido el test para aceptar el mismo nombre sin distinguir mayúsculas; runtime sin cambios. Ambos PDF HTTP200/application/pdf, prefijo %PDF y SHA256 iguales a los originales (`62aac0`). CI completa SUCCESS (`98d2e3`).
+
+Producción anterior a esta prueba: `dpl_7Tgi8U59Smf3za12qrr8RnnHVdJo`, runtime `5b6be4f` (conserva las portadas grandes del blog). Para deshacer solo esta prueba, revertir `a35c461`, no restaurar el antiguo checkpoint del Hero.
 
 ## LinkedIn
 
@@ -32,4 +36,4 @@ Ayuda oficial consultada el 18/09/2026: el antiguo enlace de Creator Mode ya no 
 - https://www.linkedin.com/help/linkedin/answer/a727760
 - https://www.linkedin.com/help/linkedin/answer/a548010
 
-Siguiente responsable: Codex publicar y verificar; Manuel revisar el ensayo. CMS sigue bloqueado por sus gates operativos, fuera del alcance.
+Siguiente responsable: Manuel revisar el ensayo publicado. Reserva de implementación liberada mediante mensaje de cierre al Hub. CMS sigue bloqueado por sus gates operativos, fuera del alcance.
