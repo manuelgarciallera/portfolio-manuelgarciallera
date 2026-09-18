@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
-import { chromium } from 'playwright'
+import { chromium, firefox } from 'playwright'
 
 const base = process.env.HERO_TEST_URL || 'http://localhost:3040'
 const baseline = process.env.ORB_BASELINE_URL || 'https://manuelgarciallera.com'
 await mkdir('.audit/orb-bounds', { recursive: true })
-const browser = await chromium.launch()
+const browser = await (process.env.HERO_TEST_BROWSER === 'firefox' ? firefox : chromium).launch()
 try {
-  for (const width of [390, 768, 1024, 1280, 1920]) {
+  for (const width of (process.env.ORB_TEST_WIDTHS || '390,768,1024,1280,1920').split(',').map(Number)) {
     const measurements = []
     for (const url of [baseline, base]) {
       const page = await browser.newPage({ viewport: { width, height: 800 } })

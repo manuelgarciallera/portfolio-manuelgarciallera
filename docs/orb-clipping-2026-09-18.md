@@ -60,5 +60,17 @@ pixels are skipped. The signed-distance function and all shading remain intact.
   Empty-area early exit reduces the cost without changing a rendered pixel.
 - No dependencies added; public bundle budget passes without raising baseline.
 
-Commit/publication pending final smoke checks. Rollback is a scoped revert of
-this correction, not a reset of the shared worktree.
+## Release
+
+- Runtime commit `3b3ecee`, pushed to `codex/checkpoint-pre-editor-2026-09-04`.
+- CI `35340091196`: validate and owner both SUCCESS.
+- Production `dpl_Gga3sP4GDanfjkfjARYj5Q4GBHWc` READY, canonical alias
+  `https://manuelgarciallera.com` confirmed 2026-09-18.
+- LIVE Firefox 390/1280 checks: expanded frame present, no horizontal page
+  overflow, liquid scale/layout equal to verified build. Error-log scan for
+  five minutes: no entries. This is a bounded check, not ongoing monitoring.
+- Reduced-motion/static fallback layout: six viewport profiles PASS.
+- Cached layout/real resize and hover/held click/exit/blur: PASS.
+- Previous production: `dpl_FDKgq8kEgLQ9WLScekNVuibCUwjx`. Rollback can target
+  that deployment or a scoped revert of this correction; never reset the
+  shared worktree. All unrelated edits preserved.
