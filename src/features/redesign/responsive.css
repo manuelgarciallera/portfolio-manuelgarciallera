@@ -13,8 +13,8 @@
 .rd-desktop-nav a[aria-current='page'] {
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.06em;
-  text-decoration-skip-ink: none;
+  text-underline-offset: 0.1em;
+  text-decoration-skip-ink: auto;
 }
 .rd-desktop-nav a[aria-current='page'] { text-decoration-color: var(--accent); }
 .rd-desktop-nav a[aria-current='page']::after { display: none; }

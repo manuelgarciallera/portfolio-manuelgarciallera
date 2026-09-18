@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
-import { chromium } from 'playwright'
+import { chromium, firefox } from 'playwright'
 
-const browser = await chromium.launch()
+const browserName = process.env.TEST_BROWSER === 'firefox' ? 'firefox' : 'chromium'
+const browser = await (browserName === 'firefox' ? firefox : chromium).launch()
 const base = process.env.HERO_TEST_URL || 'https://manuelgarciallera.com'
 await mkdir('.audit/nav-underline', { recursive: true })
 try {
@@ -20,14 +21,14 @@ try {
         const s = getComputedStyle(el)
         return { offset: parseFloat(s.textUnderlineOffset) / parseFloat(s.fontSize), skip: s.textDecorationSkipInk, line: s.textDecorationLine, thickness: s.textDecorationThickness }
       })
-      assert.ok(style.offset >= 0 && style.offset <= 0.1, `underline close to baseline at ${width}: ${JSON.stringify(style)}`)
-      assert.equal(style.skip, 'none')
+      assert.ok(style.offset >= 0.09 && style.offset <= 0.12, `underline slightly below baseline at ${width}: ${JSON.stringify(style)}`)
+      assert.equal(style.skip, 'auto')
       assert.equal(style.line, 'underline')
       assert.equal(style.thickness, '1px')
       const after = await active.boundingBox()
       assert.deepEqual(after, before, 'decoration must not move text')
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1))
-      await page.screenshot({ path: `.audit/nav-underline/${width}-${theme}.png` })
+      await page.screenshot({ path: `.audit/nav-underline/${browserName}-${width}-${theme}.png` })
       if (theme === 'initial') await nav.getByRole('button', { name: /Activar tema/ }).click()
     }
     if (mobile) {
@@ -37,5 +38,5 @@ try {
     }
     await page.close()
   }
-  console.log('PASS active underline: baseline proximity, continuous 1px line, unchanged geometry, 4 widths/2 themes, CV and Escape retained')
+  console.log('PASS active underline: slight baseline offset, descender gaps, 1px thickness, unchanged geometry, 4 widths/2 themes, CV and Escape retained')
 } finally { await browser.close() }
