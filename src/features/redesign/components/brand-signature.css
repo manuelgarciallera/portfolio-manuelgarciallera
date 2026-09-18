@@ -15,6 +15,14 @@
   0%, 100% { background-size: 100% 100%; background-position: 0% 0%; }
   50% { background-size: 112% 112%; background-position: 100% 100%; }
 }
+@keyframes rd-brand-touch-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  35% { filter: drop-shadow(-2px -1px 4px rgb(34 211 238 / .4)) drop-shadow(2px 1px 4px rgb(232 121 212 / .4)); }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .rd-brand-signature[data-touch-active="true"] .rd-brand-m-color { animation: rd-brand-spectrum 600ms ease-in-out; }
+  .rd-brand-signature[data-touch-active="true"] .rd-brand-m { animation: rd-brand-touch-glow 600ms ease-out; }
+}
 @media (min-width: 768px) {
   .rd-brand-letters { display: inline-flex; gap: .125rem; width: 0; overflow: hidden; pointer-events: none; transition: width 480ms ease; }
   .rd-brand-letter { flex: 0 0 2.25rem; width: 2.25rem; height: 2.25rem; opacity: 0; clip-path: inset(0 100% 0 0); transition: opacity 180ms ease, clip-path 320ms ease; }
