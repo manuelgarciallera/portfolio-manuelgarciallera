@@ -15,9 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     id: SITE_URL,
     icons: [
       {
-        src: "/favicon.ico",
+        src: "/brand/m-fold.svg",
         sizes: "any",
-        type: "image/x-icon",
+        type: "image/svg+xml",
       },
     ],
   };

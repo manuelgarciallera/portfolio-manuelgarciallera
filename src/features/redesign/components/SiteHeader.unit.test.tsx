@@ -33,7 +33,8 @@ describe('SiteHeader', () => {
 
     expect(markup).toContain('aria-label="Manuel García-Llera / Product Designer · Design Engineer"')
     expect(markup).toContain('rd-brand-monogram')
-    expect(markup).toContain('>MG<')
+    expect(markup).toContain('src="/brand/m-fold.svg"')
+    expect(markup).not.toContain('>MG<')
     expect(markup).not.toContain('rd-brand-facet')
     expect(markup).toContain('Proyectos')
     expect(markup).toContain('Investigación')

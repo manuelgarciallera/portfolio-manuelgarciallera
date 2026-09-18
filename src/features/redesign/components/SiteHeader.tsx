@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { PROFILE_LINKS } from '../../../lib/site-config'
@@ -104,7 +105,7 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
     <header data-scroll-behavior="reveal-up" className={`rd-header${visible || menuOpen ? ' is-visible' : ''}${compact ? ' is-compact' : ''}${menuOpen ? ' menu-open' : ''}`}>
       <Link className="rd-brand" href="/" aria-label="Manuel García-Llera / Product Designer · Design Engineer">
         <span className="rd-brand-wordmark">Manuel García-Llera <em>/ Product Designer · Design Engineer</em></span>
-        <span className="rd-brand-monogram" aria-hidden="true">MG</span>
+        <span className="rd-brand-monogram" aria-hidden="true"><Image src="/brand/m-fold.svg" width={36} height={36} alt="" unoptimized /></span>
       </Link>
       <nav className="rd-nav rd-desktop-nav" aria-label="Principal">
         {NAV_ITEMS.map((item) => (

@@ -66,7 +66,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   applicationName: SITE_NAME,
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico?v=m-fold-20260918", type: "image/x-icon" },
+      { url: "/brand/m-fold.svg", type: "image/svg+xml", sizes: "any" },
+    ],
   },
   openGraph: {
     type: "website",

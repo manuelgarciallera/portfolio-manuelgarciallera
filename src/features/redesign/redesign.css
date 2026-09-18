@@ -130,12 +130,14 @@
 .rd-brand-wordmark { white-space: nowrap; transition: opacity 180ms ease, transform 350ms var(--ease-out); }
 .rd-brand em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent); }
 .rd-brand-monogram {
-  width: 2.3rem; height: 1.8rem; display: inline-grid; place-items: center;
+  width: 2.3rem; height: 2.3rem; display: inline-grid; place-items: center;
   overflow: hidden; opacity: 0; transform: translateX(-0.35rem) scale(0.84);
-  color: #fff; background: #090a09; border: 1px solid rgb(255 255 255 / 0.26); border-radius: 0.2rem 0.75rem 0.2rem 0.2rem;
+  background: transparent; border: 0;
   font-size: 0.78rem; font-weight: 800; letter-spacing: -0.12em; line-height: 1;
   transition: opacity 180ms ease, transform 350ms var(--ease-out);
 }
+.rd-brand-monogram img { display: block; width: 2.25rem; height: 2.25rem; }
+.rd-brand:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 2px; }
 .rd-header.is-compact .rd-brand-wordmark { opacity: 0; pointer-events: none; transform: translateX(-0.35rem); }
 .rd-header.is-compact .rd-brand-monogram { opacity: 1; transform: none; }
 
@@ -1939,12 +1941,6 @@
     height: 2.45rem;
     font-size: .95rem;
     transition: color 180ms ease, border-color 180ms ease, box-shadow 300ms ease, transform 300ms var(--ease-out), opacity 180ms ease;
-  }
-  .rd-brand:hover .rd-brand-monogram {
-    color: var(--crystal-lilac);
-    border-color: color-mix(in srgb, var(--crystal-lilac) 78%, transparent);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--crystal-lilac) 12%, transparent), 0 .65rem 1.6rem rgb(0 0 0 / .18);
-    transform: translateY(-2px) rotate(-2deg);
   }
   .rd-section:not(.rd-section--banner) { padding-inline: var(--desktop-axis); }
   .rd-now { padding-inline: var(--desktop-axis); }

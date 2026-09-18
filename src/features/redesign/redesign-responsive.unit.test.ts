@@ -274,7 +274,6 @@ describe('case-study responsive safeguards', () => {
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\.rd-desktop-nav\s+a:not\(\.rd-nav-contact\)\s*\{[^}]*font-size:\s*\.96rem/)
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\.rd-desktop-nav \.rd-nav-contact\s*\{[^}]*font-size:\s*\.92rem/)
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\.rd-brand-monogram\s*\{[^}]*width:\s*3rem[^}]*height:\s*2\.45rem/)
-    expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\.rd-brand:hover \.rd-brand-monogram\s*\{[^}]*color:\s*var\(--crystal-lilac\)/)
     expect(css).toMatch(/@media \(min-width: 768px\)[\s\S]*\.rd-brand-wordmark\s*\{[^}]*font-size:\s*clamp\(1\.05rem,\s*1\.15vw,\s*1\.12rem\)/)
   })
 
