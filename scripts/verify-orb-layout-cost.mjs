@@ -27,7 +27,8 @@ try {
   await canvas.evaluate(e=>e.style.setProperty('width','160px','important'))
   await page.waitForFunction(()=>{
    const c=document.querySelector('.rd-hero-canvas')
-   const r=c.getBoundingClientRect(),ratio=Math.min(1.25,(innerWidth<768?384:560)/Math.max(r.width,r.height))
+   const r=c.getBoundingClientRect(),overscan=parseFloat(getComputedStyle(c).getPropertyValue('--orb-overscan'))||1
+   const ratio=Math.min(1.25,(innerWidth<768?384:560)*overscan/Math.max(r.width,r.height))
    return c.width===Math.round(160*ratio)&&c.height===Math.round(r.height*ratio)
   })
   const resized=await page.evaluate(()=>window.orbDraws)

@@ -57,6 +57,19 @@ export const ORB_FRAGMENT = `
       vec2 uv=(gl_FragCoord.xy*2.-resolution)/resolution.y;
       uv.y-=verticalOffset;
       vec3 origin=vec3(0.,0.,3.7), ray=normalize(vec3(uv,-cameraZoom));
+      // Safety-frame pixels outside the full animated envelope are transparent.
+      // Avoid ray-marching the newly exposed empty margin. Include held-touch
+      // displacement and a conservative subpixel-coverage allowance.
+      float envelope=1.045;
+      for(int i=0;i<3;i++){
+        float reach=.5+.5*sin(time*.8+float(i)*2.1);
+        envelope=-merge(-envelope,-(.91+.455*reach),.22);
+      }
+      for(int i=0;i<5;i++)envelope=-merge(-envelope,-1.348,.035);
+      envelope=max(1.438,envelope+.12*pressStrength+abs(.055*sin(time*.65)));
+      envelope+=20./(cameraZoom*resolution.y);
+      float closest=max(0.,-dot(origin,ray));
+      if(length(origin+ray*closest)>envelope){gl_FragColor=vec4(0.);return;}
       float travel=0.; vec3 p=origin; float distanceToSurface=1.;
       // Estimate subpixel silhouette coverage from the nearest ray approach.
       // MSAA on the full-screen quad cannot smooth a ray-marched boundary.

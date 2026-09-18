@@ -1,7 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { ORB_FRAGMENT, ORB_VERTEX } from './organic-orb-shaders'
+
+// Transparent safety frame only: reciprocal camera zoom preserves the liquid's
+// CSS size and pointer mapping. See docs/orb-clipping-2026-09-18.md for bounds.
+const ORB_OVERSCAN = 1.34
 
 interface HeroOrbCanvasProps {
   isDark: boolean
@@ -73,7 +77,7 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     const locate = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect()
       if (!rect.width || !rect.height) return false
-      const scale = 2.8 / (isCompact ? 2.5 : 2.6)
+      const scale = 2.8 / ((isCompact ? 2.5 : 2.6) / ORB_OVERSCAN)
       pressX = ((event.clientX - rect.left) * 2 - rect.width) / rect.height * scale
       pressY = (rect.height - (event.clientY - rect.top) * 2) / rect.height * scale
       return Math.hypot(pressX, pressY) <= 1.3
@@ -154,13 +158,15 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
       let rect = canvas.getBoundingClientRect()
       draw = (now) => {
         if (!rect.width || !rect.height || disposed) return
-        const ratio = Math.min(1.25, (isCompact ? 384 : 560) / Math.max(rect.width, rect.height))
+        // Retain the previous pixel density; extra transparent space must not
+        // trade away the silhouette's antialiasing or the liquid's definition.
+        const ratio = Math.min(1.25, (isCompact ? 384 : 560) * ORB_OVERSCAN / Math.max(rect.width, rect.height))
         const width = Math.max(1, Math.round(rect.width * ratio)), height = Math.max(1, Math.round(rect.height * ratio))
         if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height }
         gl.viewport(0, 0, width, height)
         gl.uniform2f(resolution, width, height); gl.uniform1f(time, elapsed)
         gl.uniform1f(theme, settings.current.isDark ? 0 : 1)
-        gl.uniform1f(zoom, isCompact ? 2.5 : 2.6)
+        gl.uniform1f(zoom, (isCompact ? 2.5 : 2.6) / ORB_OVERSCAN)
         gl.uniform1f(offset, 0)
         const age = Math.max(0, (now - pressAt) / 1000)
         gl.uniform2f(pressPoint, pressX, pressY)
@@ -206,5 +212,5 @@ export function HeroOrbCanvas({ isDark, reduceMotion, isCompact, onReady, onFail
     return dispose
   }, [isCompact])
 
-  return <canvas ref={canvasRef} className="rd-hero-canvas" aria-hidden="true" style={{ display: 'block' }} />
+  return <canvas ref={canvasRef} className="rd-hero-canvas" aria-hidden="true" style={{ display: 'block', '--orb-overscan': ORB_OVERSCAN } as CSSProperties} />
 }
