@@ -2,6 +2,12 @@
 
 ## Current status
 
+Current verification overrides historical advisory counts: the 2026-09-18
+owner production-dependency audit reports zero known vulnerabilities without
+lockfile changes. See [the current operational receipt](cms-operational-recheck-2026-09-18.md)
+for exact scope and pending verification. This clears that observed audit result,
+not the separate deployment, provider, backup, or public-bridge gates below.
+
 The owner platform is an isolated, local editorial slice. It is not deployed,
 does not change the public renderer, and has no production publish path. Its
 current purpose is to validate authenticated editing, drafts, versions,
