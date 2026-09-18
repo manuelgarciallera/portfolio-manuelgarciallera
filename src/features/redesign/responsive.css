@@ -9,7 +9,15 @@
   transform: translateY(-180%); transition: transform 180ms ease;
 }
 .rd-skip-link:focus { transform: none; }
-.rd-mobile-nav a[aria-current='page'] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.45em; }
+.rd-mobile-nav a[aria-current='page'],
+.rd-desktop-nav a[aria-current='page'] {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.06em;
+  text-decoration-skip-ink: none;
+}
+.rd-desktop-nav a[aria-current='page'] { text-decoration-color: var(--accent); }
+.rd-desktop-nav a[aria-current='page']::after { display: none; }
 .rd-cases-intro { display: grid; grid-template-columns: 0.65fr 1.35fr; gap: 2rem; align-items: start; }
 .rd-cases-intro > .rd-breadcrumbs,
 .rd-cases-intro > .rd-label { grid-column: 1 / -1; }
