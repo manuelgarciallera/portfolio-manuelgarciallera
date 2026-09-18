@@ -6,4 +6,6 @@ Prueba navegador `scripts/verify-nav-underline.mjs`: RED contra producción prev
 
 Build aislado30páginas/TypeScript PASS60d6e0, responsive PASSdc6bfc, eslint y diffcheck. Presupuesto PASS57e0e0 sin aumento JS respecto a CV anterior (delta0); baseline intacta. Inclusiones transitorias tsconfig retiradas. Sin prueba en teléfono físico.
 
-Pendiente publicación y LIVE. Reversión: revertir únicamente commit de este ajuste; producción anterior dpl_7fg98SVJefWn5WFzQ6GF27MTPzmS conserva CV. Siguiente Codex verificar despliegue, Manuel revisión visual.
+Publicado: commit/push `b9d196e`; preview HLwYPNSByJL77QeEhx2n1f4ikmmk READY, producción `dpl_ECN5FPy768f3bdqyhWAx9C44uud1` READY y alias manuelgarciallera.com confirmado721338/fe96aa. LIVE mismo ensayo4anchuras2temas PASS792ebc. Logs error últimos5min sin entradas3f0513. CI35333082382 validateSUCCESS; owner todavía en curso al entregar (sin cambios owner en este commit). No afirmar toda la CI terminada.
+
+Reversión: revertir únicamente `b9d196e`; producción anterior dpl_7fg98SVJefWn5WFzQ6GF27MTPzmS conserva CV. Reserva73125762 liberada. Siguiente Manuel revisión visual.
