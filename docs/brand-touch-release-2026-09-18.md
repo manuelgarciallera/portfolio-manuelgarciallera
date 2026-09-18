@@ -9,3 +9,5 @@ RED `verify-brand-touch.mjs` contra anterior: animationName none en vez de rd-br
 280 tests PASS, build30+tipos, ESLint focal/responsive PASS, presupuesto público sin incidencias. Toque nativo CDP y captura del halo inspeccionados (1685dd); sin cambios ajenos, Hero ni CMS. Cierre funcional/publicación pendiente. Para revertir, revertir solo el commit de esta tarea.
 
 GREEN funcional local (b2be96): pulso, halo, letras ocultas, timeout, pointercancel, movimiento reducido, toque nativo que navega a home y gesto nativo de arrastre iniciado sobre la marca que desplaza la página sin pulsar el enlace. Publicación pendiente.
+
+Estado final: publicado y verificado LIVE. Commit2b1e016 enviado a origin; CI35367134165 validate+owner SUCCESS. PreviewBskWMH1v1uHXj4A9QufTfBXh4KSM READY; producción dpl_9k3vLvmuKbrtPiZDY8JtbLT9SD8W READY y alias manuelgarciallera.com. Mismo ensayo completo LIVE PASS4e9682: efecto, apagado, cancelación, movimiento reducido, toque que navega y arrastre nativo que desplaza. Logs errores5min sin entradas83640d. Sin prueba en dispositivo físico. Reserva liberada; siguiente Manuel valorar intensidad.
