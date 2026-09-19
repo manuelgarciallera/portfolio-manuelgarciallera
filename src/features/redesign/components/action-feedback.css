@@ -1,0 +1,19 @@
+/* Shared CTA press recipe. Opt-in: do not add emphasis to secondary actions. */
+:root {
+  --rd-action-press-shadow: 0 0 0 4px rgb(167 139 250 / .22), 0 0 18px rgb(148 77 255 / .24);
+  --rd-action-release-duration: 180ms;
+}
+.rd-action-feedback { transition: box-shadow var(--rd-action-release-duration) ease; }
+/* The repeated class lets this state outrank component hover styles. */
+.rd-action-feedback.rd-action-feedback:active,
+.rd-action-feedback.rd-action-feedback[data-pressed='true'] {
+  box-shadow: var(--rd-action-press-shadow);
+  transition-duration: 60ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rd-action-feedback.rd-action-feedback { transition: none; }
+}
+@media (forced-colors: active) {
+  .rd-action-feedback.rd-action-feedback:active,
+  .rd-action-feedback.rd-action-feedback[data-pressed='true'] { outline: 2px solid Highlight; outline-offset: 3px; }
+}
