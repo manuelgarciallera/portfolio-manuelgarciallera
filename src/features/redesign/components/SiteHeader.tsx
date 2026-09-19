@@ -153,7 +153,10 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
             <Link href={item.href} key={item.href} aria-current={isCurrentPage(item.href) ? 'page' : undefined} onClick={closeMenu}>{item.label}</Link>
           ))}
           <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer" onClick={closeMenu}>LinkedIn ↗</a>
-          <Link className="rd-mobile-nav-contact" href="/#contacto" onClick={closeMenu}>Contacto</Link>
+          <Link className="rd-mobile-nav-contact" href="/#contacto" onClick={closeMenu}>
+            <span className="rd-cta-glow" aria-hidden="true" />
+            Contacto
+          </Link>
         </div>
         <div className="rd-mobile-nav-utilities">
           <CvDownloads />

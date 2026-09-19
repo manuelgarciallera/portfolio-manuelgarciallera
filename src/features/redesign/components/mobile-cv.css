@@ -5,7 +5,8 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
-    gap: 1.5rem;
+    gap: 2rem;
+    justify-content: flex-start;
     padding-bottom: max(2rem, env(safe-area-inset-bottom));
   }
 
@@ -17,4 +18,36 @@
     width: 100%;
     justify-items: start;
   }
+
+  .rd-mobile-nav .rd-mobile-nav-contact {
+    position: relative; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-sizing: border-box; min-height: 2.75rem;
+    padding: .7rem 1.15rem; border: 1px solid transparent;
+    border-radius: var(--radius-pill); background: var(--bg); color: var(--ink);
+    font-size: .875rem; line-height: 1.2; letter-spacing: .035em;
+  }
+  .rd-mobile-nav .rd-mobile-nav-contact::before {
+    content: ''; position: absolute; inset: 0; height: auto; transform: none;
+    z-index: -1; border-radius: inherit; padding: 1.5px; pointer-events: none;
+    background: conic-gradient(from var(--rd-cta-angle), #00d1ff, #944dff, #ff38ca, #944dff, #00d1ff);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .rd-mobile-nav-contact .rd-cta-glow { opacity: .4; filter: blur(3px); }
+  .rd-mobile-nav-contact .rd-cta-glow::before { animation: none; padding: 2px; }
+  .menu-open .rd-mobile-nav .rd-mobile-nav-contact::before,
+  .menu-open .rd-mobile-nav-contact .rd-cta-glow::before { animation: rd-cta-border-hover 10s linear infinite; }
+  .rd-mobile-nav .rd-mobile-nav-contact:focus-visible { outline: 2px solid var(--ink); outline-offset: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-open .rd-mobile-nav .rd-mobile-nav-contact::before,
+  .menu-open .rd-mobile-nav-contact .rd-cta-glow::before { animation: none; }
+}
+@media (forced-colors: active) {
+  .rd-mobile-nav .rd-mobile-nav-contact { border: 1px solid ButtonText; }
+  .rd-mobile-nav .rd-mobile-nav-contact::before,
+  .rd-mobile-nav-contact .rd-cta-glow { display: none; }
 }
