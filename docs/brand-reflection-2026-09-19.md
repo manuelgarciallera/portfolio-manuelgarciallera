@@ -18,4 +18,8 @@ La prueba del ciclo opaco se sustituye por `verify-brand-reflection.mjs`; el his
 
 - Repetición secuencial PASS en 390/768/1280 dark/light, hover/foco/layout/sin errores (cierre `ff8ee8`). Captura integrada del halo por toque nativo PASS `ee2457`, revisada visualmente.
 
-Pendiente commit y publicación. No probado en teléfono físico. Próximo: Codex cierre; Manuel valoración visual.
+## Publicación
+
+Commit `c0fea21` empujado; CI `35440498047` owner+validate SUCCESS (`121736`). Preview `2tG6DJ68WHLfBBpptEhqnbTq3rux` READY. Producción `dpl_HgbNCpzHEmpcKQQgUBUJd52ePzy6` READY (`153b43`) y alias `manuelgarciallera.com` confirmado (`946191`). LIVE gestos/reflejo/cancelación/reduced motion/navegación PASS `cea226`; logs ERROR últimos 5min sin entradas `c14923`.
+
+Servidor local propio detenido. Reserva `046f7db8` liberada. No probado en teléfono físico. Siguiente: Manuel valoración visual. Reversible por Git; no se han tocado los cambios ajenos.
