@@ -155,7 +155,7 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
             <Link href={item.href} key={item.href} aria-current={isCurrentPage(item.href) ? 'page' : undefined} onClick={closeMenu}>{item.label}</Link>
           ))}
           <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer" onClick={closeMenu}>LinkedIn ↗</a>
-              <Link {...actionFeedback} className="rd-mobile-nav-contact rd-action-feedback" href="/#contacto" onClick={closeMenu}>
+          <Link {...actionFeedback} className="rd-mobile-nav-contact rd-action-feedback" href="/#contacto" onClick={closeMenu}>
             <span className="rd-cta-glow" aria-hidden="true" />
             Contacto
           </Link>

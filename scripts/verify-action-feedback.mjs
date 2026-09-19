@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { mkdir } from 'node:fs/promises'
 import {chromium} from 'playwright'
 const browser = await chromium.launch()
 const base = process.argv[2] || 'http://localhost:3040'
@@ -18,6 +19,10 @@ try {
     const during = await target.evaluate(e=>getComputedStyle(e).boxShadow)
     assert.notEqual(during,before,'press visibly changes the shadow')
     pressed.push(during)
+    if (selector.includes('nav')) {
+      await mkdir('.audit/action-feedback', { recursive: true })
+      await page.screenshot({path:'.audit/action-feedback/pressed.png'})
+    }
     assert.deepEqual(await target.boundingBox(),bounds,'feedback does not move the target')
     await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]})
     await page.waitForTimeout(400)
