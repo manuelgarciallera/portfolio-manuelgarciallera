@@ -19,4 +19,8 @@ Manuel aprueba: borde tipo Hero solo en Contacto interior, giro lento/halo suave
 
 - GREEN integrado: 320/390/768 en ambos temas, CV ES/EN desplegable, cápsula táctil, gap32, Contacto superior intacto, reduced motion, cierre/navegación/Escape y escritorio1280 PASS (`ed4dca`). Capturas 390 dark y 320 light inspeccionadas; el azul del CV en la segunda es su hover existente tras la prueba, no animación añadida. ESLint final PASS `b9dfc0`.
 
-Pendiente commit/publicación. Validación emulada, no teléfono físico. Próximo Codex cierre; Manuel valoración visual.
+## Cierre publicado
+
+Commit `688dbde` empujado. CI `35448329451`: owner/validate SUCCESS (`d2e186`). Preview `BGzdUGf6tVjuBbXejYuAcaAMuGMg` READY; producción `dpl_FvBh1sXNjpouAXB7i4z96x9qttaA` READY y alias `manuelgarciallera.com` (`fe08e3`). LIVE seis combinaciones móvil/tema y desktop PASS (`9a3204`), logs ERROR últimos 5min sin entradas (`0a316d`). Servidor local propio detenido. Reserva `e45942ed` liberada. Documentos ajenos preservados y registro mixto no incluido en commit.
+
+Validación emulada, no teléfono físico. Siguiente: Manuel valoración visual; base `fe5cf28` recuperable.
