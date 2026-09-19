@@ -9,28 +9,29 @@ try {
   const color = page.locator('.rd-brand-m-color')
   await page.waitForTimeout(800)
   // Capture the short pulse within the browser: separate protocol round trips
-  // can outlast 600ms while software WebGL renders the Hero in headless CI.
+  // can outlast the pulse while software WebGL renders the Hero in headless CI.
   const response = await signature.evaluate(async e => {
     e.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true, pointerType:'touch', isPrimary:true }))
     await new Promise(resolve => setTimeout(resolve, 30))
     return {
-      gradient: getComputedStyle(e.querySelector('.rd-brand-m-color')).animationName,
+      gradient: getComputedStyle(e.querySelector('.rd-brand-m-color'), '::after').animationName,
       halo: getComputedStyle(e.querySelector('.rd-brand-m')).animationName,
       letters: getComputedStyle(e.querySelector('.rd-brand-letters')).display,
     }
   })
-  assert.equal(response.gradient, 'rd-brand-spectrum', 'touch starts gradient feedback')
+  assert.equal(response.gradient, 'rd-brand-touch-cycle', 'touch starts a complete gradient cycle')
   assert.equal(response.halo, 'rd-brand-touch-glow', 'touch starts subtle halo')
   assert.equal(response.letters, 'none')
-  await page.waitForTimeout(700)
-  assert.equal(await color.evaluate(e => getComputedStyle(e).animationName), 'none', 'held touch does not leave a sticky effect')
+  await page.waitForTimeout(1300)
+  assert.equal(await signature.getAttribute('data-touch-active'), 'false', 'cycle clears after holding')
+  assert.equal(await color.evaluate(e => getComputedStyle(e, '::after').animationName), 'none', 'held touch does not leave a sticky effect')
   await signature.dispatchEvent('pointerdown', { pointerType: 'touch', isPrimary: true })
   await signature.dispatchEvent('pointercancel', { pointerType: 'touch' })
   await page.waitForTimeout(50)
-  assert.equal(await color.evaluate(e => getComputedStyle(e).animationName), 'none', 'scroll cancellation clears feedback')
+  assert.equal(await color.evaluate(e => getComputedStyle(e, '::after').animationName), 'none', 'scroll cancellation clears feedback')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await signature.dispatchEvent('pointerdown', { pointerType: 'touch', isPrimary: true })
-  assert.equal(await color.evaluate(e => getComputedStyle(e).animationName), 'none')
+  assert.equal(await color.evaluate(e => getComputedStyle(e, '::after').animationName), 'none')
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto(`${base}/sobre-mi`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)

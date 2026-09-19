@@ -19,7 +19,7 @@ export function BrandSignature() {
         window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
       clearTimeout(timer.current)
       setTouchActive(true)
-      timer.current = setTimeout(endTouch, 600)
+      timer.current = setTimeout(endTouch, 1200)
     }}
     onPointerCancel={endTouch}>
     <span className="rd-brand-m">

@@ -17,11 +17,23 @@
 }
 @keyframes rd-brand-touch-glow {
   0%, 100% { filter: drop-shadow(0 0 0 transparent); }
-  35% { filter: drop-shadow(-2px -1px 4px rgb(34 211 238 / .4)) drop-shadow(2px 1px 4px rgb(232 121 212 / .4)); }
+  25%, 65% { filter: drop-shadow(-2px -1px 6px rgb(34 211 238 / .75)) drop-shadow(2px 1px 6px rgb(232 121 212 / .7)); }
+}
+@keyframes rd-brand-touch-cycle {
+  0% { transform: translateX(-50%); opacity: 0; }
+  8%, 92% { opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
 }
 @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
-  .rd-brand-signature[data-touch-active="true"] .rd-brand-m-color { animation: rd-brand-spectrum 600ms ease-in-out; }
-  .rd-brand-signature[data-touch-active="true"] .rd-brand-m { animation: rd-brand-touch-glow 600ms ease-out; }
+  /* Two identical tiles: one leaves as the next enters. The resting facet
+     stays underneath, so fading the endpoints never changes its palette. */
+  .rd-brand-signature[data-touch-active="true"] .rd-brand-m-color::after {
+    content: ''; position: absolute; inset: 0 auto 0 0; width: 200%; pointer-events: none;
+    background-image: linear-gradient(135deg, #22d3ee 8%, #3874ff 32%, #a56bff 54%, #e879d4 74%);
+    background-size: 50% 100%; background-repeat: repeat-x;
+    animation: rd-brand-touch-cycle 1200ms linear both;
+  }
+  .rd-brand-signature[data-touch-active="true"] .rd-brand-m { animation: rd-brand-touch-glow 1200ms ease-in-out both; }
 }
 @media (min-width: 768px) {
   .rd-brand-letters { display: inline-flex; gap: .125rem; width: 0; overflow: hidden; pointer-events: none; transition: width 480ms ease; }
