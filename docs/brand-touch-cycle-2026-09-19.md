@@ -18,4 +18,11 @@ Solo móvil y movimiento permitido. Dos copias del espectro recorren una anchura
 
 - Regresión 390/768/1280, dark/light, hover, teclado, sin overflow/errores de página PASS (última salida `89fb56`). Captura del halo revisada (`a43deb`); ESLint final PASS (`187bd2`).
 
-Pendiente commit y publicación. No se afirma prueba en teléfono físico. Siguiente responsable: Codex verificación/publicación y Manuel valoración visual.
+## Publicación y cierre
+
+- Commit `12a5085` empujado a la rama habitual. CI `35431813778`: validate y owner SUCCESS (`0cc8d5`).
+- Preview `dpl_2WuG5VCemwofCxWjknVnWrrjiosS` READY. Producción `dpl_SN7ekcctNB83babGNT1FdiCNUDQK` READY (`864177`), dominio `https://manuelgarciallera.com` confirmado por el cierre del redeploy (`ac45da`). El intento de promoción adicional devolvió 409 porque ya era producción; no se repitió.
+- LIVE: ciclo, halo, timeout, cancelación, reduced motion, navegación por toque y arrastre nativo emulado PASS (`8f10b2`). Consulta de logs de error de los últimos 5 minutos sin entradas (`1196f8`).
+- Servidor local propio detenido. Cambios ajenos preservados y registro compartido fuera del commit.
+
+No se afirma prueba en teléfono físico. Reserva `7e85be39` liberada. Siguiente responsable: Manuel valoración visual; versión anterior recuperable en `4b7b105`.
