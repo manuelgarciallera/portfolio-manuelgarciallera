@@ -210,10 +210,17 @@
 }
 .rd-breadcrumbs a {
   position: relative;
-  padding: 0.42rem 0.62rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  min-width: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
   border-radius: var(--radius-pill);
   transition: color 180ms ease, background 180ms ease;
 }
+.rd-breadcrumbs li:not(:last-child) { flex-shrink: 0; }
 .rd-breadcrumbs a:hover {
   color: var(--ink);
   background: color-mix(in srgb, var(--ink) 7%, transparent);
@@ -913,13 +920,13 @@
 }
 .rd-cases-intro > div { max-width: 36rem; justify-self: end; }
 .rd-cases-intro p { margin: 0 0 1.4rem; color: var(--ink-soft); font-size: clamp(1rem, 1.25vw, 1.2rem); font-weight: 520; line-height: 1.58; }
-.rd-cases-intro a {
+.rd-cases-intro > div > a {
   display: inline-flex; align-items: center; gap: 1rem; min-height: 2.85rem; padding: 0.75rem 1.1rem;
   border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); color: var(--ink);
   font-size: 0.72rem; font-weight: 650; letter-spacing: 0.035em;
   transition: color 280ms ease, background 280ms ease, box-shadow 280ms ease, transform 280ms var(--ease-out);
 }
-.rd-cases-intro a:hover { color: var(--bg); background: var(--ink); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 12%, transparent); transform: translateY(-0.16rem); }
+.rd-cases-intro > div > a:hover { color: var(--bg); background: var(--ink); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 12%, transparent); transform: translateY(-0.16rem); }
 .rd-cases { display: flex; flex-direction: column; gap: clamp(6rem, 11vw, 10rem); margin-top: 0; }
 .rd-case { display: block; color: inherit; position: relative; }
 .rd-case-visual, .rd-case-feature {
