@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createResearchSphere, createSatinTexture } from './researchArtifactMaterial'
 import * as researchMaterial from './researchArtifactMaterial'
 import { advanceResearchTime, getResearchPose, getResearchNodePosition } from './researchArtifactMotion'
+import { advanceResearchPulse, createResearchAppearanceClock, getResearchAppearance } from './researchArtifactAppearance'
 import { ResearchArtifactCanvas } from './ResearchArtifactCanvas'
 
 describe('round research sculpture', () => {
@@ -103,6 +104,103 @@ describe('temporary research colour', () => {
     vi.runAllTimers()
     expect(updates).toBe(0)
     expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('keeps the six-second reset aligned with a pulse paused out of view', () => {
+    vi.useFakeTimers()
+    let active = true
+    const reset = researchMaterial.createResearchPulseReset(() => { active = false })
+    expect(reset.pause).toBeTypeOf('function')
+    expect(reset.resume).toBeTypeOf('function')
+    const clock = createResearchAppearanceClock()
+    let age = 0
+    clock.tick(0, true)
+    reset.restart()
+    for (let frame = 0; frame < 10; frame++) {
+      vi.advanceTimersByTime(100)
+      age = advanceResearchPulse(age, clock.tick(0.1, true), true)
+    }
+    reset.pause()
+    clock.pause()
+    vi.advanceTimersByTime(2000)
+    expect(active).toBe(true)
+    expect(reset.age()).toBeCloseTo(1)
+    reset.resume()
+    expect(clock.tick(2, true)).toBe(0)
+    for (let frame = 0; frame < 30; frame++) {
+      vi.advanceTimersByTime(100)
+      age = advanceResearchPulse(age, clock.tick(0.1, true), true)
+    }
+    expect(age).toBeCloseTo(4)
+    expect(reset.age()).toBeCloseTo(4)
+    expect(getResearchAppearance(0, age, false).colour).toBeGreaterThan(0.25)
+    expect(active).toBe(true)
+    for (let frame = 0; frame < 20; frame++) {
+      vi.advanceTimersByTime(100)
+      age = advanceResearchPulse(age, clock.tick(0.1, true), true)
+    }
+    expect(age).toBeCloseTo(6)
+    expect(getResearchAppearance(0, age, false).colour).toBeCloseTo(0)
+    expect(active).toBe(false)
+    reset.cancel()
+  })
+
+  it('can cancel a paused reset without reviving it on resume', () => {
+    vi.useFakeTimers()
+    const onReset = vi.fn()
+    const reset = researchMaterial.createResearchPulseReset(onReset)
+    expect(reset.pause).toBeTypeOf('function')
+    reset.restart()
+    vi.advanceTimersByTime(1000)
+    reset.pause()
+    reset.cancel()
+    reset.resume()
+    vi.runAllTimers()
+    expect(onReset).not.toHaveBeenCalled()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('restarts a paused pulse at zero and resumes only one remaining timer', () => {
+    vi.useFakeTimers()
+    const onReset = vi.fn()
+    const reset = researchMaterial.createResearchPulseReset(onReset)
+    expect(reset.age).toBeTypeOf('function')
+    expect(reset.age()).toBe(Infinity)
+    reset.restart()
+    vi.advanceTimersByTime(3000)
+    expect(reset.age()).toBeCloseTo(3)
+    reset.pause()
+    reset.restart(false)
+    expect(reset.age()).toBe(0)
+    expect(vi.getTimerCount()).toBe(0)
+    vi.advanceTimersByTime(10000)
+    expect(reset.age()).toBe(0)
+    reset.resume()
+    reset.resume()
+    expect(vi.getTimerCount()).toBe(1)
+    vi.advanceTimersByTime(5999)
+    expect(onReset).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
+    expect(onReset).toHaveBeenCalledTimes(1)
+    expect(reset.age()).toBe(Infinity)
+    reset.cancel()
+  })
+
+  it('uses the same pulse age when switching between static and animated feedback', () => {
+    vi.useFakeTimers()
+    const onReset = vi.fn()
+    const reset = researchMaterial.createResearchPulseReset(onReset)
+    expect(reset.age).toBeTypeOf('function')
+    reset.restart()
+    vi.advanceTimersByTime(3000)
+    expect(getResearchAppearance(0, reset.age(), false).colour).toBeCloseTo(0.5)
+    expect(getResearchAppearance(0, 0, true).colour).toBe(1)
+    vi.advanceTimersByTime(1000)
+    expect(getResearchAppearance(0, reset.age(), false).colour).toBeCloseTo(0.259259)
+    expect(vi.getTimerCount()).toBe(1)
+    vi.advanceTimersByTime(2000)
+    expect(onReset).toHaveBeenCalledTimes(1)
+    reset.cancel()
   })
 })
 

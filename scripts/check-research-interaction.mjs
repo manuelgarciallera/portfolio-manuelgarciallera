@@ -7,6 +7,8 @@ import sharp from 'sharp'
 const baseUrl = process.argv[2] ?? 'http://127.0.0.1:3102'
 const output = path.resolve(process.argv[3] ?? '.audit/research-interaction-20260923')
 const browserName = process.argv[4] ?? 'chromium'
+const scope = process.argv[5] ?? 'all'
+assert.ok(['all', 'reduced', 'normal'].includes(scope), 'Scope must be all, reduced or normal')
 const browserType = { chromium, firefox }[browserName]
 assert.ok(browserType, 'Browser must be chromium or firefox')
 const results = []
@@ -44,6 +46,8 @@ async function openScene(context) {
   const errors = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto(baseUrl, { waitUntil: 'domcontentloaded' })
+  const dismiss = page.getByRole('button', { name: 'Cerrar preferencias sin cambiar la elección' })
+  if (await dismiss.isVisible()) await dismiss.click()
   const scene = page.locator('.rd-research-scene')
   await scene.waitFor()
   await scene.scrollIntoViewIfNeeded()
@@ -98,12 +102,12 @@ async function drawCount(canvas) {
 try {
   // Each input modality starts from neutral, so an already-active pulse cannot
   // make an ineffective click/key appear to pass. No product clock is mocked.
-  for (const profile of [
+  for (const profile of (scope === 'normal' ? [] : [
     { width: 390, theme: 'dark', input: 'touch' },
     { width: 390, theme: 'light', input: 'click' },
     { width: 1440, theme: 'dark', input: 'Enter' },
     { width: 1440, theme: 'light', input: 'Space' },
-  ]) {
+  ])) {
     const context = await contextFor(profile.width, profile.theme, 'reduce')
     try {
       const { page, scene, button, canvas, errors, box } = await openScene(context)
@@ -118,6 +122,8 @@ try {
       if (['Enter', 'Space'].includes(profile.input)) {
         await page.keyboard.press('Tab')
         await button.focus()
+        await page.keyboard.press('Tab')
+        await page.keyboard.press('Shift+Tab')
         focus = await button.evaluate(element => ({ visible: element.matches(':focus-visible'), width: parseFloat(getComputedStyle(element).outlineWidth) }))
         assert.ok(focus.visible && focus.width >= 2, 'Keyboard control lacks visible focus')
         await page.keyboard.press(profile.input)
@@ -141,11 +147,13 @@ try {
       assert.ok(resetDifference <= 2, 'Six-second reset does not restore the graphite sphere')
       assert.deepEqual(errors, [], 'Browser runtime error')
       results.push({ browser: browserName, ...profile, reducedMotion: true, target: { width: box.width, height: box.height }, focus, idleDraws, staticDifference, resetDifference, samples: [baseline, coloured, staticColour, reset].map(metric), errors })
+      console.log(`PASS ${browserName} ${profile.width} ${profile.theme} ${profile.input}: visible colour, static feedback, six-second reset`)
     } finally {
       await context.close()
     }
   }
 
+  if (scope !== 'reduced') {
   const context = await contextFor(1440, 'dark', 'no-preference')
   try {
     const { page, scene, button, canvas, errors } = await openScene(context)
@@ -182,25 +190,73 @@ try {
     await page.bringToFront()
     await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchMotion === 'running')
 
+    // A real offscreen interval exceeds the entire pulse duration. It must
+    // preserve the remaining visible time and produce no background drawing.
+    await button.click()
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchColour === 'gradient')
+    await page.waitForTimeout(500)
+    const beforePause = await sample(canvas, `${browserName}-pulse-before-pause`)
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchMotion === 'paused')
+    await page.waitForTimeout(250)
+    const beforePulseHidden = await drawCount(canvas)
+    await page.waitForTimeout(6250)
+    const pulseHiddenDraws = await drawCount(canvas) - beforePulseHidden
+    assert.equal(pulseHiddenDraws, 0, 'Paused pulse continues drawing out of view')
+    assert.equal(await scene.getAttribute('data-research-colour'), 'gradient', 'Pulse reset consumed hidden time')
+    await scene.scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchMotion === 'running')
+    const resumeStart = Date.now()
+    const afterPause = await sample(canvas, `${browserName}-pulse-after-pause`)
+
+    // Preference changes alter presentation, not the remaining reset deadline.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchMotion === 'paused')
+    await page.waitForTimeout(200)
+    const preferenceStatic = await sample(canvas, `${browserName}-pulse-preference-static`)
+    await page.waitForTimeout(400)
+    const preferenceStill = await sample(canvas, `${browserName}-pulse-preference-still`)
+    assert.ok(pixelDifference(preferenceStatic, preferenceStill) <= 1, 'Live reduced-motion preference does not stop the colour animation')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchMotion === 'running')
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchColour === 'neutral', null, { timeout: 6000 })
+    const resumeToReset = Date.now() - resumeStart
+    assert.ok(resumeToReset < 6000, 'Preference change restarted the pulse deadline')
+
     // A manual reset starts the neutral cycle at a known appearance phase.
     // Compare brightness within one engine, never pixel equality across engines.
     await button.click()
+    const pulseStart = Date.now()
+    await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchColour === 'gradient')
+    await page.waitForTimeout(150)
+    const pulseFull = await sample(canvas, `${browserName}-normal-pulse-full`)
+    await page.waitForTimeout(Math.max(0, pulseStart + 3000 - Date.now()))
+    const pulseHalf = await sample(canvas, `${browserName}-normal-pulse-half`)
     await page.waitForFunction(() => document.querySelector('.rd-research-scene')?.dataset.researchColour === 'neutral', null, { timeout: 7500 })
     await page.waitForTimeout(150)
     const cycle = [await sample(canvas, `${browserName}-cycle-00`)]
     const cycleStart = Date.now()
+    const cycleDraws = [{ second: 0, draws: await drawCount(canvas) }]
     for (const second of [6, 12, 18, 24]) {
       await page.waitForTimeout(Math.max(0, cycleStart + second * 1000 - Date.now()))
       cycle.push(await sample(canvas, `${browserName}-cycle-${String(second).padStart(2, '0')}`))
+      cycleDraws.push({ second, draws: await drawCount(canvas), elapsed: (Date.now() - cycleStart) / 1000 })
     }
     const brightening = cycle[2].luminance - cycle[0].luminance
     const returnDistance = Math.abs(cycle[4].luminance - cycle[0].luminance)
+    const evidence = { browser: browserName, width: 1440, theme: 'dark', reducedMotion: false, runningDraws, offscreenDraws, hiddenTab, pausePulse: { pulseHiddenDraws, resumeToReset, samples: [beforePause, afterPause, preferenceStatic, preferenceStill].map(metric) }, brightening, returnDistance, pulse: [pulseFull, pulseHalf, cycle[0]].map(metric), cycle: cycle.map(metric), cycleDraws, errors, passed: false }
+    results.push(evidence)
+    console.log(JSON.stringify(evidence))
+    assert.ok(afterPause.chroma > cycle[0].chroma + 12, 'Resumed pulse lost its visible colour during the hidden interval')
+    assert.ok(pulseFull.chroma > cycle[0].chroma + 12, 'Normal-motion click does not visibly colour the sphere')
+    assert.ok(pulseHalf.chroma < pulseFull.chroma - 5 && pulseHalf.chroma > cycle[0].chroma + 5, 'Normal-motion pulse does not visibly fade before its six-second reset')
     assert.ok(brightening >= 8, 'Automatic cycle does not visibly lighten the graphite sphere')
     assert.ok(returnDistance < brightening * 0.55, 'Automatic cycle does not return towards graphite after 24 seconds')
     assert.deepEqual(errors, [], 'Browser runtime error')
-    results.push({ browser: browserName, width: 1440, theme: 'dark', reducedMotion: false, runningDraws, offscreenDraws, hiddenTab, brightening, returnDistance, cycle: cycle.map(metric), errors })
+    evidence.passed = true
   } finally {
     await context.close()
+  }
   }
   console.log(`PASS ${results.length} ${browserName} Saturn interaction profiles`)
 } finally {

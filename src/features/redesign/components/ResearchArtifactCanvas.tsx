@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Color, type Group, type Mesh, type MeshPhysicalMaterial } from 'three'
 
 import { createResearchGradientTexture, createResearchPulseReset, createResearchSphere, createSatinTexture } from './researchArtifactMaterial'
-import { advanceResearchPulse, getResearchAppearance } from './researchArtifactAppearance'
+import { createResearchAppearanceClock, getResearchAppearance } from './researchArtifactAppearance'
 import { advanceResearchTime, getResearchNodePosition, getResearchPose } from './researchArtifactMotion'
 import './research-artifact-controls.css'
 
@@ -37,11 +37,12 @@ function ResearchNode({ position, scale = 1 }: ResearchNodeProps) {
   )
 }
 
-function ResearchArtifact({ reduceMotion, visible, activation, pulseActive }: {
+function ResearchArtifact({ reduceMotion, visible, activation, pulseActive, readPulseAge }: {
   reduceMotion: boolean
   visible: boolean
   activation: number
   pulseActive: boolean
+  readPulseAge: () => number
 }) {
   const sphereRef = useRef<Mesh>(null)
   const materialRef = useRef<MeshPhysicalMaterial>(null)
@@ -49,7 +50,7 @@ function ResearchArtifact({ reduceMotion, visible, activation, pulseActive }: {
   const nodesRef = useRef<Group>(null)
   const time = useRef(0)
   const appearanceTime = useRef(0)
-  const pulseAge = useRef(Infinity)
+  const appearanceClock = useMemo(() => createResearchAppearanceClock(), [])
   const invalidate = useThree(state => state.invalidate)
   const geometry = useMemo(() => createResearchSphere(), [])
   const satin = useMemo(() => createSatinTexture(), [])
@@ -67,11 +68,17 @@ function ResearchArtifact({ reduceMotion, visible, activation, pulseActive }: {
   useEffect(() => {
     if (activation === 0) return
     appearanceTime.current = 0
-    pulseAge.current = pulseActive ? 0 : Infinity
-    updateMaterial(0, pulseAge.current)
+  }, [activation, pulseActive])
+
+  useEffect(() => {
+    updateMaterial(appearanceTime.current, pulseActive ? reduceMotion ? 0 : readPulseAge() : Infinity)
     // Demand mode also receives the static reduced-motion colour and its reset.
     invalidate()
-  }, [activation, pulseActive, updateMaterial, invalidate])
+  }, [activation, pulseActive, reduceMotion, readPulseAge, updateMaterial, invalidate])
+
+  useEffect(() => {
+    if (!visible || reduceMotion) appearanceClock.pause()
+  }, [appearanceClock, visible, reduceMotion])
 
   useEffect(() => () => {
     geometry.dispose()
@@ -81,11 +88,11 @@ function ResearchArtifact({ reduceMotion, visible, activation, pulseActive }: {
 
   useFrame((_, delta) => {
     time.current = advanceResearchTime(time.current, delta, reduceMotion, visible)
-    appearanceTime.current = pulseActive ? 0 : advanceResearchTime(appearanceTime.current, delta, reduceMotion, visible)
-    pulseAge.current = pulseActive
-      ? reduceMotion ? 0 : advanceResearchPulse(pulseAge.current, delta, visible)
-      : Infinity
-    updateMaterial(appearanceTime.current, pulseAge.current)
+    const appearanceDelta = appearanceClock.tick(delta, visible && !reduceMotion)
+    appearanceTime.current = pulseActive ? 0 : appearanceTime.current + appearanceDelta
+    // The fade and its reset share one active-time source, including pauses and
+    // preference changes. No React state is updated in the render loop.
+    updateMaterial(appearanceTime.current, pulseActive ? reduceMotion ? 0 : readPulseAge() : Infinity)
     const pose = getResearchPose(time.current, reduceMotion)
     if (sphereRef.current) sphereRef.current.rotation.y = pose.sphereTurn
     if (orbitRef.current) orbitRef.current.rotation.set(...pose.ringTilt)
@@ -157,7 +164,7 @@ export function ResearchArtifactCanvas() {
   const activateColour = () => {
     setActivation(current => current + 1)
     setPulseActive(true)
-    pulseReset.restart()
+    pulseReset.restart(visible)
   }
 
   useEffect(() => {
@@ -180,6 +187,11 @@ export function ResearchArtifactCanvas() {
   const visible = inView && pageVisible
   const animate = visible && !reduceMotion
 
+  useEffect(() => {
+    if (visible) pulseReset.resume()
+    else pulseReset.pause()
+  }, [pulseReset, visible])
+
   return (
     <div ref={hostRef} className="rd-research-scene" data-research-motion={animate ? 'running' : 'paused'} data-research-colour={pulseActive ? 'gradient' : 'neutral'}>
       <Canvas
@@ -195,7 +207,7 @@ export function ResearchArtifactCanvas() {
         <directionalLight position={[3, -1, 2]} color="#a4acd5" intensity={1.1} />
         <pointLight position={[-3, 1, 2]} color="#c1dc9e" intensity={1} distance={8} />
         <pointLight position={[2, -2, 3]} color="#8878ca" intensity={1.2} distance={7} />
-        <ResearchArtifact reduceMotion={reduceMotion} visible={visible} activation={activation} pulseActive={pulseActive} />
+        <ResearchArtifact reduceMotion={reduceMotion} visible={visible} activation={activation} pulseActive={pulseActive} readPulseAge={pulseReset.age} />
       </Canvas>
       <button type="button" aria-label="Cambiar el color de Saturno" title="Cambiar color" className="rd-research-sphere-control" onClick={activateColour} />
     </div>

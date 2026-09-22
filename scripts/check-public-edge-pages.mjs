@@ -46,6 +46,10 @@ try {
           const focusChecks = []
           for (const link of await links.all()) {
             await link.focus()
+            // Re-enter through a real keyboard traversal. Firefox can retain
+            // pointer focus immediately after closing the analytics notice.
+            await page.keyboard.press('Tab')
+            await page.keyboard.press('Shift+Tab')
             const focus = await link.evaluate(element => {
               const style = getComputedStyle(element)
               let surface = element
@@ -59,10 +63,10 @@ try {
               }
               const outline = luminance(style.outlineColor)
               const background = luminance(getComputedStyle(surface).backgroundColor)
-              return { href: element.getAttribute('href'), visible: element.matches(':focus-visible'), width: parseFloat(style.outlineWidth), contrast: (Math.max(outline, background) + 0.05) / (Math.min(outline, background) + 0.05), label: element.textContent.trim() }
+              return { href: element.getAttribute('href'), active: document.activeElement === element, visible: element.matches(':focus-visible'), width: parseFloat(style.outlineWidth), contrast: (Math.max(outline, background) + 0.05) / (Math.min(outline, background) + 0.05), label: element.textContent.trim() }
             })
             assert.ok(focus.label && /^(?:\/|https:\/\/|mailto:)/.test(focus.href), 'Invalid or unnamed public link')
-            assert.ok(focus.visible && focus.width >= 2 && focus.contrast >= 3, `${focus.href}: focus is not sufficiently visible`)
+            assert.ok(focus.active && focus.visible && focus.width >= 2 && focus.contrast >= 3, `${focus.href}: focus is not sufficiently visible`)
             focusChecks.push(focus)
           }
           const firstInternal = page.locator('main a[href^="/"]').first()

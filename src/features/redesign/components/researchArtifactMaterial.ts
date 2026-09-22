@@ -1,4 +1,5 @@
 import { DataTexture, LinearFilter, RepeatWrapping, RGBAFormat, SphereGeometry, SRGBColorSpace } from 'three'
+import { advanceResearchPulse } from './researchArtifactAppearance'
 
 export function createResearchSphere() {
   return new SphereGeometry(1.2, 64, 48)
@@ -67,18 +68,41 @@ export function createResearchGradientTexture() {
 
 export function createResearchPulseReset(onReset: () => void) {
   let pending: ReturnType<typeof setTimeout> | undefined
-  const cancel = () => {
+  let remaining: number | undefined
+  let deadline = 0
+  const clearPending = () => {
     if (pending !== undefined) clearTimeout(pending)
     pending = undefined
   }
+  const timeLeft = () => pending === undefined ? remaining ?? 0 : Math.max(0, deadline - performance.now())
+  const cancel = () => {
+    clearPending()
+    remaining = undefined
+  }
+  const resume = () => {
+    if (pending !== undefined || remaining === undefined) return
+    deadline = performance.now() + remaining
+    pending = setTimeout(() => {
+      pending = undefined
+      remaining = undefined
+      onReset()
+    }, remaining)
+  }
   return {
     cancel,
-    restart() {
+    resume,
+    pause() {
+      if (pending === undefined) return
+      remaining = timeLeft()
+      clearPending()
+    },
+    age() {
+      return remaining === undefined ? Infinity : advanceResearchPulse(0, (6000 - timeLeft()) / 1000, true)
+    },
+    restart(active = true) {
       cancel()
-      pending = setTimeout(() => {
-        pending = undefined
-        onReset()
-      }, 6000)
+      remaining = 6000
+      if (active) resume()
     },
   }
 }

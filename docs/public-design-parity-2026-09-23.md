@@ -22,16 +22,16 @@ space-between. Se fijan límites de frase móviles y separación explícita.
 
 | Petición | Implementación | Verificación final |
 | --- | --- | --- |
-| Hero como referenciaFirefox en Chromium | Siete frases móviles, hueco acotado; escritorio conserva composición | Pendiente de candidato |
-| Auditoría de todo el portfolio | Matrices de lectura, controles, casos y navegación en ambos motores | En curso |
-| Quitar00y unificar cabeceras | PageIntro común: etiqueta, título, entradilla y cuerpo | En curso |
-| Proyectos: CTA redundante y doble introducción | Índice directo; CTA solo en home | En curso |
-| Espacios entre títulos/párrafos y enlaces claros | Jerarquía común y enlace al proceso separado | En curso |
-| Investigación: alineación de subtítulos | Alineación izquierda y espaciado consistente | En curso |
+| Hero como referenciaFirefox en Chromium | Siete frases móviles, hueco acotado; escritorio conserva composición | 10/10 perfiles con animación normal |
+| Auditoría de todo el portfolio | Matrices de lectura, controles, casos y navegación en ambos motores | 60 casos + 108 lectura + 16 utilidades + 44 controles |
+| Quitar00y unificar cabeceras | PageIntro común: etiqueta, título, entradilla y cuerpo | Matriz de lectura PASS |
+| Proyectos: CTA redundante y doble introducción | Índice directo; CTA solo en home | Unitarias y matriz de lectura PASS |
+| Espacios entre títulos/párrafos y enlaces claros | Jerarquía común y enlace al proceso separado | Matriz de lectura PASS |
+| Investigación: alineación de subtítulos | Alineación izquierda y espaciado consistente | Matriz de lectura PASS |
 | Ampliar imágenes sin abandonar recorrido | Dialog conX, Escape, exterior, foco y scroll restaurados; originalHD opcional | En curso |
 | Previsualización al75% | Umbral relativo a porción visible posible; pausa y controles accesibles | En curso |
-| Nombre completo y SEO personal | Manuel García-Llera Añón centralizado en identidad/autor/metadatos | En curso |
-| NudeProject chocolate | Marco exterior#382921; originales opacos crema preservados | En curso |
+| Nombre completo y SEO personal | Manuel García-Llera Añón centralizado en identidad/autor/metadatos | 16/16 HTML generado |
+| NudeProject chocolate | Marco exterior#382921; originales opacos crema preservados | Matriz de casos y revisión visual PASS |
 | Nombre en banda, arrastre y color localizado | Componente común de banda interactiva con pausa/reducedmotion | En curso |
 | Saturno más grande y color interactivo | Escala móvil+material existente, sin dependencias nuevas | En curso |
 | CMS como laboratorio | Mención prudente: en desarrollo, sin validación científica/comercial | Implementado |
@@ -137,3 +137,37 @@ No se ha reescrito historial ni eliminado activos anteriores.
   `.audit/public-parity-performance-20260923/bundle-final.json`.
 
 Las interacciones, rendimiento, despliegue y Search Console continúan en cierre.
+
+### Ajuste posterior al candidato inicial
+
+La revisión independiente detectó la cascada del foco del visor en tema claro.
+El navegador confirmó azul `#2430ec` sobre panel `#151820`: contraste 2,289:1.
+Se fija `--focus-ring: #fff` en el propio diálogo, sin alterar otras superficies.
+Regresión unitaria RED → GREEN 4/4. Único cambio runtime de este commit respecto
+a `7a24326`: esa línea de CSS. Commit público `03c53ce0fe120d0e0148ca70eff9e928f398c596`;
+la medición final de navegador se hará sobre su build, no sobre la preview vieja.
+
+La ejecución Lighthouse inicial dejó nueve procesos Chrome huérfanos. Se
+acreditó su pertenencia con URL local 3101, hora, PID y perfil temporal exclusivo
+de aquella medición; se cerraron solo esos procesos. Comprobación posterior:
+cero procesos del perfil. No se cerraron navegadores personales ni se borraron
+perfiles. Las mediciones temporales afectadas se separan de los resultados
+funcionales y geométricos, y se repiten sin esa carga ajena al producto.
+
+### Portada, utilidades y reloj de animación
+
+Hero con movimiento normal: 5/5 Chromium + 5/5 Firefox en 320/390/430/768/1366.
+Siete líneas móviles, sin desbordamiento; separación h1/CTA de 34,83/49,45/48,78px.
+Recibo `aafc3c`, `.audit/hero-parity-20260923/production-final-normal/`.
+Privacidad y página404: 8/8 por motor, 320/1440, ambos temas, teclado real.
+La corrección del verificador Firefox usó Tab/Shift+Tab para comprobar
+focus-visible: enfocar por script tras un clic no simula entrada de teclado.
+
+Saturno: la repetición limpia reprodujo un defecto independiente de la carga
+huérfana. A unos10fps Chromium, el límite de delta destinado a la rotación
+ralentizaba el ciclo de color de24s. Se separa tiempo de apariencia de rotación,
+sin añadir renders ni dependencias. El pulso se define como6s de tiempo activo;
+la revisión independiente exige que su timer y su desvanecimiento compartan
+esa política al ocultar/reanudar. Pruebas y aceptación final pendientes del
+candidato corregido. La suite intermedia pasó379/379 antes de este último
+ajuste; no sustituye a la ejecución sobre el código definitivo.
