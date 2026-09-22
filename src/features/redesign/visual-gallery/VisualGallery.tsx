@@ -27,6 +27,6 @@ export function VisualGallery() {
         <span className="rd-art-gallery__name">{work.name}<span aria-hidden="true">↗</span></span>
       </Link>)}
     </div>
-    <div className="rd-art-gallery__footer"><RailControls trackId="art-gallery-track" /></div>
+    <div className="rd-art-gallery__footer rd-art-gallery__footer--motion"><RailControls trackId="art-gallery-track" automatic /></div>
   </section>
 }

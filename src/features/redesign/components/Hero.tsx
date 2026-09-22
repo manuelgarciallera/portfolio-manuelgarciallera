@@ -70,7 +70,7 @@ export function Hero({ isDark = true }: HeroProps) {
         <h1>
           Diseño sistemas digitales que conectan investigación, interfaz y código.
         </h1>
-        <a {...actionFeedback} className="rd-action-feedback" href="#casos"><span className="rd-cta-glow" aria-hidden="true" />Ver proyectos</a>
+        <a {...actionFeedback} className="rd-action-feedback" href="#casos"><span className="rd-cta-glow" aria-hidden="true" /><span className="rd-cta-glass" aria-hidden="true" /><span className="rd-cta-label">Ver proyectos</span></a>
       </div>
 
       <div
