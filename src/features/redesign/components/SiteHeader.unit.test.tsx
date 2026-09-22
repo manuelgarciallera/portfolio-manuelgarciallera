@@ -39,7 +39,8 @@ describe('SiteHeader', () => {
   it('uses a geometric signature and recruiter-oriented navigation', () => {
     const markup = renderToStaticMarkup(<SiteHeader isDark onToggleTheme={() => undefined} forceVisible />)
 
-    expect(markup).toContain('aria-label="Manuel García-Llera / Product Designer · Design Engineer"')
+    expect(markup).toContain('aria-label="Manuel García-Llera Añón / Product Designer · Design Engineer"')
+    expect(markup).toContain('>Manuel García-Llera Añón <em>')
     expect(markup).toContain('rd-brand-monogram')
     expect(markup).toContain('rd-brand-signature')
     expect(markup).toContain('rd-brand-m-color')

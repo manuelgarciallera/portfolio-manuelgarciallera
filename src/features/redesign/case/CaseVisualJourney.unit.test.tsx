@@ -7,6 +7,11 @@ import { CaseVisualJourney } from './CaseVisualJourney'
 describe('CaseVisualJourney',()=>{it('distributes original high-density LaLiga evidence as a visual story',()=>{const study=getCaseBySlug('laliga-club-operations-hub')!;const markup=renderToStaticMarkup(<CaseVisualJourney study={study}/>);expect(markup).toContain('Recorrido visual de LaLiga Hub de Clubes');expect(markup).toContain('El proyecto, por capas');expect(markup).toContain('club-home-render-2x.webp');expect(markup).toContain('Captura real del desarrollo');expect(markup).toContain('width="2880" height="1800"')})})
 
 describe('TheUXUnion visual journey', () => {
+  it('uses the actual project title in the first italic band rather than slide labels', () => {
+    const markup = renderToStaticMarkup(<CaseVisualJourney study={getCaseBySlug('the-ux-union')!} />)
+    expect(markup).toContain('data-journey-title="TheUXUnion"')
+    expect(markup).toContain('>TheUXUnion</span>')
+  })
   it('renders portrait mobile evidence cleanly and slows its editorial rail', () => {
     const study = getCaseBySlug('the-ux-union')!
     const markup = renderToStaticMarkup(<CaseVisualJourney study={study} />)

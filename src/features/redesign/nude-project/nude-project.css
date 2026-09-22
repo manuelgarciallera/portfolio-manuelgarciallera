@@ -1,5 +1,5 @@
 .rd-case-visual--nude-project, .rd-case-feature--nude-project { background: #382921; color: #fff; }
-.rd-case-visual--nude-project .rd-preview-viewport, .rd-case-feature--nude-project .rd-preview-viewport { background: #e4e2d6; }
+.rd-case-visual--nude-project .rd-preview-viewport, .rd-case-feature--nude-project .rd-preview-viewport { background: #382921; }
 .rd-case-visual--nude-project .rd-case-logo, .rd-case-feature--nude-project .rd-case-feature-copy > img { filter: brightness(0) invert(1); }
 .rd-visual-journey--nude-project { background: #211b18; }
 .rd-visual-journey--nude-project .rd-visual-journey__rail { animation-duration: 48s; }

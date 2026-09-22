@@ -6,7 +6,7 @@ import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import Image from 'next/image'
 
 import { SiteHeader } from '../components/SiteHeader'
-import { Breadcrumbs } from '../components/Breadcrumbs'
+import { PageIntro } from '../components/PageIntro'
 import { Footer } from '../components/Sections'
 import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import {
@@ -38,19 +38,11 @@ export function ProcessPage() {
 
       <main className="rd-page-offset" id="main-content">
         <section className="rd-section">
-          <Breadcrumbs items={[{ label: 'Proceso' }]} />
-          <p className="rd-label rd-reveal" data-index="00">
-            Proceso
-          </p>
-          <h1 className="rd-case-page-title rd-reveal">
-            Cómo trabajo, paso a paso.
-          </h1>
-          <p className="rd-statement rd-reveal">{PROCESS_STATEMENT}</p>
-          <div className="rd-prose rd-reveal">
+          <PageIntro label="Proceso" title="Cómo trabajo, paso a paso." lead={PROCESS_STATEMENT}>
             {PROCESS_INTRO.map((paragraph) => (
               <p key={paragraph.slice(0, 32)}>{paragraph}</p>
             ))}
-          </div>
+          </PageIntro>
         </section>
 
         <section className="rd-section">
@@ -125,9 +117,9 @@ export function ProcessPage() {
             Cada caso publicado muestra este procedimiento sobre un proyecto real,
             con sus artefactos y su deuda declarada.
           </p>
-          <p className="rd-prose rd-reveal">
-            <Link className="rd-contact-mail" href={PUBLIC_ROUTES.projects}>
-              Ver los casos
+          <p className="rd-page-action rd-reveal">
+            <Link href={PUBLIC_ROUTES.projects}>
+              Ver los casos <span aria-hidden="true">→</span>
             </Link>
           </p>
         </section>

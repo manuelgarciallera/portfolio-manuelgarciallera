@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 
 import { SiteHeader } from '../components/SiteHeader'
-import { Breadcrumbs } from '../components/Breadcrumbs'
+import { PageIntro } from '../components/PageIntro'
 import { Footer } from '../components/Sections'
 import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import {
@@ -16,6 +16,7 @@ import {
   ABOUT_STATEMENT,
 } from '../content/about'
 import '../redesign.css'
+import { PERSON_LEGAL_NAME } from '@/lib/site-config'
 
 /**
  * `identity` llega como arbol de servidor desde la ruta: es marcado estatico y no
@@ -40,19 +41,11 @@ export function AboutPage({ identity }: { identity?: ReactNode }) {
 
       <main className="rd-page-offset" id="main-content">
         <section className="rd-section">
-          <Breadcrumbs items={[{ label: 'Sobre mí' }]} />
-          <p className="rd-label rd-reveal" data-index="00">
-            Sobre mí
-          </p>
-          <h1 className="rd-case-page-title rd-reveal">
-            Manuel García-Llera
-          </h1>
-          <p className="rd-statement rd-reveal">{ABOUT_STATEMENT}</p>
-          <div className="rd-prose rd-reveal">
+          <PageIntro label="Sobre mí" title={PERSON_LEGAL_NAME} lead={ABOUT_STATEMENT}>
             {ABOUT_INTRO.map((paragraph) => (
               <p key={paragraph.slice(0, 32)}>{paragraph}</p>
             ))}
-          </div>
+          </PageIntro>
         </section>
 
         {identity}
@@ -101,9 +94,9 @@ export function AboutPage({ identity }: { identity?: ReactNode }) {
             Si quieres saber cómo se convierte esta trayectoria en decisiones concretas,
             he documentado el método y también sus límites.
           </p>
-          <p className="rd-prose rd-reveal">
-            <Link className="rd-contact-mail" href="/proceso">
-              Ver el proceso
+          <p className="rd-page-action rd-reveal">
+            <Link href="/proceso">
+              Ver el proceso <span aria-hidden="true">→</span>
             </Link>
           </p>
         </section>

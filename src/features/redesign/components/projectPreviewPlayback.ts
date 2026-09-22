@@ -37,7 +37,11 @@ export function selectCenteredPreview(
   viewportHeight: number,
 ): string | null {
   const viewportCenter = viewportHeight / 2
-  const candidates = regions.filter(({ top, bottom }) => top >= 0 && bottom <= viewportHeight)
+  const candidates = regions.filter(({ top, bottom }) => {
+    const capacity = Math.min(bottom - top, viewportHeight)
+    const visible = Math.max(0, Math.min(bottom, viewportHeight) - Math.max(top, 0))
+    return capacity > 0 && visible / capacity >= 0.75
+  })
 
   if (candidates.length === 0) return null
 

@@ -20,7 +20,7 @@ describe('Hero', () => {
     expect(markup).toContain('data-ready="false"')
     expect(markup.match(/rd-hero-art-fallback/g)).toHaveLength(1)
     expect(markup.replace(/<[^>]*>/g, '')).toContain('Manuel García-Llera Añón')
-    expect(markup).toContain('Diseño sistemas digitales que conectan investigación, interfaz y código')
+    expect(markup.replace(/<[^>]*>/g, '')).toContain('Diseño sistemas digitales que conectan investigación, interfaz y código')
     expect(markup).not.toContain('productos que se entienden, se usan y evolucionan')
     expect(markup).toContain('Ver proyectos')
     expect(markup).toContain('href="#casos"')
@@ -41,6 +41,12 @@ describe('Hero', () => {
     expect(source).not.toContain('onPointerEnter')
     expect(source).not.toContain('onPointerDown')
     expect(source).toContain('onReady={() => setCanvasReady(true)}')
+  })
+
+  it('keeps the accepted mobile phrases in one accessible heading', () => {
+    const markup = renderToStaticMarkup(<Hero />)
+    expect(markup.match(/class="rd-hero-phrase"/g)).toHaveLength(7)
+    expect(markup.match(/<h1[ >]/g)).toHaveLength(1)
   })
 
   // Actual canvas colours and transparency are tested through rendered pixels

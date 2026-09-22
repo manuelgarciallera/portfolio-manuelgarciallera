@@ -3,11 +3,12 @@ import Link from 'next/link'
 
 import { EditorialShell } from '@/features/redesign/components/EditorialShell'
 import { PUBLIC_ROUTES } from '@/lib/public-routes'
+import { PERSON_LEGAL_NAME } from '@/lib/site-config'
 import '@/features/redesign/redesign.css'
 
 export const metadata: Metadata = {
   title: 'Página no encontrada',
-  description: 'La ruta solicitada no existe. Explora los casos de producto, sistemas de diseño e investigación de Manuel García-Llera.',
+  description: `La ruta solicitada no existe. Explora los casos de producto, sistemas de diseño e investigación de ${PERSON_LEGAL_NAME}.`,
   robots: { index: false, follow: true },
 }
 

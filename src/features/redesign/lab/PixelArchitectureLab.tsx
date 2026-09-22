@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PERSON_DISPLAY_NAME } from '../../../lib/site-config'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Pixel = { x: number; y: number; tone: number; delay: number; size: number }
@@ -98,7 +99,7 @@ export function PixelArchitectureLab() {
   return (
     <main className="pixel-lab">
       <header className="pixel-lab__header">
-        <Link href="/">Manuel García-Llera</Link>
+        <Link href="/">{PERSON_DISPLAY_NAME}</Link>
         <span>Prueba 01 · arquitectura generativa</span>
       </header>
       <section className="pixel-lab__hero">

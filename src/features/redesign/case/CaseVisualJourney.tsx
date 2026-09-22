@@ -5,14 +5,17 @@ import { isPortraitEvidence, projectImageDimensions } from './projectImageDimens
 import type { CaseStudy } from '../content/types'
 import { CoordinationDiagram } from '../components/CoordinationDiagram'
 import { useViewportActivity } from '../hooks/useViewportActivity'
+import { JourneyTitleRail } from './JourneyTitleRail'
 
 export function CaseVisualJourney({ study }: { study: CaseStudy }) {
   const [sectionRef, isActive] = useViewportActivity<HTMLElement>()
-  if (study.story || !study.visual?.slides.length) return null
+  if (!study.visual?.slides.length) return null
+  const title = `${study.title}${study.titleAccent ?? ''}`.trim()
+  if (study.story) return <JourneyTitleRail title={title} />
   const slides = study.visual.slides
   return <section ref={sectionRef} data-motion={isActive ? 'active' : 'paused'} className={`rd-visual-journey rd-visual-journey--${study.visual.theme}`} aria-label={`Recorrido visual de ${study.title}${study.titleAccent ?? ''}`}>
     <header><p>El proyecto, por capas</p><h2>Pequeñas decisiones construyen el sistema.</h2></header>
-    <div className="rd-visual-journey__rail" aria-hidden="true">{[...slides,...slides].map((slide,index)=><span key={`a-${index}`}>{slide.label}</span>)}</div>
+    <JourneyTitleRail title={title} />
     {slides.map((slide,index) => {
       const isPortrait = isPortraitEvidence(slide.src)
       const dimensions = projectImageDimensions[slide.src]

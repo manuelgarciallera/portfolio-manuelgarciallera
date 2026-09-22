@@ -80,7 +80,9 @@
 }
 
 .rd-root ::selection { background: var(--accent); color: var(--bg); }
-.rd-root :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rd-root :focus-visible { outline: 2px solid var(--focus-ring, var(--accent)); outline-offset: 3px; }
+/* Fixed editorial surfaces carry their own focus contrast in either site theme. */
+.rd-editorial, .rd-article-next, .rd-research-banner { --focus-ring: #9ccbff; }
 
 .rd-sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -859,6 +861,11 @@
   font-size: var(--type-capability-copy); font-weight: 500; line-height: 1.58;
   color: var(--ink-soft); margin: 0; max-width: 34ch;
 }
+.rd-axis > .rd-case-index { margin-bottom: var(--space-1); color: var(--muted); font-size: var(--type-label); font-weight: 600; }
+.rd-axis > .rd-case-tags {
+  max-width: 100%; margin: var(--space-1) 0 var(--space-2); text-align: left;
+  color: var(--muted); font-size: var(--type-label); font-weight: 600; line-height: 1.5; letter-spacing: var(--track-caps);
+}
 
 /* ---------- Investigación: una sola pieza cinética WebGL ---------- */
 .rd-section--banner {
@@ -919,7 +926,8 @@
   font-weight: 650; line-height: 0.98; letter-spacing: -0.06em; text-wrap: balance;
 }
 .rd-cases-intro > div { max-width: 36rem; justify-self: end; }
-.rd-cases-intro p { margin: 0 0 1.4rem; color: var(--ink-soft); font-size: clamp(1rem, 1.25vw, 1.2rem); font-weight: 520; line-height: 1.58; }
+.rd-cases-intro p:not(.rd-label) { margin: 0 0 1.4rem; color: var(--ink-soft); font-size: clamp(1rem, 1.25vw, 1.2rem); font-weight: 520; line-height: 1.58; }
+.rd-section.rd-projects-intro { padding-bottom: 0; }
 .rd-cases-intro > div > a {
   display: inline-flex; align-items: center; gap: 1rem; min-height: 2.85rem; padding: 0.75rem 1.1rem;
   border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); color: var(--ink);
@@ -1350,7 +1358,7 @@
   .rd-research-copy p { max-width: 29ch; margin-top: 1.25rem; margin-bottom: 0; }
   .rd-research-copy a { margin-top: 1.5rem; }
   .rd-research-artifact { position: relative; inset: auto; grid-row: 2; min-height: 16rem; margin-top: clamp(2rem, 8vw, 3rem); opacity: 0.9; }
-  .rd-research-artifact-canvas { --artifact-offset-x: 0px; --artifact-offset-y: 0px; width: min(74vw, 20rem); }
+  .rd-research-artifact-canvas { --artifact-offset-x: 0px; --artifact-offset-y: 0px; width: min(82vw, 22rem); }
   .rd-header { inset: 0.45rem 0.5rem auto; padding: 0.55rem 0.55rem 0.55rem 0.8rem; }
   .rd-brand { position: relative; z-index: 2; }
   .rd-brand-wordmark { opacity: 0; pointer-events: none; }
@@ -1388,10 +1396,13 @@
     grid-template-columns: 1fr; align-content: start; gap: 0; padding: 0;
   }
   .rd-hero-copy {
-    min-height: 100svh; box-sizing: border-box; align-content: space-between; gap: 2rem;
+    min-height: 100svh; box-sizing: border-box; align-content: start; gap: clamp(2.5rem, 7svh, 3.5rem);
     padding: clamp(7.5rem, 17svh, 10rem) 1.5rem clamp(4rem, 10svh, 5.5rem);
   }
-  .rd-hero-copy h1 { max-width: 13ch; font-size: clamp(2rem, min(14vw, 7.6svh), 4rem); line-height: 1.04; }
+  /* Phrase boundaries preserve the approved mobile composition across font metrics
+     and balancing engines. Words can still wrap when the reader enlarges text. */
+  .rd-hero-copy h1 { max-width: 100%; font-size: clamp(2rem, min(14vw, 7.6svh), 4rem); line-height: 1.04; text-wrap: wrap; }
+  .rd-hero-phrase { display: block; }
   .rd-hero-copy a { min-height: 3rem; padding: 0.75rem 1.25rem; font-size: 0.875rem; }
   @media (max-height: 620px) {
     .rd-hero-copy { padding-top: 6.5rem; padding-bottom: 3.75rem; }
@@ -1608,6 +1619,14 @@
   color: var(--ink-soft); margin: 0 0 1.3em;
 }
 .rd-prose p:first-of-type { color: var(--ink); font-weight: 600; }
+.rd-page-action { margin: var(--space-3) 0 0; }
+.rd-page-action a {
+  display: inline-flex; align-items: center; gap: var(--space-1); min-height: 2.75rem;
+  padding: 0.75rem 1.1rem; border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill);
+  color: var(--ink); font-size: var(--type-body); font-weight: 600; text-decoration: none;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.rd-page-action a:hover { border-color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .rd-prose-methods {
   font-size: 0.82rem !important; letter-spacing: 0.02em; color: var(--muted) !important;
   border-left: 2px solid var(--accent); padding-left: 1em;
@@ -1886,9 +1905,9 @@
 @keyframes rd-article-human-ring { to { transform:rotate(360deg) scale(.88);border-radius:38% 62% 55% 45%; } }
 @keyframes rd-article-complexity { 0%,100%{transform:translate3d(0,0,0) rotate(var(--r0)) scaleX(1);opacity:.62} 38%{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--r1)) scaleX(1.3);opacity:1} 72%{transform:translate3d(var(--x2),var(--y2),0) rotate(var(--r2)) scaleX(.72);opacity:.78} }
 
-.rd-articles-index,.rd-article-page { min-height: 100vh; color: #0a0b0f; background: #f7f7f5; font-family: var(--font-sans); }
+.rd-articles-index,.rd-article-page { --focus-ring: #2430ec; --page-label-color: #626b79; --page-lead-color: #343a44; min-height: 100vh; color: #0a0b0f; background: #f7f7f5; font-family: var(--font-sans); }
 .rd-articles-index > header,.rd-article-page > header { padding: clamp(5rem,11vw,11rem) var(--gutter) clamp(3rem,7vw,7rem); }
-.rd-articles-index > header h1,.rd-article-page > header h1 { max-width: 15ch; margin: 1.2rem 0; font-size: clamp(3.2rem,8vw,9rem); line-height: .9; letter-spacing: -.068em; }
+.rd-articles-index > header h1,.rd-article-page > header h1 { max-width: 15ch; margin: 1.2rem 0; font-size: clamp(3.2rem,8vw,9rem); line-height: .9; letter-spacing: -.068em; overflow-wrap: anywhere; }
 .rd-article-page > header > p { margin-top: 5rem; color: #343a44; font-weight: 600; }
 .rd-article-page > header > .rd-breadcrumbs + p { margin-top: 0; }
 .rd-article-page > header > strong { display: block; max-width: 36ch; font-size: clamp(1.35rem,2.5vw,2.6rem); font-weight: 550; line-height: 1.25; }
@@ -1896,7 +1915,9 @@
 .rd-article-page > .rd-article-cover { min-height: min(70vw,52rem); }
 .rd-article-prose { max-width: 56rem; margin: 0 auto; padding: clamp(4rem,9vw,9rem) 2rem; font-family: var(--font-serif); font-size: clamp(1.25rem,2vw,1.75rem); line-height: 1.56; }
 .rd-article-prose section + section { margin-top: 4rem; }
-.rd-article-prose h2 { font-family: var(--font-sans); font-size: clamp(2rem,4vw,4.5rem); line-height: .98; letter-spacing: -.05em; }
+.rd-article-prose h2 { margin: 0 0 var(--space-3); font-family: var(--font-sans); font-size: clamp(2rem,4vw,4.5rem); line-height: 1.08; letter-spacing: -.05em; overflow-wrap: anywhere; }
+.rd-article-prose p { margin: 0 0 1.3em; }
+.rd-article-prose section > p:last-of-type { margin-bottom: 0; }
 .rd-article-prose p:first-of-type::first-letter { float: left; margin: .08em .12em 0 0; color: #ff5c35; font: 600 3.6em/.72 var(--font-sans); }
 .rd-author { display: grid; grid-template-columns: auto 1fr; gap: 1.3rem; max-width: 56rem; margin: 0 auto 7rem; padding: 2rem; border-top: 1px solid #cfd3da; }
 .rd-author > div { display:grid; place-items:center; width:4.5rem; aspect-ratio:1; border-radius:50%; color:#fff; background:linear-gradient(135deg,#063b9d,#ff6b00); font:600 1.6rem var(--font-serif); }
@@ -1906,6 +1927,7 @@
 .rd-next-case { padding: clamp(4rem, 8vw, 8rem) 0 0; overflow: hidden; background: var(--bg); }
 .rd-next-case__label { margin: 0 var(--gutter) clamp(2rem, 4vw, 3.5rem); color: var(--muted); font-size: .72rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
 .rd-next-case .rd-case-caption { padding-inline: var(--gutter); }
+.rd-next-case .rd-case-mobile-stack { padding-inline: var(--gutter); }
 @media(max-width:760px){.rd-now{grid-template-columns:1fr;padding:3.5rem 2rem}.rd-now__intro{min-height:auto;gap:1.5rem}.rd-now__visual{width:88%;max-width:28rem;margin:1.25rem auto .5rem}.rd-now__list button{font-size:1.45rem}.rd-editorial{padding:4rem 2rem}.rd-editorial>header,.rd-editorial__grid article{grid-template-columns:1fr}.rd-editorial__grid article>a:first-child{grid-row:auto}.rd-editorial__grid h3{font-size:1.8rem}.rd-editorial__all{margin-left:0}.rd-article-cover{min-height:22rem}.rd-articles-index>header,.rd-article-page>header{padding-inline:2rem}.rd-article-next{flex-direction:column;gap:1.5rem;padding:3rem 2rem}.rd-next-case{padding-top:3rem}.rd-tech-stack{max-width:100%;overflow-x:auto;padding-bottom:.5rem}.rd-tech-stack--compact{flex-wrap:nowrap}}
 /* Entre 761 y 1023 la seccion «Now» no cabe en dos columnas: la lista se salia
    46px y se recortaban los cinco titulares con sus parrafos. Este bloque tiene que

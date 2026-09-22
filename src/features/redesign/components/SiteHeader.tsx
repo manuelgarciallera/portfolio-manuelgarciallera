@@ -5,12 +5,13 @@ import { BrandSignature } from './BrandSignature'
 import { ContactLink } from './ContactLink'
 import { usePathname } from 'next/navigation'
 import { Fragment, useEffect, useRef, useState } from 'react'
-import { PROFILE_LINKS } from '../../../lib/site-config'
+import { PERSON_DISPLAY_NAME, PROFILE_LINKS } from '../../../lib/site-config'
 import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import { CvDownloads } from '../about/CvDownloads'
 import '../responsive.css'
 import './mobile-cv.css'
 import './action-feedback.css'
+import './header-controls.css'
 import { actionFeedback } from './action-feedback'
 
 const NAV_ITEMS = [
@@ -36,6 +37,8 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
   const [visible, setVisible] = useState(true)
   const [compact, setCompact] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [focusWithin, setFocusWithin] = useState(false)
+  const brandRef = useRef<HTMLAnchorElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileNavRef = useRef<HTMLElement>(null)
   const scrollAnchorRef = useRef(0)
@@ -58,13 +61,29 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
   }, [forceVisible])
 
   useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1180px)')
+    const onBreakpoint = (event: MediaQueryListEvent) => {
+      const active = document.activeElement
+      if (event.matches) {
+        const leavingMobileControl = active === menuButtonRef.current || mobileNavRef.current?.contains(active)
+        setMenuOpen(false)
+        if (leavingMobileControl) brandRef.current?.focus({ preventScroll: true })
+      } else if (active instanceof HTMLElement && active.closest('.rd-desktop-nav')) {
+        menuButtonRef.current?.focus({ preventScroll: true })
+      }
+    }
+    desktop.addEventListener('change', onBreakpoint)
+    return () => desktop.removeEventListener('change', onBreakpoint)
+  }, [])
+
+  useEffect(() => {
     if (!menuOpen) return
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const getFocusable = () => Array.from(mobileNavRef.current?.querySelectorAll<HTMLElement>('a, button, summary') ?? [])
-      .filter((element) => element.getClientRects().length > 0)
-    getFocusable()[0]?.focus()
+    const getFocusable = () => [menuButtonRef.current, ...Array.from(mobileNavRef.current?.querySelectorAll<HTMLElement>('a, button, summary') ?? [])]
+      .filter((element): element is HTMLElement => Boolean(element && element.getClientRects().length > 0))
+    mobileNavRef.current?.querySelector<HTMLElement>('a')?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -108,8 +127,16 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
   return (
     <Fragment>
     <a className="rd-skip-link" href="#main-content">Saltar al contenido</a>
-    <header data-scroll-behavior="reveal-up" className={`rd-header${visible || menuOpen ? ' is-visible' : ''}${compact ? ' is-compact' : ''}${menuOpen ? ' menu-open' : ''}`}>
-      <Link className="rd-brand" href="/" aria-label="Manuel García-Llera / Product Designer · Design Engineer" onNavigate={(event) => {
+    <header data-scroll-behavior="reveal-up" className={`rd-header${visible || menuOpen || focusWithin ? ' is-visible' : ''}${compact ? ' is-compact' : ''}${menuOpen ? ' menu-open' : ''}`}
+      onFocusCapture={() => setFocusWithin(true)}
+      onBlurCapture={event => {
+        if (event.currentTarget.contains(event.relatedTarget)) return
+        // Chromium can blur a newly hidden desktop link before the media event.
+        if (event.relatedTarget === null && event.target.closest('.rd-desktop-nav') && window.matchMedia('(max-width: 1179px)').matches) {
+          menuButtonRef.current?.focus({ preventScroll: true })
+        } else setFocusWithin(false)
+      }}>
+      <Link ref={brandRef} className="rd-brand" href="/" aria-label={`${PERSON_DISPLAY_NAME} / Product Designer · Design Engineer`} onNavigate={(event) => {
         closeMenu()
         if (pathname === '/') {
           event.preventDefault()
@@ -117,7 +144,7 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
           requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }))
         }
       }}>
-        <span className="rd-brand-wordmark">Manuel García-Llera <em>/ Product Designer · Design Engineer</em></span>
+        <span className="rd-brand-wordmark">{PERSON_DISPLAY_NAME} <em>/ Product Designer · Design Engineer</em></span>
         <span className="rd-brand-monogram" aria-hidden="true"><BrandSignature /></span>
       </Link>
       <nav className="rd-nav rd-desktop-nav" aria-label="Principal">

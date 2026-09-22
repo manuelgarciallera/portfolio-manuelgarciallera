@@ -14,6 +14,7 @@ describe('ResearchBanner', () => {
     expect(markup.match(/rd-research-title-line/g)).toHaveLength(3)
     expect(markup).toContain('id="investigacion"')
     expect(markup).toContain('rd-research-artifact')
+    expect(markup).not.toMatch(/class="rd-research-artifact"\s+aria-hidden="true"/)
     expect(source).toContain("dynamic(() => import('./ResearchArtifactCanvas')")
     expect(source).toContain('<ResearchArtifactCanvas')
     expect(source).not.toContain('hero-orbital-instrument-transparent-v2.webp')

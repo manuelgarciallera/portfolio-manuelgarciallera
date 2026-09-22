@@ -5,6 +5,13 @@ import { NextCase } from './NextCase'
 import { getNextCaseCard } from '../content/card-data'
 
 describe('NextCase', () => {
+  it('keeps the preview paused until its visual reaches the shared visibility threshold', () => {
+    const markup = renderToStaticMarkup(<NextCase item={getNextCaseCard('buy-sell-marketplace')} />)
+
+    expect(markup).toContain('data-motion="paused"')
+    expect(markup).toContain('data-viewport-active="false"')
+  })
+
   it('reuses the complete home project card for the next published case', () => {
     const markup = renderToStaticMarkup(<NextCase item={getNextCaseCard('buy-sell-marketplace')} />)
 

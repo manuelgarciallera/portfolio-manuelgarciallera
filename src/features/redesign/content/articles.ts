@@ -1,4 +1,5 @@
 import { projectHref } from '../../../lib/public-routes'
+import { PERSON_DISPLAY_NAME } from '../../../lib/site-config'
 
 export interface ArticleSection {
   heading?: string
@@ -11,7 +12,7 @@ export interface Article {
 }
 
 export const ARTICLE_AUTHOR = {
-  name: 'Manuel García-Llera',
+  name: PERSON_DISPLAY_NAME,
   role: 'Product Designer · Design Engineer',
   bio: 'Investigo, diseño y construyo sistemas digitales. Mi trabajo conecta cultura material, HCI, diseño de producto e implementación.',
   // El retrato vive en el dominio propio: un avatar de GitHub es una URL de

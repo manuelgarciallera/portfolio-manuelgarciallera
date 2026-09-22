@@ -1,9 +1,40 @@
-import { describe, expect, it } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createResearchSphere, createSatinTexture } from './researchArtifactMaterial'
+import * as researchMaterial from './researchArtifactMaterial'
 import { advanceResearchTime, getResearchPose, getResearchNodePosition } from './researchArtifactMotion'
+import { ResearchArtifactCanvas } from './ResearchArtifactCanvas'
 
 describe('round research sculpture', () => {
+  it('offers a keyboard-operable colour control outside the decorative canvas', () => {
+    const markup = renderToStaticMarkup(createElement(ResearchArtifactCanvas))
+    expect(markup).toMatch(/<button\b[^>]*type="button"[^>]*aria-label="Cambiar el color de Saturno"/)
+  })
+
+  it('uses a bounded seamless multicolour map without increasing the sphere geometry', () => {
+    expect(researchMaterial.createResearchGradientTexture).toBeTypeOf('function')
+    const texture = researchMaterial.createResearchGradientTexture()
+    const { data, width, height } = texture.image
+    const pixels = data as Uint8Array
+    expect([width, height, pixels.byteLength]).toEqual([64, 32, 8192])
+    const colours = new Set<string>()
+    for (let y = 0; y < height; y++) {
+      const start = y * width * 4
+      expect([...pixels.slice(start, start + 4)]).toEqual([...pixels.slice(start + (width - 1) * 4, start + width * 4)])
+      for (let x = 0; x < width; x++) {
+        const index = start + x * 4
+        colours.add(`${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`)
+        expect(pixels[index + 3]).toBe(255)
+      }
+    }
+    expect(colours.size).toBeGreaterThan(500)
+    expect(pixels.some((value, index) => index % 4 === 0 && value > 200)).toBe(true)
+    expect(pixels.some((value, index) => index % 4 === 1 && value > 180)).toBe(true)
+    texture.dispose()
+  })
+
   it('keeps every surface vertex on the same radius, including the silhouette', () => {
     const geometry = createResearchSphere()
     const positions = geometry.getAttribute('position')
@@ -40,6 +71,38 @@ describe('round research sculpture', () => {
     expect(Math.max(...roughness) / 255).toBeLessThan(0.95)
     expect(pixels[1] - pixels[0]).toBeGreaterThan(64)
     texture.dispose()
+  })
+})
+
+describe('temporary research colour', () => {
+  afterEach(() => vi.useRealTimers())
+
+  it('returns to graphite after six seconds and restarts that period after another activation', () => {
+    vi.useFakeTimers()
+    expect(researchMaterial.createResearchPulseReset).toBeTypeOf('function')
+    let active = true
+    const reset = researchMaterial.createResearchPulseReset(() => { active = false })
+    reset.restart()
+    vi.advanceTimersByTime(5900)
+    expect(active).toBe(true)
+    reset.restart()
+    vi.advanceTimersByTime(5900)
+    expect(active).toBe(true)
+    vi.advanceTimersByTime(100)
+    expect(active).toBe(false)
+    reset.cancel()
+  })
+
+  it('cancels the pending state update when the scene is removed', () => {
+    vi.useFakeTimers()
+    expect(researchMaterial.createResearchPulseReset).toBeTypeOf('function')
+    let updates = 0
+    const reset = researchMaterial.createResearchPulseReset(() => { updates += 1 })
+    reset.restart()
+    reset.cancel()
+    vi.runAllTimers()
+    expect(updates).toBe(0)
+    expect(vi.getTimerCount()).toBe(0)
   })
 })
 

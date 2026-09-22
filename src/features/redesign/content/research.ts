@@ -50,13 +50,13 @@ export const RESEARCH_LINES: readonly ResearchLine[] = [
   {
     index: '03',
     title: 'Sistemas de diseño como gramáticas',
-    body: 'Quiero estudiar cómo los tokens, componentes y reglas de composición pueden guiar la generación de interfaces sin perder coherencia ni control humano. El CMS en desarrollo me permite plantear experimentos sobre estabilidad, adaptación y edición; todavía no es una validación científica de esos resultados.',
+    body: 'Quiero estudiar cómo los tokens, componentes y reglas de composición pueden guiar la generación de interfaces sin perder coherencia ni control humano. Uso el CMS en desarrollo como laboratorio para explorar estabilidad, adaptación y edición de interfaces. Es un trabajo abierto: todavía no constituye una validación científica ni un producto comercial.',
     status: 'Línea en desarrollo · sistemas generativos',
   },
 ]
 
 export const RESEARCH_METHOD: readonly string[] = [
-  'Research through Design en el sentido de Frayling: el proyecto no ilustra la investigación, es uno de sus instrumentos. Cada caso publicado aquí debe dejar por escrito qué se preguntó, qué se decidió y qué se descartó. Ese es el criterio con el que los escribo y con el que hay que juzgarlos.',
+  'Me interesa investigar también a través de lo que construyo: formular una pregunta, crear un prototipo y revisar qué permite aprender. Quiero documentar qué decido, qué descarto y por qué. La investigación a través del diseño, que Christopher Frayling distingue en Research in Art and Design (1993/94), es una referencia para desarrollar esta línea; no una validación de los proyectos que ya he realizado.',
   'Diseño centrado en las personas según ISO 9241-210 y doble diamante para estructurar el trabajo aplicado: encuadre, investigación, sistema, prototipo, desarrollo y validación, con la evidencia que corresponde a cada fase.',
   'Y una regla que me impongo: distinguir siempre lo medido de lo inferido. Una estimación presentada como dato es el error más caro que puede cometer alguien que investiga.',
 ]

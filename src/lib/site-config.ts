@@ -22,7 +22,7 @@ export const SITE_LOCALE = "es_ES";
 export const SITE_LANGUAGE = "es";
 
 export const PERSON_LEGAL_NAME = "Manuel Garc\u00EDa-Llera A\u00F1\u00F3n";
-export const PERSON_DISPLAY_NAME = "Manuel Garc\u00EDa-Llera";
+export const PERSON_DISPLAY_NAME = PERSON_LEGAL_NAME;
 export const SITE_NAME = PERSON_DISPLAY_NAME;
 export const SITE_TITLE = `${PERSON_LEGAL_NAME} | UX/UI y sistemas de diseño`;
 export const SITE_DESCRIPTION =

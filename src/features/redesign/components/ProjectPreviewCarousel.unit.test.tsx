@@ -103,11 +103,31 @@ describe('ProjectPreviewCarousel', () => {
 
     expect(markup).toContain('data-frame="cover"')
     expect(markup).toContain('data-testid="project-cover"')
+    expect(markup).toContain('Portada')
+    expect(markup).not.toContain('aria-current="true"')
+  })
+
+  it('communicates the selected view independently of its visual styling', () => {
+    const markup = renderToStaticMarkup(<ProjectPreviewCarousel label="Caso" slides={[
+      { label: 'Primera', src: '/primera.webp', alt: 'Primera' },
+      { label: 'Segunda', src: '/segunda.webp', alt: 'Segunda' },
+    ]} variant="feature" />)
+    expect(markup.match(/aria-current="true"/g)).toHaveLength(1)
+  })
+
+  it('keeps all six long-label views individually selectable when the selector must scroll', () => {
+    const labels = ['Mobile · Descubrir', 'Mobile · Nodos', 'Sistema · Identidad', 'Sistema · Componentes', 'Desktop implementado', 'Pitch · Nodos']
+    const markup = renderToStaticMarkup(<ProjectPreviewCarousel label="TheUXUnion" variant="feature" slides={labels.map((label, index) => ({
+      label, src: `/vista-${index}.webp`, alt: label,
+    }))} />)
+    expect(markup.match(/data-slide-index="[0-5]"/g)).toHaveLength(6)
+    for (const label of labels) expect(markup).toContain(`>${label}</button>`)
+    expect(markup.match(/aria-current="true"/g)).toHaveLength(1)
   })
 
   it('returns an off-screen card to its cover before it can become active again', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/components/ProjectPreviewCarousel.tsx'), 'utf8')
-    expect(source).toContain("if (variant !== 'card' || engaged !== false || !cover) return")
+    expect(source).toContain("if (variant !== 'card' || engaged !== false || !cover || manuallyPaused.current) return")
     expect(source).toContain("setFrame({ kind: 'cover' })")
   })
 

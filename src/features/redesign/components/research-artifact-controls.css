@@ -1,0 +1,13 @@
+.rd-research-scene { position: relative; width: 100%; height: 100%; }
+.rd-research-sphere-control {
+  position: absolute; z-index: 1; top: 50%; left: 50%;
+  width: 50%; aspect-ratio: 1; min-width: 2.75rem; min-height: 2.75rem;
+  transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%;
+  color: #f7f7f2; background: transparent; cursor: pointer; touch-action: manipulation;
+}
+.rd-research-sphere-control:focus-visible { outline-offset: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .rd-research-artifact .rd-research-artifact-canvas {
+    transform: translate3d(var(--artifact-offset-x), var(--artifact-offset-y), 0) rotate(-2deg);
+  }
+}

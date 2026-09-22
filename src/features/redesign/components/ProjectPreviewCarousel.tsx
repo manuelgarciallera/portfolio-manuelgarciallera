@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import './project-frame-effects.css'
+import './preview-carousel.css'
 import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { useSwipe } from '../hooks/useSwipe'
@@ -46,7 +47,7 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
   }, [])
 
   useEffect(() => {
-    if (variant !== 'card' || engaged !== false || !cover) return
+    if (variant !== 'card' || engaged !== false || !cover || manuallyPaused.current) return
     const reset = window.setTimeout(() => {
       setFrame({ kind: 'cover' })
       setUserControlled(false)
@@ -83,9 +84,9 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
         tabs.clientWidth,
         tabs.scrollWidth - tabs.clientWidth,
       ),
-      behavior: 'smooth',
+      behavior: reducedMotion ? 'instant' : 'smooth',
     })
-  }, [frame])
+  }, [frame, reducedMotion])
 
   const move = (direction: -1 | 1) => {
     setFrame((current) => ({
@@ -125,13 +126,20 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
       data-interaction={variant === 'card' ? 'viewport-hover' : 'autoplay'}
       data-engaged={engaged === undefined ? undefined : engaged ? 'true' : 'false'}
       data-frame={frame.kind}
+      data-reduced-motion={reducedMotion ? 'true' : 'false'}
       role="region"
       aria-roledescription="carrusel"
       aria-label={label}
       {...(variant === 'feature' ? swipeHandlers : {})}
       onMouseEnter={() => { if (!manuallyPaused.current) setPaused(false) }}
       onMouseLeave={() => { if (!focusWithin.current && variant === 'card') setPaused(true) }}
-      onFocusCapture={() => { focusWithin.current = true; if (!manuallyPaused.current) setPaused(false) }}
+      onFocusCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget) && event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
+          manuallyPaused.current = true
+          setPaused(true)
+        }
+        focusWithin.current = true
+      }}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           focusWithin.current = false
@@ -143,7 +151,7 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
       <div className="rd-preview-content">
         <div className="rd-preview-viewport">
           {slides.map((slide, index) => {
-            const isActive = index === active
+            const isActive = frame.kind === 'slide' && index === active
             const portrait = isPortraitEvidence(slide.src)
             const dimensions = projectImageDimensions[slide.src]
             return (
@@ -176,12 +184,12 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
           })}
         </div>
         <div className="rd-preview-controls">
-          <span aria-live={userControlled ? 'polite' : 'off'}>{String(active + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')} · {slides[active].label}</span>
+          <span aria-live={userControlled ? 'polite' : 'off'}>{frame.kind === 'cover' ? 'Portada' : `${String(active + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')} · ${slides[active].label}`}</span>
           <div>
             <button type="button" onClick={() => move(-1)} aria-label="Vista anterior">
               <svg className="rd-preview-control-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6" /></svg>
             </button>
-            <button type="button" onClick={togglePlayback} aria-label={paused ? 'Reanudar secuencia' : 'Pausar secuencia'}>
+            <button className="rd-preview-playback" type="button" onClick={togglePlayback} aria-label={paused ? 'Reanudar secuencia' : 'Pausar secuencia'} aria-pressed={paused}>
               {paused ? (
                 <svg className="rd-preview-control-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 7 8 5-8 5Z" /></svg>
               ) : (
@@ -195,7 +203,7 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
         </div>
         <div ref={tabsRef} className="rd-preview-tabs" role="group" aria-label="Seleccionar vista" tabIndex={0}>
           {slides.map((slide, index) => (
-            <button key={slide.src} type="button" data-active={index === active ? 'true' : 'false'} data-slide-index={index} onClick={() => { setFrame({ kind: 'slide', index }); setUserControlled(true); manuallyPaused.current = true; setPaused(true) }}>
+            <button key={slide.src} type="button" data-active={frame.kind === 'slide' && index === active ? 'true' : 'false'} aria-current={frame.kind === 'slide' && index === active ? 'true' : undefined} data-slide-index={index} onClick={() => { setFrame({ kind: 'slide', index }); setUserControlled(true); manuallyPaused.current = true; setPaused(true) }}>
               {slide.label}
             </button>
           ))}

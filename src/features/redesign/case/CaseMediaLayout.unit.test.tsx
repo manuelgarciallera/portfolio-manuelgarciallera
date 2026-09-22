@@ -13,7 +13,7 @@ import { PhaseSection } from './CaseBlocks'
 // Real components and CSS in Chromium: catches selector leakage and lost media
 // width, which static markup assertions cannot detect. No app server is needed.
 const widths = [320, 390, 768, 1024, 1366, 1440]
-const css = ['redesign.css', 'case/project-evidence.css']
+const css = ['redesign.css', 'case/project-evidence.css', 'case/journey-title-rail.css']
   .map(file => fs.readFileSync(path.join(process.cwd(), 'src/features/redesign', file), 'utf8')).join('\n')
 let browser: Browser
 let page: Page
@@ -85,7 +85,7 @@ describe('case media geometry', () => {
     }
   }, 60000)
 
-  it('keeps a mobile screen at readable device scale and retains the original-image control', async () => {
+  it('keeps a mobile screen at readable device scale and retains the keyboard lightbox control', async () => {
     const study = getCaseBySlug('laliga-club-operations-hub')!
     const markup = renderEvidence(<CaseVisualJourney study={{ ...study, story: undefined, visual: {
       ...study.visual!, slides: [{ src: '/projects/laliga/club-mobile-hd.webp', label: 'Mobile', alt: 'Panel móvil', fit: 'contain' }],
@@ -97,11 +97,11 @@ describe('case media geometry', () => {
         expect(image!.width).toBeGreaterThanOrEqual(Math.min(230, width - 64))
         expect(image!.width).toBeLessThanOrEqual(368)
         expect(image!.height).toBeLessThanOrEqual(738)
-        const link = page.getByRole('link', { name: 'Ampliar imagen: Panel móvil' })
-        expect(await link.getAttribute('href')).toBe('/projects/laliga/club-mobile-hd.webp')
-        expect((await link.locator('.rd-project-evidence__hint').boundingBox())!.height).toBeGreaterThanOrEqual(44)
-        await link.focus()
-        expect(await link.evaluate(el => el.matches(':focus-visible'))).toBe(true)
+        const control = page.getByRole('button', { name: 'Ampliar imagen: Panel móvil' })
+        expect(await control.getAttribute('aria-haspopup')).toBe('dialog')
+        expect((await control.locator('.rd-project-evidence__hint').boundingBox())!.height).toBeGreaterThanOrEqual(44)
+        await control.focus()
+        expect(await control.evaluate(el => el.matches(':focus-visible'))).toBe(true)
       } finally { await page.evaluate(() => window.scrollTo(0, 0)) }
     }
   }, 60000)

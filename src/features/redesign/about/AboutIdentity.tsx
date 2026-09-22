@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { ABOUT_CREDENTIALS } from '../content/about'
-import { PROFILE_LINKS } from '@/lib/site-config'
+import { PERSON_LEGAL_NAME, PROFILE_LINKS } from '@/lib/site-config'
 import { CvDownloads } from './CvDownloads'
 
 /**
@@ -27,7 +27,7 @@ export function AboutIdentity() {
         <figure className="rd-identity__portrait">
           <Image
             src="/images/manuel-garcia-llera.jpg"
-            alt="Retrato de Manuel García-Llera"
+            alt={`Retrato de ${PERSON_LEGAL_NAME}`}
             width={640}
             height={640}
             sizes="(max-width: 767px) 60vw, 18rem"

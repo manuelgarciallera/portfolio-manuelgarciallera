@@ -1,0 +1,27 @@
+/* Controls remain available before motion, on touch, and with reduced motion. */
+.rd-preview-carousel .rd-preview-tabs {
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  padding-block: .5rem;
+  margin-block: -.5rem;
+}
+.rd-preview-carousel.rd-preview-carousel--card .rd-preview-content .rd-preview-controls,
+.rd-preview-carousel.rd-preview-carousel--card .rd-preview-content .rd-preview-tabs {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transition-delay: 0s !important;
+}
+.rd-preview-carousel .rd-preview-controls > div .rd-preview-playback {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+}
+.rd-preview-carousel[data-reduced-motion='true'] .rd-preview-controls > div .rd-preview-playback { display: none; }
+@media (max-width: 767px) {
+  .rd-preview-carousel .rd-preview-controls { gap: .5rem; }
+  .rd-preview-carousel .rd-preview-controls > span { min-width: 0; flex: 1; font-size: .62rem; line-height: 1.35; letter-spacing: .04em; }
+  .rd-preview-carousel .rd-preview-controls > div { flex: none; gap: .25rem; }
+}

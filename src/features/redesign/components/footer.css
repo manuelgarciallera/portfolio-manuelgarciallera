@@ -1,0 +1,2 @@
+/* The footer retains a dark surface in both site themes. */
+.rd-footer { --focus-ring: #9ccbff; }

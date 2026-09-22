@@ -6,11 +6,11 @@ import test from 'node:test'
 // Build-output contract: importing source constants alone cannot prove that
 // Next applied the root template to the actual route metadata.
 const buildDir = process.env.PUBLIC_TITLE_BUILD_DIR
-const routes = ['casos', 'sobre-mi', 'investigacion', 'proceso', 'articulos',
-  'casos/buy-sell-marketplace', 'casos/laliga-club-operations-hub',
-  'casos/coordination-hub', 'casos/the-ux-union', 'casos/nude-project']
+const routes = ['proyectos', 'sobre-mi', 'investigacion', 'proceso', 'blog',
+  'proyectos/buy-sell-marketplace', 'proyectos/laliga-club-operations-hub',
+  'proyectos/coordination-hub', 'proyectos/the-ux-union', 'proyectos/nude-project']
 
-for (const route of ['casos', 'sobre-mi', 'investigacion', 'proceso', 'articulos']) {
+for (const route of ['proyectos', 'sobre-mi', 'investigacion', 'proceso', 'blog']) {
   test(`${route} retains the full identity when shared`, async () => {
     assert.ok(buildDir)
     const html = await readFile(path.join(buildDir, 'server/app', `${route}.html`), 'utf8')

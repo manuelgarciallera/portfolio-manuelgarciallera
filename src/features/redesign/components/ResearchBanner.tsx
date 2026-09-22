@@ -39,7 +39,7 @@ export function ResearchBanner() {
         <p>Diseño la relación entre personas, interfaces e IA; después la convierto en un sistema que puede probarse, explicarse y evolucionar.</p>
         <a href="/sobre-mi">Explorar la práctica <span aria-hidden="true">→</span></a>
       </div>
-      <div className="rd-research-artifact" aria-hidden="true">
+      <div className="rd-research-artifact">
         <div className="rd-research-artifact-canvas">
           <ResearchArtifactCanvas />
         </div>

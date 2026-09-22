@@ -26,6 +26,7 @@ describe('Footer', () => {
     expect(markup).toContain('href="/#contacto"')
     expect(markup).toContain('linkedin.com/in/manuelgarciallera')
     expect(markup).not.toContain('Diseño + IA, documentado con criterio')
+    expect(markup).toContain('Manuel García-Llera Añón')
   })
 
   it('closes with one real dimensional artwork instead of layered CSS art', () => {

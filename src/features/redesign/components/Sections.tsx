@@ -3,10 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { PUBLIC_ROUTES } from '../../../lib/public-routes'
-import { PROFILE_LINKS } from '../../../lib/site-config'
+import { PERSON_DISPLAY_NAME, PROFILE_LINKS } from '../../../lib/site-config'
 import { ContactForm } from './ContactForm'
 import { ContactLink } from './ContactLink'
 import '../contact.css'
+import './footer.css'
 
 export function ManifestoSection() {
   return (
@@ -94,7 +95,7 @@ export function ContactSection() {
 export function Footer() {
   return (
     <footer className="rd-footer">
-      <span>© {new Date().getFullYear()} Manuel García-Llera</span>
+      <span>© {new Date().getFullYear()} {PERSON_DISPLAY_NAME}</span>
       <span>Madrid · manuelgarciallera.com</span>
       <nav aria-label="Navegación secundaria">
         <Link href="/sobre-mi">Sobre mí</Link>

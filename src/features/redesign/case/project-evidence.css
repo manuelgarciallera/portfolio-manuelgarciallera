@@ -5,9 +5,50 @@
   gap: .65rem;
   width: min(100%, var(--evidence-source-width));
   margin-inline: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: zoom-in;
   color: inherit;
   text-decoration: none;
 }
+.rd-evidence-dialog {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  border: 0;
+  background: transparent;
+  color: #f7f7f5;
+  overscroll-behavior: contain;
+}
+.rd-evidence-dialog[open] { display: grid; place-items: center; }
+.rd-evidence-dialog::backdrop { background: rgb(5 7 12 / .88); }
+.rd-evidence-dialog__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(100%, 90rem);
+  height: min(100%, 90dvh);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / .24);
+  border-radius: .9rem;
+  background: #151820;
+  box-shadow: 0 1rem 5rem rgb(0 0 0 / .4);
+}
+.rd-evidence-dialog__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem .75rem; }
+.rd-evidence-dialog__toolbar a { color: inherit; font: 500 .85rem/1.35 var(--font-sans, sans-serif); text-underline-offset: .2em; }
+.rd-evidence-dialog__toolbar button { display: grid; place-items: center; flex: 0 0 2.75rem; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid rgb(255 255 255 / .5); border-radius: 50%; color: inherit; background: transparent; cursor: pointer; }
+.rd-evidence-dialog__toolbar svg { width: 1.25rem; height: 1.25rem; stroke: currentColor; stroke-width: 1.8; fill: none; }
+.rd-evidence-dialog__toolbar :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.rd-evidence-dialog__image { display: grid; place-items: center; min-height: 0; padding: 0 .75rem .75rem; }
+.rd-evidence-dialog .rd-evidence-dialog__image img { position: static; display: block; width: 100%; height: 100%; min-height: 0; max-height: 100%; object-fit: contain; border-radius: 0; clip-path: none; transform: none; filter: none; }
 .rd-project-evidence[data-portrait="true"] {
   width: min(100%, var(--evidence-source-width), 23rem, calc(78svh * var(--evidence-ratio)));
 }

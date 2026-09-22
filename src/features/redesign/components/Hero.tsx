@@ -68,7 +68,13 @@ export function Hero({ isDark = true }: HeroProps) {
     <section className="rd-hero" id="inicio">
       <div className="rd-hero-copy">
         <h1>
-          Diseño sistemas digitales que conectan investigación, interfaz y código.
+          <span className="rd-hero-phrase">Diseño</span>{' '}
+          <span className="rd-hero-phrase">sistemas</span>{' '}
+          <span className="rd-hero-phrase">digitales que</span>{' '}
+          <span className="rd-hero-phrase">conectan</span>{' '}
+          <span className="rd-hero-phrase">investigación,</span>{' '}
+          <span className="rd-hero-phrase">interfaz y</span>{' '}
+          <span className="rd-hero-phrase">código.</span>
         </h1>
         <a {...actionFeedback} className="rd-action-feedback" href="#casos"><span className="rd-cta-glow" aria-hidden="true" /><span className="rd-cta-glass" aria-hidden="true" /><span className="rd-cta-label">Ver proyectos</span></a>
       </div>

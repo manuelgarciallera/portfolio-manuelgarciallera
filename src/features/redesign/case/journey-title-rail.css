@@ -1,0 +1,34 @@
+.rd-journey-title {
+  --journey-title-ink: #bfc2cc;
+  position: relative;
+  overflow: hidden;
+  padding-block: .3em;
+  margin-bottom: clamp(4rem, 8vw, 8rem);
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  color: var(--journey-title-ink);
+}
+.rd-journey-title[data-dragging='true'] { cursor: grabbing; }
+.rd-case-page > .rd-journey-title { padding-block: clamp(2rem, 4vw, 4rem); margin-bottom: 0; background: #10131b; }
+.rd-journey-title__track { display: flex; width: max-content; will-change: transform; }
+.rd-journey-title__copy { display: flex; flex: none; gap: clamp(2rem, 4vw, 4rem); min-width: 100vw; padding-right: clamp(2rem, 4vw, 4rem); }
+.rd-journey-title__copy span { display: block; flex: none; padding: .08em .03em .18em; font: italic 500 clamp(2.5rem, 6vw, 7rem)/1.15 var(--font-serif, Georgia, serif); white-space: nowrap; }
+.rd-journey-title[data-interacting='true'] .rd-journey-title__copy span {
+  color: transparent;
+  background-image: radial-gradient(ellipse 150px 110px at var(--title-pointer-x, -1000px) var(--title-pointer-y, -1000px), #45deff 0%, #a288ff 26%, #ff65cb 48%, var(--journey-title-ink) 78%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.rd-journey-title__pause { position: absolute; right: max(.5rem, var(--gutter, 1rem)); top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid currentColor; border-radius: 50%; background: #151820; color: #fff; cursor: pointer; }
+.rd-journey-title__pause svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.rd-journey-title__pause:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.rd-visual-journey--coordination .rd-journey-title { --journey-title-ink: #d9ff43; }
+.rd-visual-journey--theuxunion .rd-journey-title { --journey-title-ink: #de4dff; }
+@media (prefers-reduced-motion: reduce) {
+  .rd-journey-title__track { will-change: auto; }
+  .rd-journey-title__pause { display: none; }
+}
+@media (forced-colors: active) {
+  .rd-journey-title[data-interacting='true'] .rd-journey-title__copy span { background: none; color: CanvasText; }
+}

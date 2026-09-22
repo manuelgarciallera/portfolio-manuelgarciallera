@@ -9,7 +9,7 @@ describe('editorial content', () => {
   })
 
   it('attributes every article to Manuel', () => {
-    expect(ARTICLE_AUTHOR.name).toBe('Manuel García-Llera')
+    expect(ARTICLE_AUTHOR.name).toBe('Manuel García-Llera Añón')
     expect(ARTICLE_AUTHOR.bio).toContain('HCI')
   })
 })

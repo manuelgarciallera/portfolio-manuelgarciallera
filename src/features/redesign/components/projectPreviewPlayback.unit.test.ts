@@ -9,10 +9,10 @@ import {
 } from './projectPreviewPlayback'
 
 describe('project preview playback', () => {
-  it('starts a preview at the exact pixel where the full visual becomes visible', () => {
+  it('starts an eligible preview even when its last quarter is below the viewport', () => {
     const active = selectCenteredPreview([
       { id: 'buy-sell', top: -420, bottom: 230 },
-      { id: 'laliga', top: 0, bottom: 844 },
+      { id: 'laliga', top: 200, bottom: 1044 },
       { id: 'coordination', top: 1050, bottom: 1700 },
     ], 844)
 
@@ -28,13 +28,20 @@ describe('project preview playback', () => {
     expect(active).toBe('buy-sell')
   })
 
-  it('does not start a preview while even one pixel remains clipped', () => {
+  it('does not start a preview before three quarters of its visible capacity are on screen', () => {
     const active = selectCenteredPreview([
-      { id: 'buy-sell', top: -1, bottom: 710 },
-      { id: 'laliga', top: 180, bottom: 845 },
+      { id: 'buy-sell', top: -180, bottom: 500 },
+      { id: 'laliga', top: 345, bottom: 1015 },
     ], 844)
 
     expect(active).toBeNull()
+  })
+
+  it('uses viewport capacity for cards taller than a short landscape screen', () => {
+    expect(selectCenteredPreview([{ id: 'tall', top: -200, bottom: 700 }], 400)).toBe('tall')
+    expect(selectCenteredPreview([{ id: 'tall', top: 101, bottom: 1001 }], 400)).toBeNull()
+    expect(selectCenteredPreview([{ id: 'edge', top: 100, bottom: 1000 }], 400)).toBe('edge')
+    expect(selectCenteredPreview([{ id: 'empty', top: 0, bottom: 0 }], 400)).toBeNull()
   })
 
   it('activates a preview wherever it sits once all its pixels are visible', () => {

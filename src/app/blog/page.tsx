@@ -6,7 +6,7 @@ import { OG_IMAGE, PERSON_LEGAL_NAME } from '@/lib/site-config'
 import { PUBLIC_ROUTES } from '@/lib/public-routes'
 export const metadata: Metadata = {
   title: 'Blog sobre diseño, HCI e IA',
-  description: 'Investigación y práctica de Manuel García-Llera sobre sistemas de diseño, HCI, producto e inteligencia artificial.',
+  description: `Investigación y práctica de ${PERSON_LEGAL_NAME} sobre sistemas de diseño, HCI, producto e inteligencia artificial.`,
   alternates: { canonical: PUBLIC_ROUTES.blog },
   openGraph: {
     url: PUBLIC_ROUTES.blog,

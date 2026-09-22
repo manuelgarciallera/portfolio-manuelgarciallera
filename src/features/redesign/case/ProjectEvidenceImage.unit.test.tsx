@@ -20,10 +20,12 @@ describe('ProjectEvidenceImage', () => {
       expect(projectImageDimensions[src], src).toEqual([metadata.width, metadata.height])
     }
   })
-  it('reserves the actual portrait ratio, not a landscape placeholder, and exposes a keyboard link to the original', () => {
+  it('reserves the portrait ratio and opens an in-page dialog from a keyboard button', () => {
     const html = renderToStaticMarkup(<ProjectEvidenceImage src="/projects/laliga/club-mobile-hd.webp" alt="Panel móvil de clubes" sizes="320px" />)
     expect(html).toContain('width="390" height="843"')
-    expect(html).toContain('href="/projects/laliga/club-mobile-hd.webp"')
+    expect(html).toContain('<button')
+    expect(html).toContain('aria-haspopup="dialog"')
+    expect(html).not.toContain('target="_blank"')
     expect(html).toContain('aria-label="Ampliar imagen: Panel móvil de clubes"')
     expect(html).toContain('data-portrait="true"')
   })

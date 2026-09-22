@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 
 import { SiteHeader } from '../components/SiteHeader'
-import { Breadcrumbs } from '../components/Breadcrumbs'
+import { PageIntro } from '../components/PageIntro'
 import { Footer } from '../components/Sections'
 import { usePortfolioTheme } from '../hooks/usePortfolioTheme'
 import {
@@ -37,19 +37,11 @@ export function ResearchPage() {
 
       <main className="rd-page-offset" id="main-content">
         <section className="rd-section">
-          <Breadcrumbs items={[{ label: 'Investigación' }]} />
-          <p className="rd-label rd-reveal" data-index="00">
-            Investigación
-          </p>
-          <h1 className="rd-case-page-title rd-reveal">
-            Del objeto a la interfaz
-          </h1>
-          <p className="rd-statement rd-reveal">{RESEARCH_STATEMENT}</p>
-          <div className="rd-prose rd-reveal">
+          <PageIntro label="Investigación" title="Del objeto a la interfaz" lead={RESEARCH_STATEMENT}>
             {RESEARCH_INTRO.map((paragraph) => (
               <p key={paragraph.slice(0, 32)}>{paragraph}</p>
             ))}
-          </div>
+          </PageIntro>
         </section>
 
         <section className="rd-section">

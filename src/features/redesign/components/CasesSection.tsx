@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { CaseCard, type CaseCardItem } from './CaseCard'
 import { selectCenteredPreview } from './projectPreviewPlayback'
 
-export function CasesSection({ items }: { items: CaseCardItem[] }) {
+export function CasesSection({ items, showIntro = true }: { items: CaseCardItem[]; showIntro?: boolean }) {
   const previewElements = useRef(new Map<string, HTMLDivElement>())
   const [activePreview, setActivePreview] = useState<string | null>(null)
 
@@ -46,18 +46,20 @@ export function CasesSection({ items }: { items: CaseCardItem[] }) {
 
   return (
     <section className="rd-section" id="casos">
-      <p className="rd-label rd-reveal">
-        Casos seleccionados
-      </p>
-      <div className="rd-cases-intro rd-reveal">
-        <h2>Del problema al producto, sin perder el hilo.</h2>
-        <div>
-          <p>
-            Cada caso muestra qué había que entender, qué decisiones tomé y cómo llegaron a un sistema que puede probarse.
-          </p>
-          <Link href={PUBLIC_ROUTES.projects}>Ver todos los proyectos <span aria-hidden="true">→</span></Link>
-        </div>
-      </div>
+      {showIntro ? (
+        <>
+          <p className="rd-label rd-reveal">Casos seleccionados</p>
+          <div className="rd-cases-intro rd-reveal">
+            <h2>Del problema al producto, sin perder el hilo.</h2>
+            <div>
+              <p>
+                Cada caso muestra qué había que entender, qué decisiones tomé y cómo llegaron a un sistema que puede probarse.
+              </p>
+              <Link href={PUBLIC_ROUTES.projects}>Ver todos los proyectos <span aria-hidden="true">→</span></Link>
+            </div>
+          </div>
+        </>
+      ) : null}
       <div className="rd-cases">
         {items.map((item) => (
           <CaseCard

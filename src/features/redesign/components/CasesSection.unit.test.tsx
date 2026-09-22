@@ -33,4 +33,12 @@ describe('CasesSection', () => {
     expect(markup).not.toContain('cases-convergence-v1.webp')
     expect(markup).toContain('Casos seleccionados')
   })
+
+  it('can omit the landing introduction when the projects page has already introduced the list', () => {
+    const markup = renderToStaticMarkup(<CasesSection items={getCaseCards()} showIntro={false} />)
+    expect(markup).not.toContain('Casos seleccionados')
+    expect(markup).not.toContain('Ver todos los proyectos')
+    expect(markup).toContain('Buy&amp;Sell')
+    expect(markup).toContain('LaLiga')
+  })
 })

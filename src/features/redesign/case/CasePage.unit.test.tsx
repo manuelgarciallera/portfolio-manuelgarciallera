@@ -15,9 +15,14 @@ describe('CasePage theme hydration', () => {
     expect(markup).not.toContain('rd-coordination-diagram')
     expect(markup).not.toContain('rd-case-feature--coordination')
     expect(markup).toContain('Interfaz real con datos de demostración')
+    const evidenceButtons = markup.match(/<button\b[^>]*class="rd-project-evidence"[\s\S]*?<\/button>/g) ?? []
+    expect(evidenceButtons).toHaveLength(study.visual!.slides.length)
     for (const slide of study.visual!.slides) {
       expect(slide.kind).not.toBe('coordination-diagram')
-      expect(markup.match(new RegExp(`href="${slide.src}"`, 'g'))).toHaveLength(1)
+      const matchingEvidence = evidenceButtons.filter(button =>
+        button.includes(`url=${encodeURIComponent(slide.src)}`) || button.includes(`src="${slide.src}"`))
+      expect(matchingEvidence).toHaveLength(1)
+      expect(matchingEvidence[0]).toContain('aria-haspopup="dialog"')
     }
   })
   it('renders the same dark theme control as the root layout on the server', () => {

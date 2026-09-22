@@ -1,10 +1,16 @@
 /* Contacto privado: editorial por fuera, formulario de producto por dentro. */
 .rd-contact {
+  --contact-success: #126838;
+  --contact-error: #a92f24;
   display: grid;
   grid-template-columns: minmax(16rem, 0.72fr) minmax(22rem, 1.28fr);
   gap: clamp(3rem, 8vw, 9rem);
   align-items: start;
   background: var(--surface);
+}
+[data-theme="dark"] .rd-contact {
+  --contact-success: #76daa3;
+  --contact-error: #ff9387;
 }
 .rd-contact > .rd-label { grid-column: 1 / -1; }
 .rd-contact-heading h2 {
@@ -44,8 +50,8 @@
 .rd-contact-form__actions button:hover { color: var(--ink); background: transparent; transform: translateY(-2px); }
 .rd-contact-form__actions button:disabled { cursor: wait; opacity: 0.58; transform: none; }
 .rd-contact-form__status { grid-column: 1 / -1; min-height: 1.4em; margin: 0; font-size: 0.78rem; }
-.rd-contact-form__status.is-success { color: #16834d; }
-.rd-contact-form__status.is-error { color: #c63c2f; }
+.rd-contact-form__status.is-success { color: var(--contact-success); }
+.rd-contact-form__status.is-error { color: var(--contact-error); }
 .rd-contact-form__status a { color: currentColor; font-weight: 700; text-underline-offset: 0.3em; }
 
 /* Two editorial columns need enough room for the form, including tablet gutters. */

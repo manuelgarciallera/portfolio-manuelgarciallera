@@ -23,7 +23,11 @@ describe('case-study responsive safeguards', () => {
     expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-case-visual-copy strong\s*\{[^}]*6\.5vw/)
     expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-case-visual-copy\s*\{[^}]*position:\s*absolute/)
     expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-research-banner\s*\{[^}]*grid-template-columns:\s*1fr/)
-    expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-research-artifact-canvas\s*\{[^}]*width:\s*min\(74vw,\s*20rem\)/)
+  })
+
+  it('caps the enlarged mobile research canvas at 82vw or 22rem', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
+    expect(css).toMatch(/@media \(max-width: 767px\)[\s\S]*\.rd-research-artifact-canvas\s*\{[^}]*width:\s*min\(82vw,\s*22rem\)/)
   })
 
   it('contains the dynamic-branding scene and disables motion until it is visible', () => {
