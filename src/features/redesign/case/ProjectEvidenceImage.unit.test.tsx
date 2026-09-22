@@ -6,10 +6,17 @@ import { imageConfigDefault } from 'next/dist/shared/lib/image-config'
 import nextConfig from '../../../../next.config'
 import sharp from 'sharp'
 import path from 'node:path'
+import { readFileSync } from 'node:fs'
 import { getPublishedCases } from '../content/cases'
 import { projectImageDimensions } from './projectImageDimensions'
 
 describe('ProjectEvidenceImage', () => {
+  it('owns a high-contrast focus token on the dark dialog regardless of the site theme', () => {
+    const css = readFileSync(path.join(process.cwd(), 'src/features/redesign/case/project-evidence.css'), 'utf8')
+    const dialogRule = css.match(/\.rd-evidence-dialog\s*\{([^}]+)\}/)?.[1]
+    expect(dialogRule).toMatch(/--focus-ring:\s*#fff(?:fff)?\s*;/)
+  })
+
   it('reserves dimensions matching every actual published evidence asset', async () => {
     const sources = new Set(getPublishedCases().flatMap(study => [
       ...(study.visual?.slides.filter(slide => slide.kind !== 'coordination-diagram').map(slide => slide.src) ?? []),

@@ -11,6 +11,15 @@ const results = []
 const nude = '/proyectos/nude-project'
 const cases = ['buy-sell-marketplace', 'laliga-club-operations-hub', 'coordination-hub', 'the-ux-union', 'nude-project']
 
+function contrastRatio(a, b) {
+  const luminance = color => color.match(/[\d.]+/g).slice(0, 3).map(Number).map(channel => {
+    const value = channel / 255
+    return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4
+  }).reduce((total, value, index) => total + value * [.2126, .7152, .0722][index], 0)
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (light + .05) / (dark + .05)
+}
+
 async function open(page, route) {
   const response = await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded', timeout: 30000 })
   assert.equal(response.status(), 200)
@@ -71,7 +80,10 @@ try {
     return details
   })
 
-  for (const width of [390, 1440]) await check(`real-lightbox-${width}`, { viewport: { width, height: 900 }, reducedMotion: 'reduce' }, async page => {
+  for (const width of [390, 1440]) await check(`real-lightbox-${width}`, {
+    viewport: { width, height: 900 }, reducedMotion: 'reduce', colorScheme: 'light',
+    storageState: { cookies: [], origins: [{ origin: new URL(base).origin, localStorage: [{ name: 'rd-theme', value: 'light' }] }] },
+  }, async page => {
     await open(page, '/proyectos')
     await page.locator(`a.rd-case-title-reveal[href="${nude}"]`).click()
     await page.waitForURL(`${base}${nude}`)
@@ -83,12 +95,21 @@ try {
     const dialog = page.getByRole('dialog')
     await dialog.waitFor()
     const close = dialog.getByRole('button', { name: 'Cerrar imagen ampliada' })
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'light')
     const target = await close.boundingBox()
     assert.ok(target.width >= 44 && target.height >= 44, '44px close target')
     assert.ok(await close.evaluate(element => element === document.activeElement), 'Initial focus')
-    for (const key of ['Shift+Tab', 'Tab', 'Tab']) {
-      await page.keyboard.press(key)
+    const focusChecks = []
+    for (const key of [null, 'Shift+Tab', 'Tab', 'Tab']) {
+      if (key) await page.keyboard.press(key)
       assert.ok(await dialog.evaluate(element => element.contains(document.activeElement)), 'Native dialog focus contained')
+      const focus = await dialog.evaluate(element => {
+        const styles = getComputedStyle(document.activeElement)
+        return { outline: styles.outlineColor, width: parseFloat(styles.outlineWidth), surface: getComputedStyle(element.querySelector('.rd-evidence-dialog__panel')).backgroundColor }
+      })
+      const contrast = contrastRatio(focus.outline, focus.surface)
+      assert.ok(focus.width >= 2 && contrast >= 3, `Light-theme dialog focus contrast >=3:1; actual ${contrast}`)
+      focusChecks.push({ ...focus, contrast })
     }
     await dialog.locator('img').evaluate(image => image.decode())
     const image = await dialog.locator('img').boundingBox()
@@ -101,7 +122,7 @@ try {
     await trigger.click(); await dialog.waitFor(); await page.mouse.click(2, 2); await dialog.waitFor({ state: 'detached' })
     await trigger.click(); await dialog.waitFor(); await page.goBack(); await page.waitForURL(`${base}/proyectos`)
     assert.notEqual(await page.evaluate(() => document.body.style.position), 'fixed', 'SPA back navigation unlocks body')
-    return { close: target, image, escapeFocusAndScroll: true, closeButton: true, backdrop: true, backNavigation: true }
+    return { close: target, image, focusChecks, escapeFocusAndScroll: true, closeButton: true, backdrop: true, backNavigation: true }
   })
 
   for (const width of [390, 1440]) await check(`real-next-case-threshold-${width}`, { viewport: { width, height: 900 }, reducedMotion: 'reduce' }, async page => {

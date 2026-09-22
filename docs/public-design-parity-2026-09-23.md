@@ -81,3 +81,59 @@ https://developers.google.com/search/docs/appearance/favicon-in-search .
 - No se publica ni se certifica el piloto privado del CMS.
 - Los fallos de montaje, timeouts y comprobaciones parciales se registran por
   separado; no cuentan como pruebas superadas.
+
+## Evidencia de implementación (cierre en curso)
+
+Fuente pública aislada: `7a2432649cca96ab494554a9eb59c220356d3768`, hija directa
+de la producción anterior `c17270657796b02373fc35f809866b301c7aba93`.
+Rama `codex/public-design-parity-2026-09-23`; 65 archivos públicos, sin cambios
+en `owner-platform`. Push confirmado. Preview Vercel
+`8x4sPtAAXmKv4f4N7TQQDwbkbowo` Ready, 23/09/2026 01:12 CEST.
+Esto todavía no acredita publicación en el dominio.
+
+Retorno remoto conservado: etiqueta anotada
+`checkpoint/public-before-design-parity-2026-09-23`, sobre `c172706`.
+No se ha reescrito historial ni eliminado activos anteriores.
+
+- Unitarias: 371/371, 55 archivos. Tras la corrección final de cabecera,
+  sus 5 pruebas vuelven a pasar; build final Next/TypeScript y 30 rutas PASS.
+- Identidad: 16/16 comprobaciones sobre HTML generado. El verificador antiguo
+  buscaba `/casos` y `/articulos`; se actualiza a `/proyectos` y `/blog`, las
+  rutas canónicas vigentes. Los intentos con rutas antiguas no cuentan como PASS.
+- Frontera pública: 22 entradas; guardas: 15/15; presupuesto oficial: 11 rutas
+  dentro del límite, sin alterar el baseline. El comando por defecto busca
+  `.next`: la comprobación válida usa explícitamente el build del candidato.
+- Lint: sin errores; permanece un aviso preexistente de otra tarea en
+  `.superpowers/sdd/2026-09-22-selector-escape-focus/`.
+- Codificación: `src` y `public` PASS. El barrido global detecta marcadores en
+  vendor/builds/auditorías privadas; no se declara una comprobación global limpia.
+- Cabecera, menú, contacto y pie: 22/22 Chromium y 22/22 Firefox en el build
+  candidato. Se encontraron y corrigieron un solapamiento a 1180 px y pérdida
+  de foco desktop→mobile. Repetición con fuentes cargadas: 8/8 en 1180/1280,
+  ambos temas y motores. Foco del pie: 11,81:1; estados de contacto: mínimo 5,99:1.
+- Recibos de controles: `.audit/browser-parity-controls-20260923/3102/`;
+  el RED anterior se conserva en `3102-header-red/`.
+- La medición Lighthouse inicial se descarta como inválida: aviso de carga
+  demasiado lenta y fallo de limpieza EPERM. Un JSON escrito no convierte
+  una ejecución fallida en una medida de rendimiento aprobada.
+
+### Comparación de páginas finalizada
+
+- Casos: 60/60 perfiles (cinco proyectos × 390/768/1366 px × dos temas ×
+  dos motores). 30 comparaciones y 288 pares de imágenes; mismo inventario,
+  sin imágenes rotas, recorte de h1, desbordamiento o errores de página.
+  Deltas máximos: h1 0,49 px; imágenes 0,39 px. Cero candidatos geométricos.
+  `.audit/case-browser-parity-20260923/both-results.json`.
+- Lectura: 54/54 Chromium y 54/54 Firefox (cinco páginas principales y cuatro
+  artículos, 320/390/1440 px, ambos temas). Escala de etiquetas y separaciones
+  comunes; alturas de h1 con diferencias máximas de 0,058 px. El ancho máximo
+  de la caja de artículos a escritorio difiere 27,84 px por la unidad `ch`,
+  sin cambiar saltos de línea, alturas ni producir desbordamiento. Se registra
+  esta diferencia, no se presenta paridad como igualdad matemática de píxeles.
+  `.audit/public-reading-foundations-20260923/production-final-*/results.json`.
+- Bundle final frente a c172706: portada +1035 B gzip; casos +2940 B gzip;
+  sin dependencias nuevas. El visor accesible y la banda interactiva justifican
+  el incremento medido; permanece dentro del presupuesto oficial de 11 rutas.
+  `.audit/public-parity-performance-20260923/bundle-final.json`.
+
+Las interacciones, rendimiento, despliegue y Search Console continúan en cierre.

@@ -30,6 +30,7 @@ async function check(name, verify, { route = '/proceso', width = 1280 } = {}) {
     await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.locator('.rd-header').waitFor({ state: 'visible' })
     await page.waitForFunction(value => document.documentElement.dataset.theme === value, theme)
+    await page.evaluate(() => document.fonts.ready)
     // The non-modal notice must not obscure the controls under test. Closing
     // it makes no consent choice and never submits a contact form.
     const dismiss = page.getByRole('button', { name: 'Cerrar preferencias sin cambiar la elección' })
