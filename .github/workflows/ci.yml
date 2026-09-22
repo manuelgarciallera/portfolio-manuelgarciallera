@@ -36,6 +36,9 @@ jobs:
       - name: Test public guards
         run: npm run test:public-guards
 
+      - name: Install browser for media layout regressions
+        run: npx playwright install --with-deps chromium
+
       - name: Test public behavior and isolation guards
         run: |
           npx vitest run --config vitest.unit.config.ts

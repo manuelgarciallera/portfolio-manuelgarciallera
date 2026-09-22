@@ -11,7 +11,7 @@ describe('NextCase', () => {
     expect(markup).toContain('Siguiente caso de estudio')
     expect(markup).toContain('rd-case-visual--laliga')
     expect(markup).toContain('Ver caso de estudio')
-    expect(markup).toContain('href="/casos/laliga-club-operations-hub"')
+    expect(markup).toContain('href="/proyectos/laliga-club-operations-hub"')
     expect(markup).toContain('alt="LaLiga · Hub de Clubes"')
   })
 })

@@ -23,8 +23,8 @@ describe('ArticlesSection', () => {
     expect(markup).toMatch(/id="articles-track"[^>]*tabindex="0"/)
     expect(markup.match(/aria-controls="articles-track"/g)).toHaveLength(2)
     expect(markup).toContain('aria-label="Ver artículos siguientes"')
-    expect(markup).toContain('href="/articulos/del-objeto-a-la-interfaz"')
-    expect(markup).toContain('href="/articulos/interfaces-para-roles-y-estados-complejos"')
+    expect(markup).toContain('href="/blog/del-objeto-a-la-interfaz"')
+    expect(markup).toContain('href="/blog/interfaces-para-roles-y-estados-complejos"')
   })
   it('identifies the section as blog, research and practice with a circular separator', () => {
     const markup = renderToStaticMarkup(<ArticlesSection />)

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import Image from 'next/image'
 
 import { SiteHeader } from '../components/SiteHeader'
@@ -125,7 +126,7 @@ export function ProcessPage() {
             con sus artefactos y su deuda declarada.
           </p>
           <p className="rd-prose rd-reveal">
-            <Link className="rd-contact-mail" href="/casos">
+            <Link className="rd-contact-mail" href={PUBLIC_ROUTES.projects}>
               Ver los casos
             </Link>
           </p>

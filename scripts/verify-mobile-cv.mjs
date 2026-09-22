@@ -10,7 +10,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' })
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
-    for (const route of ['/', '/articulos', '/sobre-mi']) {
+    for (const route of ['/', '/blog', '/sobre-mi']) {
       await page.goto(`${base}${route}`, { waitUntil: 'networkidle' })
       const nav = page.locator('#mobile-navigation')
       if (width >= 1180) {

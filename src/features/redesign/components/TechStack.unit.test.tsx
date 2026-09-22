@@ -26,7 +26,7 @@ describe('TechStack', () => {
   it('keeps informational technologies readable without inert keyboard stops or controls', () => {
     const markup = renderToStaticMarkup(<TechStack technologies={['Figma', 'React']} compact />)
 
-    expect(markup).toContain('aria-label="Stack tecnológico"')
+    expect(markup).toContain('aria-label="Tecnologías utilizadas"')
     expect(markup).not.toContain('tabindex=')
     expect(markup).not.toContain('<button')
     expect(markup).not.toContain('<a ')

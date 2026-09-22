@@ -19,7 +19,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Route changes and hash links must arrive once, without an animated detour. */
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { projectHref, PUBLIC_ROUTES } from '../../../lib/public-routes'
 import { type PointerEvent, type RefCallback, useCallback, useEffect, useRef, useState } from 'react'
 
 import type { CaseStudy } from '../content/types'
@@ -23,7 +24,7 @@ export interface CaseCardProps {
 }
 
 export function CaseCard({ item, viewportActive = false, registerPreview }: CaseCardProps) {
-  const href = item.published ? `/casos/${item.slug}` : '/casos'
+  const href = item.published ? projectHref(item.slug) : PUBLIC_ROUTES.projects
   const actionLabel = item.published ? 'Ver caso de estudio' : 'En preparación'
   const visualRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)

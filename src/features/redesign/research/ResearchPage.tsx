@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 
 import { SiteHeader } from '../components/SiteHeader'
 import { Breadcrumbs } from '../components/Breadcrumbs'
@@ -116,11 +117,11 @@ export function ResearchPage() {
           </p>
           <p className="rd-prose rd-reveal">
             Los textos en curso están en{' '}
-            <Link className="rd-contact-mail" href="/articulos">
+            <Link className="rd-contact-mail" href={PUBLIC_ROUTES.blog}>
               el cuaderno
             </Link>
             , y los casos donde esto se convierte en producto, en{' '}
-            <Link className="rd-contact-mail" href="/casos">
+            <Link className="rd-contact-mail" href={PUBLIC_ROUTES.projects}>
               los proyectos
             </Link>
             .

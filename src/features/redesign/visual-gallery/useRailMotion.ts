@@ -21,6 +21,9 @@ export function useRailMotion(trackId: string, automatic: boolean) {
     let manualUntil = 0
     let frame = 0
     let timer = 0
+    let clickTimer = 0
+    let suppressClick = false
+    let drag: { pointerId: number; x: number; y: number; start: number; moved: boolean } | null = null
     let previous = 0
     let position = track.scrollLeft
     const maximum = () => Math.max(0, track.scrollWidth - track.clientWidth)
@@ -34,7 +37,7 @@ export function useRailMotion(trackId: string, automatic: boolean) {
         enabled: desktop.matches, reducedMotion: reduced.matches,
         visible: visible && !document.hidden, paused: pausedRef.current,
         focused: track.matches(':focus-within') || Boolean(scope.querySelector(':focus-visible')),
-        manual: now < manualUntil,
+        manual: drag !== null || now < manualUntil,
         pointer, position: track.scrollLeft, maximum: maximum(),
       })
       if (velocity !== 0) {
@@ -53,8 +56,62 @@ export function useRailMotion(trackId: string, automatic: boolean) {
     }
     const onScroll = () => {
       sync()
-      if (performance.now() < manualUntil) position = track.scrollLeft
+      if (drag || performance.now() < manualUntil) position = track.scrollLeft
     }
+    const releaseDrag = () => {
+      const gesture = drag
+      drag = null
+      delete track.dataset.dragging
+      if (gesture && track.hasPointerCapture(gesture.pointerId)) track.releasePointerCapture(gesture.pointerId)
+      return gesture
+    }
+    const endDrag = (allowClickSuppression = false) => {
+      const gesture = releaseDrag()
+      if (!gesture) return
+      suppressClick = allowClickSuppression && gesture.moved
+      // The native click follows pointerup in the same event turn. Never leave
+      // suppression armed for a later unrelated click when no click is emitted.
+      window.clearTimeout(clickTimer)
+      clickTimer = window.setTimeout(() => { suppressClick = false }, 0)
+      position = track.scrollLeft
+      previous = 0
+      pauseForGesture()
+    }
+    const onDown = (event: PointerEvent) => {
+      suppressClick = false
+      window.clearTimeout(clickTimer)
+      pauseForGesture()
+      if (!desktop.matches || event.pointerType !== 'mouse' || !event.isPrimary || event.button !== 0
+        || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+      drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, start: track.scrollLeft, moved: false }
+    }
+    const onDragMove = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.pointerId) return
+      if (!(event.buttons & 1)) { endDrag(); return }
+      const delta = event.clientX - drag.x
+      if (!drag.moved) {
+        if (Math.abs(delta) < 6 || Math.abs(delta) <= Math.abs(event.clientY - drag.y)) return
+        drag.moved = true
+        track.dataset.dragging = 'true'
+        // Capture only after a horizontal drag; an ordinary anchor click keeps
+        // its original target and native navigation/modifier behavior.
+        track.setPointerCapture(event.pointerId)
+      }
+      event.preventDefault()
+      track.scrollLeft = Math.max(0, Math.min(maximum(), drag.start - delta))
+      position = track.scrollLeft
+      sync()
+    }
+    const onUp = (event: PointerEvent) => { if (event.pointerId === drag?.pointerId) endDrag(true) }
+    const onCancel = (event: PointerEvent) => { if (event.pointerId === drag?.pointerId) endDrag() }
+    const onBlur = () => { pointer = null; endDrag() }
+    const onClick = (event: MouseEvent) => {
+      if (!suppressClick || event.detail === 0) return
+      suppressClick = false
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+    const onNativeDrag = (event: DragEvent) => { if (drag) event.preventDefault() }
     const onMove = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return
       const rect = track.getBoundingClientRect()
@@ -80,7 +137,14 @@ export function useRailMotion(trackId: string, automatic: boolean) {
     track.addEventListener('scroll', onScroll, { passive: true })
     track.addEventListener('pointermove', onMove)
     track.addEventListener('pointerleave', onLeave)
-    track.addEventListener('pointerdown', pauseForGesture)
+    track.addEventListener('pointerdown', onDown)
+    track.addEventListener('lostpointercapture', onCancel)
+    track.addEventListener('click', onClick, true)
+    track.addEventListener('dragstart', onNativeDrag)
+    window.addEventListener('pointermove', onDragMove, { passive: false })
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onCancel)
+    window.addEventListener('blur', onBlur)
     track.addEventListener('wheel', pauseForGesture, { passive: true })
     track.addEventListener('keydown', pauseForGesture)
     scope.addEventListener('focusin', onEnvironment)
@@ -91,13 +155,22 @@ export function useRailMotion(trackId: string, automatic: boolean) {
     return () => {
       cancelAnimationFrame(frame)
       window.clearTimeout(timer)
+      window.clearTimeout(clickTimer)
+      releaseDrag()
       observer.disconnect()
       resize.disconnect()
       delete track.dataset.motionRail
       track.removeEventListener('scroll', onScroll)
       track.removeEventListener('pointermove', onMove)
       track.removeEventListener('pointerleave', onLeave)
-      track.removeEventListener('pointerdown', pauseForGesture)
+      track.removeEventListener('pointerdown', onDown)
+      track.removeEventListener('lostpointercapture', onCancel)
+      track.removeEventListener('click', onClick, true)
+      track.removeEventListener('dragstart', onNativeDrag)
+      window.removeEventListener('pointermove', onDragMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onCancel)
+      window.removeEventListener('blur', onBlur)
       track.removeEventListener('wheel', pauseForGesture)
       track.removeEventListener('keydown', pauseForGesture)
       scope.removeEventListener('focusin', onEnvironment)

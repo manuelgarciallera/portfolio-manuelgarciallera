@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { PUBLIC_ROUTES } from './src/lib/public-routes'
 
 const isProd = process.env.NODE_ENV === 'production'
 const isolatedBuildDir = process.env.PORTFOLIO_BUILD_DIR
@@ -53,6 +54,12 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   devIndicators: false,
+  async redirects() {
+    return [
+      { source: '/casos/:path*', destination: `${PUBLIC_ROUTES.projects}/:path*`, permanent: true },
+      { source: '/articulos/:path*', destination: `${PUBLIC_ROUTES.blog}/:path*`, permanent: true },
+    ]
+  },
   images: {
     qualities: [75, 92],
     remotePatterns: [

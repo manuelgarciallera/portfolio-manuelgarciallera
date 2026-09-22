@@ -4,6 +4,7 @@ import { ArticlePage } from '@/features/redesign/articles/ArticlePage'
 import { EditorialShell } from '@/features/redesign/components/EditorialShell'
 import { ARTICLES, ARTICLE_AUTHOR, getArticleBySlug } from '@/features/redesign/content/articles'
 import { SITE_URL } from '@/lib/site-config'
+import { articleHref } from '@/lib/public-routes'
 import '@/features/redesign/redesign.css'
 export const generateStaticParams = () => ARTICLES.map(({ slug }) => ({ slug }))
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -17,10 +18,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: article.summary,
     keywords: [article.category, 'Product Design', 'HCI', 'Design Systems', 'Human-AI Interaction'],
     authors: [{ name: ARTICLE_AUTHOR.name, url: SITE_URL }],
-    alternates: { canonical: `/articulos/${slug}` },
+    alternates: { canonical: articleHref(slug) },
     openGraph: {
       type: 'article',
-      url: `/articulos/${slug}`,
+      url: articleHref(slug),
       title: article.title,
       description: article.summary,
       publishedTime: article.publishedAt,
@@ -40,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     description: article.summary,
     datePublished: article.publishedAt,
     inLanguage: 'es',
-    mainEntityOfPage: `${SITE_URL}/articulos/${article.slug}`,
+    mainEntityOfPage: `${SITE_URL}${articleHref(article.slug)}`,
     author: { '@type': 'Person', name: ARTICLE_AUTHOR.name, url: SITE_URL },
     publisher: { '@type': 'Person', name: ARTICLE_AUTHOR.name, url: SITE_URL },
   }).replace(/</g, '\\u003c')

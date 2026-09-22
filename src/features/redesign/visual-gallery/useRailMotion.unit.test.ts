@@ -29,6 +29,7 @@ function mountRail() {
   let controlsFocused = false
   let nextFrame = 0
   const frames = new Map<number, FrameRequestCallback>()
+  const capturedPointers = new Set<number>()
   const scope = Object.assign(new EventTarget(), {
     querySelector: (selector: string) => selector === ':focus-visible' && controlsFocused ? {} : null,
   })
@@ -38,6 +39,9 @@ function mountRail() {
     closest: (selector: string) => selector === 'section' ? scope : null,
     matches: () => false,
     getBoundingClientRect: () => ({ left: 0, width: 1000 }),
+    setPointerCapture: (pointerId: number) => capturedPointers.add(pointerId),
+    hasPointerCapture: (pointerId: number) => capturedPointers.has(pointerId),
+    releasePointerCapture: (pointerId: number) => capturedPointers.delete(pointerId),
   })
   const documentTarget = Object.assign(new EventTarget(), {
     hidden: false,
@@ -49,10 +53,11 @@ function mountRail() {
   const resizeDisconnect = vi.fn()
 
   vi.stubGlobal('document', documentTarget)
-  vi.stubGlobal('window', {
+  const windowTarget = Object.assign(new EventTarget(), {
     matchMedia: (query: string) => query.includes('min-width') ? desktop : reduced,
     setTimeout, clearTimeout,
   })
+  vi.stubGlobal('window', windowTarget)
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
     frames.set(++nextFrame, callback)
     return nextFrame
@@ -78,7 +83,7 @@ function mountRail() {
   }
 
   return {
-    motion, track, scope, documentTarget, desktop, reduced, frames,
+    motion, track, scope, documentTarget, windowTarget, desktop, reduced, frames, capturedPointers,
     intersectionDisconnect, resizeDisconnect,
     focusControls(focused: boolean) {
       controlsFocused = focused
@@ -88,6 +93,23 @@ function mountRail() {
     },
     movePointer(clientX: number) {
       track.dispatchEvent(Object.assign(new Event('pointermove'), { pointerType: 'mouse', clientX }))
+    },
+    pointer(type: string, clientX: number, overrides: Partial<PointerEvent> = {}) {
+      const event = Object.assign(new Event(type, { cancelable: true }), {
+        pointerType: 'mouse', pointerId: 7, isPrimary: true,
+        button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX, clientY: 100,
+        ...overrides,
+      })
+      track.dispatchEvent(event)
+      // EventTarget has no DOM bubbling; dispatch the same event to the window
+      // boundary to exercise the effect's real outside-track gesture handlers.
+      windowTarget.dispatchEvent(event)
+      return event
+    },
+    click(detail = 1) {
+      const event = Object.assign(new Event('click', { cancelable: true }), { detail, pointerId: 7 })
+      track.dispatchEvent(event)
+      return event
     },
     advance(count: number) {
       for (let i = 0; i < count; i++) {
@@ -101,6 +123,111 @@ function mountRail() {
 }
 
 describe('rail motion effect with controlled DOM events and frames', () => {
+  it('drags left and right while keeping a stationary click available', () => {
+    const rail = mountRail()
+    rail.track.scrollLeft = 400
+    rail.pointer('pointerdown', 600)
+    rail.pointer('pointermove', 602)
+    expect(rail.track.scrollLeft).toBe(400)
+    rail.pointer('pointerup', 602)
+    expect(rail.click().defaultPrevented).toBe(false)
+
+    rail.pointer('pointerdown', 600)
+    rail.pointer('pointermove', 480)
+    expect(rail.track.scrollLeft).toBe(520)
+    expect(rail.track.dataset.dragging).toBe('true')
+    rail.pointer('pointermove', 670)
+    expect(rail.track.scrollLeft).toBe(330)
+    rail.pointer('pointerup', 670)
+    expect(rail.track.dataset.dragging).toBeUndefined()
+  })
+
+  it('suppresses the immediate drag click without suppressing keyboard or the next plain click', () => {
+    const rail = mountRail()
+    rail.pointer('pointerdown', 600)
+    rail.pointer('pointermove', 480)
+    rail.pointer('pointerup', 480)
+    expect(rail.click(0).defaultPrevented).toBe(false)
+    expect(rail.click().defaultPrevented).toBe(true)
+    rail.pointer('pointerdown', 500)
+    rail.pointer('pointerup', 500)
+    expect(rail.click().defaultPrevented).toBe(false)
+  })
+
+  it('never races a held drag after the five-second auto-motion delay', () => {
+    const rail = mountRail()
+    rail.pointer('pointerdown', 900)
+    rail.pointer('pointermove', 940)
+    rail.advance(400)
+    expect(rail.track.scrollLeft).toBe(0)
+    rail.pointer('pointermove', 800)
+    expect(rail.track.scrollLeft).toBe(100)
+    rail.pointer('pointerup', 800)
+    rail.pointer('pointerleave', 1100)
+    rail.advance(300)
+    expect(rail.track.scrollLeft).toBe(100)
+    rail.advance(70)
+    expect(rail.track.scrollLeft).toBeGreaterThan(100)
+  })
+
+  it.each(['pointercancel', 'lostpointercapture', 'blur'])('cleans up an interrupted drag on %s', (type) => {
+    const rail = mountRail()
+    rail.pointer('pointerdown', 600)
+    rail.pointer('pointermove', 500)
+    expect(rail.track.scrollLeft).toBe(100)
+    if (type === 'blur') rail.windowTarget.dispatchEvent(new Event('blur'))
+    else rail.pointer(type, 500)
+    rail.pointer('pointermove', 300)
+    expect(rail.track.scrollLeft).toBe(100)
+    expect(rail.track.dataset.dragging).toBeUndefined()
+    expect(rail.capturedPointers.size).toBe(0)
+    expect(rail.click().defaultPrevented).toBe(false)
+    rail.pointer('pointerleave', 1100)
+    rail.advance(370)
+    expect(rail.track.scrollLeft).toBeGreaterThan(100)
+  })
+
+  it('keeps touch gestures native and modifier clicks available', () => {
+    const rail = mountRail()
+    for (const overrides of [{ pointerType: 'touch' }, { button: 1 }, { ctrlKey: true }, { metaKey: true }]) {
+      const down = rail.pointer('pointerdown', 600, overrides)
+      const move = rail.pointer('pointermove', 400, overrides)
+      rail.pointer('pointerup', 400, overrides)
+      expect(down.defaultPrevented).toBe(false)
+      expect(move.defaultPrevented).toBe(false)
+      expect(rail.track.scrollLeft).toBe(0)
+      expect(rail.capturedPointers.size).toBe(0)
+      expect(rail.click().defaultPrevented).toBe(false)
+    }
+  })
+
+  it('prevents native image drag only during a mouse gesture', () => {
+    const rail = mountRail()
+    rail.pointer('pointerdown', 600)
+    const imageDrag = new Event('dragstart', { cancelable: true })
+    rail.track.dispatchEvent(imageDrag)
+    expect(imageDrag.defaultPrevented).toBe(true)
+    rail.pointer('pointerup', 600)
+    const laterDrag = new Event('dragstart', { cancelable: true })
+    rail.track.dispatchEvent(laterDrag)
+    expect(laterDrag.defaultPrevented).toBe(false)
+  })
+
+  it('releases a captured drag on unmount and removes window handlers', () => {
+    const rail = mountRail()
+    rail.pointer('pointerdown', 600)
+    rail.pointer('pointermove', 400)
+    expect(rail.track.scrollLeft).toBe(200)
+    unmount?.()
+    rail.pointer('pointermove', 200)
+    rail.pointer('pointerup', 200)
+    rail.windowTarget.dispatchEvent(new Event('blur'))
+    expect(rail.track.scrollLeft).toBe(200)
+    expect(rail.track.dataset.dragging).toBeUndefined()
+    expect(rail.capturedPointers.size).toBe(0)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it('resumes after footer focus leaves even when the manual hold has expired', () => {
     const rail = mountRail()
     rail.focusControls(true)

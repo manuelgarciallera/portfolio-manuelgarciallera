@@ -29,14 +29,14 @@ export const ABOUT_LAYERS: AboutLayer[] = [
     title: 'Diseño gráfico publicitario',
     place: 'Escuela de Arte · Formación Profesional Superior',
     contribution:
-      'La raíz: oficio, composición y persuasión. Aquí se aprende que una pieza tiene que emocionar antes de argumentar, y que eso se puede trabajar, no solo intuir.',
+      'Aquí empecé a trabajar la composición, la tipografía y la comunicación visual de forma consciente. Aprendí a preguntarme qué debía transmitir cada pieza y a justificar las decisiones que tomaba.',
   },
   {
     index: '02',
     title: 'Diseño Integral y Gestión de la Imagen',
     place: 'Universidad Rey Juan Carlos · Grado',
     contribution:
-      'El salto del encargo suelto al sistema: identidad, coherencia y gestión de la imagen como estructura, no como decoración.',
+      'Amplié esa mirada hacia los objetos, los espacios y la identidad. Mi TFG me llevó a estudiar cómo el diseño cotidiano refleja la sociedad que lo produce y cómo nos relacionamos con él a través de los sentidos.',
   },
   {
     index: '03',
@@ -50,7 +50,7 @@ export const ABOUT_LAYERS: AboutLayer[] = [
     title: 'Diseño de Experiencia de Usuario',
     place: 'UNIR · Máster oficial · 9,56/10',
     contribution:
-      'El método aplicado a lo digital: investigación con usuarios, arquitectura de la información, sistemas de diseño y evaluación. La disciplina que convierte una intuición en una decisión defendible.',
+      'Profundicé en investigación con usuarios, arquitectura de la información, sistemas de diseño y evaluación. Me interesaba aprender a contrastar una propuesta con las necesidades de las personas, no quedarme únicamente con mi impresión como diseñador.',
   },
   {
     index: '05',
@@ -63,8 +63,9 @@ export const ABOUT_LAYERS: AboutLayer[] = [
 
 export const ABOUT_NOW = [
   'Actualmente lidero la función de diseño visual dentro del equipo de Infraestructuras de LALIGA. Trabajo entre ingeniería, marca y comunicación para que información técnica, espacios y soluciones digitales mantengan una lógica común.',
-  'En paralelo desarrollo aplicaciones propias: CRM y hubs multiusuario y multitenant con Angular, Next.js, Node.js y MySQL. Son proyectos en evolución que utilizo para comprobar cómo un sistema diseñado en Figma se comporta cuando recibe usuarios, datos y permisos reales.',
-  'Trabajo a diario con distintas IAs y con MCP porque necesito conocer sus fortalezas y sus límites. Las utilizo para explorar alternativas, automatizar tareas repetibles y acelerar la implementación; la dirección, la revisión y las decisiones irreversibles siguen siendo humanas.',
+  'En paralelo desarrollo aplicaciones propias, entre ellas un CMS y un Hub de coordinación entre IAs. Son proyectos en evolución con los que pruebo sistemas de componentes, flujos de edición y permisos. Distingo lo que ya puedo verificar en un prototipo de lo que aún necesita pruebas antes de utilizarse en producción.',
+  'Trabajo a diario con Claude, Codex y herramientas conectadas mediante MCP. Antes de incorporar una tecnología intento entender cómo se comporta durante un proyecto completo: qué mantiene bien, dónde pierde contexto y qué debo comprobar yo. También he hecho pruebas de IA local; quiero profundizar en ella, pero prefiero consolidar lo que estoy utilizando antes de ampliar el conjunto de herramientas.',
+  'Disfruto compartiendo lo que voy aprendiendo. He acompañado a nuevos ingenieros en su incorporación a la empresa y me gusta explicar el contexto, resolver dudas y facilitar un ambiente en el que preguntar resulte natural. Esa parte didáctica también está muy presente en cómo documento y presento mis proyectos.',
   'Mi orientación investigadora se centra en los sistemas de diseño implementados y automatizados mediante IA: cómo hacerlos estables, escalables y auditables sin borrar el criterio humano que les da sentido.',
   'Como práctica complementaria, trabajo con modelado 3D y arquitectura de interiores. Es el espacio donde sigo entrenando escala, luz, materialidad y composición, capacidades que después traslado al diseño digital.',
 ]

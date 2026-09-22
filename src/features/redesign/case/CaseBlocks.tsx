@@ -1,10 +1,11 @@
 'use client'
 
-import Image from 'next/image'
+import { ProjectEvidenceImage } from './ProjectEvidenceImage'
 import { useEffect, useState } from 'react'
 
 import type { CaseAiProcess, CaseCodeEvidence, CasePhase, CaseVisual, CaseVisualSlide } from '../content/types'
 import { CoordinationDiagram } from '../components/CoordinationDiagram'
+import { projectImageDimensions } from './projectImageDimensions'
 
 export function PhaseNav({ phases }: { phases: CasePhase[] }) {
   const [active, setActive] = useState<string>(phases[0]?.id ?? '')
@@ -48,10 +49,12 @@ export function PhaseSection({
   theme?: CaseVisual['theme']
 }) {
   const hasVisual = Boolean(visual && (visual.kind === 'coordination-diagram' || visual.src.startsWith('/')))
+  const dimensions = visual && projectImageDimensions[visual.src]
+  const isLandscape = Boolean(dimensions && dimensions[0] / dimensions[1] >= 1.1)
 
   return (
     <section
-      className={`rd-section rd-case-phase${hasVisual ? ' rd-case-phase--with-visual' : ''}${hasVisual && order % 2 === 0 ? ' is-reversed' : ''}`}
+      className={`rd-section rd-case-phase${hasVisual ? ' rd-case-phase--with-visual' : ''}${hasVisual && order % 2 === 0 ? ' is-reversed' : ''}${isLandscape ? ' rd-case-phase--landscape' : ''}`}
       id={`fase-${phase.id}`}
     >
       <p className="rd-label rd-reveal" data-index={String(order).padStart(2, '0')}>
@@ -79,13 +82,10 @@ export function PhaseSection({
       ) : (
         <figure className={`rd-case-phase__visual rd-case-phase__visual--${theme} rd-reveal`}>
           <div className={`rd-case-phase__frame rd-case-phase__frame--${theme}`} data-fit={visual.fit ?? 'cover'}>
-            <Image
+            <ProjectEvidenceImage
               src={visual.src}
               alt={visual.alt}
-              width={1600}
-              height={1100}
-              sizes="(max-width: 760px) calc(100vw - 2rem), 56vw"
-              style={{ objectFit: visual.fit ?? 'cover' }}
+              sizes={isLandscape ? '92vw' : '(max-width: 1023px) 92vw, 56vw'}
             />
           </div>
           <figcaption>{visual.label}</figcaption>
@@ -99,8 +99,8 @@ export function AiProcessBlock({ ai }: { ai: CaseAiProcess }) {
   const rows: Array<[string, string]> = [
     ['Herramienta', ai.tool],
     ['Fase', ai.phase],
-    ['Input humano', ai.humanInput],
-    ['Output', ai.output],
+    ['Aportación humana', ai.humanInput],
+    ['Resultado de la IA', ai.output],
     ['Criterio de selección', ai.criteria],
     ['Límites detectados', ai.limits],
     ['Decisión final', ai.decision],
@@ -133,7 +133,7 @@ export function PrototypeToComponent({
       </p>
       <div className="rd-compare rd-reveal">
         <div className="rd-compare-col">
-          <h3>Figma · sistema atomizado</h3>
+          <h3>Organización del sistema</h3>
           <ul className="rd-layer-list">
             {figmaLayers.map((layer) => (
               <li key={layer}>{layer}</li>
@@ -142,7 +142,7 @@ export function PrototypeToComponent({
         </div>
         {codeEvidence ? (
           <div className="rd-compare-col">
-            <h3>Angular · componente real</h3>
+            <h3>Código · evidencia de implementación</h3>
             <pre className="rd-code" aria-label={codeEvidence.filename} tabIndex={0}>
               <code>{codeEvidence.code}</code>
             </pre>

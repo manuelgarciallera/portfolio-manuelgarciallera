@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { AnalyticsConsent } from "@/components/analytics/consent/AnalyticsConsent";
 import { ARTICLES } from "@/features/redesign/content/articles";
 import { getPublishedCases } from "@/features/redesign/content/cases";
+import { articleHref, projectHref, PUBLIC_ROUTES } from "@/lib/public-routes";
 import {
   PERSON_LEGAL_NAME,
   SITE_DESCRIPTION,
@@ -29,9 +30,9 @@ const playfairDisplay = Playfair_Display({
 
 const websiteJsonLd = JSON.stringify(getWebsiteJsonLd()).replace(/</g, "\\u003c");
 const personJsonLd = JSON.stringify(getPersonJsonLd()).replace(/</g, "\\u003c");
-const analyticsPaths = ["/", "/casos", "/sobre-mi", "/proceso", "/investigacion", "/articulos", "/privacidad",
-  ...ARTICLES.map(({ slug }) => `/articulos/${slug}`),
-  ...getPublishedCases().map(({ slug }) => `/casos/${slug}`)];
+const analyticsPaths = ["/", PUBLIC_ROUTES.projects, "/sobre-mi", "/proceso", "/investigacion", PUBLIC_ROUTES.blog, "/privacidad",
+  ...ARTICLES.map(({ slug }) => articleHref(slug)),
+  ...getPublishedCases().map(({ slug }) => projectHref(slug))];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

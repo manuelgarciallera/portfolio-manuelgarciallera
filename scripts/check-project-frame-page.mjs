@@ -14,7 +14,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
-    await page.goto(`${origin}/casos`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.goto(`${origin}/proyectos`, { waitUntil: 'domcontentloaded', timeout: 60000 })
     console.log(`Loaded ${width}px`)
     assert.equal(await page.locator('[data-nextjs-dialog], .vite-error-overlay').count(), 0)
     const card = page.locator('.rd-case-visual--nude-project').first()

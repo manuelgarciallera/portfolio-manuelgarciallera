@@ -8,6 +8,18 @@ import { CasePage } from './CasePage'
 import { getNextCaseCard } from '../content/card-data'
 
 describe('CasePage theme hydration', () => {
+  it('explains the Hub with real demo screens once instead of repeating diagrams', () => {
+    const study = getCaseBySlug('coordination-hub')!
+    const markup = renderToStaticMarkup(<CasePage study={study} nextCase={getNextCaseCard(study.slug)} />)
+    expect(study.visual?.presentation).toBe('evidence-once')
+    expect(markup).not.toContain('rd-coordination-diagram')
+    expect(markup).not.toContain('rd-case-feature--coordination')
+    expect(markup).toContain('Interfaz real con datos de demostración')
+    for (const slide of study.visual!.slides) {
+      expect(slide.kind).not.toBe('coordination-diagram')
+      expect(markup.match(new RegExp(`href="${slide.src}"`, 'g'))).toHaveLength(1)
+    }
+  })
   it('renders the same dark theme control as the root layout on the server', () => {
     const study = getCaseBySlug('buy-sell-marketplace')!
     const markup = renderToStaticMarkup(<CasePage study={study} nextCase={getNextCaseCard(study.slug)} />)

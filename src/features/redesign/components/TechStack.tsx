@@ -37,7 +37,7 @@ const ICONS: Record<string, Pick<SimpleIcon, 'path' | 'hex'>> = {
 
 export function TechStack({ technologies, compact = false }: { technologies: string[]; compact?: boolean }) {
   return (
-    <span className={`rd-tech-stack${compact ? ' rd-tech-stack--compact' : ''}`} aria-label="Stack tecnológico">
+    <span className={`rd-tech-stack${compact ? ' rd-tech-stack--compact' : ''}`} aria-label="Tecnologías utilizadas">
       {technologies.map((technology) => {
         const icon = ICONS[technology]
         if (!icon) return <span className="rd-tech-stack__item" key={technology}><span>{technology}</span></span>

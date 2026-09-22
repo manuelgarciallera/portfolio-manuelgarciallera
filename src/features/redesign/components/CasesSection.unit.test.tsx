@@ -18,7 +18,7 @@ describe('CasesSection', () => {
 
     expect(markup).toContain('Del problema al producto')
     expect(markup).toContain('Ver todos los proyectos')
-    expect(markup).toContain('href="/casos"')
+    expect(markup).toContain('href="/proyectos"')
     expect(markup).toContain('Buy&amp;Sell')
     expect(markup).toContain('LaLiga')
     expect(markup).toContain('Coordination')

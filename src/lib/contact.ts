@@ -34,9 +34,9 @@ export function parseContactSubmission(input: unknown): ContactParseResult {
   const company = clean(source.company)
   const message = clean(source.message ?? source.mensaje)
 
-  if (!name || !email || !message) return { ok: false, error: 'Completa nombre, email y mensaje.' }
+  if (!name || !email || !message) return { ok: false, error: 'Completa nombre, correo electrónico y mensaje.' }
   if (name.length > CONTACT_LIMITS.name) return { ok: false, error: 'El nombre es demasiado largo.' }
-  if (email.length > CONTACT_LIMITS.email || !EMAIL_PATTERN.test(email)) return { ok: false, error: 'Introduce un email válido.' }
+  if (email.length > CONTACT_LIMITS.email || !EMAIL_PATTERN.test(email)) return { ok: false, error: 'Introduce un correo electrónico válido.' }
   if (company.length > CONTACT_LIMITS.company) return { ok: false, error: 'El nombre de la organización es demasiado largo.' }
   if (message.length > CONTACT_LIMITS.message) return { ok: false, error: 'El mensaje supera los 5.000 caracteres.' }
 

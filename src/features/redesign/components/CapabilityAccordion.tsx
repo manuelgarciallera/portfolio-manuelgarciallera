@@ -1,14 +1,15 @@
 'use client'
 
 import Image from 'next/image'
+import { articleHref, projectHref } from '../../../lib/public-routes'
 import { useState } from 'react'
 
 const CAPABILITIES = [
   { title: 'Producto digital', body: 'Conecto las necesidades de las personas y del negocio con recorridos, roles y decisiones que pueden comprenderse y usarse.', href: '#casos', cta: 'Ver proyectos', imageSrc: '/art/capabilities/product-system.webp', imageAlt: 'Piezas conectadas que representan un recorrido de producto digital' },
-  { title: 'UX/UI y sistemas', body: 'Investigo, estructuro y prototipo en Figma. Trabajo con Atomic Design para que tokens, componentes y estados formen un sistema reutilizable.', href: '/casos/buy-sell-marketplace', cta: 'Ver proyecto', imageSrc: '/art/capabilities/design-system.webp', imageAlt: 'Módulos visuales que forman un sistema de diseño reutilizable' },
-  { title: 'Frontend', body: 'Llevo las decisiones al navegador con Angular o Next.js y compruebo qué ocurre cuando aparecen datos, permisos, accesibilidad y rendimiento reales.', href: '/casos/buy-sell-marketplace#fase-desarrollo', cta: 'Ver proyecto', imageSrc: '/art/capabilities/frontend-surface.webp', imageAlt: 'Estructura digital que se transforma en una interfaz ejecutable' },
-  { title: 'Investigación HCI', body: 'Me interesa cómo la materialidad, la percepción y la tecnología cambian nuestra relación con una interfaz y nuestra forma de decidir.', href: '/articulos/del-objeto-a-la-interfaz', cta: 'Leer artículo', imageSrc: '/art/capabilities/hci-material.webp', imageAlt: 'Material, percepción y gesto humano representados como un sistema conectado' },
-  { title: 'IA aplicada', body: 'Comparo distintas IAs y utilizo flujos con MCP para explorar, automatizar e implementar, manteniendo humanas la dirección y la responsabilidad.', href: '/casos/coordination-hub', cta: 'Ver proyecto', imageSrc: '/art/capabilities/human-ai.webp', imageAlt: 'Nodo humano que dirige una red mínima de inteligencia artificial' },
+  { title: 'UX/UI y sistemas', body: 'Investigo, estructuro y prototipo en Figma. Trabajo con Atomic Design para que tokens, componentes y estados formen un sistema reutilizable.', href: projectHref('buy-sell-marketplace'), cta: 'Ver proyecto', imageSrc: '/art/capabilities/design-system.webp', imageAlt: 'Módulos visuales que forman un sistema de diseño reutilizable' },
+  { title: 'Frontend', body: 'Llevo las decisiones al navegador con Angular o Next.js y compruebo qué ocurre cuando aparecen datos, permisos, accesibilidad y rendimiento reales.', href: `${projectHref('buy-sell-marketplace')}#fase-desarrollo`, cta: 'Ver proyecto', imageSrc: '/art/capabilities/frontend-surface.webp', imageAlt: 'Estructura digital que se transforma en una interfaz ejecutable' },
+  { title: 'Investigación HCI', body: 'Me interesa cómo la materialidad, la percepción y la tecnología cambian nuestra relación con una interfaz y nuestra forma de decidir.', href: articleHref('del-objeto-a-la-interfaz'), cta: 'Leer artículo', imageSrc: '/art/capabilities/hci-material.webp', imageAlt: 'Material, percepción y gesto humano representados como un sistema conectado' },
+  { title: 'IA aplicada', body: 'Comparo distintas IAs y utilizo flujos con MCP para explorar, automatizar e implementar, manteniendo humanas la dirección y la responsabilidad.', href: projectHref('coordination-hub'), cta: 'Ver proyecto', imageSrc: '/art/capabilities/human-ai.webp', imageAlt: 'Nodo humano que dirige una red mínima de inteligencia artificial' },
   { title: '3D y arquitectura interior', body: 'Práctica complementaria. Diseño y visualizo espacios trabajando con volumen, materialidad, luz y escala; una mirada física que también mejora cómo pienso las interfaces.', href: '/sobre-mi', cta: 'Ver contexto', imageSrc: '/art/capabilities/spatial-light.webp', imageAlt: 'Volumen arquitectónico definido por material, luz y escala' },
 ] as const
 

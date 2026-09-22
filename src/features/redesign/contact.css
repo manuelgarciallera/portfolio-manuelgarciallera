@@ -8,6 +8,8 @@
 }
 .rd-contact > .rd-label { grid-column: 1 / -1; }
 .rd-contact-heading h2 {
+  /* The destination stays readable even when the fixed navigation is visible. */
+  scroll-margin-block-start: 6rem;
   margin: 0;
   font-size: clamp(3.2rem, 7vw, 8rem);
   line-height: 0.88;
@@ -46,8 +48,12 @@
 .rd-contact-form__status.is-error { color: #c63c2f; }
 .rd-contact-form__status a { color: currentColor; font-weight: 700; text-underline-offset: 0.3em; }
 
-@media (max-width: 760px) {
+/* Two editorial columns need enough room for the form, including tablet gutters. */
+@media (max-width: 960px) {
   .rd-contact { grid-template-columns: 1fr; gap: 3rem; }
+}
+
+@media (max-width: 760px) {
   .rd-contact-form { grid-template-columns: 1fr; }
   .rd-contact-form__field,
   .rd-contact-form__field--wide { grid-column: 1; }

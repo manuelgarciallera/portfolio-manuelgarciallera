@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 
 const require = createRequire(import.meta.url)
 const base = process.env.AUDIT_URL || 'http://127.0.0.1:3028'
-const routes = ['/', '/sobre-mi', '/proceso', '/investigacion', '/articulos', '/casos', '/casos/buy-sell-marketplace', '/casos/laliga-club-operations-hub', '/casos/coordination-hub', '/casos/the-ux-union', '/casos/nude-project']
+const routes = ['/', '/sobre-mi', '/proceso', '/investigacion', '/blog', '/proyectos', '/proyectos/buy-sell-marketplace', '/proyectos/laliga-club-operations-hub', '/proyectos/coordination-hub', '/proyectos/the-ux-union', '/proyectos/nude-project']
 const browser = await chromium.launch()
 const results = []
 await mkdir('tmp/portfolio-closure', { recursive: true })

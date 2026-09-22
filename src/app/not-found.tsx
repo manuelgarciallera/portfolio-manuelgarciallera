@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { EditorialShell } from '@/features/redesign/components/EditorialShell'
+import { PUBLIC_ROUTES } from '@/lib/public-routes'
 import '@/features/redesign/redesign.css'
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default function NotFound() {
         <h1>Esta ruta no existe.<br /><em>La siguiente decisión, sí.</em></h1>
         <p>Vuelve a los casos para recorrer el trabajo o cuéntame qué producto tienes entre manos.</p>
         <nav aria-label="Opciones para continuar">
-          <Link href="/casos">Ver casos <span aria-hidden="true">→</span></Link>
+          <Link href={PUBLIC_ROUTES.projects}>Ver proyectos <span aria-hidden="true">→</span></Link>
           <Link href="/#contacto">Abrir una conversación <span aria-hidden="true">↗</span></Link>
         </nav>
       </main>

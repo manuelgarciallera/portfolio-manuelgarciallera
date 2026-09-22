@@ -20,9 +20,9 @@ import { chromium } from 'playwright'
 const BASE = process.argv[2] || process.env.BASE_URL || 'http://localhost:3000'
 const WIDTHS = [320, 360, 390, 768, 1024, 1440]
 const ROUTES = [
-  '/', '/casos', '/casos/buy-sell-marketplace', '/casos/laliga-club-operations-hub',
-  '/casos/coordination-hub', '/casos/the-ux-union', '/casos/nude-project', '/articulos',
-  '/articulos/del-objeto-a-la-interfaz', '/proceso', '/sobre-mi',
+  '/', '/proyectos', '/proyectos/buy-sell-marketplace', '/proyectos/laliga-club-operations-hub',
+  '/proyectos/coordination-hub', '/proyectos/the-ux-union', '/proyectos/nude-project', '/blog',
+  '/blog/del-objeto-a-la-interfaz', '/proceso', '/sobre-mi',
 ]
 
 /** Piezas cuyo desbordamiento es dirección de arte, verificada a mano. */

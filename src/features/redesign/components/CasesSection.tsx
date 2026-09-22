@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { CaseCard, type CaseCardItem } from './CaseCard'
@@ -54,7 +55,7 @@ export function CasesSection({ items }: { items: CaseCardItem[] }) {
           <p>
             Cada caso muestra qué había que entender, qué decisiones tomé y cómo llegaron a un sistema que puede probarse.
           </p>
-          <Link href="/casos">Ver todos los proyectos <span aria-hidden="true">→</span></Link>
+          <Link href={PUBLIC_ROUTES.projects}>Ver todos los proyectos <span aria-hidden="true">→</span></Link>
         </div>
       </div>
       <div className="rd-cases">

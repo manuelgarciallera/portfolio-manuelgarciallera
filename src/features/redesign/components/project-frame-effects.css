@@ -1,6 +1,9 @@
 /* One shared, brief accent pulse. Inset light cannot expose a gutter or
    intercept swipes/links; only opacity animates, not the shadow's blur. */
 .rd-preview-slide { border-radius: inherit; }
+.rd-preview-portrait { position: absolute; top: 50%; left: 50%; height: 88%; max-width: 90%; transform: translate(-50%, -50%); }
+.rd-preview-portrait img { object-fit: contain; }
+.rd-preview-portrait[data-device="true"] { border-radius: 13% / 6%; overflow: hidden; }
 .rd-preview-slide::after {
   content: '';
   position: absolute;

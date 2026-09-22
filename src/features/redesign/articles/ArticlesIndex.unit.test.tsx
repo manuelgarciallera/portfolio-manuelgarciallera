@@ -10,7 +10,7 @@ describe('blog and landing article layouts',()=>{
     expect(html).toContain('class="rd-editorial__grid"')
     expect(html).not.toContain('articles-track')
     expect(html).not.toContain('Ver todos los artículos')
-    for(const article of ARTICLES) expect(html).toContain(`href="/articulos/${article.slug}"`)
+    for(const article of ARTICLES) expect(html).toContain(`href="/blog/${article.slug}"`)
     expect(html.match(/class="rd-article-cover /g)).toHaveLength(ARTICLES.length)
   })
   it('keeps the landing carousel and its navigation unchanged',()=>{

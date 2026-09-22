@@ -1,0 +1,48 @@
+/* Evidence keeps its actual proportions. Portraits are not fitted into landscape boxes. */
+.rd-project-evidence {
+  display: grid;
+  justify-items: center;
+  gap: .65rem;
+  width: min(100%, var(--evidence-source-width));
+  margin-inline: auto;
+  color: inherit;
+  text-decoration: none;
+}
+.rd-project-evidence[data-portrait="true"] {
+  width: min(100%, var(--evidence-source-width), 23rem, calc(78svh * var(--evidence-ratio)));
+}
+.rd-project-evidence img {
+  position: static !important;
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+/* Documentary screenshots keep their real colours and bounds in both reveal
+   states. The enclosing block still uses the shared entrance treatment. */
+.rd-case-story__media .rd-project-evidence img,
+.rd-case-story__media.is-in .rd-project-evidence img {
+  transform: none;
+  filter: none;
+  transition: none;
+}
+.rd-project-evidence__hint {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  gap: .5rem;
+  font-size: .875rem;
+  font-weight: 550;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+.rd-project-evidence[data-device="true"] img { border-radius: 13% / 6%; clip-path: inset(0 round 13% / 6%); }
+.rd-project-evidence:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; border-radius: .5rem; }
+.rd-case-phase__frame[data-fit]:has(.rd-project-evidence) { aspect-ratio: auto; overflow: visible; }
+.rd-visual-journey__slide > .rd-visual-journey__media:has(.rd-project-evidence) { min-height: 0; background: transparent; }
+.rd-case-story__frame:has(.rd-project-evidence) { width: 100%; }
+@media (max-width: 760px) {
+  .rd-project-evidence[data-portrait="true"] { width: min(100%, var(--evidence-source-width), 23rem, calc(82svh * var(--evidence-ratio))); }
+}

@@ -9,7 +9,7 @@ try {
   for(const width of [390,768,1280]) {
     const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'})
     const errors=[];page.on('pageerror',error=>errors.push(error.message))
-    await page.goto(`${base}/articulos`,{waitUntil:'networkidle'})
+    await page.goto(`${base}/blog`,{waitUntil:'networkidle'})
     assert.equal(await page.locator('.rd-editorial__grid article').count(),4)
     assert.equal(await page.locator('.rd-editorial__rail').count(),0)
     const cover=page.locator('.rd-editorial__grid .rd-article-cover').first()

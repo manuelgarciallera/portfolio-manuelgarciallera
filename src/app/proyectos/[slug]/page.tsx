@@ -5,6 +5,7 @@ import { CasePage } from '@/features/redesign/case/CasePage'
 import { getCaseBySlug, getPublishedCases } from '@/features/redesign/content/cases'
 import { getNextCaseCard } from '@/features/redesign/content/card-data'
 import { PERSON_LEGAL_NAME, SITE_URL } from '@/lib/site-config'
+import { projectHref } from '@/lib/public-routes'
 
 interface CaseRouteParams {
   params: Promise<{ slug: string }>
@@ -21,10 +22,10 @@ export async function generateMetadata({ params }: CaseRouteParams): Promise<Met
   return {
     title: `${study.title}${study.titleAccent ?? ''} — Caso`,
     description: study.claim,
-    alternates: { canonical: `/casos/${study.slug}` },
+    alternates: { canonical: projectHref(study.slug) },
     openGraph: {
       type: 'article',
-      url: `/casos/${study.slug}`,
+      url: projectHref(study.slug),
       title: `${study.title}${study.titleAccent ?? ''} — Caso de producto`,
       description: study.claim,
       images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${study.title}${study.titleAccent ?? ''}` }],
@@ -41,7 +42,7 @@ export default async function CaseRoute({ params }: CaseRouteParams) {
     '@type': 'CreativeWork',
     name: `${study.title}${study.titleAccent ?? ''}`,
     description: study.claim,
-    url: `${SITE_URL}/casos/${study.slug}`,
+    url: `${SITE_URL}${projectHref(study.slug)}`,
     dateCreated: /^\d{4}$/.test(study.year) ? study.year : undefined,
     creator: { '@type': 'Person', name: PERSON_LEGAL_NAME, url: SITE_URL },
     keywords: study.stack.join(', '),

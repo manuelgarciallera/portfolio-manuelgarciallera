@@ -20,9 +20,9 @@ describe('Footer', () => {
     const markup = renderToStaticMarkup(<Footer />)
 
     expect(markup).toContain('href="/sobre-mi"')
-    expect(markup).toContain('href="/casos"')
+    expect(markup).toContain('href="/proyectos"')
     expect(markup).toContain('href="/proceso"')
-    expect(markup).toContain('href="/articulos"')
+    expect(markup).toContain('href="/blog"')
     expect(markup).toContain('href="/#contacto"')
     expect(markup).toContain('linkedin.com/in/manuelgarciallera')
     expect(markup).not.toContain('Diseño + IA, documentado con criterio')
@@ -39,6 +39,15 @@ describe('Footer', () => {
 })
 
 describe('ContactSection', () => {
+  it('lands the contact anchor on the focusable Hablemos heading, not the section or form', () => {
+    const markup = renderToStaticMarkup(<ContactSection />)
+
+    expect(markup).toMatch(/<h2\b[^>]*id="contacto"[^>]*tabindex="-1"[^>]*>Hablemos/)
+    expect(markup).toMatch(/<section\b[^>]*aria-labelledby="contacto"/)
+    expect(markup.match(/id="contacto"/g)).toHaveLength(1)
+    expect(markup).not.toMatch(/class="rd-contact-heading[^"\n]*rd-reveal/)
+  })
+
   it('uses a private server-backed form instead of exposing a mailto address', () => {
     const markup = renderToStaticMarkup(<ContactSection />)
 

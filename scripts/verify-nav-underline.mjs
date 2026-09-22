@@ -9,7 +9,7 @@ await mkdir('.audit/nav-underline', { recursive: true })
 try {
   for (const width of [320, 390, 768, 1280]) {
     const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
-    await page.goto(`${base}/articulos`, { waitUntil: 'networkidle' })
+    await page.goto(`${base}/blog`, { waitUntil: 'networkidle' })
     const mobile = width < 1180
     if (mobile) await page.getByRole('button', { name: 'Abrir menú', exact: true }).click()
     const nav = page.locator(mobile ? '#mobile-navigation' : '.rd-desktop-nav')

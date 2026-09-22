@@ -69,14 +69,14 @@ export async function POST(request: Request) {
     if (!sent.ok) {
       if (sent.reason === "unconfigured") {
         return NextResponse.json(
-          { ok: false, error: "El formulario está temporalmente indisponible. Puedes escribirme por email o LinkedIn." },
+          { ok: false, error: "El formulario no está disponible temporalmente. Puedes escribirme por correo electrónico o LinkedIn." },
           { status: 503 },
         );
       }
       // El detalle solo va al registro del servidor: al visitante no le sirve y puede
       // filtrar el host o el usuario del buzon.
       console.error("[contact] envio fallido:", sent.detail);
-      return NextResponse.json({ ok: false, error: "No se pudo enviar el email." }, { status: 502 });
+      return NextResponse.json({ ok: false, error: "No se ha podido enviar el correo electrónico." }, { status: 502 });
     }
 
     return NextResponse.json({ ok: true });

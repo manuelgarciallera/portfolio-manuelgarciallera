@@ -4,6 +4,30 @@ import { chromium } from 'playwright'
 
 const base = process.argv[2] || 'http://localhost:3040'
 const browser = await chromium.launch()
+async function assertContactArrival(page) {
+  await page.waitForFunction(() => {
+    const title = document.getElementById('contacto')
+    if (!title || title.tagName !== 'H2') return false
+    const top = title.getBoundingClientRect().top
+    const margin = parseFloat(getComputedStyle(title).scrollMarginBlockStart)
+    return Math.abs(top - margin) <= 2 && document.body.style.overflow !== 'hidden'
+  })
+  const samples = await page.evaluate(async () => {
+    const readings = []
+    for (let frame = 0; frame < 3; frame++) {
+      await new Promise(requestAnimationFrame)
+      const title = document.getElementById('contacto')
+      const rect = title.getBoundingClientRect()
+      readings.push({ y: scrollY, top: rect.top, bottom: rect.bottom, viewport: innerHeight })
+    }
+    return readings
+  })
+  assert.equal(new Set(samples.map(sample => sample.y)).size, 1, 'arrival must not continue scrolling')
+  for (const sample of samples) {
+    assert.ok(sample.top >= 80 && sample.bottom < sample.viewport, 'Hablemos remains fully readable below the header')
+  }
+  assert.equal(await page.locator('#mobile-navigation').getAttribute('aria-hidden'), 'true')
+}
 await mkdir('.audit/mobile-contact', { recursive: true })
 try {
   for (const theme of ['dark', 'light']) for (const width of [320, 390, 768]) {
@@ -39,6 +63,7 @@ try {
     assert.equal(await cta.evaluate(e => getComputedStyle(e, '::before').animationName), 'none')
     await cta.click()
     await page.waitForURL(`${base}/#contacto`)
+    await assertContactArrival(page)
     assert.equal(await page.locator('#mobile-navigation').getAttribute('aria-hidden'), 'true')
     assert.equal(await cta.evaluate(e => getComputedStyle(e, '::before').animationName), 'none', 'closed menu has no running ring')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -48,6 +73,14 @@ try {
     await page.getByRole('button', { name: 'Abrir menú', exact: true }).click()
     await page.keyboard.press('Escape')
     assert.equal(await page.locator('#mobile-navigation').getAttribute('aria-hidden'), 'true')
+    // The URL still contains #contacto: activating it again must not be a no-op.
+    await page.getByRole('button', { name: 'Abrir menú', exact: true }).click()
+    await page.locator('.rd-mobile-nav-contact').click()
+    await assertContactArrival(page)
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'contacto')
+    // From the footer this is an upward jump; the fixed header must not cover it.
+    await page.getByRole('navigation', { name: 'Navegación secundaria' }).getByRole('link', { name: 'Contacto', exact: true }).click()
+    await assertContactArrival(page)
     assert.deepEqual(errors, [])
     console.log(`PASS ${width} ${theme}: ring, hierarchy, touch target, close/contact navigation, reduced motion`)
     await page.close()

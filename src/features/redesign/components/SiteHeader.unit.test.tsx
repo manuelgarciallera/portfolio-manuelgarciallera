@@ -4,6 +4,13 @@ import { describe, expect, it } from 'vitest'
 import { SiteHeader } from './SiteHeader'
 
 describe('SiteHeader', () => {
+  it('puts Inicio first in mobile navigation', () => {
+    const markup = renderToStaticMarkup(<SiteHeader isDark onToggleTheme={() => undefined} />)
+    const mobile = markup.split('id="mobile-navigation"')[1]
+    expect(mobile).toContain('href="/"')
+    expect(mobile.indexOf('>Inicio<')).toBeGreaterThan(-1)
+    expect(mobile.indexOf('>Inicio<')).toBeLessThan(mobile.indexOf('>Proyectos<'))
+  })
   it('offers both direct CV downloads only inside mobile navigation', () => {
     const markup = renderToStaticMarkup(<SiteHeader isDark onToggleTheme={() => undefined} />)
     const mobile = markup.split('id="mobile-navigation"')[1]
@@ -24,7 +31,8 @@ describe('SiteHeader', () => {
   it('makes editorial work and LinkedIn directly reachable', () => {
     const markup = renderToStaticMarkup(<SiteHeader isDark onToggleTheme={() => undefined} forceVisible />)
 
-    expect(markup).toContain('href="/articulos"')
+    expect(markup).toContain('href="/blog"')
+    expect(markup).toContain('href="/proyectos"')
     expect(markup).toContain('linkedin.com/in/manuelgarciallera')
   })
 

@@ -1,10 +1,22 @@
 import type { Metadata } from 'next'
+import { OG_IMAGE, PERSON_LEGAL_NAME, SITE_LOCALE, SITE_NAME } from '@/lib/site-config'
 import styles from './privacy.module.css'
+
+const description = 'Información sobre la medición de visitas y el contacto en el portfolio de Manuel García-Llera Añón.'
 
 export const metadata: Metadata = {
   title: 'Privacidad',
-  description: 'Información sobre la medición de visitas y el contacto en el portfolio de Manuel García-Llera Añón.',
+  description,
   alternates: { canonical: '/privacidad' },
+  openGraph: {
+    type: 'website',
+    locale: SITE_LOCALE,
+    url: '/privacidad',
+    siteName: SITE_NAME,
+    title: `Privacidad — ${PERSON_LEGAL_NAME}`,
+    description,
+    images: [OG_IMAGE],
+  },
 }
 
 export default function PrivacyPage() {

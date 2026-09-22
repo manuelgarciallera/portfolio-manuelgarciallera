@@ -15,7 +15,7 @@ export function ContactForm() {
 
   // Si la ruta falla, el visitante ya ha escrito su mensaje: perderlo y mandarle
   // a LinkedIn es la peor recuperacion posible. El mailto lo lleva consigo.
-  const mailtoHref = `mailto:${SITE_EMAIL}?subject=${encodeURIComponent(`Portfolio \u00b7 mensaje de ${values.name || 'un visitante'}`)}&body=${encodeURIComponent([values.company ? `Organizaci\u00f3n: ${values.company}` : '', values.email ? `Email: ${values.email}` : '', '', values.message].filter(Boolean).join('\n'))}`
+  const mailtoHref = `mailto:${SITE_EMAIL}?subject=${encodeURIComponent(`Portfolio \u00b7 mensaje de ${values.name || 'un visitante'}`)}&body=${encodeURIComponent([values.company ? `Organizaci\u00f3n: ${values.company}` : '', values.email ? `Correo electrónico: ${values.email}` : '', '', values.message].filter(Boolean).join('\n'))}`
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -43,9 +43,9 @@ export function ContactForm() {
       setValues(EMPTY_FORM)
       setStatus('success')
       setFeedback('Mensaje enviado. Gracias: te responderé personalmente.')
-    } catch (error) {
+    } catch {
       setStatus('error')
-      setFeedback(error instanceof Error ? error.message : 'No se pudo enviar el mensaje.')
+      setFeedback('No se ha podido enviar el mensaje. Comprueba tu conexión o utiliza el correo electrónico.')
       setShowFallback(true)
     }
   }
@@ -65,7 +65,7 @@ export function ContactForm() {
         <input id="contact-company" name="company" value={values.company} onChange={update('company')} autoComplete="organization" maxLength={120} />
       </div>
       <div className="rd-contact-form__field rd-contact-form__field--wide">
-        <label htmlFor="contact-email">Email</label>
+        <label htmlFor="contact-email">Correo electrónico</label>
         <input id="contact-email" name="email" type="email" inputMode="email" value={values.email} onChange={update('email')} autoComplete="email" maxLength={254} required />
       </div>
       <div className="rd-contact-form__field rd-contact-form__field--wide">

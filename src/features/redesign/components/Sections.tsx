@@ -2,8 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import { PROFILE_LINKS } from '../../../lib/site-config'
 import { ContactForm } from './ContactForm'
+import { ContactLink } from './ContactLink'
 import '../contact.css'
 
 export function ManifestoSection() {
@@ -25,8 +27,8 @@ export function ManifestoSection() {
           <em>IA dentro de ellas</em>— participan en nuestras decisiones.
         </h2>
         <div className="rd-manifesto-copy rd-reveal">
-          <p>Aprender a desarrollar cambió mi forma de diseñar. Ya no pienso únicamente en una pantalla, sino en los datos, permisos, estados y decisiones que deben sostenerla cuando el producto se utiliza de verdad.</p>
-          <p>Trabajo con distintas IAs porque necesito conocer sus fortalezas y sus límites, no porque quiera delegarles el criterio. Las utilizo para ampliar alternativas, automatizar lo repetible y acelerar la implementación; la responsabilidad y la última palabra siguen siendo humanas.</p>
+          <p>Aprender a desarrollar me ha ayudado a mirar el diseño con más profundidad. Cuando planteo una pantalla, también me pregunto qué datos necesita, quién puede modificarlos y qué ocurre si algo falla. Entender esas relaciones me permite discutir las soluciones con ingeniería y comprobar si lo que he diseñado funciona de verdad.</p>
+          <p>En mi día a día trabajo con distintas inteligencias artificiales. Llevo meses probando cómo responden, dónde me ayudan y en qué se equivocan. Después de una etapa utilizando principalmente Claude, ahora trabajo más con Codex: en mis proyectos estoy encontrando la estabilidad y la capacidad de resolución que necesito. Sigo contrastando sus respuestas; elegir una herramienta no significa dejar de revisar sus resultados.</p>
         </div>
         <Image
           className="rd-manifesto-art"
@@ -75,13 +77,13 @@ export function CapabilitiesSection() {
 
 export function ContactSection() {
   return (
-    <section className="rd-section rd-contact" id="contacto">
+    <section className="rd-section rd-contact" aria-labelledby="contacto">
       <p className="rd-label rd-reveal">
         Contacto
       </p>
-      <div className="rd-contact-heading rd-reveal">
-        <h2>Hablemos<em>.</em></h2>
-        <p>Si tienes un producto difícil de ordenar, una investigación que necesita forma o una idea que todavía no sabes cómo probar, cuéntame el contexto. Leo y respondo yo, sin automatismos.</p>
+      <div className="rd-contact-heading">
+        <h2 id="contacto" tabIndex={-1}>Hablemos<em>.</em></h2>
+        <p>Si crees que mi forma de trabajar encaja en tu equipo, o tienes un producto o una investigación que quieras desarrollar, me gustaría conocerlo. Cuéntame qué necesitas y en qué punto estás. Leeré tu mensaje personalmente.</p>
         <a className="rd-contact-linkedin" href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">También puedes encontrarme en LinkedIn <span aria-hidden="true">↗</span></a>
       </div>
       <ContactForm />
@@ -96,10 +98,10 @@ export function Footer() {
       <span>Madrid · manuelgarciallera.com</span>
       <nav aria-label="Navegación secundaria">
         <Link href="/sobre-mi">Sobre mí</Link>
-        <Link href="/casos">Casos</Link>
+        <Link href={PUBLIC_ROUTES.projects}>Proyectos</Link>
         <Link href="/proceso">Proceso</Link>
-        <Link href="/articulos">Artículos</Link>
-        <Link href="/#contacto">Contacto</Link>
+        <Link href={PUBLIC_ROUTES.blog}>Blog</Link>
+        <ContactLink>Contacto</ContactLink>
         <Link href="/privacidad">Privacidad</Link>
         <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
       </nav>

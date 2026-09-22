@@ -51,6 +51,8 @@ export interface CaseStoryBlock {
 }
 
 export interface CaseVisual {
+  /** Evidence-led cases show each screen once, without recycling it in every phase. */
+  presentation?: 'evidence-once'
   theme: 'buy-sell' | 'laliga' | 'coordination' | 'theuxunion' | 'nude-project' | 'neutral'
   logoSrc: string
   logoAlt: string

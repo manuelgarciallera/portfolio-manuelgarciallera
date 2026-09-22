@@ -9,6 +9,7 @@ import { useSwipe } from '../hooks/useSwipe'
 import type { CaseVisualSlide } from '../content/types'
 import { CoordinationDiagram } from './CoordinationDiagram'
 import { advancePreviewFrame, centeredTabScrollLeft, frameDurationMs, type PreviewFrame } from './projectPreviewPlayback'
+import { isPortraitEvidence, projectImageDimensions } from '../case/projectImageDimensions'
 
 interface ProjectPreviewCarouselProps {
   label: string
@@ -143,6 +144,8 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
         <div className="rd-preview-viewport">
           {slides.map((slide, index) => {
             const isActive = index === active
+            const portrait = isPortraitEvidence(slide.src)
+            const dimensions = projectImageDimensions[slide.src]
             return (
               <div
                 className="rd-preview-slide"
@@ -153,13 +156,18 @@ export function ProjectPreviewCarousel({ label, slides, priority = false, varian
               >
                 {slide.kind === 'coordination-diagram' ? (
                   <CoordinationDiagram variant={slide.diagramVariant} />
+                ) : portrait && dimensions ? (
+                  <div className="rd-preview-portrait" data-device={slide.src.includes('/nude-project/') || slide.src.includes('/theuxunion/') ? 'true' : undefined} style={{ aspectRatio: `${dimensions[0]} / ${dimensions[1]}` }}>
+                    <Image src={slide.src} alt={isActive ? slide.alt : ''} fill quality={92}
+                      preload={priority && index === 0} sizes="(max-width: 760px) 45vw, 23rem" />
+                  </div>
                 ) : (
                   <Image
                     src={slide.src}
                     alt={isActive ? slide.alt : ''}
                     fill
                     quality={92}
-                    priority={priority && index === 0}
+                    preload={priority && index === 0}
                     sizes={variant === 'feature' ? '(max-width: 767px) 100vw, 62vw' : '(max-width: 767px) 100vw, 58vw'}
                   />
                 )}

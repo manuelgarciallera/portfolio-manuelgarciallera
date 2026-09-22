@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { projectHref } from '../../../lib/public-routes'
 import { RailControls } from './RailControls'
 import './visual-gallery.css'
 
@@ -21,7 +22,7 @@ export function VisualGallery() {
       </div>
     </header>
     <div id="art-gallery-track" className="rd-art-gallery__track" role="region" aria-label="Galería de proyectos" aria-describedby="art-gallery-help" tabIndex={0}>
-      {works.map((work) => <Link className="rd-art-gallery__item" href={`/casos/${work.slug}`} key={work.slug} aria-label={`Ver caso: ${work.name}`} prefetch={false}>
+      {works.map((work) => <Link className="rd-art-gallery__item" href={projectHref(work.slug)} key={work.slug} aria-label={`Ver caso: ${work.name}`} prefetch={false}>
         <Image src={work.image} alt="" fill loading="lazy" sizes="(max-width: 760px) 84vw, (max-width: 1023px) 46vw, 28vw" style={{ objectPosition: work.position }} />
         <span className="rd-art-gallery__word" aria-hidden="true">{work.word}</span>
         <span className="rd-art-gallery__name">{work.name}<span aria-hidden="true">↗</span></span>

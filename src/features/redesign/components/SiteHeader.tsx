@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { BrandSignature } from './BrandSignature'
+import { ContactLink } from './ContactLink'
 import { usePathname } from 'next/navigation'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { PROFILE_LINKS } from '../../../lib/site-config'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 import { CvDownloads } from '../about/CvDownloads'
 import '../responsive.css'
 import './mobile-cv.css'
@@ -12,12 +14,14 @@ import './action-feedback.css'
 import { actionFeedback } from './action-feedback'
 
 const NAV_ITEMS = [
-  { href: '/casos', label: 'Proyectos' },
+  { href: PUBLIC_ROUTES.projects, label: 'Proyectos' },
   { href: '/investigacion', label: 'Investigación' },
   { href: '/proceso', label: 'Proceso' },
   { href: '/sobre-mi', label: 'Sobre mí' },
-  { href: '/articulos', label: 'Blog' },
+  { href: PUBLIC_ROUTES.blog, label: 'Blog' },
 ] as const
+
+const MOBILE_NAV_ITEMS = [{ href: '/', label: 'Inicio' }, ...NAV_ITEMS] as const
 
 interface SiteHeaderProps {
   isDark: boolean
@@ -121,13 +125,13 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
           <Link href={item.href} key={item.href} aria-current={isCurrentPage(item.href) ? 'page' : undefined}>{item.label}</Link>
         ))}
         <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>
-        <Link className="rd-nav-contact rd-desktop-contact" href="/#contacto">Contacto</Link>
+        <ContactLink className="rd-nav-contact rd-desktop-contact">Contacto</ContactLink>
         <button type="button" className="rd-theme-btn" aria-label={themeLabel} title={themeLabel} onClick={onToggleTheme}>
           {themeIcon}
         </button>
       </nav>
 
-      <Link className="rd-nav-contact rd-mobile-contact" href="/#contacto" onClick={closeMenu}>Contacto</Link>
+      <ContactLink className="rd-nav-contact rd-mobile-contact" onClick={closeMenu}>Contacto</ContactLink>
 
       <button
         ref={menuButtonRef}
@@ -151,14 +155,20 @@ export function SiteHeader({ isDark, onToggleTheme, forceVisible = false }: Site
         inert={!menuOpen}
       >
         <div className="rd-mobile-nav-links">
-          {NAV_ITEMS.map((item) => (
-            <Link href={item.href} key={item.href} aria-current={isCurrentPage(item.href) ? 'page' : undefined} onClick={closeMenu}>{item.label}</Link>
+          {MOBILE_NAV_ITEMS.map((item) => (
+            <Link href={item.href} key={item.href} aria-current={isCurrentPage(item.href) ? 'page' : undefined} onClick={closeMenu}
+              onNavigate={(event) => {
+                if (item.href === '/' && pathname === '/') {
+                  event.preventDefault()
+                  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+                }
+              }}>{item.label}</Link>
           ))}
           <a href={PROFILE_LINKS.linkedin} target="_blank" rel="noreferrer" onClick={closeMenu}>LinkedIn ↗</a>
-          <Link {...actionFeedback} className="rd-mobile-nav-contact rd-action-feedback" href="/#contacto" onClick={closeMenu}>
+          <ContactLink {...actionFeedback} className="rd-mobile-nav-contact rd-action-feedback" onClick={closeMenu}>
             <span className="rd-cta-glow" aria-hidden="true" />
             Contacto
-          </Link>
+          </ContactLink>
         </div>
         <div className="rd-mobile-nav-utilities">
           <CvDownloads />

@@ -5,8 +5,8 @@ export const RESEARCH_QUESTION =
   '¿En qué medida el diseño del siglo XX desplazó la dimensión háptica hacia lo óptico, por qué motivos, y qué efecto tiene recuperarla sobre la comprensión, la confianza y la decisión de quien usa una interfaz contemporánea?'
 
 export const RESEARCH_INTRO: readonly string[] = [
-  'Vengo del objeto antes que de la pantalla. Esa procedencia no es una anécdota biográfica: es lo que me permite mirar una interfaz y preguntarme qué se perdió por el camino, en lugar de darla por dada.',
-  'La investigación está abierta y quiero que se note. Hay dos polos en tensión deliberada y no los cierro aquí: uno histórico y material, otro empírico y aplicado. Lo que publico se escribe desde su intersección.',
+  'Mi interés por el diseño empezó mucho antes de trabajar con pantallas. En mi TFG partí de los objetos cotidianos de la RDA y la RFA; cuanto más investigaba sus materiales, formas y usos, más necesitaba comprender a las personas y al contexto que los habían producido.',
+  'Ahora traslado algunas de esas preguntas al producto digital. Me interesa estudiar qué entiende una persona al utilizar una interfaz y cómo cambian sus decisiones cuando incorpora IA. Es una investigación abierta: el trabajo histórico ya existe; las nuevas hipótesis necesitan su propio diseño experimental y sus pruebas.',
 ]
 
 export interface ResearchRootObject {
@@ -50,8 +50,8 @@ export const RESEARCH_LINES: readonly ResearchLine[] = [
   {
     index: '03',
     title: 'Sistemas de diseño como gramáticas',
-    body: 'Un sistema de diseño no organiza: legisla. Determina qué puede y qué no puede decirse en una pantalla. Línea complementaria, escrita desde la práctica en producto real.',
-    status: 'Alimenta artículos, no tesis',
+    body: 'Quiero estudiar cómo los tokens, componentes y reglas de composición pueden guiar la generación de interfaces sin perder coherencia ni control humano. El CMS en desarrollo me permite plantear experimentos sobre estabilidad, adaptación y edición; todavía no es una validación científica de esos resultados.',
+    status: 'Línea en desarrollo · sistemas generativos',
   },
 ]
 
@@ -73,4 +73,4 @@ export const RESEARCH_FRAMEWORK: readonly string[] = [
 ]
 
 export const RESEARCH_CLOSING =
-  'Ninguna de estas líneas está cerrada, y no tengo prisa por cerrarlas antes de tiempo. Lo que sí está decidido es desde dónde miro: el objeto como punto de entrada, la paradoja como motor y el caso construido como prueba.'
+  'Quiero que la investigación y la práctica se ayuden mutuamente: construir prototipos para poner a prueba mis preguntas y utilizar lo aprendido para diseñar mejor. Sin confundir que algo funcione en un proyecto con haber demostrado que funciona para todo el mundo.'

@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import { ProjectEvidenceImage } from './ProjectEvidenceImage'
 
 import type { CaseStudy } from '../content/types'
 import { BuySellBrandScene } from './BuySellBrandScene'
@@ -44,13 +44,10 @@ export function CaseStory({ study }: { study: CaseStudy }) {
             {block.image ? (
               <div className="rd-case-story__media rd-reveal">
                 <div className={`rd-case-story__frame rd-case-story__frame--${study.visual?.theme ?? 'neutral'}`}>
-                  <Image
+                  <ProjectEvidenceImage
                     src={block.image.src}
                     alt={block.image.alt}
-                    width={1920}
-                    height={1080}
-                    sizes="(max-width: 760px) 100vw, 64vw"
-                    style={{ objectFit: block.image.fit ?? 'cover' }}
+                    sizes="(max-width: 760px) 92vw, (max-width: 1023px) 90vw, 56vw"
                   />
                 </div>
               </div>

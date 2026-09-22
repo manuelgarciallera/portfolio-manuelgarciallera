@@ -58,8 +58,8 @@ describe('PrototypeToComponent', () => {
       />,
     )
 
-    expect(markup).toContain('<h3>Figma · sistema atomizado</h3>')
-    expect(markup).toContain('<h3>Angular · componente real</h3>')
+    expect(markup).toContain('<h3>Organización del sistema</h3>')
+    expect(markup).toContain('<h3>Código · evidencia de implementación</h3>')
     expect(markup).not.toContain('<h4>')
     expect(markup).toContain('<pre class="rd-code" aria-label="badge.ts" tabindex="0">')
     expect(markup).toContain('aria-label="Mapeo entre interfaz y datos" tabindex="0"')

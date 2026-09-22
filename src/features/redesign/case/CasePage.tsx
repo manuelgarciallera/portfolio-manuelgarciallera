@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 import Image from 'next/image'
+import { PUBLIC_ROUTES } from '../../../lib/public-routes'
 
 import { SiteHeader } from '../components/SiteHeader'
 import { Breadcrumbs } from '../components/Breadcrumbs'
@@ -45,19 +46,20 @@ export function CasePage({ study, nextCase }: { study: CaseStudy; nextCase: Case
     () => [
       ['Contexto', study.context],
       ['Contribución', study.contribution ?? study.role],
-      ['Stack', study.stack.join(' · ')],
+      ['Tecnologías', study.stack.join(' · ')],
       [study.delivery === 'design-prototype' ? 'Entrega' : 'Año', study.year],
     ],
     [study],
   )
   const evidenceSlides = study.visual?.slides ?? []
+  const evidenceOnce = study.visual?.presentation === 'evidence-once'
 
   return (
     <div className="rd-root">
       <SiteHeader isDark={isDark} onToggleTheme={toggleTheme} forceVisible />
       <main className="rd-case-page" id="main-content">
         <header className="rd-case-hero rd-section">
-          <Breadcrumbs items={[{ href: '/casos', label: 'Proyectos' }, { label: `${study.title}${study.titleAccent ?? ''}` }]} />
+          <Breadcrumbs items={[{ href: PUBLIC_ROUTES.projects, label: 'Proyectos' }, { label: `${study.title}${study.titleAccent ?? ''}` }]} />
           <p className="rd-label rd-reveal" data-index={study.index}>
             Caso
           </p>
@@ -66,9 +68,10 @@ export function CasePage({ study, nextCase }: { study: CaseStudy; nextCase: Case
             {study.titleAccent ? <em>{study.titleAccent}</em> : null}
           </h1>
           <p className="rd-case-claim rd-reveal">{study.claim}</p>
+          {evidenceOnce ? <p className="rd-case-summary rd-prose">{study.summary}</p> : null}
           {study.status === 'evolving' ? <p className="rd-case-page-status rd-reveal">Caso en evolución</p> : null}
           {study.status === 'experimental' ? <p className="rd-case-page-status rd-reveal">Experimental</p> : null}
-          {study.visual && !study.story ? (
+          {study.visual && !study.story && !evidenceOnce ? (
             <div className={`rd-case-feature rd-case-feature--${study.visual.theme} rd-reveal`} aria-label={`Presentación visual de ${study.title}${study.titleAccent ?? ''}`}>
               <div className="rd-case-feature-copy">
                 {study.visual.theme === 'theuxunion'
@@ -92,7 +95,7 @@ export function CasePage({ study, nextCase }: { study: CaseStudy; nextCase: Case
             {meta.map(([term, detail]) => (
               <div key={term}>
                 <dt>{term}</dt>
-                <dd>{term === 'Stack' ? <TechStack technologies={study.stack} compact /> : detail}</dd>
+                <dd>{term === 'Tecnologías' ? <TechStack technologies={study.stack} compact /> : detail}</dd>
               </div>
             ))}
           </dl>
@@ -116,7 +119,7 @@ export function CasePage({ study, nextCase }: { study: CaseStudy; nextCase: Case
         <PhaseNav phases={study.phases} />
 
         {study.phases.map((phase, i) => {
-          const phaseVisual = evidenceSlides.length ? evidenceSlides[i % evidenceSlides.length] : undefined
+          const phaseVisual = !evidenceOnce && evidenceSlides.length ? evidenceSlides[i % evidenceSlides.length] : undefined
 
           return phase.id === 'ia' ? (
             <section key={phase.id} className="rd-section rd-case-phase" id="fase-ia">

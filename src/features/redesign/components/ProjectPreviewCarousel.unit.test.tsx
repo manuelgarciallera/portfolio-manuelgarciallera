@@ -7,6 +7,11 @@ import type { CaseVisualSlide } from '../content/types'
 import { ProjectPreviewCarousel } from './ProjectPreviewCarousel'
 
 describe('ProjectPreviewCarousel', () => {
+  it('fits a portrait into its own proportional device frame instead of rounding a landscape image box', () => {
+    const markup = renderToStaticMarkup(<ProjectPreviewCarousel label="NudeProject" slides={[{ src: '/projects/nude-project/mobile-home.webp', label: 'Inicio', alt: 'Inicio móvil', fit: 'contain' }]} />)
+    expect(markup).toContain('class="rd-preview-portrait" data-device="true" style="aspect-ratio:1290 / 2796"')
+    expect(markup).toContain('sizes="(max-width: 760px) 45vw, 23rem"')
+  })
   it('keeps the project technology stack legible across desktop and mobile', () => {
     const css = fs.readFileSync(path.join(process.cwd(), 'src/features/redesign/redesign.css'), 'utf8')
 

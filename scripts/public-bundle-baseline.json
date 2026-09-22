@@ -29,7 +29,7 @@
         "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
-    "/articulos": {
+    "/blog": {
       "rawBytes": 124332,
       "gzipBytes": 39528,
       "files": [
@@ -41,7 +41,7 @@
         "static/chunks/3maa356e4fant.js"
       ]
     },
-    "/articulos/[slug]": {
+    "/blog/[slug]": {
       "rawBytes": 152106,
       "gzipBytes": 49300,
       "files": [
@@ -54,7 +54,7 @@
         "static/chunks/3maa356e4fant.js"
       ]
     },
-    "/casos": {
+    "/proyectos": {
       "rawBytes": 221082,
       "gzipBytes": 74645,
       "files": [
@@ -68,7 +68,7 @@
         "static/chunks/2ecarwhbm3_fy.js"
       ]
     },
-    "/casos/[slug]": {
+    "/proyectos/[slug]": {
       "rawBytes": 235180,
       "gzipBytes": 78715,
       "files": [

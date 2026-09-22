@@ -38,18 +38,18 @@ export const PROCESS_PHASES: ProcessPhase[] = [
   },
   {
     index: '02',
-    title: 'Research',
+    title: 'Investigación',
     image: '/art/capabilities/hci-material.webp',
-    intent: 'Entender el terreno con métodos, no con intuición.',
+    intent: 'Contrastar mis primeras impresiones con el contexto y las necesidades de las personas.',
     decides: 'Qué métodos aplican y qué hallazgos son relevantes.',
-    executes: 'Benchmark, evaluación heurística, ordenación de hallazgos.',
-    evidence: 'Benchmark comparado, heurísticas con severidad, arquitectura de información.',
+    executes: 'Análisis comparativo, evaluación heurística, ordenación de hallazgos.',
+    evidence: 'Comparativa de referentes, heurísticas con severidad, arquitectura de información.',
   },
   {
     index: '03',
     title: 'Sistema',
     image: '/art/capabilities/design-system.webp',
-    intent: 'Tokens y componentes antes que pantallas. Sin sistema no hay escala.',
+    intent: 'Definir una base de tipografía, color, espaciado y componentes que pueda mantenerse al crecer.',
     decides: 'Dirección de arte, jerarquía, escala tipográfica, carácter del movimiento.',
     executes: 'Andamiaje de variables, estados de componente, comprobación de contraste.',
     evidence: 'Colección de tokens y componentes con todos sus estados definidos.',
@@ -60,14 +60,14 @@ export const PROCESS_PHASES: ProcessPhase[] = [
     image: '/art/capabilities/product-system.webp',
     intent: 'Pantallas montadas con instancias del sistema, navegables desde el primer día.',
     decides: 'Composición, flujo y qué se prueba antes de programar.',
-    executes: 'Montaje de variantes, responsive, documentación de estados.',
-    evidence: 'Prototipo navegable y responsive en los puntos de ruptura acordados.',
+    executes: 'Montaje de variantes, adaptación a distintos tamaños de pantalla, documentación de estados.',
+    evidence: 'Prototipo navegable y adaptable a los tamaños de pantalla acordados.',
   },
   {
     index: '05',
     title: 'Traspaso',
     image: '/art/capabilities/frontend-surface.webp',
-    intent: 'Del diseño al código sin traducción: los nombres del sistema son los mismos.',
+    intent: 'Mantener una relación reconocible entre los componentes de Figma y su implementación.',
     decides: 'Qué es contrato y qué es implementación libre.',
     executes: 'Lectura estructurada del diseño, generación de componentes, pruebas.',
     evidence: 'Componentes en código que replican la jerarquía del sistema de diseño.',
@@ -76,7 +76,7 @@ export const PROCESS_PHASES: ProcessPhase[] = [
     index: '06',
     title: 'Verificación',
     image: '/art/capabilities/human-ai.webp',
-    intent: 'Lo que no se comprueba, no está hecho.',
+    intent: 'Probar el resultado en el navegador y revisar lo que una prueba automática no puede valorar.',
     decides: 'Umbral de calidad aceptable y qué deuda se declara.',
     executes: 'Pruebas, auditoría de accesibilidad, medición de rendimiento.',
     evidence: 'Suite en verde, contraste validado, comparación diseño-navegador.',
@@ -86,33 +86,33 @@ export const PROCESS_PHASES: ProcessPhase[] = [
 export const PROCESS_AI_LAYER: ProcessPrinciple[] = [
   {
     title: 'Qué decide la persona',
-    body: 'El problema, la dirección de arte, la jerarquía, el criterio de calidad y todo lo irreversible. El gusto no se delega porque no es automatizable: es el resultado de una formación y una mirada.',
+    body: 'Defino el problema, las prioridades y los criterios de calidad. La IA puede proponer alternativas, pero me corresponde valorar si tienen sentido para el usuario y asumir la decisión que tomamos.',
   },
   {
     title: 'Qué ejecuta la IA',
-    body: 'El trabajo sistemático: andamiaje de componentes y estados, revisión de accesibilidad, generación de variantes para elegir, documentación y verificación. Acelera; no dirige.',
+    body: 'La utilizo para explorar variantes, preparar componentes, revisar código y proponer pruebas. Le doy contexto y límites concretos. Después comparo el resultado con el diseño y con el comportamiento que esperaba.',
   },
   {
     title: 'Cómo se controla',
-    body: 'Niveles de autonomía explícitos, revisión independiente antes de dar nada por acordado, y registro de cada decisión con su responsable y su evidencia. Si no se puede auditar, no vale.',
+    body: 'Dejo por escrito qué puede hacer cada herramienta, qué necesita mi aprobación y cómo comprobaré el resultado. Cuando una decisión es importante, busco una revisión independiente y conservo el motivo del cambio.',
   },
 ]
 
 export const PROCESS_PRINCIPLES: ProcessPrinciple[] = [
   {
     title: 'Sistema antes que pantalla',
-    body: 'Diseñar pantallas sueltas produce trabajo bonito e irrepetible. Diseñar el sistema produce trabajo que crece.',
+    body: 'Me interesa que una buena decisión pueda repetirse. Por eso relaciono las pantallas con componentes, estados y reglas comunes, y reviso el sistema cuando aparece una necesidad nueva.',
   },
   {
     title: 'Evidencia sobre afirmación',
-    body: 'Cada caso muestra el artefacto real: el componente, el código, la prueba. Y declara lo que no se hizo.',
+    body: 'Intento mostrar cómo he llegado al resultado: el prototipo, los componentes y las comprobaciones disponibles. También explico qué parte está en desarrollo o no se ha validado todavía.',
   },
   {
     title: 'La estética es función',
-    body: 'Lo que se percibe como bello se percibe como más usable. El cuidado visual no es acabado: es parte del rendimiento del producto.',
+    body: 'Cuido la tipografía, los espacios y el movimiento porque influyen en cómo se entiende una interfaz. Si un efecto distrae o una composición dificulta leer, reviso la decisión aunque visualmente me guste.',
   },
   {
     title: 'Podar lo que no acelera',
-    body: 'Toda capa de método que no haga el siguiente proyecto más rápido o mejor se elimina. El procedimiento existe para producir, no para lucirse.',
+    body: 'Adapto el método al problema. Me interesa documentar lo que facilita trabajar y aprender, sin añadir pasos que el equipo no necesita.',
   },
 ]

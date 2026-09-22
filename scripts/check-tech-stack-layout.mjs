@@ -20,7 +20,7 @@ try {
   for (const route of ['buy-sell-marketplace', 'nude-project', 'the-ux-union']) {
     for (const width of [320, 390, 600, 767, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 })
-      await page.goto(`${base}/casos/${route}`, { waitUntil: 'load' })
+      await page.goto(`${base}/proyectos/${route}`, { waitUntil: 'load' })
       const stack = page.locator('.rd-meta-grid .rd-tech-stack')
       await stack.waitFor()
       const result = await stack.evaluate(el => {
