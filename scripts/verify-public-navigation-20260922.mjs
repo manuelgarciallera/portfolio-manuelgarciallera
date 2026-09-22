@@ -13,6 +13,7 @@ try {
     page.on('pageerror', error => report.errors.push(String(error)))
     for (const theme of ['dark', 'light']) {
       await page.goto(base + '/proyectos/coordination-hub', { waitUntil: 'networkidle' })
+      assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), 'auto', 'Published CSS must not reintroduce animated document navigation')
       await page.evaluate(theme => { localStorage.setItem('rd-theme', theme); document.documentElement.dataset.theme = theme }, theme)
       const closeConsent = page.getByRole('button', { name: 'Rechazar analítica', exact: true })
       if (await closeConsent.isVisible()) await closeConsent.click()

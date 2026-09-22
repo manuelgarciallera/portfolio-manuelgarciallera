@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { getRedirectUrl, unstable_getResponseFromNextConfig } from 'next/experimental/testing/server'
+import { getPathMatch } from 'next/dist/shared/lib/router/utils/path-match'
 
 import nextConfig from '../../next.config'
 import { metadata as projectsMetadata } from '../app/proyectos/page'
@@ -11,6 +12,23 @@ import sitemap from '../app/sitemap'
 import { metadata as privacyMetadata } from '../app/privacidad/page'
 
 describe('canonical public section URLs', () => {
+  it.each([
+    ['/casos', '/proyectos'],
+    ['/articulos', '/blog'],
+  ])('matches an exact index redirect before the empty wildcard for %s', async (oldPath, canonicalPath) => {
+    const redirects = await nextConfig.redirects!()
+    const firstMatch = redirects.find(({ source }) => getPathMatch(source)(oldPath) !== false)
+
+    // The experimental response helper normalises the empty wildcard, but the
+    // production deployment emitted /proyectos/ and /blog/, adding a second 308.
+    // Check the ordered route contract before that normalisation can hide it.
+    expect(firstMatch).toMatchObject({
+      source: oldPath,
+      destination: canonicalPath,
+      permanent: true,
+    })
+  })
+
   it.each([
     ['/casos', '/proyectos'],
     ['/casos/buy-sell-marketplace?from=cv', '/proyectos/buy-sell-marketplace?from=cv'],

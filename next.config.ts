@@ -56,6 +56,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   async redirects() {
     return [
+      { source: '/casos', destination: PUBLIC_ROUTES.projects, permanent: true },
+      { source: '/articulos', destination: PUBLIC_ROUTES.blog, permanent: true },
       { source: '/casos/:path*', destination: `${PUBLIC_ROUTES.projects}/:path*`, permanent: true },
       { source: '/articulos/:path*', destination: `${PUBLIC_ROUTES.blog}/:path*`, permanent: true },
     ]
