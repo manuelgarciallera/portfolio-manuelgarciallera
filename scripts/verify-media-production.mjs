@@ -42,7 +42,12 @@ async function check(name, options, action) {
     assert.deepEqual(errors, [], 'No page errors')
     results.push({ name, status: 'PASS', detail })
   } catch (error) {
-    results.push({ name, status: 'FAIL', reason: error.message, errors, url: page.url() })
+    const diagnostic = await page.evaluate(() => ({
+      active: document.activeElement?.outerHTML.slice(0, 600), hasFocus: document.hasFocus(), scroll: scrollY,
+      dialog: Array.from(document.querySelectorAll('dialog')).map(dialog => ({ open: dialog.open, modal: dialog.matches(':modal'), containsFocus: dialog.contains(document.activeElement) })),
+      next: Array.from(document.querySelectorAll('.rd-next-case [data-case-preview]')).map(visual => ({ bounds: visual.getBoundingClientRect().toJSON(), active: visual.dataset.viewportActive })),
+    })).catch(() => null)
+    results.push({ name, status: 'FAIL', reason: error.message, errors, url: page.url(), diagnostic })
   } finally { await context.close() }
   console.log(JSON.stringify({ environment: 'local-production-server', base, engine, ...results.at(-1) }))
 }
@@ -100,9 +105,14 @@ try {
     assert.ok(target.width >= 44 && target.height >= 44, '44px close target')
     assert.ok(await close.evaluate(element => element === document.activeElement), 'Initial focus')
     const focusChecks = []
-    for (const key of [null, 'Shift+Tab', 'Tab', 'Tab']) {
+    for (const key of [null, 'Shift+Tab', 'Shift+Tab', 'Tab', 'Tab', 'Tab']) {
       if (key) await page.keyboard.press(key)
-      assert.ok(await dialog.evaluate(element => element.contains(document.activeElement)), 'Native dialog focus contained')
+      const focusLocation = await dialog.evaluate(element => ({
+        active: document.activeElement?.outerHTML.slice(0, 400), contains: element.contains(document.activeElement),
+        hasFocus: document.hasFocus(), open: element.open, modal: element.matches(':modal'),
+      }))
+      console.log(JSON.stringify({ name: `real-lightbox-${width}`, key: key ?? 'initial', focusLocation }))
+      assert.ok(focusLocation.contains, `Native dialog focus contained after ${key ?? 'initial'}`)
       const focus = await dialog.evaluate(element => {
         const styles = getComputedStyle(document.activeElement)
         return { outline: styles.outlineColor, width: parseFloat(styles.outlineWidth), surface: getComputedStyle(element.querySelector('.rd-evidence-dialog__panel')).backgroundColor }

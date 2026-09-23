@@ -54,6 +54,16 @@ export function ProjectEvidenceImage({ src, alt, sizes }: { src: string; alt: st
   </button>
   {expanded ? <dialog ref={dialogRef} className="rd-evidence-dialog" aria-label={`Imagen ampliada: ${alt}`}
     onCancel={event => { event.preventDefault(); setExpanded(false) }}
+    onKeyDown={event => {
+      if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return
+      const controls = event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')
+      const first = controls[0]
+      const last = controls[controls.length - 1]
+      if (!first || !last || document.activeElement !== (event.shiftKey ? first : last)) return
+      event.preventDefault()
+      const destination = event.shiftKey ? last : first
+      destination.focus({ preventScroll: true })
+    }}
     onPointerDown={event => { backdropStart.current = event.target === event.currentTarget }}
     onClick={event => { if (backdropStart.current && event.target === event.currentTarget) setExpanded(false) }}>
     <div className="rd-evidence-dialog__panel">

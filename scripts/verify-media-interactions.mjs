@@ -88,10 +88,10 @@ try {
     const close = dialog.getByRole('button',{name:'Cerrar imagen ampliada'})
     const box = await close.boundingBox(); assert.ok(box.width >= 44 && box.height >= 44,'44px close target')
     assert.equal(await close.evaluate(element => element === document.activeElement),true,'initial close focus')
-    await page.keyboard.press('Shift+Tab')
-    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)),true,'reverse focus contained')
-    await page.keyboard.press('Tab')
-    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)),true,'forward focus contained')
+    for (const key of ['Shift+Tab','Shift+Tab','Tab','Tab','Tab']) {
+      await page.keyboard.press(key)
+      assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)),true,`${key} focus contained at both boundaries`)
+    }
     const image = dialog.locator('img'); const imageBox = await image.boundingBox()
     assert.ok(imageBox.x >= 0 && imageBox.y >= 0 && imageBox.x + imageBox.width <= width + 1 && imageBox.y + imageBox.height <= 845,'image bounded')
     await page.keyboard.press('Escape'); await dialog.waitFor({state:'detached'})

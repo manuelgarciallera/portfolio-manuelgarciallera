@@ -249,7 +249,9 @@ try {
     console.log(JSON.stringify(evidence))
     assert.ok(afterPause.chroma > cycle[0].chroma + 12, 'Resumed pulse lost its visible colour during the hidden interval')
     assert.ok(pulseFull.chroma > cycle[0].chroma + 12, 'Normal-motion click does not visibly colour the sphere')
-    assert.ok(pulseHalf.chroma < pulseFull.chroma - 5 && pulseHalf.chroma > cycle[0].chroma + 5, 'Normal-motion pulse does not visibly fade before its six-second reset')
+    // Tone mapping can increase channel separation as emission dims, so chroma
+    // is not a monotonic fade measure. Emitted luminance must actually fall.
+    assert.ok(pulseHalf.luminance < pulseFull.luminance - 10 && pulseHalf.luminance > cycle[0].luminance + 10 && pulseHalf.chroma > cycle[0].chroma + 12, 'Normal-motion pulse does not visibly fade before its six-second reset')
     assert.ok(brightening >= 8, 'Automatic cycle does not visibly lighten the graphite sphere')
     assert.ok(returnDistance < brightening * 0.55, 'Automatic cycle does not return towards graphite after 24 seconds')
     assert.deepEqual(errors, [], 'Browser runtime error')
